@@ -32,6 +32,7 @@ Lolite OS is a browser-based desktop and should be run from a complete extracted
 - Expanded wallpaper library
 - Version compatibility warning
 - UI presets and accent colours
+- **v1.7 clean X-only window controls and custom window resizing**
 - **v1.6 Lolite App Store with one-click app launching**
 - **v1.6 responsive Default Games layout so game cards fit smaller windows**
 - **v1.6 global dark form/button styling and scrollbar cleanup**
@@ -52,6 +53,15 @@ Lolite OS is a browser-based desktop and should be run from a complete extracted
 Lolite marks designated mature Game Store titles as **MATURE**. Mature titles require adult/parent approval on the device before they can be launched. Entering an age by itself is not used as an unlock mechanism.
 
 ## Update Log
+
+### 1.7 — 2026-09-11 — Lolite OS v1.7: Window Controls & Resizing Update
+- Removed the three colored window-control dots from app title bars.
+- Replaced them with a clean, Windows-style **X close button**.
+- Added a dedicated bottom-right **window resize handle** with pointer-based resizing.
+- Added minimum window sizes and viewport bounds so resized windows stay usable.
+- Kept dragging through the title bar while preventing the resize handle from interfering with it.
+- Added mobile-friendly resize sizing.
+- Checked `html games/` during this build; the existing HTML/HTM files were reviewed and no duplicate game files were identified.
 
 ### 1.6 — 2026-09-11 — Lolite OS v1.6: App Store & UI Reliability Update
 - Added a dedicated **Lolite App Store** for Paint, Notepad, Calculator, Screen Capture, Clock, Widgets, Battery, Auto Clicker, Terminal, Minecraft, Scramjet and Lolite AI.
