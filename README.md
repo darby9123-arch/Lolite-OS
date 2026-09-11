@@ -21,7 +21,7 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Live simulation statistics
 - AI-first browser/search UI shell
 - Game Library catalog
-- Repository HTML Games section
+- Repository HTML Games section with automatic folder discovery
 - Persistent Files system
 - ZIP extraction and ZIP creation
 - Installed game library integration
@@ -30,6 +30,14 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Wallpaper switching
 
 ## Update Log
+
+### 2026-09-11 — HTML Games auto-discovery
+- Upgraded the HTML Games section to discover `.html` files directly from the repository's `html games/` folder.
+- Added a Refresh action so newly added repository HTML games can appear without manually editing the game list.
+- Kept the existing built-in game list as a fallback if GitHub discovery is unavailable.
+- Added safer display-name handling for discovered filenames.
+- Kept the repository launch flow inside Lolite OS windows.
+- Updated `core/integration.js` only, keeping the main app.js architecture clean.
 
 ### 2026-09-11 — HTML Games integration
 - Added the uploaded HTML games to the Lolite Game Library.
