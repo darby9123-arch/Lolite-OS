@@ -32,24 +32,31 @@ Lolite OS is a browser-based desktop and should be run from a complete extracted
 - Expanded wallpaper library
 - Version compatibility warning
 - UI presets and accent colours
-- Scramjet compatibility diagnostics
+- **v1.4 real Scramjet web-app launcher using the upstream MercuryWorkshop app**
 - Original Lolite game pack including Snake, 2048, Breakout, Sliding Puzzle, Maze, Tetris and Connect Four
-- **v1.1 redesigned Files/taskbar polish and pinning**
-- **v1.2 searchable game libraries, faster discovery and improved keyboard game focus**
+- **v1.4 removed broken taskbar pinning**
+- **v1.4 fixed window, taskbar and responsive UI overlap issues**
 - **v1.3 non-emoji application icon system**
 - **v1.3 Paint, Notepad, Calculator, Screen Capture, Clock, Widgets, Battery, Auto Clicker and Terminal apps**
 - **v1.3 Minecraft app using an Eaglercraft browser client launcher**
-- **v1.3 Scramjet runtime status app**
 - **v1.3 Lolite AI placeholder marked Coming Soon in v2**
 - **v1.3 Update Log inside Settings**
 
 ## Update Log
 
+### 1.4 — 2026-09-11 — Lolite OS v1.4: Scramjet & UI Reliability Update
+- Replaced the old Scramjet diagnostic-only panel with a **real launcher/embedded entry point for the upstream MercuryWorkshop Scramjet web app**. If embedding is blocked by the browser, the app provides a direct launch button instead.
+- Removed the broken **Pin to taskbar** feature and cleared old pin state so stale pinned entries do not return.
+- Removed the old taskbar pin context-menu behavior from the active UI.
+- Added stronger window bounds, scroll handling, responsive wrapping and taskbar overflow handling to prevent common UI overlaps.
+- Checked `html games/` on this build; existing HTML/HTM games were left intact and no duplicate game entries were found.
+- Removed the temporary GTA Vice City wrapper rather than shipping a third-party hosted game launcher through Lolite.
+
 ### 1.3 — 2026-09-11 — Lolite OS v1.3: App Suite & Desktop Overhaul
 - Added a large new built-in app suite: **Paint, Notepad, Calculator, Screen Capture, Clock, Widgets, Battery, Auto Clicker and Terminal**.
 - Added a **Lolite AI** app shell that intentionally displays **Coming soon in v2** instead of pretending to have AI functionality.
-- Added a **Minecraft** app that launches an Eaglercraft browser client. Eaglercraft is a separate browser-based Minecraft project; Lolite does not copy its third-party client source into this repository. citeturn0search0turn0search5
-- Added a **Scramjet** app/status panel tied to Lolite's existing runtime diagnostics. The upstream Scramjet project currently uses controller, service-worker and proxy-transport pieces, so Lolite reports the real runtime state rather than pretending a full proxy is bundled. citeturn0search12turn0search15
+- Added a **Minecraft** app that launches an Eaglercraft browser client. Eaglercraft is a separate browser-based Minecraft project; Lolite does not copy its third-party client source into this repository.
+- Added a **Scramjet** app/status panel tied to Lolite's runtime diagnostics.
 - Replaced the desktop's emoji application icons with lightweight CSS-generated application glyphs.
 - Reworked pinned taskbar app icons to use the same non-emoji icon system.
 - Added an **Update Log** tab directly inside Settings.
@@ -106,10 +113,10 @@ Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS UI, code, branding and 
 
 Third-party projects, games, libraries, names and assets remain the property of their respective owners and are used according to their applicable licenses. Lolite OS does not claim ownership of third-party trademarks or projects.
 
-The Scramjet integration is kept as a compatibility/runtime layer rather than copying the upstream project into this repository. Eaglercraft is also treated as a separate third-party browser game/client project.
+The Scramjet integration launches the upstream web application rather than copying its controller, service-worker and transport source into Lolite OS.
 
 ## Roadmap
-- Complete Scramjet controller/transport packaging where licensing and runtime requirements allow
+- More complete Scramjet configuration and local runtime packaging where licensing and browser requirements allow
 - Richer app installation and file associations
 - Better window snapping and multitasking
 - Notifications and calendar
