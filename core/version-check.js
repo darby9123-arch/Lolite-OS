@@ -1,15 +1,9 @@
 /* Warns users when their saved Lolite OS build is older than the current release. */
 (()=>{
-  const CURRENT_VERSION='0.9';
+  const CURRENT_VERSION='1.0';
   const KEY='lolite-os-version';
   const compare=(a,b)=>{const A=String(a).split('.').map(Number),B=String(b).split('.').map(Number);for(let i=0;i<Math.max(A.length,B.length);i++){const x=A[i]||0,y=B[i]||0;if(x!==y)return x-y}return 0};
-  const show=()=>{
-    const old=document.getElementById('lolite-update-warning');
-    if(old)old.remove();
-    const el=document.createElement('div');el.id='lolite-update-warning';el.innerHTML=`<div class="update-warning-card"><div class="update-warning-icon">↗</div><div class="update-warning-copy"><strong>A newer version of Lolite OS is available</strong><span>You're using an older version. Download the latest version or some features may not work properly.</span><small>Latest version: ${CURRENT_VERSION}</small></div><button id="lolite-update-dismiss">Later</button></div>`;
-    document.body.appendChild(el);
-    document.getElementById('lolite-update-dismiss')?.addEventListener('click',()=>el.remove());
-  };
+  const show=()=>{const old=document.getElementById('lolite-update-warning');if(old)old.remove();const el=document.createElement('div');el.id='lolite-update-warning';el.innerHTML=`<div class="update-warning-card"><div class="update-warning-icon">↗</div><div class="update-warning-copy"><strong>A newer version of Lolite OS is available</strong><span>You're using an older version. Download the latest version or some features may not work properly.</span><small>Latest version: ${CURRENT_VERSION}</small></div><button id="lolite-update-dismiss">Later</button></div>`;document.body.appendChild(el);document.getElementById('lolite-update-dismiss')?.addEventListener('click',()=>el.remove())};
   const run=()=>{const saved=localStorage.getItem(KEY);if(saved&&compare(saved,CURRENT_VERSION)<0)show();localStorage.setItem(KEY,CURRENT_VERSION)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
   window.LoliteVersion={current:CURRENT_VERSION,check:run};
