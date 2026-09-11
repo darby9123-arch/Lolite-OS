@@ -30,8 +30,32 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Reduce Motion option
 - Expanded wallpaper library with categories and persistent selection
 - Version compatibility warning for older Lolite OS builds
+- **v1 UI presets**: Windows, Aurora, Classic and Minimal
+- **v1 accent colours** with persistent selection
+- **v1 advanced Settings tabs** for Appearance, Behavior, Browser and System
+- **v1 taskbar position, clock format, compact mode and startup preferences**
+- **v1 Scramjet compatibility diagnostics** that detect whether the required browser runtime pieces are actually bundled
+- **v1 HTML game pack additions**: original Lolite Snake, 2048 and Breakout games
 
 ## Update Log
+
+### 1.0 — 2026-09-11 — Lolite OS v1: Major Edition
+- Major release rather than a normal 0.x feature update.
+- Added a dedicated `core/v1.js` feature layer so the new customization system stays separate from the main app.
+- Added four selectable UI presets: **Windows**, **Aurora**, **Classic** and **Minimal**.
+- Added six selectable accent colours with persistent localStorage settings.
+- Added deeper Settings navigation for Appearance, Behavior, Browser and System.
+- Added taskbar position switching between bottom and top.
+- Added 12-hour / 24-hour clock preference storage.
+- Added Compact UI and Smooth Animations controls.
+- Added startup preference for opening Home automatically.
+- Kept Experimental Liquid Glass available while allowing the user to disable it independently.
+- Added a dedicated `core/scramjet.js` diagnostic layer.
+- Checked the current MercuryWorkshop Scramjet architecture before integration. The upstream project currently requires more than a static HTML page: its controller uses a service worker and proxy-transport infrastructure, so Lolite v1 **does not fake a full proxy**. Instead, the Browser Settings page reports whether the required runtime pieces are actually present. This makes the integration honest and gives the architecture a clean place to wire the real controller/transport when the required server/runtime assets are bundled.
+- Added three original HTML games inspired by the kinds of games found in the MIT-licensed Shrimpy Game Box: **Lolite Snake**, **Lolite 2048** and **Lolite Breakout**. They are original Lolite implementations rather than copied source/assets.
+- Checked the `html games/` folder on this build. The existing games plus the three new Lolite Pack games are automatically discovered by Game Store; no duplicate filenames were found, so nothing was deleted.
+- Bumped the compatibility checker from **0.9** to **1.0** so older saved Lolite builds can receive the update warning.
+- Expanded the styling system with shared UI-radius, accent, compact and animation variables.
 
 ### 0.9 — 2026-09-11 — Version Compatibility Warning
 - Added a version checker that tracks the Lolite OS build used by the browser.
@@ -113,9 +137,12 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Fixed the Nibbles game launch/runtime issue.
 
 ## Roadmap
-The architecture is intentionally split into small files so standalone playable HTML games, persistent Files, ZIP extraction, wallpaper packs, additional apps, and more simulation systems can be added without turning Lolite OS into one giant HTML file.
+Lolite OS now has a v1 foundation with modular settings, game discovery and browser-engine diagnostics. Future major work can focus on a fully bundled Scramjet controller/transport runtime, richer app installation, improved window management, notifications/calendar, and a more capable AI-first browser.
 
-Planned systems include a richer wallpaper library, real app installation workflow, more standalone games, improved window management, notifications/calendar, and a more capable AI-first browser.
+## External project note
+The v1 Scramjet investigation referenced the public MercuryWorkshop Scramjet project. Scramjet is licensed under AGPL-3.0-only upstream, so Lolite does not copy its source into this repository. The current v1 integration is a diagnostic/adapter layer until the complete runtime and proxy transport can be packaged correctly.
+
+The HTML game-pack search also used the public Shrimpy Game Box as inspiration. Its README describes the collection as MIT-licensed; Lolite v1 uses original implementations instead of copying its game source or assets.
 
 ## Copyright note
 Game titles that reference existing franchises are catalog entries for original implementations or generic mechanics; copyrighted assets/code are not bundled.
