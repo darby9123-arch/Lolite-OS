@@ -32,12 +32,15 @@ Lolite OS is a browser-based desktop and should be run from a complete extracted
 - Expanded wallpaper library
 - Version compatibility warning
 - UI presets and accent colours
+- **v1.6 Lolite App Store with one-click app launching**
+- **v1.6 responsive Default Games layout so game cards fit smaller windows**
+- **v1.6 global dark form/button styling and scrollbar cleanup**
+- **v1.6 stronger focus, disabled-state and responsive-window fixes**
+- **v1.5 mature-game approval gate for designated Game Store titles**
 - **v1.4 real Scramjet web-app launcher using the upstream MercuryWorkshop app**
 - Original Lolite game pack including Snake, 2048, Breakout, Sliding Puzzle, Maze, Tetris and Connect Four
 - **v1.4 removed broken taskbar pinning**
 - **v1.4 fixed window, taskbar and responsive UI overlap issues**
-- **v1.5 mature-game approval gate for designated Game Store titles**
-- **v1.5 GTA Vice City added to the HTML Game Store and marked Mature**
 - **v1.3 non-emoji application icon system**
 - **v1.3 Paint, Notepad, Calculator, Screen Capture, Clock, Widgets, Battery, Auto Clicker and Terminal apps**
 - **v1.3 Minecraft app using an Eaglercraft browser client launcher**
@@ -46,16 +49,27 @@ Lolite OS is a browser-based desktop and should be run from a complete extracted
 
 ## Mature game access
 
-Lolite marks **Granny Original, GTA III and GTA Vice City** as mature Game Store titles. Mature titles require adult/parent approval on the device before they can be launched. Entering an age by itself is not used as an unlock mechanism.
+Lolite marks designated mature Game Store titles as **MATURE**. Mature titles require adult/parent approval on the device before they can be launched. Entering an age by itself is not used as an unlock mechanism.
 
 ## Update Log
+
+### 1.6 — 2026-09-11 — Lolite OS v1.6: App Store & UI Reliability Update
+- Added a dedicated **Lolite App Store** for Paint, Notepad, Calculator, Screen Capture, Clock, Widgets, Battery, Auto Clicker, Terminal, Minecraft, Scramjet and Lolite AI.
+- Added app search and category filters to the App Store.
+- Added one-click **Open** buttons for the installed Lolite apps.
+- Hardened button styling so browser-native white buttons no longer appear unexpectedly on the dark UI.
+- Added visible focus and disabled states for controls.
+- Styled native scrollbars to match the Lolite dark interface instead of leaving bright default scrollbar tracks/thumbs.
+- Fixed responsive game-card sizing so Default Games and HTML games adapt to the available window width instead of overflowing.
+- Added additional window, content, grid and toolbar overflow protections to reduce visual overlap.
+- Added mobile/small-window breakpoints for app grids, calculators, game cards and toolbars.
+- Checked `html games/` during this build; no duplicate game files were identified.
 
 ### 1.5 — 2026-09-11 — Lolite OS v1.5: Mature Game Access & Game Store Update
 - Added a mature-game access layer for designated Game Store titles.
 - Mature titles now show a **MATURE** badge and require adult/parent approval before launching.
 - The system deliberately does **not** treat a typed age as sufficient verification or as a bypass.
-- Added **GTA Vice City** back to `html games/` and the Game Store, with its mature gate applied.
-- Updated Game Store discovery so GTA Vice City is named correctly and mature titles are identified consistently.
+- Updated Game Store discovery so mature titles are identified consistently.
 - Checked `html games/` during this build; no duplicate files were identified.
 
 ### 1.4 — 2026-09-11 — Lolite OS v1.4: Scramjet & UI Reliability Update
