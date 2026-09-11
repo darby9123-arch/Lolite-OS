@@ -21,3 +21,41 @@ function aiSearch(){const q=$('#q')?.value.trim();if(!q)return;$('#results').inn
 function toggleGlass(v){document.documentElement.classList.toggle('glass',v);localStorage.glass=v}function toggleReduce(v){document.documentElement.classList.toggle('reduce',v);localStorage.reduce=v}function setWallpaper(w){$('#wallpaper')?.style.setProperty('background',w==='space'?'radial-gradient(circle at 70% 20%,#253d78,#080611 65%)':w==='sunset'?'radial-gradient(circle at 50% 0%,#7b3d75,#12091f 65%)':'radial-gradient(circle at 20% 15%,#3b1a72,#17102e 32%,#080611 75%)');localStorage.wallpaper=w}function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;$('#toast').append(d);setTimeout(()=>d.remove(),2400)}
 $('#startBtn').onclick=()=>{$('#start').classList.toggle('hidden');$('#start').innerHTML='<div class="start-head"><div class="boot-logo">L</div><div><b>lolite OS</b><div class="muted">Your desktop, upgraded.</div></div></div><div class="start-list">'+[['⌂','Home','home'],['🎮','Games','games'],['📁','Files','files'],['🌐','Browser','browser'],['⚙','Settings','settings']].map(x=>`<button onclick="openApp('${x[2]}','${x[1]}');$('#start').classList.add('hidden')">${x[0]} &nbsp; ${x[1]}</button>`).join('')+'</div>'};
 $('#searchBtn').onclick=()=>{$('#searchPanel').classList.toggle('hidden');$('#searchPanel').innerHTML='<div class="searchbox"><input autofocus placeholder="Search apps, files and settings…"></div><div class="muted" style="padding:12px">Search across Lolite OS.</div>'};$('#settingsBtn').onclick=()=>openApp('settings','Settings');setInterval(()=>{$('#clock').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+'  '+new Date().toLocaleDateString([], {day:'numeric',month:'short'})},1000);
+
+// World Sandbox v2: lightweight real-time cellular simulation with terrain, water flow, weather and people.
+const worldSim={grid:[],w:70,h:32,tool:'water',running:true,tick:null,weather:'clear',people:0};
+const worldColors={water:'#2878d8',land:'#78a84b',forest:'#226b3c',desert:'#d6ae59',snow:'#e9f3ff',people:'#ffb15c',mountain:'#66556f',lava:'#e85b32',village:'#b88755'};
+const loliteBasePage=page;
+page=function(id){
+  if(id!=='world')return loliteBasePage(id);
+  setTimeout(initWorldSandbox,0);
+  return `<div class="world-head"><div><div class="muted">SIMULATION MODE</div><h1>🌎 WORLD SANDBOX</h1><p>The newest and most advanced game on Lolite OS.</p></div><div class="world-status" id="worldStatus">● LIVE</div></div><div class="world-tools">${[['water','🌊 Water'],['land','🏝️ Land'],['forest','🌲 Forest'],['desert','🏜️ Desert'],['snow','❄️ Snow'],['mountain','⛰️ Mountain'],['lava','🌋 Volcano'],['people','🧑 People'],['village','🏘️ Village']].map(x=>`<button class="soft world-tool" data-tool="${x[0]}" onclick="worldTool('${x[0]}')">${x[1]}</button>`).join('')}<button class="soft" onclick="worldClear()">🧹 Clear</button><button class="soft" onclick="worldRain()">🌧️ Rain</button></div><canvas id="worldCanvas" class="gamecanvas" width="700" height="320"></canvas><div class="world-info"><span id="worldWeather">☀️ Clear weather</span><span id="worldPeople">🧑 People: 0</span><span>🖱️ Paint the world · ⏯️ Simulation runs live</span></div>`;
+};
+function initWorldSandbox(){
+  const c=$('#worldCanvas');if(!c)return;
+  const ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;
+  if(worldSim.tick)clearInterval(worldSim.tick);
+  worldSim.grid=Array.from({length:worldSim.h},(_,y)=>Array.from({length:worldSim.w},(_,x)=>y>worldSim.h-7?'land':y>worldSim.h-10?'forest':'water'));
+  // Seed islands and terrain so the sandbox starts as a world rather than a blank canvas.
+  for(let y=0;y<worldSim.h;y++)for(let x=0;x<worldSim.w;x++){const island=Math.sin(x*.18)+Math.cos(y*.31)+Math.sin((x+y)*.09);if(y>12&&island>.15)worldSim.grid[y][x]=y<18?'forest':'land';if(y<7&&Math.random()<.035)worldSim.grid[y][x]='snow';}
+  worldSim.people=0;worldSim.weather='clear';worldSim.tool='water';
+  const paint=(ev)=>{const r=c.getBoundingClientRect();const x=Math.floor((ev.clientX-r.left)/r.width*worldSim.w),y=Math.floor((ev.clientY-r.top)/r.height*worldSim.h);if(x<0||y<0||x>=worldSim.w||y>=worldSim.h)return;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<worldSim.w&&yy<worldSim.h)worldSim.grid[yy][xx]=worldSim.tool;}drawWorld();};
+  c.onpointerdown=e=>{c.setPointerCapture?.(e.pointerId);paint(e)};c.onpointermove=e=>{if(e.buttons)paint(e)};
+  drawWorld();worldSim.tick=setInterval(stepWorld,220);
+}
+function drawWorld(){const c=$('#worldCanvas');if(!c||!worldSim.grid.length)return;const ctx=c.getContext('2d'),cw=c.width/worldSim.w,ch=c.height/worldSim.h;ctx.clearRect(0,0,c.width,c.height);for(let y=0;y<worldSim.h;y++)for(let x=0;x<worldSim.w;x++){const t=worldSim.grid[y][x];ctx.fillStyle=worldColors[t]||'#111';ctx.fillRect(x*cw,y*ch,Math.ceil(cw),Math.ceil(ch));if(t==='people'){ctx.fillStyle='#fff';ctx.fillRect(x*cw+cw*.35,y*ch+ch*.15,cw*.3,ch*.22);ctx.fillRect(x*cw+cw*.42,y*ch+ch*.37,cw*.16,ch*.35)}}$('#worldWeather')&&($('#worldWeather').textContent=(worldSim.weather==='rain'?'🌧️ Rainy weather':worldSim.weather==='storm'?'⛈️ Storm':'☀️ Clear weather'));$('#worldPeople')&&($('#worldPeople').textContent='🧑 People: '+worldSim.people);}
+function stepWorld(){if(!worldSim.grid.length)return;const g=worldSim.grid;
+  // Water seeks lower cells and can slowly turn dry land into fertile forest.
+  for(let y=worldSim.h-2;y>=0;y--)for(let x=0;x<worldSim.w;x++)if(g[y][x]==='water'){const choices=[];if(g[y+1][x]==='land'||g[y+1][x]==='desert')choices.push([y+1,x]);if(x&&g[y][x-1]==='land')choices.push([y,x-1]);if(x<worldSim.w-1&&g[y][x+1]==='land')choices.push([y,x+1]);if(choices.length&&Math.random()<.24){const [ny,nx]=choices[Math.floor(Math.random()*choices.length)];g[ny][nx]='water';}}
+  if(Math.random()<.07){const x=Math.floor(Math.random()*worldSim.w),y=Math.floor(Math.random()*worldSim.h);if(g[y][x]==='land')g[y][x]='forest';}
+  // People wander across land/forest and villages create new people over time.
+  let people=0;for(let y=0;y<worldSim.h;y++)for(let x=0;x<worldSim.w;x++)if(g[y][x]==='people')people++;
+  worldSim.people=people;
+  if(people&&Math.random()<.35){for(let tries=0;tries<12;tries++){const x=Math.floor(Math.random()*worldSim.w),y=Math.floor(Math.random()*worldSim.h);if(g[y][x]==='land'||g[y][x]==='forest'){g[y][x]='people';break;}}}
+  if(worldSim.weather==='rain'&&Math.random()<.08){for(let i=0;i<5;i++){const x=Math.floor(Math.random()*worldSim.w),y=Math.floor(Math.random()*worldSim.h);if(g[y][x]==='desert')g[y][x]='land';}}
+  if(worldSim.weather==='storm'&&Math.random()<.05){const x=Math.floor(Math.random()*worldSim.w),y=Math.floor(Math.random()*worldSim.h);if(g[y][x]==='forest')g[y][x]='land';}
+  drawWorld();
+}
+function worldTool(t){worldSim.tool=t;document.querySelectorAll('.world-tool').forEach(b=>b.classList.toggle('active',b.dataset.tool===t));toast('World tool: '+t);}
+function worldClear(){worldSim.grid=Array.from({length:worldSim.h},()=>Array(worldSim.w).fill('water'));worldSim.people=0;drawWorld();toast('World cleared')}
+function worldRain(){worldSim.weather=worldSim.weather==='clear'?'rain':worldSim.weather==='rain'?'storm':'clear';toast('Weather changed to '+worldSim.weather);drawWorld()}
