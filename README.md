@@ -30,8 +30,10 @@ Lolite OS is a browser-based desktop and should be run from a complete extracted
 - Experimental Liquid Glass (OFF by default)
 - Reduce Motion option
 - Expanded wallpaper library
+- Custom local wallpaper selection with persistence
 - Version compatibility warning
 - UI presets and accent colours
+- **v1.8 five-column desktop icon grid and custom wallpaper app**
 - **v1.7 clean X-only window controls and custom window resizing**
 - **v1.6 Lolite App Store with one-click app launching**
 - **v1.6 responsive Default Games layout so game cards fit smaller windows**
@@ -53,6 +55,15 @@ Lolite OS is a browser-based desktop and should be run from a complete extracted
 Lolite marks designated mature Game Store titles as **MATURE**. Mature titles require adult/parent approval on the device before they can be launched. Entering an age by itself is not used as an unlock mechanism.
 
 ## Update Log
+
+### 1.8 — 2026-09-11 — Lolite OS v1.8: Desktop Grid & Custom Wallpaper Update
+- Changed desktop application placement to a **five-column grid**, so icons fill rows instead of stacking in a single column.
+- Added a **Custom Wallpaper** desktop app.
+- Added local image selection using the browser's file picker.
+- Added wallpaper preview and a **Remove wallpaper** control.
+- Custom wallpapers are saved locally in the browser and restored when Lolite starts again. Browser-local persistence is a standard approach for client-side wallpaper customization. citeturn0search0turn0search4
+- Added a dedicated Wallpaper desktop icon for quick access.
+- Checked `html games/` during this build; the existing HTML/HTM files were reviewed and no duplicate game files were identified.
 
 ### 1.7 — 2026-09-11 — Lolite OS v1.7: Window Controls & Resizing Update
 - Removed the three colored window-control dots from app title bars.
