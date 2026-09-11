@@ -2,6 +2,19 @@
 
 A Windows-inspired, Lolite-branded web desktop focused on games, creativity and a lightweight UI.
 
+## Installation guide
+
+Lolite OS is a browser-based desktop and should be run from a complete extracted copy of the repository.
+
+1. **Download the Lolite OS repository/archive.**
+2. **Extract all files** — do not open the ZIP and run only a single file from inside it.
+3. Keep the folder structure intact, especially `core/`, `games/`, `html games/`, `styles.css`, `app.js` and `index.html`.
+4. **Run/open `index.html`** in a modern browser.
+5. If you are using a local development/server setup, serve the extracted folder and open **`index.html`** from that server.
+6. For HTML Game Store games, keep the `html games/` folder beside the main `index.html`; the Game Store discovers `.html` and `.htm` files from that folder.
+
+> **Important:** Extract All is recommended because Lolite loads several JavaScript modules and game folders using relative paths. Running only a loose `index.html` without the rest of the extracted files will make buttons, apps or games appear missing.
+
 ## Current foundation
 - Lolite purple/blue desktop
 - Startup screen and Lolite logo
@@ -38,8 +51,26 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - **v1 original Lolite game pack**: Snake, 2048 and Breakout
 - **v1.1 taskbar pinning**, redesigned application icons, upgraded Liquid Glass and a revamped Files app
 - **v1.1 playable Default Games library** with fixed launch paths and no fake buttons for missing modules
+- **v1.2 searchable Default Games and HTML/HTM Game Store** with local filtering
+- **v1.2 reliable game launch controls** using delegated event handlers instead of fragile inline game-button handlers
+- **v1.2 HTML/HTM keyboard-focus improvements** so launched games can receive keyboard input more reliably
+- **v1.2 lighter Game Store discovery** with short-lived caching and no iframe loading until a game is opened
+- **v1.2 four more original playable games**: Sliding Puzzle, Maze, Tetris and Connect Four
 
 ## Update Log
+
+### 1.2 — 2026-09-11 — Lolite OS v1.2: Game Performance & Reliability Update
+- Added an **Installation Guide** before the Current foundation section explaining Extract All, keeping the folder structure intact and opening `index.html`.
+- Added a searchable **Default Games** library.
+- Added a searchable **HTML/HTM Game Store** with local filtering and game counts.
+- Reworked game controls to use event delegation/data attributes so repeated window rendering does not leave stale inline handlers behind.
+- Improved HTML/HTM game keyboard input by focusing the game iframe after it loads and when the game area is clicked.
+- Reduced Game Store overhead with cached repository discovery instead of repeatedly fetching the GitHub directory during every render.
+- Kept HTML/HTM games unloaded until the user actually presses Play; lazy-loading/deferred embedded content is an important web performance technique. citeturn0search0turn0search2
+- Added original playable **Sliding Puzzle**, **Maze**, **Tetris** and **Connect Four** modules, replacing four more “Coming soon” entries.
+- Bumped the compatibility checker from **1.1** to **1.2**.
+- Checked `html games/` again: `.html` and `.htm` discovery found **9 repository games** and no duplicate filenames to remove.
+- Added a final `core/v12.js` layer so the game/performance changes can stay isolated from the older foundation layers.
 
 ### 1.1 — 2026-09-11 — Lolite OS v1.1: Polish & Reliability Update
 - Added a dedicated `core/v11.js` polish layer instead of making the main app.js even larger.
