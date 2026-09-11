@@ -35,7 +35,7 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - **v1 advanced Settings tabs** for Appearance, Behavior, Browser and System
 - **v1 taskbar position, clock format, compact mode and startup preferences**
 - **v1 Scramjet compatibility diagnostics** that detect whether the required browser runtime pieces are actually bundled
-- **v1 HTML game pack additions**: original Lolite Snake, 2048 and Breakout games
+- **v1 original Lolite game pack**: Snake, 2048 and Breakout
 - **v1.1 taskbar pinning**, redesigned application icons, upgraded Liquid Glass and a revamped Files app
 - **v1.1 playable Default Games library** with fixed launch paths and no fake buttons for missing modules
 
@@ -58,7 +58,7 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Added a full copyright/about section in Settings and expanded the repository copyright note.
 - Clarified that third-party trademarks, game names, assets and libraries remain the property of their respective owners.
 - Updated the compatibility checker from **1.0** to **1.1**.
-- Checked the `html games/` folder during this build. No duplicate HTML game files were found, so no duplicates were deleted.
+- Checked the `html games/` folder during this build and found three duplicate Lolite game wrappers for Snake, Breakout and 2048; those duplicate HTML entries were removed because the same games now have maintained standalone Default Games modules.
 
 ### 1.0 — 2026-09-11 — Lolite OS v1: Major Edition
 - Major release rather than a normal 0.x feature update.
@@ -73,8 +73,8 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Kept Experimental Liquid Glass available while allowing the user to disable it independently.
 - Added a dedicated `core/scramjet.js` diagnostic layer.
 - Checked the current MercuryWorkshop Scramjet architecture before integration. The upstream project currently requires more than a static HTML page: its controller uses a service worker and proxy-transport infrastructure, so Lolite v1 **does not fake a full proxy**. Instead, the Browser Settings page reports whether the required runtime pieces are actually present.
-- Added three original HTML games inspired by the kinds of games found in the MIT-licensed Shrimpy Game Box: **Lolite Snake**, **Lolite 2048** and **Lolite Breakout**. They are original Lolite implementations rather than copied source/assets.
-- Checked the `html games/` folder on this build. No duplicate filenames were found.
+- Added three original games inspired by the kinds of games found in the MIT-licensed Shrimpy Game Box: **Lolite Snake**, **Lolite 2048** and **Lolite Breakout**. They are original Lolite implementations rather than copied source/assets.
+- Checked the `html games/` folder on this build.
 - Bumped the compatibility checker from **0.9** to **1.0**.
 
 ### 0.9 — 2026-09-11 — Version Compatibility Warning
