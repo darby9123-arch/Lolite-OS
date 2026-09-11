@@ -20,8 +20,9 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Pause/resume, clear, rain burst and random-world generation
 - Live simulation statistics
 - AI-first browser/search UI shell
-- Game Library catalog
-- Repository HTML Games section with automatic `.html` and `.htm` folder discovery
+- Separate Default Games app for built-in games
+- Separate Game Store app for repository HTML/HTM games
+- Repository HTML Games section with automatic `.html` and `.htm` discovery
 - Persistent Files system
 - ZIP extraction and ZIP creation
 - Installed game library integration
@@ -30,6 +31,15 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Expanded wallpaper library with categories and persistent selection
 
 ## Update Log
+
+### 0.8 — 2026-09-11 — Default Games & Game Store
+- Split the game experience into two apps: **Default Games** for built-in Lolite games and **Game Store** for repository HTML/HTM games.
+- Added a dedicated `core/game-library.js` module to keep the game-store logic separate from the main desktop code.
+- Added separate desktop and Start menu entries for Default Games and Game Store.
+- Moved repository HTML/HTM game browsing out of the default game library.
+- Game Store automatically discovers both `.html` and `.htm` files and can refresh the repository list.
+- Checked the `html games/` folder on this build and added the newly discovered repository games to the store automatically: Slope 2 Player, Slope, Wheely, Wrestle Bros and Zombie Rush.
+- No exact duplicate filenames were found, so no game files were deleted.
 
 ### 0.7 — 2026-09-11 — HTML/HTM Game Support
 - Updated repository game discovery to recognize both `.html` and `.htm` files.
