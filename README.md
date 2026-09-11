@@ -9,9 +9,16 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Draggable app windows
 - Minimize / maximize / close controls
 - Home dashboard
-- World Sandbox live pixel simulation
-- Terrain, water flow, forests, deserts, snow, mountains, volcano/lava, people and villages
-- Weather states with rain and storms
+- High-resolution World Sandbox with a 240×120 simulation grid
+- Persistent terrain that does not disappear during simulation
+- Water and lava flow simulation
+- Grass, forests and tree spreading
+- People movement and villages
+- Mountains, rocks, deserts, snow and volcanoes
+- Clear, rain and storm weather
+- Brush size and simulation speed controls
+- Pause/resume, clear, rain burst and random-world generation
+- Live simulation statistics
 - AI-first browser/search UI shell
 - Game Library catalog
 - Persistent Files system
@@ -23,15 +30,19 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 
 ## Update Log
 
-### 2026-09-11 — World Sandbox simulation upgrade
-- Reworked World Sandbox from simple random painting into a live grid-based simulation.
-- Added seeded terrain so each session starts as an actual world.
-- Added selectable water, land, forest, desert, snow, mountain, volcano/lava, people and village tools.
-- Added live water spreading and terrain changes.
-- Added weather cycling between clear, rain and storm.
-- Added live simulation status and population display.
-- Added clear-world controls and mouse painting across the simulation grid.
-- Kept the simulation lightweight so it can run inside the Lolite OS window without needing a backend.
+### 2026-09-11 — World Sandbox high-resolution upgrade
+- Replaced the small paint-only sandbox experience with a standalone high-resolution 240×120 pixel simulation.
+- Added persistent terrain generation so land remains in the world instead of disappearing each update.
+- Added flowing water and lava with simple gravity and sideways spreading.
+- Added lava cooling when it contacts water.
+- Added grass, forests and natural tree spreading.
+- Added people that wander across the world and village growth mechanics.
+- Added mountains, rocks, deserts, snow and volcano/lava materials.
+- Added clear, rain and storm weather with rainfall effects.
+- Added brush-size control, simulation speed, pause/resume, clear, random-world and rain controls.
+- Added live population, tree, village, water, lava and tick statistics.
+- Moved the simulation into `games/world-sandbox/index.html` and connected it to the Lolite OS World Sandbox app.
+- Kept the simulation self-contained and lightweight for browser performance.
 
 ### 2026-09-11 — Files & ZIP system
 - Added persistent browser-based file storage using IndexedDB.
@@ -49,7 +60,7 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Fixed the Nibbles game launch/runtime issue.
 
 ## Roadmap
-The architecture is intentionally split into small files so standalone playable HTML games, persistent Files, ZIP extraction, wallpaper packs, richer World Sandbox simulation, and additional apps can be added without turning Lolite OS into one giant HTML file.
+The architecture is intentionally split into small files so standalone playable HTML games, persistent Files, ZIP extraction, wallpaper packs, additional apps, and more simulation systems can be added without turning Lolite OS into one giant HTML file.
 
 Planned systems include a richer wallpaper library, real app installation workflow, more standalone games, improved window management, notifications/calendar, and a more capable AI-first browser.
 
