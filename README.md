@@ -21,6 +21,7 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Live simulation statistics
 - AI-first browser/search UI shell
 - Game Library catalog
+- Repository HTML Games section
 - Persistent Files system
 - ZIP extraction and ZIP creation
 - Installed game library integration
@@ -29,6 +30,15 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Wallpaper switching
 
 ## Update Log
+
+### 2026-09-11 — HTML Games integration
+- Added the uploaded HTML games to the Lolite Game Library.
+- Added a dedicated **HTML Games** section for repository games.
+- Added launch buttons that open each game inside a Lolite OS app window.
+- Added the current HTML game entries: Granny Original, GTA III, Paper.io 2 and Slope Plus.
+- Kept the original files in `html games/` so more games can be added later.
+- Added the integration through `core/integration.js` instead of expanding the main app.js file.
+- Note: these uploaded HTML wrappers load some of their game assets/code from external hosts, so their availability can depend on those hosts.
 
 ### 2026-09-11 — World Sandbox high-resolution upgrade
 - Replaced the small paint-only sandbox experience with a standalone high-resolution 240×120 pixel simulation.
