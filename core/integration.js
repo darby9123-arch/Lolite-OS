@@ -1,4 +1,4 @@
-/* Hooks persistent storage, repository HTML games and polished file UI into the desktop shell. */
+/* Hooks persistent storage, repository HTML/HTM games and polished file UI into the desktop shell. */
 (()=>{
   const style=document.createElement('style');style.textContent=`.files-app{display:flex;flex-direction:column;height:100%;gap:12px}.file-toolbar{display:flex;gap:8px;flex-wrap:wrap}.file-list{display:grid;gap:7px;overflow:auto}.file-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #ffffff0d;background:#ffffff06;border-radius:12px}.file-icon{font-size:21px}.file-name{flex:1;min-width:0}.file-name b,.file-name small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.file-name small{color:var(--muted);font-size:11px;margin-top:2px}.empty{text-align:center;padding:45px 15px;display:grid;gap:7px;place-items:center;border:1px dashed #ffffff18;border-radius:15px}.empty div{font-size:40px}.html-game-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.html-game-card{display:flex;flex-direction:column;gap:8px}.html-game-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.4}.html-game-badge{font-size:11px;color:var(--muted);padding:3px 7px;border:1px solid #ffffff12;border-radius:999px;width:max-content}.html-game-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.html-game-head .muted{font-size:11px}`;document.head.append(style);
   const fallbackGames=[
@@ -11,7 +11,7 @@
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const gameName=file=>{
     const known={clgrannyy:'Granny Original',clgta3:'GTA III',clpaperio:'Paper.io 2',clslopeplus:'Slope Plus'};
-    const key=file.replace(/\.html$/i,'');
+    const key=file.replace(/\.(?:html?|HTML?)$/,'');
     return known[key]||key.replace(/^cl/i,'').replace(/[-_]+/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
   };
   const gameSection=()=>`<div class="card" style="margin-top:18px" id="html-games-section"><div class="html-game-head"><div><h3>🌐 HTML Games</h3><p class="muted">Games discovered from the repository's <b>html games</b> folder.</p></div><button onclick="refreshHTMLGames()">↻ Refresh</button></div><div class="html-game-grid">${repositoryGames.map(g=>`<div class="card html-game-card"><h3>🎮 ${esc(g.name)}</h3><span class="html-game-badge">HTML game</span><p>Launch this game inside a Lolite OS window.</p><button class="primary" onclick="launchHTMLGame('${esc(g.name)}','${esc(g.file)}')">Play</button></div>`).join('')}</div></div>`;
