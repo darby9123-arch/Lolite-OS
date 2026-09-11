@@ -29,8 +29,18 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Experimental Liquid Glass (OFF by default)
 - Reduce Motion option
 - Expanded wallpaper library with categories and persistent selection
+- Version compatibility warning for older Lolite OS builds
 
 ## Update Log
+
+### 0.9 — 2026-09-11 — Version Compatibility Warning
+- Added a version checker that tracks the Lolite OS build used by the browser.
+- Older saved builds are now warned that the latest version should be downloaded because some features may not work properly.
+- Added a clear latest-version number to the warning.
+- Added a **Later** button so the notice can be dismissed.
+- Added a dedicated `core/version-check.js` module instead of mixing version logic into the main app.
+- Added a polished Lolite-styled update warning that works on desktop and smaller screens.
+- Checked the `html games/` folder during this build; no duplicate games were found to remove.
 
 ### 0.8 — 2026-09-11 — Default Games & Game Store
 - Split the game experience into two apps: **Default Games** for built-in Lolite games and **Game Store** for repository HTML/HTM games.
