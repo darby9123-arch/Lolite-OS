@@ -27,9 +27,17 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Installed game library integration
 - Experimental Liquid Glass (OFF by default)
 - Reduce Motion option
-- Wallpaper switching
+- Expanded wallpaper library with categories and persistent selection
 
 ## Update Log
+
+### 2026-09-11 — Wallpaper Library
+- Added a dedicated `core/wallpapers.js` module so the wallpaper system stays separate from the main desktop code.
+- Added wallpaper categories: Lolite, Abstract, Nature, Space, Pixel, Gaming, Dark, Minimal, Retro and World Sandbox.
+- Added multiple lightweight CSS-only wallpapers in each category.
+- Added wallpaper previews and category switching inside Settings.
+- Added persistent wallpaper selection with localStorage.
+- Kept wallpapers image-free and lightweight for fast loading.
 
 ### 2026-09-11 — HTML Games auto-discovery
 - Upgraded the HTML Games section to discover `.html` files directly from the repository's `html games/` folder.
