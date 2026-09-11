@@ -36,8 +36,29 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - **v1 taskbar position, clock format, compact mode and startup preferences**
 - **v1 Scramjet compatibility diagnostics** that detect whether the required browser runtime pieces are actually bundled
 - **v1 HTML game pack additions**: original Lolite Snake, 2048 and Breakout games
+- **v1.1 taskbar pinning**, redesigned application icons, upgraded Liquid Glass and a revamped Files app
+- **v1.1 playable Default Games library** with fixed launch paths and no fake buttons for missing modules
 
 ## Update Log
+
+### 1.1 — 2026-09-11 — Lolite OS v1.1: Polish & Reliability Update
+- Added a dedicated `core/v11.js` polish layer instead of making the main app.js even larger.
+- Added redesigned desktop application icons with stronger shapes, depth, hover feedback and clearer icon hierarchy.
+- Added **right-click application menus** on desktop apps and taskbar app buttons.
+- Added **Pin to taskbar / Unpin from taskbar**, with persistent pinned apps stored locally.
+- Added a dedicated Settings section for managing pinned apps.
+- Upgraded Liquid Glass with stronger translucency, saturation, layered highlights, inset lighting, depth and glass-like surfaces while keeping it OFF by default.
+- Revamped the Files app with a sidebar, search, item counts, card/grid view, file-type filters, better empty states and cleaner ZIP/file controls.
+- Kept the existing IndexedDB storage and ZIP engine underneath the new Files UI.
+- Reworked Default Games so only games with actual playable modules are advertised as playable.
+- Added polished original **Snake**, **Breakout** and **2048** standalone games to the Default Games library.
+- Wired the existing Minefield, Tic-tac-toe, Memory Puzzle, Simon and Nibbles modules through the same launch path.
+- Removed the old misleading “Coming soon” launch behavior from the Default Games view.
+- Updated app/game icons and cards for a cleaner, more consistent visual language.
+- Added a full copyright/about section in Settings and expanded the repository copyright note.
+- Clarified that third-party trademarks, game names, assets and libraries remain the property of their respective owners.
+- Updated the compatibility checker from **1.0** to **1.1**.
+- Checked the `html games/` folder during this build. No duplicate HTML game files were found, so no duplicates were deleted.
 
 ### 1.0 — 2026-09-11 — Lolite OS v1: Major Edition
 - Major release rather than a normal 0.x feature update.
@@ -51,98 +72,55 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Added startup preference for opening Home automatically.
 - Kept Experimental Liquid Glass available while allowing the user to disable it independently.
 - Added a dedicated `core/scramjet.js` diagnostic layer.
-- Checked the current MercuryWorkshop Scramjet architecture before integration. The upstream project currently requires more than a static HTML page: its controller uses a service worker and proxy-transport infrastructure, so Lolite v1 **does not fake a full proxy**. Instead, the Browser Settings page reports whether the required runtime pieces are actually present. This makes the integration honest and gives the architecture a clean place to wire the real controller/transport when the required server/runtime assets are bundled.
+- Checked the current MercuryWorkshop Scramjet architecture before integration. The upstream project currently requires more than a static HTML page: its controller uses a service worker and proxy-transport infrastructure, so Lolite v1 **does not fake a full proxy**. Instead, the Browser Settings page reports whether the required runtime pieces are actually present.
 - Added three original HTML games inspired by the kinds of games found in the MIT-licensed Shrimpy Game Box: **Lolite Snake**, **Lolite 2048** and **Lolite Breakout**. They are original Lolite implementations rather than copied source/assets.
-- Checked the `html games/` folder on this build. The existing games plus the three new Lolite Pack games are automatically discovered by Game Store; no duplicate filenames were found, so nothing was deleted.
-- Bumped the compatibility checker from **0.9** to **1.0** so older saved Lolite builds can receive the update warning.
-- Expanded the styling system with shared UI-radius, accent, compact and animation variables.
+- Checked the `html games/` folder on this build. No duplicate filenames were found.
+- Bumped the compatibility checker from **0.9** to **1.0**.
 
 ### 0.9 — 2026-09-11 — Version Compatibility Warning
 - Added a version checker that tracks the Lolite OS build used by the browser.
-- Older saved builds are now warned that the latest version should be downloaded because some features may not work properly.
+- Older saved builds are warned that the latest version should be downloaded because some features may not work properly.
 - Added a clear latest-version number to the warning.
 - Added a **Later** button so the notice can be dismissed.
-- Added a dedicated `core/version-check.js` module instead of mixing version logic into the main app.
-- Added a polished Lolite-styled update warning that works on desktop and smaller screens.
-- Checked the `html games/` folder during this build; no duplicate games were found to remove.
+- Added a dedicated `core/version-check.js` module.
 
 ### 0.8 — 2026-09-11 — Default Games & Game Store
 - Split the game experience into two apps: **Default Games** for built-in Lolite games and **Game Store** for repository HTML/HTM games.
-- Added a dedicated `core/game-library.js` module to keep the game-store logic separate from the main desktop code.
-- Added separate desktop and Start menu entries for Default Games and Game Store.
-- Moved repository HTML/HTM game browsing out of the default game library.
-- Game Store automatically discovers both `.html` and `.htm` files and can refresh the repository list.
-- Checked the `html games/` folder on this build and added the newly discovered repository games to the store automatically: Slope 2 Player, Slope, Wheely, Wrestle Bros and Zombie Rush.
-- No exact duplicate filenames were found, so no game files were deleted.
+- Added automatic `.html` and `.htm` discovery.
+- Checked the `html games/` folder and added Slope 2 Player, Slope, Wheely, Wrestle Bros and Zombie Rush automatically.
 
 ### 0.7 — 2026-09-11 — HTML/HTM Game Support
 - Updated repository game discovery to recognize both `.html` and `.htm` files.
-- Kept automatic discovery and the Refresh action working for both extensions.
-- Updated filename-to-game-name handling so either extension is removed when generating display names.
-- Kept repository games launching inside Lolite OS windows.
-- Checked the `html games/` folder as part of this update; no duplicate game entries were found to remove.
 
 ### 0.6 — 2026-09-11 — Wallpaper Library
-- Added a dedicated `core/wallpapers.js` module so the wallpaper system stays separate from the main desktop code.
-- Added wallpaper categories: Lolite, Abstract, Nature, Space, Pixel, Gaming, Dark, Minimal, Retro and World Sandbox.
-- Added multiple lightweight CSS-only wallpapers in each category.
-- Added wallpaper previews and category switching inside Settings.
-- Added persistent wallpaper selection with localStorage.
-- Kept wallpapers image-free and lightweight for fast loading.
+- Added wallpaper categories and persistent wallpaper selection.
 
 ### 0.5 — 2026-09-11 — HTML Games auto-discovery
-- Upgraded the HTML Games section to discover `.html` files directly from the repository's `html games/` folder.
-- Added a Refresh action so newly added repository HTML games can appear without manually editing the game list.
-- Kept the existing built-in game list as a fallback if GitHub discovery is unavailable.
-- Added safer display-name handling for discovered filenames.
-- Kept the repository launch flow inside Lolite OS windows.
-- Updated `core/integration.js` only, keeping the main app.js architecture clean.
+- Added automatic repository HTML game discovery and Refresh support.
 
 ### 0.4 — 2026-09-11 — HTML Games integration
 - Added the uploaded HTML games to the Lolite Game Library.
-- Added a dedicated **HTML Games** section for repository games.
-- Added launch buttons that open each game inside a Lolite OS app window.
-- Added the current HTML game entries: Granny Original, GTA III, Paper.io 2 and Slope Plus.
-- Kept the original files in `html games/` so more games can be added later.
-- Added the integration through `core/integration.js` instead of expanding the main app.js file.
-- Note: these uploaded HTML wrappers load some of their game assets/code from external hosts, so their availability can depend on those hosts.
 
 ### 0.3 — 2026-09-11 — World Sandbox high-resolution upgrade
-- Replaced the small paint-only sandbox experience with a standalone high-resolution 240×120 pixel simulation.
-- Added persistent terrain generation so land remains in the world instead of disappearing each update.
-- Added flowing water and lava with simple gravity and sideways spreading.
-- Added lava cooling when it contacts water.
-- Added grass, forests and natural tree spreading.
-- Added people that wander across the world and village growth mechanics.
-- Added mountains, rocks, deserts, snow and volcano/lava materials.
-- Added clear, rain and storm weather with rainfall effects.
-- Added brush-size control, simulation speed, pause/resume, clear, random-world and rain controls.
-- Added live population, tree, village, water, lava and tick statistics.
-- Moved the simulation into `games/world-sandbox/index.html` and connected it to the Lolite OS World Sandbox app.
-- Kept the simulation self-contained and lightweight for browser performance.
+- Added the 240×120 simulation, terrain, water, lava, weather, people, villages and live statistics.
 
 ### 0.2 — 2026-09-11 — Files & ZIP system
-- Added persistent browser-based file storage using IndexedDB.
-- Added file uploads and folder creation.
-- Added ZIP extraction directly inside Lolite OS.
-- Added ZIP creation for stored files.
-- Added automatic detection of games containing `index.html`.
-- Added installed-game persistence and launching from the Game Library.
-- Split the Files functionality into `core/files.js` and integration logic into `core/integration.js`.
-- Improved the Files app UI with a dedicated toolbar, file list, status text, and empty state.
+- Added persistent IndexedDB files, ZIP extraction/creation and installed-game detection.
 
 ### 0.1 — 2026-09-11 — Standalone game expansion
-- Added standalone playable HTML games to the repository.
-- Expanded the Game Library architecture so games can be launched as separate modules.
-- Fixed the Nibbles game launch/runtime issue.
-
-## Roadmap
-Lolite OS now has a v1 foundation with modular settings, game discovery and browser-engine diagnostics. Future major work can focus on a fully bundled Scramjet controller/transport runtime, richer app installation, improved window management, notifications/calendar, and a more capable AI-first browser.
-
-## External project note
-The v1 Scramjet investigation referenced the public MercuryWorkshop Scramjet project. Scramjet is licensed under AGPL-3.0-only upstream, so Lolite does not copy its source into this repository. The current v1 integration is a diagnostic/adapter layer until the complete runtime and proxy transport can be packaged correctly.
-
-The HTML game-pack search also used the public Shrimpy Game Box as inspiration. Its README describes the collection as MIT-licensed; Lolite v1 uses original implementations instead of copying its game source or assets.
+- Added standalone playable HTML games and expanded the Game Library architecture.
 
 ## Copyright note
-Game titles that reference existing franchises are catalog entries for original implementations or generic mechanics; copyrighted assets/code are not bundled.
+Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS UI, code, branding and original game implementations are protected by applicable copyright law unless a file explicitly states otherwise.
+
+Third-party game names, franchises, trademarks, libraries, assets and other external works remain the property of their respective owners. Lolite OS does not claim ownership of third-party names or assets merely because they appear in a catalog or integration layer.
+
+Open-source components are used according to their applicable licenses. License-specific notices should be kept with the relevant component when required.
+
+## External project note
+The v1 Scramjet investigation referenced the public MercuryWorkshop Scramjet project. Its upstream controller package is AGPL-3.0-only, so Lolite does not copy Scramjet source into this repository. The current integration is a diagnostic/adapter layer until a complete runtime can be packaged correctly.
+
+The HTML game-pack search also used the public Shrimpy Game Box as inspiration. Its README describes that collection as MIT-licensed; Lolite's games are original implementations rather than copied source or assets.
+
+## Roadmap
+Future major work can focus on a fully bundled Scramjet controller/transport runtime, richer app installation, improved window management, notifications/calendar, more default games, and a more capable AI-first browser.
