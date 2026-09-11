@@ -21,6 +21,7 @@ Lolite OS is a browser-based desktop and should be run from a complete extracted
 - Start menu, taskbar, search and clock
 - Draggable app windows
 - Minimize / maximize / close controls
+- **v1.9 window snapping and multitasking**
 - Home dashboard
 - High-resolution World Sandbox with a 240×120 simulation grid
 - Persistent terrain, water/lava, weather, villages and biome simulation
@@ -56,12 +57,21 @@ Lolite marks designated mature Game Store titles as **MATURE**. Mature titles re
 
 ## Update Log
 
+### 1.9 — 2026-09-11 — Lolite OS v1.9: Window Snapping & Multitasking Update
+- Added desktop window snapping when a window is dragged to the left, right or top edge of the screen.
+- Added a visual snap preview while dragging a window toward a snap zone.
+- Added double-click title-bar maximize/restore behavior for faster multitasking.
+- Snapped windows stay within the desktop viewport and update when the browser is resized.
+- Resize handles are temporarily hidden on snapped windows so snapping and resizing do not conflict.
+- Preserved the existing draggable window and X-only close behavior.
+- Checked `html games/` during this build; the existing HTML/HTM files were reviewed and no duplicate game files were identified.
+
 ### 1.8 — 2026-09-11 — Lolite OS v1.8: Desktop Grid & Custom Wallpaper Update
 - Changed desktop application placement to a **five-column grid**, so icons fill rows instead of stacking in a single column.
 - Added a **Custom Wallpaper** desktop app.
 - Added local image selection using the browser's file picker.
 - Added wallpaper preview and a **Remove wallpaper** control.
-- Custom wallpapers are saved locally in the browser and restored when Lolite starts again. Browser-local persistence is a standard approach for client-side wallpaper customization. citeturn0search0turn0search4
+- Custom wallpapers are saved locally in the browser and restored when Lolite starts again.
 - Added a dedicated Wallpaper desktop icon for quick access.
 - Checked `html games/` during this build; the existing HTML/HTM files were reviewed and no duplicate game files were identified.
 
@@ -160,7 +170,6 @@ The Scramjet integration launches the upstream web application rather than copyi
 ## Roadmap
 - More complete Scramjet configuration and local runtime packaging where licensing and browser requirements allow
 - Richer app installation and file associations
-- Better window snapping and multitasking
 - Notifications and calendar
 - More original default games
 - More capable AI-first browser and Lolite AI in v2
