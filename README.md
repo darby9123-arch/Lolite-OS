@@ -36,13 +36,27 @@ Lolite OS is a browser-based desktop and should be run from a complete extracted
 - Original Lolite game pack including Snake, 2048, Breakout, Sliding Puzzle, Maze, Tetris and Connect Four
 - **v1.4 removed broken taskbar pinning**
 - **v1.4 fixed window, taskbar and responsive UI overlap issues**
+- **v1.5 mature-game approval gate for designated Game Store titles**
+- **v1.5 GTA Vice City added to the HTML Game Store and marked Mature**
 - **v1.3 non-emoji application icon system**
 - **v1.3 Paint, Notepad, Calculator, Screen Capture, Clock, Widgets, Battery, Auto Clicker and Terminal apps**
 - **v1.3 Minecraft app using an Eaglercraft browser client launcher**
 - **v1.3 Lolite AI placeholder marked Coming Soon in v2**
 - **v1.3 Update Log inside Settings**
 
+## Mature game access
+
+Lolite marks **Granny Original, GTA III and GTA Vice City** as mature Game Store titles. Mature titles require adult/parent approval on the device before they can be launched. Entering an age by itself is not used as an unlock mechanism.
+
 ## Update Log
+
+### 1.5 — 2026-09-11 — Lolite OS v1.5: Mature Game Access & Game Store Update
+- Added a mature-game access layer for designated Game Store titles.
+- Mature titles now show a **MATURE** badge and require adult/parent approval before launching.
+- The system deliberately does **not** treat a typed age as sufficient verification or as a bypass.
+- Added **GTA Vice City** back to `html games/` and the Game Store, with its mature gate applied.
+- Updated Game Store discovery so GTA Vice City is named correctly and mature titles are identified consistently.
+- Checked `html games/` during this build; no duplicate files were identified.
 
 ### 1.4 — 2026-09-11 — Lolite OS v1.4: Scramjet & UI Reliability Update
 - Replaced the old Scramjet diagnostic-only panel with a **real launcher/embedded entry point for the upstream MercuryWorkshop Scramjet web app**. If embedding is blocked by the browser, the app provides a direct launch button instead.
@@ -50,7 +64,6 @@ Lolite OS is a browser-based desktop and should be run from a complete extracted
 - Removed the old taskbar pin context-menu behavior from the active UI.
 - Added stronger window bounds, scroll handling, responsive wrapping and taskbar overflow handling to prevent common UI overlaps.
 - Checked `html games/` on this build; existing HTML/HTM games were left intact and no duplicate game entries were found.
-- Removed the temporary GTA Vice City wrapper rather than shipping a third-party hosted game launcher through Lolite.
 
 ### 1.3 — 2026-09-11 — Lolite OS v1.3: App Suite & Desktop Overhaul
 - Added a large new built-in app suite: **Paint, Notepad, Calculator, Screen Capture, Clock, Widgets, Battery, Auto Clicker and Terminal**.
@@ -58,13 +71,7 @@ Lolite OS is a browser-based desktop and should be run from a complete extracted
 - Added a **Minecraft** app that launches an Eaglercraft browser client. Eaglercraft is a separate browser-based Minecraft project; Lolite does not copy its third-party client source into this repository.
 - Added a **Scramjet** app/status panel tied to Lolite's runtime diagnostics.
 - Replaced the desktop's emoji application icons with lightweight CSS-generated application glyphs.
-- Reworked pinned taskbar app icons to use the same non-emoji icon system.
 - Added an **Update Log** tab directly inside Settings.
-- Fixed several app-control issues, including Notepad buttons and repeated settings/game rendering.
-- Added terminal `?` help with commands for apps, date/time, echo, version, about and clear.
-- Added screenshot and screen recording controls using browser media APIs.
-- Added battery information when the browser exposes the Battery Status API.
-- Kept the app suite lightweight by creating app UI only when the app is opened.
 
 ### 1.2 — 2026-09-11 — Lolite OS v1.2: Game Performance & Reliability Update
 - Added an Installation Guide before Current foundation.
