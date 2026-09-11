@@ -21,7 +21,7 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Live simulation statistics
 - AI-first browser/search UI shell
 - Game Library catalog
-- Repository HTML Games section with automatic folder discovery
+- Repository HTML Games section with automatic `.html` and `.htm` folder discovery
 - Persistent Files system
 - ZIP extraction and ZIP creation
 - Installed game library integration
@@ -31,7 +31,14 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 
 ## Update Log
 
-### 2026-09-11 — Wallpaper Library
+### 0.7 — 2026-09-11 — HTML/HTM Game Support
+- Updated repository game discovery to recognize both `.html` and `.htm` files.
+- Kept automatic discovery and the Refresh action working for both extensions.
+- Updated filename-to-game-name handling so either extension is removed when generating display names.
+- Kept repository games launching inside Lolite OS windows.
+- Checked the `html games/` folder as part of this update; no duplicate game entries were found to remove.
+
+### 0.6 — 2026-09-11 — Wallpaper Library
 - Added a dedicated `core/wallpapers.js` module so the wallpaper system stays separate from the main desktop code.
 - Added wallpaper categories: Lolite, Abstract, Nature, Space, Pixel, Gaming, Dark, Minimal, Retro and World Sandbox.
 - Added multiple lightweight CSS-only wallpapers in each category.
@@ -39,7 +46,7 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Added persistent wallpaper selection with localStorage.
 - Kept wallpapers image-free and lightweight for fast loading.
 
-### 2026-09-11 — HTML Games auto-discovery
+### 0.5 — 2026-09-11 — HTML Games auto-discovery
 - Upgraded the HTML Games section to discover `.html` files directly from the repository's `html games/` folder.
 - Added a Refresh action so newly added repository HTML games can appear without manually editing the game list.
 - Kept the existing built-in game list as a fallback if GitHub discovery is unavailable.
@@ -47,7 +54,7 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Kept the repository launch flow inside Lolite OS windows.
 - Updated `core/integration.js` only, keeping the main app.js architecture clean.
 
-### 2026-09-11 — HTML Games integration
+### 0.4 — 2026-09-11 — HTML Games integration
 - Added the uploaded HTML games to the Lolite Game Library.
 - Added a dedicated **HTML Games** section for repository games.
 - Added launch buttons that open each game inside a Lolite OS app window.
@@ -56,7 +63,7 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Added the integration through `core/integration.js` instead of expanding the main app.js file.
 - Note: these uploaded HTML wrappers load some of their game assets/code from external hosts, so their availability can depend on those hosts.
 
-### 2026-09-11 — World Sandbox high-resolution upgrade
+### 0.3 — 2026-09-11 — World Sandbox high-resolution upgrade
 - Replaced the small paint-only sandbox experience with a standalone high-resolution 240×120 pixel simulation.
 - Added persistent terrain generation so land remains in the world instead of disappearing each update.
 - Added flowing water and lava with simple gravity and sideways spreading.
@@ -70,7 +77,7 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Moved the simulation into `games/world-sandbox/index.html` and connected it to the Lolite OS World Sandbox app.
 - Kept the simulation self-contained and lightweight for browser performance.
 
-### 2026-09-11 — Files & ZIP system
+### 0.2 — 2026-09-11 — Files & ZIP system
 - Added persistent browser-based file storage using IndexedDB.
 - Added file uploads and folder creation.
 - Added ZIP extraction directly inside Lolite OS.
@@ -80,7 +87,7 @@ A Windows-inspired, Lolite-branded web desktop focused on games, creativity and 
 - Split the Files functionality into `core/files.js` and integration logic into `core/integration.js`.
 - Improved the Files app UI with a dedicated toolbar, file list, status text, and empty state.
 
-### 2026-09-11 — Standalone game expansion
+### 0.1 — 2026-09-11 — Standalone game expansion
 - Added standalone playable HTML games to the repository.
 - Expanded the Game Library architecture so games can be launched as separate modules.
 - Fixed the Nibbles game launch/runtime issue.
