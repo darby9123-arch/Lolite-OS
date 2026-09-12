@@ -44,6 +44,14 @@ Third-party projects and trademarks remain the property of their respective owne
 
 ## Update Log
 
+### 2.1 — Display, Clock & Sandbox — 2026-09-12
+- Revamped Clock with configurable seconds, minutes, 12/24-hour mode, date visibility and display styles.
+- Added desktop right-click **Edit display** menu.
+- Added layout presets, icon column/size controls, taskbar position, Liquid Glass and Reduce Motion controls in Edit display.
+- Added persistent display customization.
+- Improved World Sandbox canvas resolution and top-down presentation hooks.
+- Improved Pong/Game presentation foundation.
+
 ### 2.0 — Biggest Update — 2026-09-12
 - Added PC/mobile setup immediately after startup.
 - Added responsive phone-style mobile layout.
