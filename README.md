@@ -22,6 +22,8 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Default Games and HTML/HTM Game Store
 - Utility Store with optional installations
 - Lolite AI
+- Notification Center
+- Plugin-ready App Store architecture
 - Custom Scramjet browser interface
 - World Sandbox
 - Reduce Motion and performance-oriented UI
@@ -29,13 +31,16 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Settings update log
 
 ## Lolite AI
-Lolite AI uses a server-side API route so the API key is never placed in browser code. Configure `OPENAI_API_KEY` as a server/Vercel environment variable. The implementation uses the OpenAI Responses API and the current server-side JavaScript pattern. citeturn1search0
+Lolite AI uses a server-side API route so the API key is never placed in browser code. Configure `OPENAI_API_KEY` as a server/Vercel environment variable. The implementation uses the OpenAI Responses API.
 
 ## Utility installation
 Utilities are optional. The Utility Store keeps installation state in browser storage. Installing a utility adds it to the desktop; uninstalling removes it from the desktop.
 
 ## Game Store
-The Game Store accepts standalone `.html` and `.htm` games and checks the repository game folder for duplicates. The current original HTML pack includes 2048, Pong and Sokoban.
+The Game Store accepts standalone `.html` and `.htm` games and checks the repository game folder for duplicates. The current original HTML pack includes 2048, Pong and Sokoban, alongside the existing game collection.
+
+## Versioned core files
+New Lolite feature layers now use a version number in the filename, such as `core/v22.js`, so the update layer is easy to identify and track.
 
 ## Copyright
 Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS code, UI, branding and original game implementations are protected by applicable copyright law unless a file states another license.
@@ -43,6 +48,20 @@ Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS code, UI, branding and 
 Third-party projects and trademarks remain the property of their respective owners and are used according to their applicable licenses.
 
 ## Update Log
+
+### 2.2 — Platform Features & App Store Architecture — 2026-09-12
+- Added a Notification Center with persistent recent activity.
+- Added a versioned `core/v22.js` platform layer.
+- Added a plugin-ready App Store architecture for future installable apps, widgets and plugins.
+- Added built-in plugin examples for Weather Widget, Quick Notes, Focus Mode and System Info.
+- Added persistent plugin installation state.
+- Added Lolite AI quick-action hooks for opening supported apps and display tools.
+- Added a taskbar notification button.
+- Added mobile-responsive Notification Center and App Store layouts.
+- Removed the unwanted Vice City HTML game file from `html games/`.
+- Checked the HTML game folder again; no duplicate original-game files were identified.
+- Updated the version checker to 2.2.
+- From this update onward, new core feature files use version numbers in their filenames.
 
 ### 2.1 — Display, Clock & Sandbox — 2026-09-12
 - Revamped Clock with configurable seconds, minutes, 12/24-hour mode, date visibility and display styles.
@@ -57,7 +76,7 @@ Third-party projects and trademarks remain the property of their respective owne
 - Added responsive phone-style mobile layout.
 - Added optional Utility Store with persistent installation state.
 - Added real Lolite AI interface and server-side `/api/ai`.
-- Added OpenAI Responses API integration with server-side key handling. citeturn1search0
+- Added OpenAI Responses API integration with server-side key handling.
 - Completely redesigned Liquid Glass with stronger blur, saturation, highlights and depth.
 - Improved animations and reduced-motion behavior.
 - Replaced bright default scrollbars with Lolite styling.
