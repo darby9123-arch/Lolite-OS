@@ -2,154 +2,67 @@
 
 A Lolite-branded browser desktop with a dark purple/blue interface, apps, games, files, wallpapers, AI and responsive PC/mobile layouts.
 
-## Installation guide
-1. Download the complete repository/archive.
-2. **Extract All** — do not run a single file from inside the ZIP.
-3. Keep `core/`, `games/`, `html games/`, `styles.css`, `app.js` and `index.html` together.
-4. Open `index.html` in a modern browser, or serve the folder from a local development server.
-5. The Game Store discovers `.html`, `.htm` and `.zip` game packs from `html games/`.
-
-## Current foundation
-- PC/mobile setup screen after startup
-- Five-column PC desktop and phone-style mobile layout
-- Start menu, taskbar, search, clock and draggable/resizable windows
-- Edge snapping and maximize/restore
-- Dark purple + blue design
-- Experimental Liquid Glass
-- UI presets and appearance controls
-- Custom wallpaper library and local wallpaper picker
-- Files app with ZIP extraction/creation
-- Files 2.0 and App Store 2.0 polish
-- Default Games and HTML/HTM Game Store
-- Game Library 2.0 with search, categories, favorites and recently played
-- Game Library 2.9 with ZIP game pack discovery and browser-side extraction
-- ZIP packs can contain multiple HTML/HTM games and are presented with a game picker
-- Individual `.html` and `.htm` games continue to launch normally
-- Game install state and dedicated game player controls
-- Utilities Pack 2.6 with Calculator, Notepad, Paint, Clock, Stopwatch, Timer, Screenshotter, Terminal, System Information, Storage Manager, Network Monitor, Unit Converter, Music Player and Quick Notes
-- Local persistence for Notepad and Quick Notes
-- Utility desktop shortcut and responsive utility grid
-- Utility Store with optional installations
-- Customisation 2.7 with themes, accent colours, wallpapers, slideshow/random wallpaper, icon sizing, taskbar position and Desktop Studio controls
-- Persistent customisation settings stored locally in the browser
-- Widgets 2.8 with Clock, Calendar, Weather placeholder, Battery, Storage, Network, Quick Notes, Recently Played, Favourite Apps and World Sandbox cards
-- Quick Settings 2.8 with Liquid Glass, Reduce Motion, Gaming Mode, Do Not Disturb, Brightness and Volume controls
-- Persistent widget/quick-setting preferences stored locally
-- Lolite AI
-- Notification Center
-- Plugin-ready App Store architecture
-- Lolite Browser launcher
-- World Sandbox
-- Reduce Motion and performance-oriented UI
-- Version compatibility warning
-- Settings update log
-- Desktop polish, active-window states and improved workspace reliability
-
-## Lolite AI
-Lolite AI uses a server-side API route so the API key is never placed in browser code. Configure `OPENAI_API_KEY` as a server/Vercel environment variable. The implementation uses the OpenAI Responses API.
-
-## Utility installation
-Utilities are optional. The Utility Store keeps installation state in browser storage. Installing a utility adds it to the desktop; uninstalling removes it from the desktop. Version 2.6 also provides a built-in Utilities workspace containing the utility tools listed above.
-
-## Game Store
-The Game Store accepts standalone `.html` and `.htm` games plus `.zip` game packs. Game Library 2.9 downloads ZIP packs in the browser, extracts them with JSZip, detects HTML/HTM entries and provides a picker when a pack contains multiple games. Individual HTML/HTM games continue to launch directly. ZIP games that depend on unusual server-side behavior or dynamic relative requests may not work in a browser-only extracted environment.
-
-## Temporary game source
-`TEMP-GAME-SOURCE.txt` is a temporary placeholder for a public large HTML-game collection URL. It is intended to support the future V3 game importer and should be removed for V3.1.
-
-## Versioned core files
-New Lolite feature layers use a version number in the filename, including the dot, such as `core/v2.4.js`, `core/v2.5.js`, `core/v2.6.js`, `core/v2.7.js`, `core/v2.8.js` and `core/v2.9.js`, so each update layer is easy to identify and track.
-
-## Copyright
-Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS code, UI, branding and original game implementations are protected by applicable copyright law unless a file states another license.
-
-Third-party projects and trademarks remain the property of their respective owners and are used according to their applicable licenses.
-
 ## Update Log
 
 ### 2.3 — Desktop Polish & Window Reliability — 2026-09-13
 - Added the versioned `core/v2.3.js` desktop polish layer.
-- Improved desktop icon selection and active-window states.
-- Improved window shadows, focus, dragging and workspace reliability.
-- Improved taskbar active-window states.
-- Added toast notifications and responsive desktop behaviour.
-- Added reduced-motion handling and improved window clamping on resize.
-
+- Improved desktop icon selection, active-window states, window shadows, focus, dragging, taskbar states and workspace reliability.
+- Added toast notifications, responsive desktop behaviour, reduced-motion handling and improved window clamping on resize.
 
 ### 2.4 — Files & App Store Polish — 2026-09-13
 - Added the versioned `core/v2.4.js` Files and App Store polish layer.
-- Added Files 2.0 entry points and improved App Store entry points.
-- Added version badges and improved responsive cards and controls.
+- Added Files 2.0 and improved App Store entry points, version badges, responsive cards and controls.
 - Improved access to Files and the Game Store from the Start menu.
-
 
 ### 2.5 — Game Library 2.0 — 2026-09-13
 - Added the versioned `core/v2.5.js` Game Library layer.
 - Added automatic discovery of standalone `.html` and `.htm` games in `html games/`.
-- Added Game Store search, category filtering, favourites and recently played.
-- Added game install state and dedicated game player windows.
+- Added Game Store search, category filtering, favourites, recently played, install state, game metadata and dedicated player windows.
 - Added direct launching for individual HTML/HTM games.
-- Added game metadata and grouped browsing for the local game collection.
-
 
 ### 2.6 — Utilities Pack — 2026-09-13
 - Added the versioned `core/v2.6.js` Utilities Pack layer.
-- Added optional Calculator, Notepad, Paint, Clock, Stopwatch, Timer, Screenshotter, Terminal, System Information, Storage Manager, Network Monitor, Unit Converter, Music Player and Quick Notes utilities.
+- Added Calculator, Notepad, Paint, Clock, Stopwatch, Timer, Screenshotter, Terminal, System Information, Storage Manager, Network Monitor, Unit Converter, Music Player and Quick Notes.
 - Added local persistence for Notepad and Quick Notes.
 - Added responsive utility layouts and utility installation support.
 
-
 ### 2.7 — Customisation — 2026-09-13
 - Added the versioned `core/v2.7.js` customisation layer.
-- Added theme presets: Dark, Light, Midnight, Aurora, Retro, Minimal, Pixel and AMOLED.
-
+- Added Dark, Light, Midnight, Aurora, Retro, Minimal, Pixel and AMOLED themes.
+- Added accent colours, wallpaper controls, slideshow/random wallpaper, icon/taskbar controls and Desktop Studio.
+- Added persistent local customisation settings.
 
 ### 2.8 — Widgets & Quick Settings — 2026-09-13
 - Added the versioned `core/v2.8.js` Widgets and Quick Settings layer.
-- Added Widgets for Clock, Calendar, Weather placeholder, Battery, Storage, Network, Quick Notes, Recently Played, Favourite Apps and World Sandbox.
-- Added widget hide controls and refresh handling.
-- Added live browser-local Clock, Calendar, Network, Storage and Battery information when supported.
+- Added Clock, Calendar, Weather placeholder, Battery, Storage, Network, Quick Notes, Recently Played, Favourite Apps and World Sandbox widgets.
+- Added live browser-local information where supported.
 - Added Quick Settings for Liquid Glass, Reduce Motion, Gaming Mode and Do Not Disturb.
-- Added Brightness and Volume sliders with persistent local settings.
-- Added responsive widget and quick-setting layouts.
+- Added persistent Brightness and Volume controls.
 - Updated the version checker to 2.8.
-- Checked `html games/`; the existing collection remains present and no new duplicate original-game files were added.
-
 
 ### 2.9 — Game Library ZIP Packs — 2026-09-13
 - Added the versioned `core/v2.9.js` Game Library layer.
-- Added automatic `.zip` discovery alongside `.html` and `.htm` games in `html games/`.
-- Added browser-side ZIP extraction using JSZip loaded when a ZIP pack is opened.
-- Added detection of HTML/HTM games inside ZIP packs.
-- Added a game picker for ZIPs containing multiple HTML games.
-- Added basic asset URL rewriting for extracted games so common images, stylesheets, scripts, audio and video can load from the extracted pack.
-- Kept direct standalone HTML/HTM game launching unchanged.
-- Added ZIP-pack labels and icons in the Game Library.
-- Checked `html games/`; no ZIP game pack is currently present and no duplicate game files were added.
-
+- Added `.zip` game-pack discovery alongside `.html` and `.htm` games.
+- Added browser-side ZIP extraction with JSZip.
+- Added HTML/HTM detection, multi-game ZIP pickers and basic extracted-asset URL rewriting.
+- Kept standalone HTML/HTM launching and added ZIP labels/icons.
 
 ### 3.0 — Lolite OS: Reborn — 2026-09-13
 - Added the versioned `core/v3.0.js` platform/game-library layer.
-- Reworked the desktop entry points so V3 starts around App Store, Game Store and Settings.
-- Added a redesigned Game Store with **All Games**, search, category filters, favourites and recently played.
-- Added browse sections for game types including Puzzle & Classic, Sports, Racing, IO Games, Strategy and Arcade.
-- Added Series & Collections grouping based on related game names.
-- Added a 70-game V3 HTML catalogue sourced as remote playable entries from the CoolDude2349 Offline-HTML-Games-Pack repository instead of copying the large game binaries into Lolite-OS.
-- Added fullscreen HTML game player windows.
-- Kept the existing local `.html`, `.htm` and ZIP game support in the earlier Game Library.
-- Added a new V3 visual layer for the Game Store, cards, filters, collections and player.
+- Reworked desktop entry points around App Store, Game Store and Settings.
+- Added redesigned Game Store browsing with search, categories, favourites, recently played and Series & Collections.
+- Added Puzzle & Classic, Sports, Racing, IO Games, Strategy and Arcade sections.
+- Added a 70-game V3 HTML catalogue using remote playable entries instead of copying large game binaries into Lolite-OS.
+- Added fullscreen HTML game player windows and a new V3 visual layer.
+- Kept local HTML/HTM and ZIP game support.
 - Updated the version checker to 3.0.
-- Kept `TEMP-GAME-SOURCE.txt` for the planned V3 game-source workflow.
-- No duplicate local HTML game files were added.
-
 
 ### 3.0.1 — App & Settings Stability — 2026-09-14
 - Added app installation controls to the V3 App Store.
 - Added Install, Open and Uninstall states for optional utilities.
 - Added V3 Settings controls for Liquid Glass, Reduce Motion, wallpapers and appearance reset.
 - Added responsive App Store and Settings layouts.
-- Added a stability layer for V3 controls.
-
+- Added a V3 stability layer for controls.
 
 ### 3.0.2 — Game Launcher Repair — 2026-09-14
 - Repaired V3 local HTML/HTM game launching.
@@ -158,13 +71,21 @@ Third-party projects and trademarks remain the property of their respective owne
 - Added recently played tracking for launched games.
 - Kept ZIP game-pack support.
 
-
 ### 3.0.3 — Stability & Uploaded Game Launcher Fixes — 2026-09-14
-- Added the V3.0.3 stability hardening layer.
-- Reworked local uploaded HTML/HTM game launching so games use their actual files from the `html games/` folder.
+- Added V3.0.3 stability hardening.
+- Reworked uploaded HTML/HTM game launching to use the actual files in `html games/`.
 - Fixed internal game IDs such as `v29-game-clangrybirds2-html` from being displayed as the game itself.
-- Added safer filename handling for uploaded games, including spaces and special characters.
+- Added safer filename handling for spaces and special characters.
 - Improved game window sizing and fullscreen handling.
-- Kept the uploaded `html games/` folder as the source of truth for local games.
-- Added stability handling for V3 game buttons and launch behaviour.
+- Kept `html games/` as the source of truth for local games.
 
+### 3.0.4 — Embedded Game Center — 2026-09-14
+- Replaced the broken/fake game-window launch path with a real embedded HTML game player.
+- Added automatic discovery of the actual `.html` game files in `html games/` through the GitHub repository contents API.
+- Made **Play** open a real Lolite window containing the selected game's actual HTML file in an iframe.
+- Added iframe permissions for fullscreen, gamepad, autoplay and pointer lock where supported.
+- Added **Open separately** for games that need their own browser tab.
+- Added an in-window **Fullscreen** control for the embedded game.
+- Improved game titles so internal IDs are no longer shown as the playable game name.
+- Kept Game Center search and refresh functionality.
+- Kept `html games/` as the source of truth for the playable collection.
