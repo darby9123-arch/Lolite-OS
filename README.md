@@ -67,6 +67,20 @@ Third-party projects and trademarks remain the property of their respective owne
 
 ## Update Log
 
+### 3.0 — Lolite OS: Reborn — 2026-09-13
+- Added the versioned `core/v3.0.js` platform/game-library layer.
+- Reworked the desktop entry points so V3 starts around App Store, Game Store and Settings.
+- Added a redesigned Game Store with **All Games**, search, category filters, favourites and recently played.
+- Added browse sections for game types including Puzzle & Classic, Sports, Racing, IO Games, Strategy and Arcade.
+- Added Series & Collections grouping based on related game names.
+- Added a 70-game V3 HTML catalogue sourced as remote playable entries from the CoolDude2349 Offline-HTML-Games-Pack repository instead of copying the large game binaries into Lolite-OS.
+- Added fullscreen HTML game player windows.
+- Kept the existing local `.html`, `.htm` and ZIP game support in the earlier Game Library.
+- Added a new V3 visual layer for the Game Store, cards, filters, collections and player.
+- Updated the version checker to 3.0.
+- Kept `TEMP-GAME-SOURCE.txt` for the planned V3 game-source workflow.
+- No duplicate local HTML game files were added.
+
 ### 2.9 — Game Library ZIP Packs — 2026-09-13
 - Added the versioned `core/v2.9.js` Game Library layer.
 - Added automatic `.zip` discovery alongside `.html` and `.htm` games in `html games/`.
