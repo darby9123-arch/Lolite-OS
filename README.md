@@ -19,6 +19,7 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - UI presets and appearance controls
 - Custom wallpaper library and local wallpaper picker
 - Files app with ZIP extraction/creation
+- Files 2.0 and App Store 2.0 polish
 - Default Games and HTML/HTM Game Store
 - Utility Store with optional installations
 - Lolite AI
@@ -40,8 +41,11 @@ Utilities are optional. The Utility Store keeps installation state in browser st
 ## Game Store
 The Game Store accepts standalone `.html` and `.htm` games and checks the repository game folder for duplicates. The current original HTML pack includes 2048, Pong and Sokoban, alongside the existing game collection.
 
+## Temporary game source
+`TEMP-GAME-SOURCE.txt` is a temporary placeholder for a public large HTML-game collection URL. It is intended to support the future V3 game importer and should be removed for V3.1.
+
 ## Versioned core files
-New Lolite feature layers use a version number in the filename, including the dot, such as `core/v2.3.js`, so the update layer is easy to identify and track.
+New Lolite feature layers use a version number in the filename, including the dot, such as `core/v2.4.js`, so the update layer is easy to identify and track.
 
 ## Copyright
 Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS code, UI, branding and original game implementations are protected by applicable copyright law unless a file states another license.
@@ -49,6 +53,16 @@ Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS code, UI, branding and 
 Third-party projects and trademarks remain the property of their respective owners and are used according to their applicable licenses.
 
 ## Update Log
+
+### 2.4 — Files & App Store — 2026-09-13
+- Added the versioned `core/v2.4.js` layer.
+- Added Files 2.0 entry and workspace shortcuts with 2.4 labels.
+- Added App Store 2.0 entry and app-store shortcut with 2.4 labels.
+- Added responsive 2.4 toolbar, grid, card and badge styling.
+- Kept existing Files/ZIP and App Store architecture intact while adding a cleaner 2.4 layer.
+- Updated the version checker to 2.4.
+- Checked `html games/`; the existing collection is still present and no new duplicate original-game files were added in this update.
+- Kept the temporary game-source file available for the future V3 importer.
 
 ### 2.3 — Desktop Polish & Reliability — 2026-09-13
 - Reworked the versioned `core/v2.3.js` layer around the actual Lolite desktop rather than the browser.
