@@ -2,7 +2,7 @@ Lolite OS Temporary Game Source
 
 Paste the public Google Docs / webpage / GitHub / raw-file URL for the large HTML game collection on the line below.
 
-SOURCE_URL=
+SOURCE_URL=https://docs.google.com/document/d/1_FmH3BlSBQI7FGgAQL59-ZPe8eCxs35wel6JUyVaG8Q/edit?usp=sharing
 
 This file is temporary and is intended to be removed when Lolite OS 3.1 is released.
 
