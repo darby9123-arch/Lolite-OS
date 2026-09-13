@@ -60,3 +60,31 @@ const s=document.createElement('style');s.id='v30-style';s.textContent=`.v30-sto
  const style=document.createElement('style');style.textContent='.v30-player{height:100%;display:flex;flex-direction:column;gap:8px}.v30-playerbar{display:flex;justify-content:space-between;align-items:center}.v30-player iframe{flex:1;width:100%;height:calc(100vh - 180px);min-height:500px;border:0;border-radius:12px;background:#000}';document.head.appendChild(style);
 })();
 })();
+
+/* V3.0.3 — stability hardening */
+(()=>{
+ const G=window.LoliteV30;if(!G)return;
+ const originalLaunch=G.launch;
+ const esc=s=>String(s??'').replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+ G.launch=function(g){
+   if(!g)return;
+   const file=String(g.file||'');
+   if(!/^html games[\\/]/i.test(file))return originalLaunch(g);
+   const rel=file.replace(/^html games[\\/]/i,'');
+   const src='html%20games/'+rel.split(/[\\/]/).map(encodeURIComponent).join('/');
+   const id='v30-game-'+g.id;
+   window.openApp?.(id,g.name,960,700);
+   setTimeout(()=>{
+     const w=window.state?.windows?.[id];
+     const root=w?.el?.querySelector('.content');
+     if(!root)return;
+     root.innerHTML='<div class="v30-player"><div class="v30-playerbar"><b>'+esc(g.name)+'</b><button type="button" class="soft v303-fullscreen">Fullscreen</button></div><iframe src="'+src+'" title="'+esc(g.name)+'" allow="fullscreen;gamepad;autoplay" loading="eager"></iframe></div>';
+     root.querySelector('.v303-fullscreen')?.addEventListener('click',()=>root.querySelector('iframe')?.requestFullscreen?.());
+   },200);
+ };
+ if(!document.getElementById('v303-style')){
+   const s=document.createElement('style');s.id='v303-style';
+   s.textContent='.v30-player{height:100%;display:flex;flex-direction:column;gap:8px}.v30-player iframe{width:100%;height:calc(100% - 40px);min-height:0;flex:1;border:0;border-radius:10px;background:#000}.v30-playerbar{display:flex;align-items:center;justify-content:space-between;gap:10px}.v30-playerbar b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}';
+   document.head.appendChild(s);
+ }
+})();
