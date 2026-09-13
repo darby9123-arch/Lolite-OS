@@ -31,4 +31,32 @@ const s=document.createElement('style');s.id='v30-style';s.textContent=`.v30-sto
  window.renderSettings=()=>{const w=[...document.querySelectorAll('.window')].find(x=>x.querySelector('.v30-settings'));if(w){w.querySelector('.content').innerHTML=settingsPage()}};
  const prev=window.page;window.page=function(id){if(id==='settings')return settingsPage();return prev(id)};
  const s=document.createElement('style');s.id='v30-stability-style';s.textContent='.v30-app-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}.v30-app-card,.v30-setting-card{border:1px solid #ffffff12;background:#ffffff06;border-radius:16px;padding:16px}.v30-app-card{display:flex;flex-direction:column;gap:14px}.v30-app-card h3,.v30-setting-card h3{margin:0 0 5px}.v30-app-card p,.v30-setting-card p{color:var(--muted);font-size:12px;margin:0}.v30-app-icon{width:54px;height:54px;border-radius:15px;background:linear-gradient(145deg,#2c2152,#11101d);border:1px solid #ffffff25;position:relative}.v30-app-icon:after{content:"";position:absolute;inset:13px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--blue))}.v30-app-actions{display:flex;gap:8px}.v30-app-actions button{flex:1}.v30-setting-card{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:10px 0}.v30-setting-card>div:first-child{flex:1}.v30-settings{padding:22px;max-width:900px;margin:auto}.v30-settings h2{margin:6px 0 18px}.v30-store-intro{margin-bottom:18px}@media(max-width:600px){.v30-setting-card{align-items:flex-start;flex-direction:column}.v30-app-grid{grid-template-columns:1fr}}';document.head.appendChild(s);
+/* V3.0.2 game launcher repair */
+(()=>{
+ const G=window.LoliteV30;
+ if(!G)return;
+ const games=G.catalog||[];
+ const original=G.launch;
+ const localBase='html games/';
+ const isLocal=g=>g&&g.file&&/^(html games[\\/]|[^:]+\\.(?:html|htm)$)/i.test(g.file);
+ const localUrl=g=>{const file=g.file.replace(/^html games[\\/]/i,'');return localBase.split(' ').join('%20')+file.split('/').map(encodeURIComponent).join('/')};
+ G.launch=function(g){
+   if(!g)return;
+   if(isLocal(g)){
+     const url=localUrl(g);
+     const id='v30-game-'+g.id;
+     const recent=(()=>{try{return JSON.parse(localStorage.getItem('lolite-v30:recent')||'[]')}catch{return[]}})();
+     localStorage.setItem('lolite-v30:recent',JSON.stringify([g.id,...recent.filter(x=>x!==g.id)].slice(0,40)));
+     window.openApp?.(id,g.name,960,700);
+     setTimeout(()=>{
+       const w=window.state?.windows?.[id],c=w?.el?.querySelector('.content');if(!c)return;
+       c.innerHTML='<div class="v30-player"><div class="v30-playerbar"><b>'+String(g.name).replace(/[&<>]/g,'')+'</b><button class="soft v30-full">Fullscreen</button></div><iframe src="'+url+'" title="Game" allow="fullscreen;gamepad" loading="eager"></iframe></div>';
+       c.querySelector('.v30-full')?.addEventListener('click',()=>c.querySelector('iframe')?.requestFullscreen?.());
+     },100);
+     return;
+   }
+   return original(g);
+ };
+ const style=document.createElement('style');style.textContent='.v30-player{height:100%;display:flex;flex-direction:column;gap:8px}.v30-playerbar{display:flex;justify-content:space-between;align-items:center}.v30-player iframe{flex:1;width:100%;height:calc(100vh - 180px);min-height:500px;border:0;border-radius:12px;background:#000}';document.head.appendChild(style);
+})();
 })();
