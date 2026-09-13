@@ -24,11 +24,12 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Lolite AI
 - Notification Center
 - Plugin-ready App Store architecture
-- Custom Scramjet browser interface
+- Lolite Browser launcher
 - World Sandbox
 - Reduce Motion and performance-oriented UI
 - Version compatibility warning
 - Settings update log
+- Desktop polish, active-window states and improved workspace reliability
 
 ## Lolite AI
 Lolite AI uses a server-side API route so the API key is never placed in browser code. Configure `OPENAI_API_KEY` as a server/Vercel environment variable. The implementation uses the OpenAI Responses API.
@@ -40,7 +41,7 @@ Utilities are optional. The Utility Store keeps installation state in browser st
 The Game Store accepts standalone `.html` and `.htm` games and checks the repository game folder for duplicates. The current original HTML pack includes 2048, Pong and Sokoban, alongside the existing game collection.
 
 ## Versioned core files
-New Lolite feature layers now use a version number in the filename, such as `core/v22.js`, so the update layer is easy to identify and track.
+New Lolite feature layers use a version number in the filename, including the dot, such as `core/v2.3.js`, so the update layer is easy to identify and track.
 
 ## Copyright
 Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS code, UI, branding and original game implementations are protected by applicable copyright law unless a file states another license.
@@ -48,6 +49,20 @@ Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS code, UI, branding and 
 Third-party projects and trademarks remain the property of their respective owners and are used according to their applicable licenses.
 
 ## Update Log
+
+### 2.3 — Desktop Polish & Reliability — 2026-09-13
+- Reworked the versioned `core/v2.3.js` layer around the actual Lolite desktop rather than the browser.
+- Improved desktop icon selection and hover states.
+- Improved active-window highlighting and taskbar window states.
+- Improved window focus/z-index handling when windows are clicked.
+- Added double-click titlebar maximize/restore behavior.
+- Added viewport clamping so windows are pulled back onscreen after resizing.
+- Improved mobile window sizing and taskbar spacing.
+- Added clearer Start, Search and Settings accessibility labels/tooltips.
+- Added a cleaner 2.3 desktop toast treatment.
+- Updated the version checker to 2.3.
+- Checked `html games/`; the current folder contains the existing HTML/HTM game collection and no new duplicate original-game files were identified in this update.
+- No browser/Scramjet redesign was added to this update.
 
 ### 2.2 — Platform Features & App Store Architecture — 2026-09-12
 - Added a Notification Center with persistent recent activity.
@@ -62,16 +77,6 @@ Third-party projects and trademarks remain the property of their respective owne
 - Checked the HTML game folder again; no duplicate original-game files were identified.
 - Updated the version checker to 2.2.
 - From this update onward, new core feature files use version numbers in their filenames.
-
-### 2.3 — Clean Browser & UI — 2026-09-13
-- Removed the separate Scramjet UI/diagnostic script from the desktop build.
-- Reworked the browser presentation into a simple, polished Lolite Browser shell.
-- Removed unnecessary AI-style wording from the browser interface.
-- Added a cleaner address/search bar, navigation controls and shortcuts.
-- Refined application icon presentation so the desktop uses consistent Lolite glyphs.
-- Added a quieter, more traditional desktop-window visual treatment.
-
-### 2.2 — Platform Foundation — 2026-09-12
 
 ### 2.1 — Display, Clock & Sandbox — 2026-09-12
 - Revamped Clock with configurable seconds, minutes, 12/24-hour mode, date visibility and display styles.
@@ -108,7 +113,7 @@ Third-party projects and trademarks remain the property of their respective owne
 - Added the Lolite App Store and improved controls, scrollbars and game sizing.
 
 ### 1.4 — Scramjet & UI Reliability
-- Added the Scramjet launcher and custom browser presentation.
+- Added the Scramjet launcher.
 - Improved window and responsive UI behavior.
 
 ### 1.3 — App Suite & Desktop Overhaul
