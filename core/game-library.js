@@ -20,4 +20,23 @@
  const pageHook=window.page;window.page=function(id){const r=pageHook(id);if(id==='games')setTimeout(wireDefault,0);return r};
  const oldRender=window.renderIcons;window.renderIcons=()=>{oldRender?.();const box=document.querySelector('#icons');if(!box)return;const a=[['⌂','Home','home'],['🎮','Default Games','games'],['🛍️','Game Store','game-store'],['📁','Files','files'],['🌐','Lolite Browser','browser'],['⚙','Settings','settings']];box.innerHTML=a.map(x=>`<button class="desktop-icon" ondblclick="openApp('${x[2]}','${x[1]}')"><b>${x[0]}</b><span>${x[1]}</span></button>`).join('')};
  setTimeout(()=>{window.renderIcons?.();discover()},500);
+
+/* V3.0.3 uploaded-games correction */
+(()=>{
+ const uploaded=[];
+ const files=[];
+ function uploadedGamePath(name){
+   return 'html games/'+name;
+ }
+ window.launchUploadedGame=function(file,name){
+   const safe=String(file||'').replace(/^html games[\\/]/i,'');
+   const src=uploadedGamePath(safe).split(' ').join('%20').split('/').map((x,i)=>i?'/' + encodeURIComponent(x):x).join('');
+   const id='uploaded-'+safe.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+   openApp(id,name||safe,960,700);
+   setTimeout(()=>{
+     const w=state.windows[id],root=w?.el?.querySelector('.content');if(!root)return;
+     root.innerHTML='<div class="uploaded-game"><div class="uploaded-gamebar"><strong>'+String(name||safe).replace(/[&<>]/g,'')+'</strong><button class="soft" type="button" onclick="this.parentElement.nextElementSibling.requestFullscreen?.()">Fullscreen</button></div><iframe src="'+src+'" title="Game" allow="fullscreen;gamepad;autoplay" style="width:100%;height:calc(100% - 42px);min-height:500px;border:0;border-radius:10px;background:#000"></iframe></div>';
+   },80);
+ };
+})();
 })();
