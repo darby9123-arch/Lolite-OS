@@ -1,5 +1,8 @@
-/* Lolite OS 2.4 */
+/* Lolite OS 2.4 — Files and App Store polish */
 (()=>{
  const V='2.4';
- window.LoliteV24={version:V,ready:true};
+ const style=document.createElement('style');style.id='v24-style';style.textContent='.v24-badge{display:inline-block;padding:3px 8px;border-radius:999px;background:#ffffff0d;border:1px solid #ffffff12;font-size:11px}.v24-tools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.v24-tools input{flex:1;min-width:180px}.v24-card{border:1px solid #ffffff12;border-radius:12px;padding:12px;background:#ffffff06}.v24-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}@media(max-width:700px){.v24-tools input{min-width:100%}.v24-grid{grid-template-columns:1fr}}';document.head.appendChild(style);
+ const add=()=>{const start=document.querySelector('#start');if(!start)return;if(!start.querySelector('[data-v24-files]')){const b=document.createElement('button');b.className='start-item';b.dataset.v24Files='1';b.textContent='Files 2.0';b.onclick=()=>window.openApp?.('files','Files',820,580);start.appendChild(b)}if(!start.querySelector('[data-v24-store]')){const b=document.createElement('button');b.className='start-item';b.dataset.v24Store='1';b.textContent='App Store 2.0';b.onclick=()=>window.openApp?.('game-store','Game Store',900,650);start.appendChild(b)}document.querySelectorAll('#start .start-item').forEach(b=>{if(!b.querySelector('.v24-badge')){const n=document.createElement('span');n.className='v24-badge';n.textContent='2.4';b.appendChild(n)}})};
+ window.LoliteV24={version:V,files:()=>window.openApp?.('files','Files',820,580),store:()=>window.openApp?.('game-store','Game Store',900,650)};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(add,650));else setTimeout(add,650);
 })();
