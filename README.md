@@ -103,6 +103,57 @@ Third-party projects and trademarks remain the property of their respective owne
 - Updated the version checker to 2.8.
 - Checked `html games/`; the existing collection remains present and no new duplicate original-game files were added.
 
+### 3.0.3 — Stability & Uploaded Game Launcher Fixes — 2026-09-14
+- Added the V3.0.3 stability hardening layer.
+- Reworked local uploaded HTML/HTM game launching so games use their actual files from the `html games/` folder.
+- Fixed internal game IDs such as `v29-game-clangrybirds2-html` from being displayed as the game itself.
+- Added safer filename handling for uploaded games, including spaces and special characters.
+- Improved game window sizing and fullscreen handling.
+- Kept the uploaded `html games/` folder as the source of truth for local games.
+- Added stability handling for V3 game buttons and launch behaviour.
+
+### 3.0.2 — Game Launcher Repair — 2026-09-14
+- Repaired V3 local HTML/HTM game launching.
+- Fixed local `html games/` paths and filename encoding.
+- Improved game windows and fullscreen handling.
+- Added recently played tracking for launched games.
+- Kept ZIP game-pack support.
+
+### 3.0.1 — App & Settings Stability — 2026-09-14
+- Added app installation controls to the V3 App Store.
+- Added Install, Open and Uninstall states for optional utilities.
+- Added V3 Settings controls for Liquid Glass, Reduce Motion, wallpapers and appearance reset.
+- Added responsive App Store and Settings layouts.
+- Added a stability layer for V3 controls.
+
+### 2.6 — Utilities Pack — 2026-09-13
+- Added the versioned `core/v2.6.js` Utilities Pack layer.
+- Added optional Calculator, Notepad, Paint, Clock, Stopwatch, Timer, Screenshotter, Terminal, System Information, Storage Manager, Network Monitor, Unit Converter, Music Player and Quick Notes utilities.
+- Added local persistence for Notepad and Quick Notes.
+- Added responsive utility layouts and utility installation support.
+
+### 2.5 — Game Library 2.0 — 2026-09-13
+- Added the versioned `core/v2.5.js` Game Library layer.
+- Added automatic discovery of standalone `.html` and `.htm` games in `html games/`.
+- Added Game Store search, category filtering, favourites and recently played.
+- Added game install state and dedicated game player windows.
+- Added direct launching for individual HTML/HTM games.
+- Added game metadata and grouped browsing for the local game collection.
+
+### 2.4 — Files & App Store Polish — 2026-09-13
+- Added the versioned `core/v2.4.js` Files and App Store polish layer.
+- Added Files 2.0 entry points and improved App Store entry points.
+- Added version badges and improved responsive cards and controls.
+- Improved access to Files and the Game Store from the Start menu.
+
+### 2.3 — Desktop Polish & Window Reliability — 2026-09-13
+- Added the versioned `core/v2.3.js` desktop polish layer.
+- Improved desktop icon selection and active-window states.
+- Improved window shadows, focus, dragging and workspace reliability.
+- Improved taskbar active-window states.
+- Added toast notifications and responsive desktop behaviour.
+- Added reduced-motion handling and improved window clamping on resize.
+
 ### 2.7 — Customisation — 2026-09-13
 - Added the versioned `core/v2.7.js` customisation layer.
 - Added theme presets: Dark, Light, Midnight, Aurora, Retro, Minimal, Pixel and AMOLED.
