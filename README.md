@@ -21,6 +21,8 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Files app with ZIP extraction/creation
 - Files 2.0 and App Store 2.0 polish
 - Default Games and HTML/HTM Game Store
+- Game Library 2.0 with search, categories, favorites and recently played
+- Game install state and dedicated game player controls
 - Utility Store with optional installations
 - Lolite AI
 - Notification Center
@@ -39,13 +41,13 @@ Lolite AI uses a server-side API route so the API key is never placed in browser
 Utilities are optional. The Utility Store keeps installation state in browser storage. Installing a utility adds it to the desktop; uninstalling removes it from the desktop.
 
 ## Game Store
-The Game Store accepts standalone `.html` and `.htm` games and checks the repository game folder for duplicates. The current original HTML pack includes 2048, Pong and Sokoban, alongside the existing game collection.
+The Game Store accepts standalone `.html` and `.htm` games and checks the repository game folder for duplicates. Game Library 2.0 adds category filtering, search, favorites, recently played games, install state, game-player fullscreen controls and richer game cards. The current original HTML pack includes 2048, Pong and Sokoban, alongside the existing game collection.
 
 ## Temporary game source
 `TEMP-GAME-SOURCE.txt` is a temporary placeholder for a public large HTML-game collection URL. It is intended to support the future V3 game importer and should be removed for V3.1.
 
 ## Versioned core files
-New Lolite feature layers use a version number in the filename, including the dot, such as `core/v2.4.js`, so the update layer is easy to identify and track.
+New Lolite feature layers use a version number in the filename, including the dot, such as `core/v2.4.js` and `core/v2.5.js`, so each update layer is easy to identify and track.
 
 ## Copyright
 Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS code, UI, branding and original game implementations are protected by applicable copyright law unless a file states another license.
@@ -53,6 +55,19 @@ Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS code, UI, branding and 
 Third-party projects and trademarks remain the property of their respective owners and are used according to their applicable licenses.
 
 ## Update Log
+
+### 2.5 — Game Library 2.0 — 2026-09-13
+- Added the versioned `core/v2.5.js` Game Library 2.0 layer.
+- Added a new searchable game-library presentation with category filtering.
+- Added favorites and recently-played tracking using browser storage.
+- Added per-game install state and install buttons.
+- Added richer game cards with descriptions, categories and game type labels.
+- Added a dedicated game player shell with fullscreen and close controls.
+- Added responsive game-library and player layouts for smaller screens.
+- Added refresh/discovery handling and duplicate-safe HTML/HTM indexing.
+- Updated the version checker to 2.5.
+- Checked `html games/`; the existing collection remains present and no new duplicate original-game files were added.
+- Kept `TEMP-GAME-SOURCE.txt` for the future V3 importer.
 
 ### 2.4 — Files & App Store — 2026-09-13
 - Added the versioned `core/v2.4.js` layer.
@@ -95,7 +110,7 @@ Third-party projects and trademarks remain the property of their respective owne
 ### 2.1 — Display, Clock & Sandbox — 2026-09-12
 - Revamped Clock with configurable seconds, minutes, 12/24-hour mode, date visibility and display styles.
 - Added desktop right-click **Edit display** menu.
-- Added layout presets, icon column/size controls, taskbar position, Liquid Glass and Reduce Motion controls in Edit display.
+- Added layout presets, icon columns/size controls, taskbar position, Liquid Glass and Reduce Motion controls in Edit display.
 - Added persistent display customization.
 - Improved World Sandbox canvas resolution and top-down presentation hooks.
 - Improved Pong/Game presentation foundation.
