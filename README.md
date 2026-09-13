@@ -27,6 +27,8 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Local persistence for Notepad and Quick Notes
 - Utility desktop shortcut and responsive utility grid
 - Utility Store with optional installations
+- Customisation 2.7 with themes, accent colours, wallpapers, slideshow/random wallpaper, icon sizing, taskbar position and Desktop Studio controls
+- Persistent customisation settings stored locally in the browser
 - Lolite AI
 - Notification Center
 - Plugin-ready App Store architecture
@@ -50,7 +52,7 @@ The Game Store accepts standalone `.html` and `.htm` games and checks the reposi
 `TEMP-GAME-SOURCE.txt` is a temporary placeholder for a public large HTML-game collection URL. It is intended to support the future V3 game importer and should be removed for V3.1.
 
 ## Versioned core files
-New Lolite feature layers use a version number in the filename, including the dot, such as `core/v2.4.js`, `core/v2.5.js` and `core/v2.6.js`, so each update layer is easy to identify and track.
+New Lolite feature layers use a version number in the filename, including the dot, such as `core/v2.4.js`, `core/v2.5.js`, `core/v2.6.js` and `core/v2.7.js`, so each update layer is easy to identify and track.
 
 ## Copyright
 Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS code, UI, branding and original game implementations are protected by applicable copyright law unless a file states another license.
@@ -58,6 +60,18 @@ Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS code, UI, branding and 
 Third-party projects and trademarks remain the property of their respective owners and are used according to their applicable licenses.
 
 ## Update Log
+
+### 2.7 — Customisation — 2026-09-13
+- Added the versioned `core/v2.7.js` customisation layer.
+- Added theme presets: Dark, Light, Midnight, Aurora, Retro, Minimal, Pixel and AMOLED.
+- Added custom accent colour controls and random accent generation.
+- Added local custom wallpaper import with multiple wallpaper support.
+- Added Next wallpaper, Random wallpaper and optional 30-second slideshow controls.
+- Added Desktop Studio controls for icon size, taskbar position, transparency, corner radius, window shadow and animation level.
+- Added persistent local customisation state.
+- Added responsive customisation settings UI.
+- Updated the version checker to 2.7.
+- Checked `html games/`; the existing collection remains present and no new duplicate original-game files were added.
 
 ### 2.6 — Utilities Pack — 2026-09-13
 - Added the versioned `core/v2.6.js` utilities layer.
