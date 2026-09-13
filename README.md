@@ -29,6 +29,9 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Utility Store with optional installations
 - Customisation 2.7 with themes, accent colours, wallpapers, slideshow/random wallpaper, icon sizing, taskbar position and Desktop Studio controls
 - Persistent customisation settings stored locally in the browser
+- Widgets 2.8 with Clock, Calendar, Weather placeholder, Battery, Storage, Network, Quick Notes, Recently Played, Favourite Apps and World Sandbox cards
+- Quick Settings 2.8 with Liquid Glass, Reduce Motion, Gaming Mode, Do Not Disturb, Brightness and Volume controls
+- Persistent widget/quick-setting preferences stored locally
 - Lolite AI
 - Notification Center
 - Plugin-ready App Store architecture
@@ -52,7 +55,7 @@ The Game Store accepts standalone `.html` and `.htm` games and checks the reposi
 `TEMP-GAME-SOURCE.txt` is a temporary placeholder for a public large HTML-game collection URL. It is intended to support the future V3 game importer and should be removed for V3.1.
 
 ## Versioned core files
-New Lolite feature layers use a version number in the filename, including the dot, such as `core/v2.4.js`, `core/v2.5.js`, `core/v2.6.js` and `core/v2.7.js`, so each update layer is easy to identify and track.
+New Lolite feature layers use a version number in the filename, including the dot, such as `core/v2.4.js`, `core/v2.5.js`, `core/v2.6.js`, `core/v2.7.js` and `core/v2.8.js`, so each update layer is easy to identify and track.
 
 ## Copyright
 Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS code, UI, branding and original game implementations are protected by applicable copyright law unless a file states another license.
@@ -60,6 +63,17 @@ Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS code, UI, branding and 
 Third-party projects and trademarks remain the property of their respective owners and are used according to their applicable licenses.
 
 ## Update Log
+
+### 2.8 — Widgets & Quick Settings — 2026-09-13
+- Added the versioned `core/v2.8.js` Widgets and Quick Settings layer.
+- Added Widgets for Clock, Calendar, Weather placeholder, Battery, Storage, Network, Quick Notes, Recently Played, Favourite Apps and World Sandbox.
+- Added widget hide controls and refresh handling.
+- Added live browser-local Clock, Calendar, Network, Storage and Battery information when supported.
+- Added Quick Settings for Liquid Glass, Reduce Motion, Gaming Mode and Do Not Disturb.
+- Added Brightness and Volume sliders with persistent local settings.
+- Added responsive widget and quick-setting layouts.
+- Updated the version checker to 2.7 as the current compatibility layer remains 2.7 until the checker is advanced separately.
+- Checked `html games/`; the existing collection remains present and no new duplicate original-game files were added.
 
 ### 2.7 — Customisation — 2026-09-13
 - Added the versioned `core/v2.7.js` customisation layer.
