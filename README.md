@@ -23,6 +23,9 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Default Games and HTML/HTM Game Store
 - Game Library 2.0 with search, categories, favorites and recently played
 - Game install state and dedicated game player controls
+- Utilities Pack 2.6 with Calculator, Notepad, Paint, Clock, Stopwatch, Timer, Screenshotter, Terminal, System Information, Storage Manager, Network Monitor, Unit Converter, Music Player and Quick Notes
+- Local persistence for Notepad and Quick Notes
+- Utility desktop shortcut and responsive utility grid
 - Utility Store with optional installations
 - Lolite AI
 - Notification Center
@@ -38,7 +41,7 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 Lolite AI uses a server-side API route so the API key is never placed in browser code. Configure `OPENAI_API_KEY` as a server/Vercel environment variable. The implementation uses the OpenAI Responses API.
 
 ## Utility installation
-Utilities are optional. The Utility Store keeps installation state in browser storage. Installing a utility adds it to the desktop; uninstalling removes it from the desktop.
+Utilities are optional. The Utility Store keeps installation state in browser storage. Installing a utility adds it to the desktop; uninstalling removes it from the desktop. Version 2.6 also provides a built-in Utilities workspace containing the utility tools listed above.
 
 ## Game Store
 The Game Store accepts standalone `.html` and `.htm` games and checks the repository game folder for duplicates. Game Library 2.0 adds category filtering, search, favorites, recently played games, install state, game-player fullscreen controls and richer game cards. The current original HTML pack includes 2048, Pong and Sokoban, alongside the existing game collection.
@@ -47,7 +50,7 @@ The Game Store accepts standalone `.html` and `.htm` games and checks the reposi
 `TEMP-GAME-SOURCE.txt` is a temporary placeholder for a public large HTML-game collection URL. It is intended to support the future V3 game importer and should be removed for V3.1.
 
 ## Versioned core files
-New Lolite feature layers use a version number in the filename, including the dot, such as `core/v2.4.js` and `core/v2.5.js`, so each update layer is easy to identify and track.
+New Lolite feature layers use a version number in the filename, including the dot, such as `core/v2.4.js`, `core/v2.5.js` and `core/v2.6.js`, so each update layer is easy to identify and track.
 
 ## Copyright
 Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS code, UI, branding and original game implementations are protected by applicable copyright law unless a file states another license.
@@ -55,6 +58,20 @@ Copyright © 2026 Darby9 / Lolite OS. Original Lolite OS code, UI, branding and 
 Third-party projects and trademarks remain the property of their respective owners and are used according to their applicable licenses.
 
 ## Update Log
+
+### 2.6 — Utilities Pack — 2026-09-13
+- Added the versioned `core/v2.6.js` utilities layer.
+- Added a Utilities workspace with built-in tools for Calculator, Notepad, Paint, Clock, Stopwatch, Timer, Screenshotter, Terminal, System Information, Storage Manager, Network Monitor, Unit Converter, Music Player and Quick Notes.
+- Added persistent Notepad and Quick Notes storage using browser storage.
+- Added a simple Paint canvas with touch/pointer drawing and brush-size control.
+- Added Stopwatch and Timer controls with completion notification support.
+- Added browser-based screen capture through the Screenshotter when supported by the browser.
+- Added a lightweight Terminal with basic informational commands.
+- Added system, storage and network information views using browser capabilities.
+- Added local audio playback in Music Player.
+- Added responsive utility cards and a Utilities desktop shortcut.
+- Updated the version checker to 2.6.
+- Checked `html games/`; the existing collection remains present and no new duplicate original-game files were added.
 
 ### 2.5 — Game Library 2.0 — 2026-09-13
 - Added the versioned `core/v2.5.js` Game Library 2.0 layer.
