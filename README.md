@@ -63,6 +63,16 @@ Third-party projects and trademarks remain the property of their respective owne
 - Updated the version checker to 2.2.
 - From this update onward, new core feature files use version numbers in their filenames.
 
+### 2.3 — Clean Browser & UI — 2026-09-13
+- Removed the separate Scramjet UI/diagnostic script from the desktop build.
+- Reworked the browser presentation into a simple, polished Lolite Browser shell.
+- Removed unnecessary AI-style wording from the browser interface.
+- Added a cleaner address/search bar, navigation controls and shortcuts.
+- Refined application icon presentation so the desktop uses consistent Lolite glyphs.
+- Added a quieter, more traditional desktop-window visual treatment.
+
+### 2.2 — Platform Foundation — 2026-09-12
+
 ### 2.1 — Display, Clock & Sandbox — 2026-09-12
 - Revamped Clock with configurable seconds, minutes, 12/24-hour mode, date visibility and display styles.
 - Added desktop right-click **Edit display** menu.
