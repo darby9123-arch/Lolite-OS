@@ -85,7 +85,16 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Made **Play** open a real Lolite window containing the selected game's actual HTML file in an iframe.
 - Added iframe permissions for fullscreen, gamepad, autoplay and pointer lock where supported.
 - Added **Open separately** for games that need their own browser tab.
-- Added an in-window **Fullscreen** control for the embedded game.
 - Improved game titles so internal IDs are no longer shown as the playable game name.
 - Kept Game Center search and refresh functionality.
 - Kept `html games/` as the source of truth for the playable collection.
+
+### 3.0.5 — New Steam-Inspired Game Store — 2026-09-14
+- Replaced the old Games entry point with a polished **Lolite Game Store** interface inspired by modern PC game storefronts.
+- Added a dark storefront layout with sidebar navigation, search, featured content, game cards and category sections.
+- Added **Baldi’s Basics**, Horror, Racing, Puzzle, Arcade and IO & Casual categories.
+- Added a dedicated **Baldi’s Basics** collection that automatically groups matching games from `html games/`.
+- Added automatic discovery of HTML games directly from the repository's `html games/` folder.
+- Added playable game cards that launch the actual local HTML files in Lolite windows.
+- Renamed the desktop Games icon to **Game Store** and updated the Start menu entry.
+- Kept all existing game files and folders in the repository; the store only provides a new way to browse and launch them.
