@@ -4,6 +4,16 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.0.9 — AI Repair & App Icon Polish — 2026-09-14
+- Fixed the server-side OpenAI Responses API handler with safer response parsing and clearer HTTP/API error reporting.
+- Added support for `OPENAI_MODEL` while keeping `gpt-5.6-luna` as the default model.
+- Renamed the user-facing assistant from **Low Light AI** to **Lolite AI** while preserving the existing app ID so installed apps do not break.
+- Improved Lolite AI so server errors are shown directly instead of the generic disconnected message.
+- Replaced emoji-based installed-app desktop icons with consistent Lolite CSS icons that match the built-in icon system.
+- Added dedicated icons for Lolite AI and Wallpaper Editor.
+- Redesigned the **App Store** desktop icon so it matches the same size, shape, border and visual language as the other Lolite icons.
+- Updated the App Store cards to use the same icon system as desktop shortcuts.
+
 ### 3.0.8 — Creative Studio & Settings Overhaul — 2026-09-14
 - Fixed Settings controls by replacing the broken wallpaper re-open flow with reliable persistent controls.
 - Added **Cursor** settings with Default, Pointer, Crosshair and Hidden options.
@@ -15,12 +25,12 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Added **Save as Wallpaper** alongside Save as PDF and PNG.
 - Reworked Liquid Glass toward a more liquid/refractive appearance using SVG displacement, specular-style highlights and reduced blur instead of a simple frosted-glass effect.
 
-### 3.0.7 — Low Light OS Apps, AI & Browser Refresh — 2026-09-14
-- Added a first-run **Welcome to Low Light OS** screen with **What's New** and **Best Features** sections.
+### 3.0.7 — Lolite OS Apps, AI & Browser Refresh — 2026-09-14
+- Added a first-run **Welcome to Lolite OS** screen with **What's New** and **Best Features** sections.
 - Added a polished **Lolite Browser** shell with address/search navigation and browser-style controls.
-- Added a new **App Store** with installable apps including Low Light AI, Lolite Browser, Quick Notes, Calculator and Lolite Paint.
+- Added a new **App Store** with installable apps including Lolite AI, Lolite Browser, Quick Notes, Calculator and Lolite Paint.
 - Apps must be installed before use and installed apps receive desktop shortcuts.
-- Added a new **Low Light AI** app connected to the existing secure server-side OpenAI Responses API endpoint.
+- Added a new **Lolite AI** app connected to the existing secure server-side OpenAI Responses API endpoint.
 - Kept the OpenAI API key server-side through `OPENAI_API_KEY`; no API key is placed in the browser code.
 - Expanded the Game Store with **Popular Games** and **IO Games** sections.
 - Removed the visible **HTML game** label from game cards while keeping all actual game files intact.
@@ -30,7 +40,7 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Added cleaner spacing to **all game names**, including camel-case and numbered titles such as FNAF 2 and Angry Birds 2.
 - Reworked the Game Store so the **Featured** page shows every major category, not only Baldi’s Basics.
 - Added clearer **Baldi’s Basics, Horror, Racing, Puzzle, Arcade and IO & Casual** collections.
-- Reworked the low-light storefront with a more polished dark theme, better cards, hover states, search styling, spacing and navigation.
+- Reworked the storefront with a more polished dark theme, better cards, hover states, search styling, spacing and navigation.
 - Removed the harsh white browser-style scrolling look from Lolite windows and replaced it with subtle dark scrollbars that match the UI.
 - Refined the taskbar with a more Windows-like layout, stronger separation, better task buttons, improved tray styling and responsive mobile behaviour.
 - Fixed the game launcher path handling so filenames with spaces and special characters are encoded correctly.
