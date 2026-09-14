@@ -4,6 +4,17 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.0.7 — Low Light OS Apps, AI & Browser Refresh — 2026-09-14
+- Added a first-run **Welcome to Low Light OS** screen with **What's New** and **Best Features** sections.
+- Added a polished **Lolite Browser** shell with address/search navigation and browser-style controls.
+- Added a new **App Store** with installable apps including Low Light AI, Lolite Browser, Quick Notes, Calculator and Lolite Paint.
+- Apps must be installed before use and installed apps receive desktop shortcuts.
+- Added a new **Low Light AI** app connected to the existing secure server-side OpenAI Responses API endpoint.
+- Kept the OpenAI API key server-side through `OPENAI_API_KEY`; no API key is placed in the browser code.
+- Expanded the Game Store with **Popular Games** and **IO Games** sections.
+- Removed the visible **HTML game** label from game cards while keeping all actual game files intact.
+- Added cleaner game-store navigation and category coverage across the full collection.
+
 ### 3.0.6 — Game Store Polish & Play Fixes — 2026-09-14
 - Added cleaner spacing to **all game names**, including camel-case and numbered titles such as FNAF 2 and Angry Birds 2.
 - Reworked the Game Store so the **Featured** page shows every major category, not only Baldi’s Basics.
