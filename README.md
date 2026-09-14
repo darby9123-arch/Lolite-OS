@@ -4,6 +4,17 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.0.6 — Game Store Polish & Play Fixes — 2026-09-14
+- Added cleaner spacing to **all game names**, including camel-case and numbered titles such as FNAF 2 and Angry Birds 2.
+- Reworked the Game Store so the **Featured** page shows every major category, not only Baldi’s Basics.
+- Added clearer **Baldi’s Basics, Horror, Racing, Puzzle, Arcade and IO & Casual** collections.
+- Reworked the low-light storefront with a more polished dark theme, better cards, hover states, search styling, spacing and navigation.
+- Removed the harsh white browser-style scrolling look from Lolite windows and replaced it with subtle dark scrollbars that match the UI.
+- Refined the taskbar with a more Windows-like layout, stronger separation, better task buttons, improved tray styling and responsive mobile behaviour.
+- Fixed the game launcher path handling so filenames with spaces and special characters are encoded correctly.
+- Improved **Play** buttons with a real in-window game player, larger game windows and an **Open separately** fallback for games that need their own tab.
+- Kept every existing game file in `html games/` intact.
+
 ### 3.0.5 — New Steam-Inspired Game Store — 2026-09-14
 - Replaced the old Games entry point with a polished **Lolite Game Store** interface inspired by modern PC game storefronts.
 - Added a dark storefront layout with sidebar navigation, search, featured content, game cards and category sections.
@@ -34,7 +45,7 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ### 3.0.2 — Game Launcher Repair — 2026-09-14
 - Repaired V3 local HTML/HTM game launching.
-- Fixed local `html games/` paths and filename encoding.
+- Fixed local `html games` paths and filename encoding.
 - Improved game windows and fullscreen handling.
 - Added recently played tracking for launched games.
 - Kept ZIP game-pack support.
