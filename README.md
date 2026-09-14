@@ -4,6 +4,17 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.0.8 — Creative Studio & Settings Overhaul — 2026-09-14
+- Fixed Settings controls by replacing the broken wallpaper re-open flow with reliable persistent controls.
+- Added **Cursor** settings with Default, Pointer, Crosshair and Hidden options.
+- Added persistent **Accent Colour** settings and a system reset option.
+- Added stronger Reduce Motion persistence and Liquid Glass state handling.
+- Added **Wallpaper Editor** to the App Store; it must be installed before use and then adds a desktop shortcut.
+- Added Wallpaper Editor tools for draw, glow, text, multiple fonts, shapes, gradients, colour, sizing, undo and custom wallpaper export.
+- Enhanced **Lolite Paint** with Pen, Marker, Highlighter, Eraser, Line, Box, Circle, brush size and colour controls.
+- Added **Save as Wallpaper** alongside Save as PDF and PNG.
+- Reworked Liquid Glass toward a more liquid/refractive appearance using SVG displacement, specular-style highlights and reduced blur instead of a simple frosted-glass effect.
+
 ### 3.0.7 — Low Light OS Apps, AI & Browser Refresh — 2026-09-14
 - Added a first-run **Welcome to Low Light OS** screen with **What's New** and **Best Features** sections.
 - Added a polished **Lolite Browser** shell with address/search navigation and browser-style controls.
