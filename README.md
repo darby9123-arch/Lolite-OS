@@ -4,6 +4,15 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.2.0 — App Store 2.0 — 2026-09-24
+- Reworked the App Store with **All, Featured, Installed and category filters**.
+- Added app search across names and descriptions.
+- Added app categories and version badges to every store card.
+- Improved the installed-app library so installed apps can be opened or uninstalled directly from the store.
+- Added clearer empty-search states and a more organised storefront layout.
+- Kept app installation local and preserved the existing desktop-shortcut system.
+- Checked the `html games/` folder for identical duplicate files; no identical duplicate groups were found.
+
 ### 3.1.0 — Desktop Polish — 2026-09-24
 - Added working window **minimise** and **maximise** controls.
 - Added double-click titlebar maximise/restore behaviour.
