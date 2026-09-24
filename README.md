@@ -8,6 +8,13 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.4.3 — App Store Cleanup — 2026-09-25
+- Removed the non-functional utility apps that only opened placeholder-style Run Utility screens without providing meaningful functionality.
+- Kept the genuinely implemented Lolite apps such as Lolite AI, Lolite Browser, Quick Notes, Calculator, Lolite Paint and Wallpaper Editor.
+- Automatically cleans removed app IDs from the local installed-app list so old utility shortcuts do not remain registered.
+- Kept App Store search, categories, install, open, uninstall and Uninstall All controls.
+- Checked the html games/ folder; no verified identical duplicate group was identified in this update.
+
 ### 3.4.2 — Lolite AI Connection Repair — 2026-09-25
 - Fixed the GitHub Pages Lolite AI endpoint so it no longer points at the missing lolite-os.vercel.app/api/ai route.
 - Added a 20-second request timeout so a stalled AI request reports a useful error instead of hanging indefinitely.
