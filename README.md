@@ -8,6 +8,14 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.2.2 — Store Controls & Selection Fix — 2026-09-24
+- Fixed App Store category/filter buttons so every tab reliably responds to clicks.
+- Added persistent selected states to App Store filters with accessible pressed-state feedback.
+- Fixed Game Store category navigation so selected categories are tracked directly instead of relying on button text.
+- Added more reliable active-state updates when switching Game Store categories.
+- Kept the existing game catalogue intact.
+- Checked the `html games/` folder for identical duplicate files; no identical duplicate groups were found.
+
 ### 3.2.1 — UI Redesign — 2026-09-24
 - Redesigned the Lolite desktop with a cleaner Windows-inspired visual hierarchy.
 - Refined windows, title bars, controls, cards, inputs, buttons and panels with consistent spacing and borders.
