@@ -8,6 +8,14 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.2.3 — Fullscreen System — 2026-09-24
+- Added a real Lolite OS fullscreen toggle using the browser Fullscreen API.
+- Added a dedicated Fullscreen button to the taskbar.
+- The taskbar button now changes state when Lolite enters or exits fullscreen.
+- Added fullscreen error handling and a browser-availability check.
+- Game/app fullscreen requests can now use the same browser-controlled fullscreen system where supported.
+- Checked the `html games/` folder for identical duplicate files; no identical duplicate groups were found.
+
 ### 3.2.2 — Store Controls & Selection Fix — 2026-09-24
 - Fixed App Store category/filter buttons so every tab reliably responds to clicks.
 - Added persistent selected states to App Store filters with accessible pressed-state feedback.
