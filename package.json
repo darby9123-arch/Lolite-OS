@@ -1,0 +1,19 @@
+{
+  "name": "lolite-os",
+  "version": "3.4.3",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.18.3",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs"
+  },
+  "dependencies": {
+    "@mercuryworkshop/bare-transport": "^1.0.0",
+    "@mercuryworkshop/scramjet": "2.0.67-alpha.2",
+    "@mercuryworkshop/scramjet-controller": "0.0.14",
+    "@mercuryworkshop/scramjet-utils": "0.0.3",
+    "@tomphttp/bare-server-node": "^2.0.6",
+    "express": "^5.1.0"
+  }
+}
