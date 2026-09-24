@@ -114,3 +114,80 @@ input::placeholder,textarea::placeholder{color:#697587}
 
 /* Lolite OS 3.2.4 — interaction layer */
 #taskbar{z-index:10000!important;pointer-events:auto!important}.panel{z-index:10001!important}.window{z-index:100!important}.fullscreen-task{position:relative;z-index:2;pointer-events:auto!important}
+
+/* Lolite OS 3.3.0 — Liquid Glass */
+html.glass{--glass:1}
+html.glass #wallpaper{filter:saturate(1.18) contrast(1.04)}
+html.glass .window,
+html.glass .panel,
+html.glass #taskbar{
+  position:relative;
+  background:
+    radial-gradient(circle at 18% 12%,rgba(255,255,255,.24),transparent 28%),
+    radial-gradient(circle at 82% 88%,rgba(120,105,255,.18),transparent 34%),
+    linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.055) 42%,rgba(110,100,220,.10));
+  border:1px solid rgba(255,255,255,.28);
+  box-shadow:
+    0 22px 70px rgba(0,0,0,.42),
+    inset 0 1px 0 rgba(255,255,255,.38),
+    inset 0 -1px 0 rgba(255,255,255,.08),
+    0 0 0 1px rgba(120,110,255,.08);
+  backdrop-filter:blur(18px) saturate(165%) brightness(1.08);
+  -webkit-backdrop-filter:blur(18px) saturate(165%) brightness(1.08);
+  overflow:hidden;
+}
+html.glass .window::before,
+html.glass .panel::before,
+html.glass #taskbar::before{
+  content:"";
+  position:absolute;
+  inset:-35%;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at 20% 30%,rgba(255,255,255,.20),transparent 23%),
+    radial-gradient(ellipse at 75% 70%,rgba(120,100,255,.16),transparent 28%);
+  filter:blur(18px);
+  animation:loliteLiquid 8s ease-in-out infinite alternate;
+  transform:translate3d(-8%,0,0) rotate(-4deg);
+}
+html.glass .window::after,
+html.glass .panel::after,
+html.glass #taskbar::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  background:linear-gradient(115deg,rgba(255,255,255,.18),transparent 22%,transparent 72%,rgba(255,255,255,.10));
+  mix-blend-mode:screen;
+  opacity:.75;
+}
+html.glass .titlebar{
+  background:linear-gradient(120deg,rgba(255,255,255,.15),rgba(255,255,255,.04));
+  border-bottom-color:rgba(255,255,255,.16);
+}
+html.glass .card,
+html.glass .result,
+html.glass .search-result,
+html.glass .appstore-card,
+html.glass .game-hero,
+html.glass .store-card{
+  background:linear-gradient(135deg,rgba(255,255,255,.13),rgba(255,255,255,.045));
+  border-color:rgba(255,255,255,.18);
+  box-shadow:inset 0 1px rgba(255,255,255,.16),0 10px 30px rgba(0,0,0,.18);
+  backdrop-filter:blur(14px) saturate(150%);
+  -webkit-backdrop-filter:blur(14px) saturate(150%);
+}
+html.glass button,
+html.glass input,
+html.glass textarea{
+  border-color:rgba(255,255,255,.18);
+}
+@keyframes loliteLiquid{
+  0%{transform:translate3d(-9%,-3%,0) rotate(-5deg) scale(1)}
+  50%{transform:translate3d(4%,5%,0) rotate(2deg) scale(1.05)}
+  100%{transform:translate3d(9%,-2%,0) rotate(5deg) scale(1.02)}
+}
+html.glass.reduce .window::before,
+html.glass.reduce .panel::before,
+html.glass.reduce #taskbar::before{animation:none}
