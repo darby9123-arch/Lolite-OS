@@ -8,6 +8,13 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.4.2 — Lolite AI Connection Repair — 2026-09-25
+- Fixed the GitHub Pages Lolite AI endpoint so it no longer points at the missing lolite-os.vercel.app/api/ai route.
+- Added a 20-second request timeout so a stalled AI request reports a useful error instead of hanging indefinitely.
+- Kept the OpenAI API key server-side through the Vercel function.
+- The current Vercel production deployment still has Deployment Protection enabled, so that protection must be disabled for the browser to reach the API from GitHub Pages.
+- Checked the html games/ folder; no verified identical duplicate group was identified in this update.
+
 ### 3.4.1 — Functional App Store & App Management — 2026-09-25
 - Made the Lolite utility apps open into functional browser-native workspaces instead of placeholder screens.
 - Added working diagnostics, storage inspection, network status, performance metrics, local file inspection, keyboard testing, screen capture and appearance controls where browser APIs allow them.
