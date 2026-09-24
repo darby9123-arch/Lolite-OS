@@ -1,3 +1,7 @@
+## [Launch Lolite OS](https://darby9123-arch.github.io/Lolite-OS/)
+
+**Open Lolite OS online:** https://darby9123-arch.github.io/Lolite-OS/
+
 # Lolite OS
 
 A Lolite-branded browser desktop with a dark purple/blue interface, apps, games, files, wallpapers, AI and responsive PC/mobile layouts.
