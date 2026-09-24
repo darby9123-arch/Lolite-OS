@@ -8,6 +8,15 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.3.0 — App Store & Liquid Glass — 2026-09-24
+- Restored the App Store as a permanent desktop and Start menu entry.
+- Kept the existing App Store install, search, category and uninstall system intact.
+- Reworked Liquid Glass into a more visibly translucent, reflective and animated glass surface with moving liquid-like light.
+- Added glass treatment to windows, panels, taskbar, cards and controls while keeping Liquid Glass OFF by default.
+- Added stronger backdrop blur, saturation, highlights, reflections and animated refractive-looking light.
+- Kept Reduce Motion support so the liquid animation can be disabled.
+- Checked the `html games/` folder for identical duplicate files; no identical duplicate groups were found.
+
 ### 3.2.4 — Interaction & Fullscreen Repair — 2026-09-24
 - Fixed taskbar controls being covered by application windows by giving the taskbar a dedicated top interaction layer.
 - Reworked the Fullscreen button to use a direct user-click event and a browser-compatible Fullscreen API call.
