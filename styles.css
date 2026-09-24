@@ -107,3 +107,7 @@ input::placeholder,textarea::placeholder{color:#697587}
  .content{padding:15px}
  .appstore{padding:18px!important;margin:-15px!important}
 }
+
+/* Lolite OS 3.2.3 — real browser fullscreen */
+#fullscreenBtn{font-size:20px}.fullscreen-task.active{background:#292455!important;border-color:#5c52bd!important;color:#fff}.fullscreen-task{cursor:pointer}
+:fullscreen #desktop{width:100vw;height:100vh}
