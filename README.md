@@ -4,6 +4,18 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.2.1 — UI Redesign — 2026-09-24
+- Redesigned the Lolite desktop with a cleaner Windows-inspired visual hierarchy.
+- Refined windows, title bars, controls, cards, inputs, buttons and panels with consistent spacing and borders.
+- Reworked the taskbar into a cleaner centered layout with stronger active states.
+- Refined desktop icons and the wallpaper backdrop for a cleaner desktop.
+- Redesigned the Start and Search panels.
+- Refined the App Store with a cleaner header, search bar, category tabs, metadata and app cards.
+- Improved mobile spacing and touch-friendly controls.
+- Added clearer keyboard focus states and more consistent interactive feedback.
+- Kept Liquid Glass disabled by default; the normal interface now uses crisp surfaces rather than unnecessary blur.
+- Checked the `html games/` folder for identical duplicate files; no identical duplicate groups were found.
+
 ### 3.2.0 — App Store 2.0 — 2026-09-24
 - Reworked the App Store with **All, Featured, Installed and category filters**.
 - Added app search across names and descriptions.
