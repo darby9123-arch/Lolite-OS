@@ -8,6 +8,14 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.3.1 — Taskbar & Live Liquid Glass — 2026-09-24
+- Repaired taskbar interaction layering and fullscreen click handling.
+- Added cache-busting for all local scripts so the updated build loads consistently.
+- Rebuilt Liquid Glass as a live animated glass surface with moving refraction, translucent depth and reflections.
+- The liquid movement updates without rebuilding the DOM for smoother performance.
+- Reduce Motion and the browser reduced-motion preference stop the live movement.
+- Checked the `html games/` folder for identical duplicate files; no identical duplicate groups were found.
+
 ### 3.3.0 — App Store & Liquid Glass — 2026-09-24
 - Restored the App Store as a permanent desktop and Start menu entry.
 - Kept the existing App Store install, search, category and uninstall system intact.
