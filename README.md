@@ -8,6 +8,15 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.5.0 — Game Store & Lolite Chat — 2026-09-25
+- Heavily redesigned the Lolite Game Store around a modern PC storefront experience with a dedicated navigation rail, storefront hero, search, collection sections, hover states and game-player presentation.
+- Kept the real HTML game catalogue and existing Play/Open separately functionality intact.
+- Added **Lolite Chat**, a new community-style chatroom app with servers, text channels, member list, profile name controls, message composer and locally persisted message history.
+- Added Lolite Chat to the App Store and desktop shortcuts.
+- Updated script cache versions to 3.5.0.
+- Checked the `html games/` folder: 83 HTML files were checked by file SHA and no identical duplicate groups were found.
+
+
 ### 3.4.3 — App Store Cleanup — 2026-09-25
 - Removed the non-functional utility apps that only opened placeholder-style Run Utility screens without providing meaningful functionality.
 - Kept the genuinely implemented Lolite apps such as Lolite AI, Lolite Browser, Quick Notes, Calculator, Lolite Paint and Wallpaper Editor.
