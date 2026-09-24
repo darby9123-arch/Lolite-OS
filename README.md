@@ -8,6 +8,14 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.2.4 — Interaction & Fullscreen Repair — 2026-09-24
+- Fixed taskbar controls being covered by application windows by giving the taskbar a dedicated top interaction layer.
+- Reworked the Fullscreen button to use a direct user-click event and a browser-compatible Fullscreen API call.
+- Added a WebKit fullscreen fallback where available.
+- Added cache-busting version parameters to Lolite's local scripts so GitHub Pages does not keep serving an older JavaScript build after updates.
+- Added clearer fullscreen failure feedback.
+- Checked the `html games/` folder for identical duplicate files; no identical duplicate groups were found.
+
 ### 3.2.3 — Fullscreen System — 2026-09-24
 - Added a real Lolite OS fullscreen toggle using the browser Fullscreen API.
 - Added a dedicated Fullscreen button to the taskbar.
