@@ -8,6 +8,14 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.4.1 — Functional App Store & App Management — 2026-09-25
+- Made the Lolite utility apps open into functional browser-native workspaces instead of placeholder screens.
+- Added working diagnostics, storage inspection, network status, performance metrics, local file inspection, keyboard testing, screen capture and appearance controls where browser APIs allow them.
+- Added visible app categories with improved category styling and metadata.
+- Added **Uninstall All** for optional installed apps, alongside per-app Uninstall.
+- Kept installed-app desktop shortcuts synced with the App Store.
+- Checked the `html games/` folder; no duplicate cleanup was performed because this update did not identify a verified identical duplicate group.
+
 ### 3.4.0 — Lolite Power Utilities Store — 2026-09-24
 - Added 31 new Lolite-native power utility apps to the App Store.
 - Added Lolite versions covering system tools, performance, cleaning, files, archives, diagnostics, storage, screenshots, widgets, personalisation, automation, networking and app installation.
