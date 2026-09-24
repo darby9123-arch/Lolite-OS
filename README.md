@@ -4,6 +4,18 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.1.0 — Desktop Polish — 2026-09-24
+- Added working window **minimise** and **maximise** controls.
+- Added double-click titlebar maximise/restore behaviour.
+- Added edge snapping: drag windows to the left/right edge for split layouts and to the top edge for maximise.
+- Improved taskbar window buttons with active-window highlighting.
+- Added **Alt + Tab** window switching and **Esc** shortcuts for closing transient panels.
+- Added a faster global Search panel for Lolite apps and system entry points.
+- Improved small-screen window sizing so apps stay inside the viewport.
+- Added a clickable clock area that shows the full current date.
+- Updated the version checker to **3.1.0**.
+- Checked the `html games/` folder for identical duplicate files; no identical duplicate groups were found.
+
 ### 3.0.9 — AI Repair & App Icon Polish — 2026-09-14
 - Fixed the server-side OpenAI Responses API handler with safer response parsing and clearer HTTP/API error reporting.
 - Added support for `OPENAI_MODEL` while keeping `gpt-5.6-luna` as the default model.
