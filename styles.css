@@ -111,3 +111,6 @@ input::placeholder,textarea::placeholder{color:#697587}
 /* Lolite OS 3.2.3 — real browser fullscreen */
 #fullscreenBtn{font-size:20px}.fullscreen-task.active{background:#292455!important;border-color:#5c52bd!important;color:#fff}.fullscreen-task{cursor:pointer}
 :fullscreen #desktop{width:100vw;height:100vh}
+
+/* Lolite OS 3.2.4 — interaction layer */
+#taskbar{z-index:10000!important;pointer-events:auto!important}.panel{z-index:10001!important}.window{z-index:100!important}.fullscreen-task{position:relative;z-index:2;pointer-events:auto!important}
