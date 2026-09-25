@@ -8,6 +8,17 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.5.1 — Lolite Chat 2.0 — 2026-09-25
+- Fixed Lolite Chat interaction handling so channel switching, sending messages and profile controls work after the app is opened.
+- Added local account creation and sign-in.
+- Added direct messages between accounts on the same Lolite OS device.
+- Added group chat creation.
+- Added editable profiles with display name, avatar initials and About text.
+- Added local-user browsing and DM shortcuts.
+- Kept chat data local to the device; this release does not provide a public internet chat server.
+- Checked the `html games/` folder; no identical duplicate groups were found.
+
+
 ### 3.5.0 — Game Store & Lolite Chat — 2026-09-25
 - Heavily redesigned the Lolite Game Store around a modern PC storefront experience with a dedicated navigation rail, storefront hero, search, collection sections, hover states and game-player presentation.
 - Kept the real HTML game catalogue and existing Play/Open separately functionality intact.
