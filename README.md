@@ -8,6 +8,19 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.6.0 — Lolite Chat Online — 2026-09-25
+- Rebuilt Lolite Chat around a real Supabase backend instead of browser-only localStorage chat data.
+- Added real email/password account creation and sign-in through Supabase Auth.
+- Added cloud profiles with usernames, display names, avatars and About text.
+- Added online direct messages and group chats with persistent database storage.
+- Added live message updates with Supabase Realtime.
+- Added Row Level Security policies for profiles, conversations, members and messages.
+- Added a server-side profile creation trigger so new accounts receive a profile automatically.
+- Kept the existing Lolite Chat channels, profile editing, DM UI and group-chat workflow.
+- Created the dedicated `lolite-chat` Supabase project in the connected organization; the project creation cost was confirmed as $0/month.
+- Checked the `html games/` folder; no identical duplicate groups were found.
+
+
 ### 3.5.1 — Lolite Chat 2.0 — 2026-09-25
 - Fixed Lolite Chat interaction handling so channel switching, sending messages and profile controls work after the app is opened.
 - Added local account creation and sign-in.
