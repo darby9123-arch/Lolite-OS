@@ -8,6 +8,13 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.6.2 — Lolite Chat No-Email Accounts — 2026-09-25
+- Added a no-email account option to Lolite Chat using Supabase anonymous sign-ins.
+- Users can choose a username and display name without entering an email address.
+- Kept the existing email/password account option for recoverable accounts.
+- No-email accounts are device/browser-bound and cannot be recovered after signing out or clearing browser data unless they are later linked to a permanent identity.
+- Checked the html games/ folder; no identical duplicate groups were found in the current release check.
+
 ### 3.6.1 — Lolite Chat Rendering Fix — 2026-09-25
 - Fixed Lolite Chat rendering into the actual Lolite window content container, so the online chat interface appears instead of staying on an empty loading view.
 - Bumped script cache versions so GitHub Pages loads the repaired Chat code.
