@@ -8,6 +8,12 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.6.1 — Lolite Chat Rendering Fix — 2026-09-25
+- Fixed Lolite Chat rendering into the actual Lolite window content container, so the online chat interface appears instead of staying on an empty loading view.
+- Bumped script cache versions so GitHub Pages loads the repaired Chat code.
+- Checked the `html games/` folder; no identical duplicate groups were found in the current release check.
+
+
 ### 3.6.0 — Lolite Chat Online — 2026-09-25
 - Rebuilt Lolite Chat around a real Supabase backend instead of browser-only localStorage chat data.
 - Added real email/password account creation and sign-in through Supabase Auth.
