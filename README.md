@@ -8,6 +8,14 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.6.4 — Lolite Chat Guest Account Repair — 2026-09-25
+- Reworked no-email account creation so Lolite Chat first uses Supabase Anonymous Sign-Ins and automatically falls back to a secure server-side guest-account flow if anonymous sign-ins are unavailable.
+- Guest accounts are created server-side with an auto-confirmed internal identity; the secret credentials never reach the browser.
+- Added basic per-address guest-account rate limiting to the guest account function.
+- Kept the normal email/password account system and existing online DMs, group chats, profiles and realtime messaging.
+- Bumped Chat script cache versions so GitHub Pages loads the new authentication code.
+- Checked the `html games/` folder; no verified identical duplicate group was identified in the current directory listing.
+
 ### 3.6.3 — Lolite Chat No-Email Fix — 2026-09-25
 - Improved the no-email Lolite Chat flow with clearer anonymous-account error handling and an existing-session check.
 - No-email accounts now wait briefly for the Supabase profile trigger before rebuilding the chat UI.
