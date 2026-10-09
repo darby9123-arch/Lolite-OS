@@ -8,6 +8,15 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+
+### 3.6.8 — Unified Desktop UI & Game Store Polish — 2026-10-09
+- Refined the desktop and App Store UI with a more practical Windows-inspired layout, flatter surfaces and restrained corner rounding.
+- Standardised desktop shortcuts and installed-app icons on Lolite’s existing CSS icon system instead of mixing emoji and text glyphs.
+- Improved game-library titles with readable spacing and explicit names for common games, including numbered sequels and well-known franchises.
+- Tightened Game Store card, search, navigation and category styling while preserving the existing game catalogue and launch actions.
+- Removed the technical “HTML game” label from cards.
+- Updated cache-busting and the version checker to 3.6.8.
+
 ### 3.6.7 — Game Library Redesign & Fullscreen Fix — 2026-10-09
 - Redesigned the Game Store with a cleaner launcher-style layout, DM Sans/Space Grotesk typography, text-based cover treatments instead of emoji pictures, and clearer category navigation.
 - Improved categorisation across popular games, IO & casual, Baldi’s Basics, horror, racing, puzzle, platformers & arcade, simulation & sandbox, sports, and classics.
