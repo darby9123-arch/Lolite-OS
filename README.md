@@ -1,8 +1,10 @@
-## [Launch Lolite OS](https://darby9123-arch.github.io/Lolite-OS/)
+## [Launch Lolite OS](https://lolite-os.vercel.app/)
 
-**Open Lolite OS online:** https://darby9123-arch.github.io/Lolite-OS/
+**Open Lolite OS online:** https://lolite-os.vercel.app/
 
 # Lolite OS
+
+The Vercel version includes the Node-backed Ultraviolet proxy endpoints. The GitHub Pages copy is static and cannot run the proxy backend.
 
 A Lolite-branded browser desktop with a dark purple/blue interface, apps, games, files, wallpapers, AI and a responsive desktop layout.
 
