@@ -4,7 +4,7 @@
   const get=(k,d='')=>localStorage.getItem(k)??d;
   window.loliteApplyCursor=cursor=>{document.documentElement.style.cursor=cursor==='crosshair'?'crosshair':cursor==='pointer'?'pointer':cursor==='none'?'none':'default';key('loliteCursor',cursor)};
   window.loliteSetAccent=color=>{document.documentElement.style.setProperty('--accent',color);key('loliteAccent',color)};
-  window.toggleGlass=on=>{key('glass',on?'true':'false');document.documentElement.classList.toggle('liquid-glass',!!on)};
+  window.toggleGlass=on=>{key('glass',on?'true':'false');document.documentElement.classList.toggle('glass',!!on);document.documentElement.classList.toggle('liquid-glass',!!on);window.LoliteLiquidGlass?.setEnabled(!!on)};
   window.toggleReduce=on=>{key('reduce',on?'true':'false');document.documentElement.classList.toggle('reduce-motion',!!on)};
   window.loliteResetSettings=()=>{['glass','reduce','loliteCursor','loliteAccent','wallpaperCategory'].forEach(k=>localStorage.removeItem(k));location.reload()};
   const style=document.createElement('style');style.textContent=`:root{--accent:#8b5cf6}.settings-extra{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.settings-extra .card{margin:0}.setting-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.setting-btn{border:1px solid #ffffff16;background:#ffffff08;color:inherit;border-radius:9px;padding:8px 10px;cursor:pointer}.setting-btn.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,transparent)}.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}`;document.head.appendChild(style);
