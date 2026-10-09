@@ -15,7 +15,7 @@ app.use((_req, res, next) => {
 });
 
 // The Ultraviolet worker lives in /uv/ but needs permission to control /service/.
-app.use("/uv/sw.js", (_req, res, next) => {
+app.use(["/uv/sw.js", "/uv/uv.sw.js"], (_req, res, next) => {
   res.setHeader("Service-Worker-Allowed", "/");
   next();
 });
@@ -26,10 +26,10 @@ app.get("/uv/uv.config.js", (_req, res) => {
     bare: "/bare/",
     encodeUrl: Ultraviolet.codec.xor.encode,
     decodeUrl: Ultraviolet.codec.xor.decode,
-    handler: "/uv/handler.js",
+    handler: "/uv/uv.handler.js",
     bundle: "/uv/uv.bundle.js",
     config: "/uv/uv.config.js",
-    sw: "/uv/sw.js"
+    sw: "/uv/uv.sw.js"
   };`);
 });
 
