@@ -8,6 +8,12 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.8.0 — Real File Explorer — 2026-10-09
+- Rebuilt Files with sidebar locations, breadcrumbs, back/forward/up navigation and folder-aware browsing.
+- Added nested folders, file creation, uploads into the current folder, search, file-type icons and readable sizes.
+- Preserved IndexedDB persistence and ZIP extraction/export while making stored paths behave like folders.
+- Updated cache versions and compatibility check to 3.8.0.
+
 ### 3.7.3 — Wallpapers That Actually Apply — 2026-10-09
 - Fixed wallpaper selection so saved library wallpapers survive startup instead of being overwritten by the legacy default wallpaper.
 - Made all still and animated wallpaper backgrounds clearly visible by removing the nearly opaque desktop overlay that was washing them out.
