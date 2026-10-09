@@ -1,38 +1,8 @@
-import { InferenceMesh, Registry } from 'inferencemesh';
-
-const registry = new Registry([
-  {
-    id: 'llm7',
-    kind: 'openai-compat',
-    baseUrl: 'https://api.llm7.io/v1',
-    apiKeyEnv: 'LLM7_API_KEY',
-    apiKeyOptional: true,
-    maxPrivacy: 'public',
-    maxConcurrent: 1,
-    models: [
-      {
-        id: 'minimax-m2.7',
-        label: 'MiniMax M2.7 (LLM7 keyless free tier)',
-        capabilities: ['text', 'code', 'tools', 'json'],
-        contextWindow: 204800,
-        price: { inPerMTok: 0, outPerMTok: 0 },
-        quality: 0.76,
-        languages: { en: 0.9, '*': 0.7 },
-        quota: { requestsPerMinute: 30 }
-      }
-    ]
-  }
-], { env: process.env });
-
-const mesh = new InferenceMesh({
-  registry,
-  timeoutMs: 18000,
-  maxAttempts: 1,
-  concurrencyWaitMs: 0
-});
-
-// Best-effort per-instance rate limit to reduce accidental public endpoint abuse.
+// Lolite AI uses the keyless free-tier LLM7 endpoint referenced by InferenceMesh's
+// provider registry. This direct adapter keeps the deployment dependency-free;
+// the full InferenceMesh router itself is not published on npm yet.
 const requestBuckets = new Map();
+
 function allowRequest(req) {
   const forwarded = req.headers['x-forwarded-for'];
   const ip = typeof forwarded === 'string'
@@ -67,9 +37,9 @@ export default async function handler(req, res) {
       ok: true,
       service: 'Lolite AI API',
       configured: true,
-      provider: 'InferenceMesh',
+      provider: 'LLM7 free tier (InferenceMesh registry)',
       keyRequired: false,
-      note: 'Uses a public free-tier provider; availability and limits may change.'
+      note: 'Free-tier availability and limits may change.'
     });
   }
   if (req.method !== 'POST') {
@@ -92,19 +62,35 @@ export default async function handler(req, res) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 20000);
   try {
-    const response = await mesh.chat({
-      model: 'mesh/free',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are Lolite AI, the friendly built-in assistant for Lolite OS. Be concise, helpful and age-appropriate. Help with Lolite OS, coding, games, school-safe questions and creative ideas. Never claim to have performed actions you did not perform.'
-        },
-        { role: 'user', content: message }
-      ],
-      max_tokens: 1000
-    }, controller.signal);
+    const upstream = await fetch('https://api.llm7.io/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: 'minimax-m2.7',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are Lolite AI, the friendly built-in assistant for Lolite OS. Be concise, helpful and age-appropriate. Help with Lolite OS, coding, games, school-safe questions and creative ideas. Never claim to have performed actions you did not perform.'
+          },
+          { role: 'user', content: message }
+        ],
+        max_tokens: 1000
+      })
+    });
 
-    const output = response.choices?.[0]?.message?.content;
+    const raw = await upstream.text();
+    let data = {};
+    try { data = JSON.parse(raw); } catch {}
+    if (!upstream.ok) {
+      return res.status(upstream.status === 429 ? 429 : 502).json({
+        error: upstream.status === 429
+          ? 'The free AI service has reached its current limit. Please wait a bit and try again.'
+          : 'The free AI provider is temporarily unavailable. Please try again shortly.'
+      });
+    }
+
+    const output = data.choices?.[0]?.message?.content;
     const text = typeof output === 'string'
       ? output
       : Array.isArray(output)
@@ -113,15 +99,13 @@ export default async function handler(req, res) {
     if (!text.trim()) {
       return res.status(502).json({ error: 'The free AI provider returned an empty response. Please try again.' });
     }
-    return res.status(200).json({ output: text, provider: 'InferenceMesh' });
+    return res.status(200).json({ output: text, provider: 'LLM7 free tier' });
   } catch (error) {
     const timedOut = error?.name === 'AbortError';
-    const message = error instanceof Error ? error.message : 'Unknown AI error';
     return res.status(timedOut ? 504 : 503).json({
       error: timedOut
         ? 'The free AI request took too long. Please try again.'
-        : 'The free AI provider is currently unavailable or rate-limited. Please try again shortly.',
-      detail: process.env.NODE_ENV === 'development' ? message : undefined
+        : 'Could not reach the free AI provider. Please try again shortly.'
     });
   } finally {
     clearTimeout(timer);
