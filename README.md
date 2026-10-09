@@ -8,6 +8,14 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.6.7 — Game Library Redesign & Fullscreen Fix — 2026-10-09
+- Redesigned the Game Store with a cleaner launcher-style layout, DM Sans/Space Grotesk typography, text-based cover treatments instead of emoji pictures, and clearer category navigation.
+- Improved categorisation across popular games, IO & casual, Baldi’s Basics, horror, racing, puzzle, platformers & arcade, simulation & sandbox, sports, and classics.
+- Added a dedicated fullscreen action for games and updated the desktop fullscreen control to target the desktop surface, including WebKit-prefixed fullscreen events.
+- Bumped script cache versions to 3.6.7.
+- Verified the `html games/` directory contains 83 entries and no duplicate Git blob SHAs.
+
+
 ### 3.6.6 — Optional Ultraviolet Browser — 2026-10-09
 - Added Ultraviolet Browser as a separate optional App Store app without removing the existing Lolite Browser/Scramjet setup.
 - Added the Ultraviolet runtime, Epoxy transport, BareMux assets and Wisp WebSocket route to the Node server configuration.
