@@ -8,6 +8,15 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.6.6 — Optional Ultraviolet Browser — 2026-10-09
+- Added Ultraviolet Browser as a separate optional App Store app without removing the existing Lolite Browser/Scramjet setup.
+- Added the Ultraviolet runtime, Epoxy transport, BareMux assets and Wisp WebSocket route to the Node server configuration.
+- Added an Ultraviolet client configuration and an explicit status message when the required proxy backend is unavailable.
+- Bumped local script cache versions to 3.6.6.
+- Important: Ultraviolet requires the Lolite Node server and installed dependencies; static GitHub Pages cannot run the required proxy backend by itself. Ultraviolet is also no longer actively maintained upstream.
+- Checked `html games/`; the current GitHub directory listing contains only `.gitkeep`, so no game files were available for duplicate comparison.
+
+
 ### 3.6.5 — Lolite Chat Stability Fix — 2026-10-09
 - Prevented overlapping chat renders from racing against sign-in events, realtime messages and channel switching.
 - Kept rerenders attached to the chat window that opened them instead of accidentally moving chat into another window.
