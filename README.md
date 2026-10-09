@@ -8,6 +8,13 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.7.3 — Wallpapers That Actually Apply — 2026-10-09
+- Fixed wallpaper selection so saved library wallpapers survive startup instead of being overwritten by the legacy default wallpaper.
+- Made all still and animated wallpaper backgrounds clearly visible by removing the nearly opaque desktop overlay that was washing them out.
+- Added wallpaper-matched accent colours across the OS, including controls, selection states and focus outlines.
+- Preserved each animated wallpaper's motion identity and made pixel wallpapers render as a repeating pattern.
+- Updated cache versions and the compatibility checker to 3.7.3.
+
 ### 3.7.2 — Premium 3D Brand & App Icons — 2026-10-09
 - Rebuilt the Lolite logo finish with layered bevels, a glossy highlight, deeper extrusion and soft dimensional lighting.
 - Upgraded desktop and App Store icons with richer multi-stop gradients, raised edges, inset highlights and layered contact shadows.
