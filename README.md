@@ -4,16 +4,17 @@
 
 # Lolite OS
 
-A Lolite-branded browser desktop with a dark purple/blue interface, apps, games, files, wallpapers, AI and responsive PC/mobile layouts.
+A Lolite-branded browser desktop with a dark purple/blue interface, apps, games, files, wallpapers, AI and a responsive desktop layout.
 
 ## Update Log
 
-### 3.9.5 — Mobile Lolite & Startup Experience Picker — 2026-10-09
-- Added a startup screen to choose Normal Lolite desktop or Mobile Lolite.
-- Added a second choice for Phone or Tablet when Mobile Lolite is selected.
-- Built a touch-first mobile shell with app search, app grid, dock, status bar, quick settings, home/back navigation and full-screen app windows.
-- Connected the mobile launcher to Lolite's existing apps, including Settings, Files, Game Store, App Store, Lolite AI, Chat, Calculator, Notes, Paint and World Sandbox.
-- Kept Normal Lolite's existing desktop workspace and taskbar as a separate startup experience.
+### 3.9.7 — Desktop Startup & Ultraviolet Browser Repair — 2026-10-09
+- Removed the broken mobile startup chooser and restored direct startup to the normal Lolite desktop.
+- Added an Ultraviolet Browser app entry in the desktop and Start menu, with address/search input, home, reload and open-in-tab controls.
+- Connected the browser UI to the Ultraviolet runtime assets, service worker and Bare proxy endpoint.
+- Added clearer runtime diagnostics when the site is running on static hosting without a proxy backend.
+- Configured Vercel routes for the static desktop plus Ultraviolet runtime and Bare HTTP proxy endpoints. WebSocket-dependent sites may still require a full Node host.
+
 
 ### 3.9.4 — Local Lolite AI — 2026-10-09
 - Replaced shared cloud AI requests with WebLLM running the Qwen2 0.5B model directly in the browser using WebGPU.
