@@ -1,4 +1,4 @@
-/* Lolite OS 3.6.8 — unified desktop and game store styling */
+/* Lolite OS 3.7.0 — unique animated game art */
 (()=>{
  const CSS=`
  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
@@ -44,8 +44,20 @@
  .store-hero{background-image:radial-gradient(ellipse at 88% 15%,#51468a55,transparent 36%),linear-gradient(112deg,#19243a 0%,#151a28 56%,#201d3a 100%),linear-gradient(120deg,#19243a,#28234a,#19243a);background-size:180% 180%,100% 100%,220% 220%;animation:storeAurora 22s ease-in-out infinite}
  .store-hero:before{animation:storeOrbit 18s ease-in-out infinite}
  .store-hero:after{animation:storeRingPulse 7s ease-in-out infinite}
- .store-cover{background-image:radial-gradient(ellipse at 82% 14%,#ffffff18,transparent 35%),linear-gradient(135deg,var(--cover-a,#202c40),var(--cover-b,#141923),var(--cover-a,#202c40));background-size:150% 150%,220% 220%;animation:storeCoverDrift 18s ease-in-out infinite}
- .store-cover:before{animation:storeOrbit 14s ease-in-out infinite}
+ .store-cover{background-image:radial-gradient(ellipse at 82% 14%,#ffffff24,transparent 35%),linear-gradient(var(--cover-angle,135deg),var(--cover-a,#202c40),var(--cover-b,#141923),var(--cover-a,#202c40));background-size:150% 150%,220% 220%;animation:storeCoverDrift var(--cover-speed,18s) ease-in-out var(--cover-delay,0ms) infinite}
+ .store-cover:before{animation:storeOrbit var(--cover-speed,14s) ease-in-out var(--cover-delay,0ms) infinite}
+ .store-cover[data-skin="0"]:before{border-radius:50%;transform:rotate(0deg)}
+ .store-cover[data-skin="1"]:before{border-radius:2px;clip-path:polygon(50% 0,100% 100%,0 100%)}
+ .store-cover[data-skin="2"]:before{border-radius:50% 4px 50% 4px;transform:rotate(45deg)}
+ .store-cover[data-skin="3"]:before{border-radius:0;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)}
+ .store-cover[data-skin="4"]:before{border-radius:50%;box-shadow:0 0 0 12px #ffffff08,0 0 35px var(--cover-a)}
+ .store-cover[data-skin="5"]:before{border-radius:10px 50% 10px 50%;transform:rotate(-20deg)}
+ .store-cover[data-skin="0"]:after{right:15%;bottom:-35px;width:92px;height:92px}
+ .store-cover[data-skin="1"]:after{border-radius:4px;transform:rotate(45deg)}
+ .store-cover[data-skin="2"]:after{width:46px;height:46px;right:42px}
+ .store-cover[data-skin="3"]:after{border-radius:0;transform:rotate(45deg)}
+ .store-cover[data-skin="4"]:after{width:100px;height:100px;right:-10px;bottom:-65px}
+ .store-cover[data-skin="5"]:after{border-radius:50% 0 50% 0;transform:rotate(-25deg)}
  .store-cover:after{animation:storeRingPulse 8s ease-in-out infinite}
  .store-card{animation:loliteRiseIn .34s ease-out both}
  .store-card:nth-child(4n+2){animation-delay:.035s}.store-card:nth-child(4n+3){animation-delay:.07s}.store-card:nth-child(4n+4){animation-delay:.105s}
@@ -71,8 +83,8 @@
  const isPopular=g=>/baldi|fnaf|granny|mario|angrybirds|pvz|minecraft|growagarden|slope|escaperoad|gta|cookieclicker/i.test(g.file);
  const matchesCategory=g=>active==='All Games'||active==='Featured'||active==='Popular Games'?true:g.category===active;
  const filtered=()=>games.filter(g=>matchesCategory(g)&&(!query||g.title.toLowerCase().includes(query.toLowerCase())||g.category.toLowerCase().includes(query.toLowerCase()))&&(active!=='Popular Games'||isPopular(g)));
- const coverPalette=g=>{const c=g.category;return c==='Horror'?['#3a202a','#17151f']:c==='Racing'?['#183b45','#131b25']:c==='Puzzle'?['#3b3159','#171927']:c==='Baldi’s Basics'?['#4a3d24','#1b1a20']:c==='IO & Casual'?['#203c39','#121b22']:c==='Simulation & Sandbox'?['#33402a','#151d1b']:c==='Sports'?['#453329','#1e1b20']:['#29344f','#151a27']};
- const card=g=>{const colors=coverPalette(g);return '<article class="store-card"><div class="store-cover" style="--cover-a:'+colors[0]+';--cover-b:'+colors[1]+'"><span class="store-cover-label">'+g.category+'</span><strong class="store-cover-title">'+g.title+'</strong></div><div class="store-card-body"><h3 title="'+g.title+'">'+g.title+'</h3><div class="store-card-meta"><span class="store-tag">'+g.category+'</span><span>In library</span></div><button class="store-play" type="button" onclick=\'window.loliteStorePlay("'+g.file+'")\'>Play game <span aria-hidden="true">↗</span></button></div></article>'};
+ const coverPalette=g=>{let hash=0;for(const ch of g.file)hash=(Math.imul(hash,31)+ch.charCodeAt(0))>>>0;const hue=hash%360,hue2=(hue+48+(hash%73))%360;return [`hsl(${hue} 62% 28%)`,`hsl(${hue2} 48% 13%)`,`${12+(hash%13)}s`,String(hash%6),`-${hash%17000}ms`]};
+ const card=g=>{const colors=coverPalette(g);return '<article class="store-card"><div class="store-cover" data-skin="'+colors[3]+'" style="--cover-a:'+colors[0]+';--cover-b:'+colors[1]+';--cover-speed:'+colors[2]+';--cover-delay:'+colors[4]+'"><span class="store-cover-label">'+g.category+'</span><strong class="store-cover-title">'+g.title+'</strong></div><div class="store-card-body"><h3 title="'+g.title+'">'+g.title+'</h3><div class="store-card-meta"><span class="store-tag">'+g.category+'</span><span>In library</span></div><button class="store-play" type="button" onclick=\'window.loliteStorePlay("'+g.file+'")\'>Play game <span aria-hidden="true">↗</span></button></div></article>'};
  const section=(title,list)=>list.length?'<section class="store-section"><div class="store-section-head"><div><h2>'+title+'</h2><p>'+list.length+' games to explore</p></div><button type="button" onclick=\'window.loliteStoreCategory("'+title+'")\'>View collection →</button></div><div class="store-grid">'+list.slice(0,8).map(card).join('')+'</div></section>':'';
  function render(){const root=document.querySelector('.store-main');if(!root)return;const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" aria-label="Search games" placeholder="Search your library…" value="'+query.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" oninput="window.loliteStoreSearch(this.value)"></div><span class="store-count-pill">'+games.length+' titles</span></div>';
  if(query||!['Featured','All Games'].includes(active)){const list=filtered();root.innerHTML=top+'<section class="store-section"><div class="store-section-head"><div><h2>'+active+'</h2><p>'+list.length+' matching games</p></div></div>'+(list.length?'<div class="store-grid">'+list.map(card).join('')+'</div>':'<div class="store-empty">No games found. Try another title or category.</div>')+'</section>';return}
