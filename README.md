@@ -8,6 +8,13 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.7.0 — Unique Game Art & Animated Wallpapers — 2026-10-09
+- Gave each Game Store title its own deterministic colour palette, distinct geometric cover artwork and independently paced ambient animation.
+- Added six animated wallpaper choices: Aurora Flow, Nebula Drift, Ocean Motion, Cyber Matrix, Solar Flare and Galaxy Spiral.
+- Added animated wallpaper previews in Settings and dedicated motion styles for each animated wallpaper.
+- Kept animated effects compatible with Reduce Motion and the system reduced-motion preference.
+- Updated script cache versions to 3.7.0.
+
 
 ### 3.6.8 — Unified Desktop UI & Game Store Polish — 2026-10-09
 - Refined the desktop and App Store UI with a more practical Windows-inspired layout, flatter surfaces and restrained corner rounding.
