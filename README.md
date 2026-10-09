@@ -14,7 +14,7 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Added an Ultraviolet client configuration and an explicit status message when the required proxy backend is unavailable.
 - Bumped local script cache versions to 3.6.6.
 - Important: Ultraviolet requires the Lolite Node server and installed dependencies; static GitHub Pages cannot run the required proxy backend by itself. Ultraviolet is also no longer actively maintained upstream.
-- Checked `html games/`; the current GitHub directory listing contains only `.gitkeep`, so no game files were available for duplicate comparison.
+- Checked all 83 entries in `html games/` by Git blob SHA; no identical duplicate files were found.
 
 
 ### 3.6.5 — Lolite Chat Stability Fix — 2026-10-09
