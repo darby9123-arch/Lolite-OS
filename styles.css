@@ -345,7 +345,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:var(
 html.glass #taskbar,html.glass .window,html.glass .panel{isolation:isolate;background:rgba(18,20,38,.30)!important;border:1px solid rgba(235,242,255,.28)!important;box-shadow:0 22px 64px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.48),inset 0 -1px 0 rgba(255,255,255,.09)!important;backdrop-filter:blur(24px) saturate(190%) brightness(1.10)!important;-webkit-backdrop-filter:blur(24px) saturate(190%) brightness(1.10)!important}
 html.glass #taskbar{position:absolute!important}html.glass .window{position:absolute!important}html.glass .panel{position:absolute!important}
 .liquid-glass-webgl{position:absolute!important;inset:0!important;display:block;width:100%!important;height:100%!important;z-index:1!important;pointer-events:none!important;border-radius:inherit;opacity:.98}
-html.glass #taskbar::before,html.glass .window::before,html.glass .panel::before,html.webgl-glass #taskbar::after,html.webgl-glass .window::after,html.webgl-glass .panel::after{display:none!important}
+html.webgl-glass #taskbar::before,html.webgl-glass .window::before,html.webgl-glass .panel::before,html.webgl-glass #taskbar::after,html.webgl-glass .window::after,html.webgl-glass .panel::after{display:none!important}
 html.glass #taskbar>.task,html.glass #taskbar>#tasks,html.glass #taskbar>.tray,html.glass .window>.titlebar,html.glass .window>.content,html.glass .panel>*{position:relative;z-index:2}
 html.glass .window>.content{background:transparent}
 html.glass .titlebar{background:linear-gradient(115deg,rgba(255,255,255,.13),rgba(255,255,255,.015))!important;border-bottom-color:rgba(255,255,255,.18)!important}
