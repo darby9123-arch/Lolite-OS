@@ -1,4 +1,4 @@
-/* Lolite OS settings enhancement: reliable controls, cursors, themes and wallpaper helpers. */
+/* Lolite OS 3.9.0 settings enhancement: reliable controls, cursors, themes and wallpaper helpers. */
 (()=>{
   const key=(k,v)=>{localStorage.setItem(k,v);};
   const get=(k,d='')=>localStorage.getItem(k)??d;
