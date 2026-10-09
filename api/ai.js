@@ -64,7 +64,11 @@ export default async function handler(req, res) {
   try {
     const upstream = await fetch('https://api.llm7.io/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        // LLM7 documents `unused` as the placeholder credential for anonymous access.
+        Authorization: 'Bearer unused'
+      },
       signal: controller.signal,
       body: JSON.stringify({
         model: 'minimax-m2.7',
