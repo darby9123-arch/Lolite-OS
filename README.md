@@ -8,6 +8,13 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.9.5 — Mobile Lolite & Startup Experience Picker — 2026-10-09
+- Added a startup screen to choose Normal Lolite desktop or Mobile Lolite.
+- Added a second choice for Phone or Tablet when Mobile Lolite is selected.
+- Built a touch-first mobile shell with app search, app grid, dock, status bar, quick settings, home/back navigation and full-screen app windows.
+- Connected the mobile launcher to Lolite's existing apps, including Settings, Files, Game Store, App Store, Lolite AI, Chat, Calculator, Notes, Paint and World Sandbox.
+- Kept Normal Lolite's existing desktop workspace and taskbar as a separate startup experience.
+
 ### 3.9.4 — Local Lolite AI — 2026-10-09
 - Replaced shared cloud AI requests with WebLLM running the Qwen2 0.5B model directly in the browser using WebGPU.
 - Added a local model setup button and download/loading progress; the model is cached by the browser for later use.
