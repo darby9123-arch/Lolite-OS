@@ -136,3 +136,25 @@ html.glass.reduce #taskbar::before,html.glass.reduce .window::before,html.glass.
 #desktop:fullscreen #windows,#desktop:-webkit-full-screen #windows{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
 .window:fullscreen,.window:-webkit-full-screen{width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;inset:0!important;border-radius:0!important}
 .window:fullscreen .content,.window:-webkit-full-screen .content{height:calc(100% - 48px)!important;max-height:none!important}
+
+/* 3.6.8 — flatter, consistent desktop design inspired by desktop operating systems */
+:root{--ui-radius:6px;--line-soft:#2a3442}
+.panel,.window{border-radius:6px!important;box-shadow:0 18px 45px #0009!important}
+.titlebar{height:44px!important;background:#121821!important;padding:0 12px!important}
+.controls button{border-radius:4px!important}
+.card,.appstore-card,.game-hero,.search-result,.result,.store-card{border-radius:6px!important}
+.primary,.soft,.appstore-card button,.store-tab,.settings-select,input,select,textarea{border-radius:5px!important}
+#taskbar{border-radius:8px!important;background:#111720f2!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+#taskbar>.task,.taskwin{border-radius:5px!important}
+#start,#searchPanel{border-radius:7px!important}
+.desktop-icon{border-radius:4px!important}
+.desktop-icon .app-symbol,.appstore-icon{border-radius:8px!important;box-shadow:none!important}
+.app-symbol{background:#202936!important;border:1px solid #3a4656!important;box-shadow:none!important}
+.app-symbol:after{border-radius:3px!important}
+.app-games:after{background:linear-gradient(135deg,#7c73ed,#4e8bdc)!important;clip-path:polygon(25% 14%,75% 14%,100% 38%,100% 72%,74% 88%,25% 88%,0 66%,0 36%)!important}
+.app-home:after{background:#dce6f3!important}
+.app-browser:after{background:#4f9ad7!important}
+.app-settings:after{background:#a8b4c4!important}
+.app-store:after{background:linear-gradient(135deg,#8b6cff,#4d8dff)!important}
+.appstore-icon{width:48px;height:48px}
+@media(max-width:700px){#taskbar{border-radius:7px!important}}
