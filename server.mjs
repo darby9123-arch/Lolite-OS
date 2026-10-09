@@ -40,10 +40,11 @@ app.use("/scram/", express.static(scramjetPath));
 app.use("/utils/", express.static(dirOf("@mercuryworkshop/scramjet-utils")));
 app.use("/controller/", express.static(dirOf("@mercuryworkshop/scramjet-controller")));
 app.use("/baremod/", express.static(dirOf("@mercuryworkshop/bare-transport")));
+// Serve Lolite's own uv.config.js first, then fill in the runtime bundle from npm.
+app.use(express.static(__dirname));
 app.use("/uv/", express.static(uvPath));
 app.use("/epoxy/", express.static(epoxyPath));
 app.use("/baremux/", express.static(baremuxPath));
-app.use(express.static(__dirname));
 app.get("/service/*path", (_req, res) => {
   res.status(404).type("text/plain").send("Ultraviolet service requests must be intercepted by /uv/sw.js. Register the service worker and retry.");
 });
