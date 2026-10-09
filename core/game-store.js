@@ -34,6 +34,31 @@
  .store-player-fullscreen{position:fixed!important;inset:0!important;z-index:2147483000!important;height:100dvh!important;width:100vw!important;padding:12px!important;background:#07090d!important}
  @media(max-width:760px){.store{grid-template-columns:1fr}.store-side{display:none}.store-main{padding:17px}.store-top{top:-17px}.store-hero{min-height:205px}.store-hero-side{display:none}.store-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.store-cover{min-height:100px}.store-card-body{padding:10px}.store-card h3{font-size:12px}}
  @media(max-width:430px){.store-grid{grid-template-columns:1fr}.store-hero h1{font-size:27px}}
+ /* Animated game-store artwork: slow ambient gradients and decorative geometry. */
+ @keyframes storeAurora{0%,100%{background-position:0% 50%,100% 50%}50%{background-position:100% 50%,0% 50%}}
+ @keyframes storeOrbit{0%,100%{transform:translate3d(0,0,0) rotate(28deg)}50%{transform:translate3d(-12px,8px,0) rotate(43deg)}}
+ @keyframes storeCoverDrift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+ @keyframes storeRingPulse{0%,100%{opacity:.35;transform:scale(.94)}50%{opacity:.8;transform:scale(1.08)}}
+ @keyframes storeTextShimmer{0%{background-position:180% 0}100%{background-position:-180% 0}}
+ .store-main{background-image:radial-gradient(ellipse at 84% -12%,#1b2540 0,transparent 34%),radial-gradient(ellipse at 12% 35%,#17132b55 0,transparent 35%),linear-gradient(120deg,#0b0e13,#0c1018,#0b0e13);background-size:100% 100%,180% 180%,220% 220%;animation:storeAurora 30s ease-in-out infinite}
+ .store-hero{background-image:radial-gradient(ellipse at 88% 15%,#51468a55,transparent 36%),linear-gradient(112deg,#19243a 0%,#151a28 56%,#201d3a 100%),linear-gradient(120deg,#19243a,#28234a,#19243a);background-size:180% 180%,100% 100%,220% 220%;animation:storeAurora 22s ease-in-out infinite}
+ .store-hero:before{animation:storeOrbit 18s ease-in-out infinite}
+ .store-hero:after{animation:storeRingPulse 7s ease-in-out infinite}
+ .store-cover{background-image:radial-gradient(ellipse at 82% 14%,#ffffff18,transparent 35%),linear-gradient(135deg,var(--cover-a,#202c40),var(--cover-b,#141923),var(--cover-a,#202c40));background-size:150% 150%,220% 220%;animation:storeCoverDrift 18s ease-in-out infinite}
+ .store-cover:before{animation:storeOrbit 14s ease-in-out infinite}
+ .store-cover:after{animation:storeRingPulse 8s ease-in-out infinite}
+ .store-card{animation:loliteRiseIn .34s ease-out both}
+ .store-card:nth-child(4n+2){animation-delay:.035s}.store-card:nth-child(4n+3){animation-delay:.07s}.store-card:nth-child(4n+4){animation-delay:.105s}
+ .store-card:hover .store-cover:before{animation-duration:5s}
+ .store-primary,.store-play,.store-nav button,.store-section-head button{transition:transform .18s ease,background .2s,border-color .2s,box-shadow .2s}
+ .store-primary:hover,.store-play:hover,.store-section-head button:hover{transform:translateY(-2px);box-shadow:0 7px 20px #7066e52a}
+ .store-nav button .nav-mark{transition:transform .18s ease,background .18s}
+ .store-nav button:hover .nav-mark{transform:translateX(2px)}
+ .store-search{transition:border-color .18s,box-shadow .18s}
+ .store-player-head button{transition:background .18s,transform .18s}
+ .store-player-head button:hover{transform:translateY(-1px)}
+ @media(prefers-reduced-motion:reduce){.store-main,.store-hero,.store-hero:before,.store-hero:after,.store-cover,.store-cover:before,.store-cover:after,.store-card{animation:none!important;transition:none!important}}
+
  `;
  if(!document.getElementById('lolite-game-store-style')){const s=document.createElement('style');s.id='lolite-game-store-style';document.head.appendChild(s)}document.getElementById('lolite-game-store-style').textContent=CSS;
  const manifest=['clangrybirds2.html','clbadmondaysimulator.html','clbaldicaseoh.html','clbaldisbasics.html','clbaldisbasicsremaster.html','clbitlife.html','clblockblast.html','clcookieclicker.html','clcookieclickermodmenu.html','clcrazycars.html','clcuttherope.html','cldemolitionderbycrashracing.html','cldungeonsanddegenerategambler.html','clescaperoad.html','clescaperoad-2.html','clescaperoad3.html','clfallguys.html','clfireboyandwatergirl2.html','clfireboyandwatergirl3.html','clFNAF.html','clFNAF2.html','clFNAF3.html','clFNAF4.html','clgdbreeze.html','clgorillatag.html','clgranny2.html','clgranny22.html','clgranny3.html','clgrannycreepy.html','clgrannynightmare.html','clgrannyy.html','clgrowagarden.html','clgta3.html','clhalflife.html','clholeio.html','clinfinitecraft.html','clLobotemyDash.html','lolite-2048.html','lolite-pong.html','lolite-sokoban.html','clmario64webgl.html','clmelonplayground.html','clminecraftpocketedition.html','clmotox3m2.html','clmotox3m3.html','clmotox3mm.html','clmotox3mpoolparty.html','clmotox3mspookyland.html','clmotox3mwinter.html','closu.html','clovo2.html','clovodimensions.html','clovofixed.html','clpaperio.html','clpaperio3d.html','clpaperiomania.html','clparkingfury.html','clparkingfury2.html','clparkingfury3.html','clpixelbattlegroundsio.html','clpvz2gardenless.html','PVZM.html','clragollhit.html','clRedBall4.html','clrocketleague.html','clshiftatmidnight.html','slope.html','slope-2-player.html','clslopeplus.html','clsmbremastered.html','clsnowrider.html','clspacewarsbattleground.html','clstickmanhook.html','clsubwaysurfersmiami.html','clsupermariobros.html','clsurvivorio.html','cltemplerun2.html','cltinyfishing.html','clvex3.html','wheely.html','wrestle-bros.html','zombie-rush.html'];
