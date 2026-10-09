@@ -8,6 +8,13 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.7.2 — Premium 3D Brand & App Icons — 2026-10-09
+- Rebuilt the Lolite logo finish with layered bevels, a glossy highlight, deeper extrusion and soft dimensional lighting.
+- Upgraded desktop and App Store icons with richer multi-stop gradients, raised edges, inset highlights and layered contact shadows.
+- Added a subtle perspective tilt and more tactile hover lift while keeping the desktop clean and readable.
+- Kept Reduce Motion support for users who prefer fewer transitions.
+- Updated script cache versions and the compatibility checker to 3.7.2.
+
 ### 3.7.1 — Lolite Brand & App Icon Refresh — 2026-10-09
 - Refined the boot and welcome logos with a polished purple-to-blue Lolite brand tile, glass highlight and soft glow.
 - Unified desktop shortcuts and App Store icons with coordinated gradients, clearer icon silhouettes, depth and hover polish.
