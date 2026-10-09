@@ -158,3 +158,31 @@ html.glass.reduce #taskbar::before,html.glass.reduce .window::before,html.glass.
 .app-store:after{background:linear-gradient(135deg,#8b6cff,#4d8dff)!important}
 .appstore-icon{width:48px;height:48px}
 @media(max-width:700px){#taskbar{border-radius:7px!important}}
+
+
+/* Lolite OS 3.6.9 — lively motion, always optional */
+@keyframes loliteAmbientDrift{0%{background-position:0% 45%,100% 0%,50% 50%}50%{background-position:100% 55%,0% 100%,50% 50%}100%{background-position:0% 45%,100% 0%,50% 50%}}
+@keyframes loliteSoftGlow{0%,100%{opacity:.32;transform:scale(.94)}50%{opacity:.72;transform:scale(1.06)}}
+@keyframes loliteSweep{0%{background-position:-180% 0}100%{background-position:180% 0}}
+@keyframes loliteRiseIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes loliteIconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes loliteBorderPulse{0%,100%{border-color:#283343}50%{border-color:#48466e}}
+#wallpaper{background-size:140% 140%,140% 140%,100% 100%!important;animation:loliteAmbientDrift 28s ease-in-out infinite}
+#icons .desktop-icon{animation:loliteRiseIn .42s both;transition:background .18s,border-color .18s,transform .18s}
+#icons .desktop-icon:nth-child(2){animation-delay:.035s}#icons .desktop-icon:nth-child(3){animation-delay:.07s}#icons .desktop-icon:nth-child(4){animation-delay:.105s}#icons .desktop-icon:nth-child(5){animation-delay:.14s}#icons .desktop-icon:nth-child(6){animation-delay:.175s}
+#icons .desktop-icon:hover .app-symbol{animation:loliteIconFloat 1.5s ease-in-out infinite}
+.window{animation:loliteRiseIn .18s ease-out both}
+.window .titlebar{transition:background .18s,border-color .18s}
+.controls button,.primary,.soft,.taskwin,#taskbar>.task{transition:transform .16s ease,background .18s,border-color .18s,box-shadow .18s,color .18s}
+.controls button:hover,.primary:hover,.soft:hover,.taskwin:hover,#taskbar>.task:hover{transform:translateY(-1px)}
+.card,.appstore-card,.game-hero,.search-result,.result{transition:transform .2s ease,border-color .2s,background .2s,box-shadow .2s}
+.card:hover,.appstore-card:hover,.search-result:hover{transform:translateY(-2px);box-shadow:0 10px 24px #0003}
+#taskbar{animation:loliteRiseIn .28s ease-out both}
+#start,#searchPanel,.panel{animation:loliteRiseIn .16s ease-out both}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #8d83ff;outline-offset:2px}
+@media(prefers-reduced-motion:no-preference){
+  #wallpaper{will-change:background-position}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
