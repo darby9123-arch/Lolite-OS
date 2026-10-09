@@ -2,12 +2,21 @@
   "version": 2,
   "builds": [
     { "src": "api/ai.js", "use": "@vercel/node" },
-    { "src": "server.mjs", "use": "@vercel/node" }
+    { "src": "server.mjs", "use": "@vercel/node" },
+    { "src": "**/*", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/api/ai", "dest": "/api/ai.js" },
-    { "src": "/api/ai.js", "dest": "/api/ai.js" },
-    { "src": "/(.*)", "dest": "/server.mjs" }
+    { "src": "/api/ai(?:\\.js)?", "dest": "/api/ai.js" },
+    { "src": "/uv/(.*)", "dest": "/server.mjs" },
+    { "src": "/bare/(.*)", "dest": "/server.mjs" },
+    { "src": "/service/(.*)", "dest": "/server.mjs" },
+    { "src": "/scram/(.*)", "dest": "/server.mjs" },
+    { "src": "/utils/(.*)", "dest": "/server.mjs" },
+    { "src": "/controller/(.*)", "dest": "/server.mjs" },
+    { "src": "/baremod/(.*)", "dest": "/server.mjs" },
+    { "src": "/epoxy/(.*)", "dest": "/server.mjs" },
+    { "src": "/baremux/(.*)", "dest": "/server.mjs" },
+    { "src": "/(.*)", "dest": "/$1" }
   ],
   "functions": {
     "api/ai.js": { "maxDuration": 30 },
