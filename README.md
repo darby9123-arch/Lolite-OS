@@ -8,11 +8,12 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
-### 3.9.3 — Free InferenceMesh AI — 2026-10-09
-- Switched Lolite AI from the paid OpenAI API-key requirement to the open-source InferenceMesh routing library.
-- Configured its documented keyless LLM7 free-tier provider as the initial route, so no OpenAI API key is required.
+### 3.9.3 — Free Lolite AI — 2026-10-09
+- Removed the paid OpenAI API-key requirement from Lolite AI.
+- Connected the server-side AI endpoint to LLM7's keyless free-tier route referenced by the InferenceMesh provider registry.
 - Added basic per-instance request throttling and clearer unavailable/rate-limit messages.
-- Free-tier availability and quotas are controlled by the upstream provider and may change; no unlimited uptime is promised.
+- Kept the provider call on the server so no provider credential is exposed in browser code. Free-tier availability and quotas may change.
+- The InferenceMesh project itself was not installed as an npm dependency because the package is not published to the npm registry; this update uses its documented keyless provider route directly.
 
 ### 3.9.2 — AI Endpoint Routing Fix — 2026-10-09
 - Routed the GitHub Pages Lolite AI client to the live `lolite-os.vercel.app/api/ai` endpoint instead of a nonexistent deployment hostname.
@@ -34,7 +35,7 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Rebuilt Files with sidebar locations, breadcrumbs, back/forward/up navigation and folder-aware browsing.
 - Added nested folders, file creation, uploads into the current folder, search, file-type icons and readable sizes.
 - Preserved IndexedDB persistence and ZIP extraction/export while making stored paths behave like folders.
-- Updated cache versions and compatibility check to 3.8.0.
+- Updated cache versions and compatibility checker to 3.8.0.
 
 ### 3.7.3 — Wallpapers That Actually Apply — 2026-10-09
 - Fixed wallpaper selection so saved library wallpapers survive startup instead of being overwritten by the legacy default wallpaper.
