@@ -8,6 +8,13 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.7.1 — Lolite Brand & App Icon Refresh — 2026-10-09
+- Refined the boot and welcome logos with a polished purple-to-blue Lolite brand tile, glass highlight and soft glow.
+- Unified desktop shortcuts and App Store icons with coordinated gradients, clearer icon silhouettes, depth and hover polish.
+- Added dedicated visual treatments for chat, clock and the other built-in application icons.
+- Kept icon hover motion compatible with Reduce Motion.
+- Updated asset cache versions to 3.7.1.
+
 ### 3.7.0 — Unique Game Art & Animated Wallpapers — 2026-10-09
 - Gave each Game Store title its own deterministic colour palette, distinct geometric cover artwork and independently paced ambient animation.
 - Added six animated wallpaper choices: Aurora Flow, Nebula Drift, Ocean Motion, Cyber Matrix, Solar Flare and Galaxy Spiral.
