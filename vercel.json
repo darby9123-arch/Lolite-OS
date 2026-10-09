@@ -10,12 +10,6 @@
     { "src": "/uv/(.*)", "dest": "/server.mjs" },
     { "src": "/bare/(.*)", "dest": "/server.mjs" },
     { "src": "/service/(.*)", "dest": "/server.mjs" },
-    { "src": "/scram/(.*)", "dest": "/server.mjs" },
-    { "src": "/utils/(.*)", "dest": "/server.mjs" },
-    { "src": "/controller/(.*)", "dest": "/server.mjs" },
-    { "src": "/baremod/(.*)", "dest": "/server.mjs" },
-    { "src": "/epoxy/(.*)", "dest": "/server.mjs" },
-    { "src": "/baremux/(.*)", "dest": "/server.mjs" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
