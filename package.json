@@ -18,7 +18,6 @@
     "@titaniumnetwork-dev/ultraviolet": "^3.2.10",
     "@mercuryworkshop/epoxy-transport": "^2.1.28",
     "wisp-server-node": "1.1.7",
-    "@mercuryworkshop/bare-mux": "^2.1.8",
-    "inferencemesh": "^0.1.0"
+    "@mercuryworkshop/bare-mux": "^2.1.8"
   }
 }
