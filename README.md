@@ -8,12 +8,18 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.9.4 — Local Lolite AI — 2026-10-09
+- Replaced shared cloud AI requests with WebLLM running the Qwen2 0.5B model directly in the browser using WebGPU.
+- Added a local model setup button and download/loading progress; the model is cached by the browser for later use.
+- AI prompts and replies are generated on-device and are no longer sent to the Lolite AI API.
+- Requires a WebGPU-compatible browser and enough available device memory; the first model download may take a while.
+
 ### 3.9.3 — Free Lolite AI — 2026-10-09
 - Removed the paid OpenAI API-key requirement from Lolite AI.
 - Connected the server-side AI endpoint to LLM7's keyless free-tier route referenced by the InferenceMesh provider registry.
 - Added basic per-instance request throttling and clearer unavailable/rate-limit messages.
 - Kept the provider call on the server so no provider credential is exposed in browser code. Free-tier availability and quotas may change.
-- The InferenceMesh project itself was not installed as an npm dependency because the package is not published to the npm registry; this update uses its documented keyless provider route directly.
+- The InferenceMesh project itself was not installed as an npm dependency because the package was not resolvable from the npm registry in the deployment environment; this update used its provider route directly.
 
 ### 3.9.2 — AI Endpoint Routing Fix — 2026-10-09
 - Routed the GitHub Pages Lolite AI client to the live `lolite-os.vercel.app/api/ai` endpoint instead of a nonexistent deployment hostname.
