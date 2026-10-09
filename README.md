@@ -8,10 +8,10 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
-### 3.9.7 — Desktop Startup & Ultraviolet Browser Repair — 2026-10-09
+### 3.9.8 — Ultraviolet Worker Path Fix — 2026-10-09
 - Removed the broken mobile startup chooser and restored direct startup to the normal Lolite desktop.
 - Added an Ultraviolet Browser app entry in the desktop and Start menu, with address/search input, home, reload and open-in-tab controls.
-- Connected the browser UI to the Ultraviolet runtime assets, service worker and Bare proxy endpoint.
+- Connected the browser UI to the Ultraviolet runtime assets, correctly named handler/service-worker bundles and Bare proxy endpoint.
 - Added clearer runtime diagnostics when the site is running on static hosting without a proxy backend.
 - Configured Vercel routes for the static desktop plus Ultraviolet runtime and Bare HTTP proxy endpoints. WebSocket-dependent sites may still require a full Node host.
 
