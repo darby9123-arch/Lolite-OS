@@ -128,3 +128,11 @@ html.glass #taskbar .task:hover,html.glass #taskbar .taskwin:hover{background:rg
 html.glass #taskbar .task.active,html.glass #taskbar .taskwin.active{background:rgba(125,110,255,.24);border-color:rgba(180,170,255,.4)}
 html.glass.reduce #taskbar::before,html.glass.reduce .window::before,html.glass.reduce .panel::before{transform:none;filter:blur(16px)}
 @media (prefers-reduced-motion:reduce){html.glass #taskbar::before,html.glass .window::before,html.glass .panel::before{animation:none;transition:none}}
+
+
+/* Lolite OS 3.6.7 — true desktop and game fullscreen sizing */
+#desktop:fullscreen,#desktop:-webkit-full-screen{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;overflow:hidden!important;background:#080b10!important;z-index:2147483000!important}
+#desktop:fullscreen #taskbar,#desktop:-webkit-full-screen #taskbar{position:fixed!important;z-index:2147483001!important}
+#desktop:fullscreen #windows,#desktop:-webkit-full-screen #windows{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
+.window:fullscreen,.window:-webkit-full-screen{width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;inset:0!important;border-radius:0!important}
+.window:fullscreen .content,.window:-webkit-full-screen .content{height:calc(100% - 48px)!important;max-height:none!important}
