@@ -249,3 +249,78 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .app-ai:after{background:linear-gradient(145deg,#fff,#ede9fe);clip-path:polygon(50% 0,62% 34%,100% 50%,62% 66%,50% 100%,38% 66%,0 50%,38% 34%)}
 .app-wallpaper:after{background:linear-gradient(145deg,#fff,#e0e7ff 55%,#fce7f3)}
 @media(prefers-reduced-motion:reduce){.desktop-icon .app-symbol,.appstore-icon .app-symbol{transition:none!important}.desktop-icon:hover .app-symbol,.appstore-card:hover .appstore-icon .app-symbol{transform:none}}
+
+
+/* Lolite OS 3.7.2 — premium dimensional icon and brand finish */
+:root{--lolite-lilac:#a99bff;--lolite-violet:#7259ef;--lolite-blue:#3d83f6}
+.boot-logo,.welcome-logo{
+  position:relative;isolation:isolate;overflow:hidden;color:#fff!important;
+  background:linear-gradient(145deg,#c1b6ff 0%,#8874ff 23%,#6049d9 58%,#254fb5 100%)!important;
+  border:1px solid #d9d1ff!important;border-radius:21px!important;
+  box-shadow:0 18px 28px #17104488,0 5px 0 #34268c,0 7px 0 #211a5d,0 20px 42px #4c3bc955,inset 0 2px 0 #ffffffb8,inset 0 -5px 10px #1e185c66!important;
+  text-shadow:0 2px 0 #40328e,0 5px 12px #17104488!important;
+  transform:perspective(500px) rotateX(3deg);
+}
+.boot-logo:before,.welcome-logo:before{
+  content:"";position:absolute;inset:1px 1px 48% 1px;border-radius:19px 19px 45% 45%;
+  background:linear-gradient(180deg,#ffffff70,#ffffff08);pointer-events:none;z-index:-0;
+}
+.boot-logo:after,.welcome-logo:after{
+  content:"";position:absolute;width:34px;height:34px;right:5px;top:5px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#ffffffd9,#ffffff3b 38%,#ffffff00 72%);
+  filter:blur(.3px);pointer-events:none;
+}
+.boot-logo{border-radius:22px!important}
+.desktop-icon .app-symbol,.appstore-icon .app-symbol{
+  position:relative;isolation:isolate;overflow:hidden;border-radius:15px!important;
+  border:1px solid #ffffff70!important;
+  box-shadow:0 2px 0 #070a12,0 5px 0 #101522,0 8px 13px #0008,0 15px 23px #0005,inset 0 2px 0 #ffffffb0,inset 0 -3px 5px #080b1c66!important;
+  transform:perspective(220px) rotateX(2deg) translateY(0);
+  transform-style:preserve-3d;
+  transition:transform .2s cubic-bezier(.2,.8,.2,1),filter .2s,box-shadow .2s;
+}
+.desktop-icon .app-symbol:before,.appstore-icon .app-symbol:before{
+  pointer-events:none;
+}
+.desktop-icon .app-symbol:after,.appstore-icon .app-symbol:after{
+  filter:drop-shadow(0 2px 1px #090d1a88)!important;
+}
+.desktop-icon:hover .app-symbol,.appstore-card:hover .appstore-icon .app-symbol{
+  transform:perspective(220px) rotateX(7deg) rotateY(-5deg) translateY(-3px) scale(1.045);
+  filter:brightness(1.09) saturate(1.08);
+  box-shadow:0 2px 0 #070a12,0 7px 0 #101522,0 14px 19px #0009,0 22px 28px #0005,inset 0 2px 0 #ffffffc9,inset 0 -3px 5px #080b1c66!important;
+}
+.app-home{background:linear-gradient(145deg,#c4b5fd 0%,#8b5cf6 34%,#5b36d7 68%,#34209c 100%)!important}
+.app-games{background:linear-gradient(145deg,#ffb2dd 0%,#f05db4 30%,#a22fe3 64%,#5227a9 100%)!important}
+.app-files{background:linear-gradient(145deg,#fff0a8 0%,#ffd15d 32%,#f4a51c 65%,#b85c0c 100%)!important}
+.app-browser{background:radial-gradient(circle at 28% 20%,#baf4ff 0%,#58c5ff 23%,#2878f0 58%,#173783 100%)!important}
+.app-settings{background:linear-gradient(145deg,#e2e8f0 0%,#a7b4c8 32%,#64748b 65%,#334155 100%)!important}
+.app-store{background:linear-gradient(145deg,#d9d0ff 0%,#a78bfa 27%,#7853e8 60%,#3658c9 100%)!important}
+.app-paint{background:linear-gradient(145deg,#ffd1d9 0%,#ff8caa 30%,#ed4c9b 62%,#8d37d4 100%)!important}
+.app-notepad{background:linear-gradient(145deg,#d7f4ff 0%,#8bdcff 31%,#42a9f5 65%,#2656bc 100%)!important}
+.app-calculator{background:linear-gradient(145deg,#f1f5f9 0%,#bac6d5 30%,#718096 64%,#354255 100%)!important}
+.app-capture{background:linear-gradient(145deg,#ffc2b8 0%,#ff8178 31%,#eb454e 63%,#942c48 100%)!important}
+.app-widgets{background:linear-gradient(145deg,#c3ffe6 0%,#6ee7b7 31%,#20b486 64%,#08745f 100%)!important}
+.app-terminal{background:linear-gradient(145deg,#d1fad9 0%,#86efac 30%,#36b96a 63%,#17603c 100%)!important}
+.app-ai{background:linear-gradient(145deg,#e2d5ff 0%,#b29aff 29%,#8261f3 62%,#4232ae 100%)!important}
+.app-wallpaper{background:linear-gradient(145deg,#b9f2ff 0%,#6cc7ff 25%,#8e8bff 56%,#ec8bd7 100%)!important}
+.app-chat{background:linear-gradient(145deg,#c8e6ff 0%,#87baff 28%,#5865f2 62%,#303b9c 100%)!important}
+.app-clock{background:linear-gradient(145deg,#c7fcff 0%,#67e8f9 28%,#0891b2 63%,#164e63 100%)!important}
+.app-home:after{background:linear-gradient(145deg,#ffffff,#e9e2ff)!important;filter:drop-shadow(0 2px 1px #38278a)!important}
+.app-games:after{background:linear-gradient(145deg,#ffffff,#fce7f3)!important;filter:drop-shadow(0 2px 1px #6c176e)!important}
+.app-files:after{background:linear-gradient(145deg,#fffbe5,#fff1b8)!important;filter:drop-shadow(0 2px 1px #9b5209)!important}
+.app-browser:after{background:radial-gradient(circle at 30% 25%,#ffffff,#dff8ff 38%,#c1e5ff 75%)!important;border:3px solid #fff!important;box-shadow:inset 0 0 0 4px #348ce9,inset 0 0 0 6px #ffffff55,0 2px 2px #17419a!important}
+.app-settings:after{background:linear-gradient(145deg,#fff,#d7dfeb)!important;filter:drop-shadow(0 2px 1px #354154)!important}
+.app-store:after{background:linear-gradient(145deg,#fff,#e4eaff)!important;filter:drop-shadow(0 2px 1px #4a329e)!important}
+.app-paint:after{background:linear-gradient(145deg,#fff,#ffe4ef)!important;filter:drop-shadow(0 2px 1px #8e2469)!important}
+.app-notepad:after{background:linear-gradient(145deg,#fff,#e0f7ff)!important;filter:drop-shadow(0 2px 1px #2455a2)!important}
+.app-calculator:after{background:linear-gradient(145deg,#fff,#e2e8f0)!important;filter:drop-shadow(0 2px 1px #273447)!important}
+.app-capture:after{background:linear-gradient(145deg,#fff,#ffe3df)!important;filter:drop-shadow(0 2px 1px #922737)!important}
+.app-widgets:after{background:linear-gradient(145deg,#fff,#d1fae5)!important;filter:drop-shadow(0 2px 1px #08634f)!important}
+.app-terminal:after{background:linear-gradient(145deg,#fff,#dcfce7)!important;filter:drop-shadow(0 2px 1px #174b31)!important}
+.app-chat:after{background:linear-gradient(145deg,#fff,#dbeafe)!important;filter:drop-shadow(0 2px 1px #27358f)!important}
+.app-clock:after{background:transparent!important;border:3px solid #fff!important;box-shadow:inset 0 0 0 3px #ffffff55,0 2px 2px #164e63!important}
+.app-ai:after{background:linear-gradient(145deg,#fff,#ede9fe)!important;filter:drop-shadow(0 2px 1px #4931a0)!important}
+.app-wallpaper:after{background:linear-gradient(145deg,#fff,#e0e7ff 55%,#fce7f3)!important;filter:drop-shadow(0 2px 1px #5e459d)!important}
+.appstore-icon{background:linear-gradient(145deg,#202b3a,#101720)!important;border:1px solid #3c4b61!important;box-shadow:inset 0 1px 0 #ffffff12,0 5px 13px #0005!important}
+@media(prefers-reduced-motion:reduce){.desktop-icon .app-symbol,.appstore-icon .app-symbol{transition:none!important;transform:none!important}.desktop-icon:hover .app-symbol,.appstore-card:hover .appstore-icon .app-symbol{transform:none!important}}
