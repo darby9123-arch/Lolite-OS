@@ -1,4 +1,4 @@
-/* Lolite OS 3.7.3 wallpaper library: reliable static/live wallpaper application and matching UI themes. */
+/* Lolite OS 3.9.0 wallpaper library: reliable static/live wallpaper application and matching UI themes. */
 (()=>{
   const wallpapers={
     Lolite:[
