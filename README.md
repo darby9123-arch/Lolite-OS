@@ -8,6 +8,13 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.6.5 — Lolite Chat Stability Fix — 2026-10-09
+- Prevented overlapping chat renders from racing against sign-in events, realtime messages and channel switching.
+- Kept rerenders attached to the chat window that opened them instead of accidentally moving chat into another window.
+- Added explicit data-loading error checks so failed profile, conversation or message requests are surfaced in the console instead of silently leaving broken UI.
+- Bumped the Chat script cache version to ensure GitHub Pages loads the stability fixes.
+- Checked `html games/`; the current GitHub directory listing contains only `.gitkeep`, so there were no game files available to compare for duplicates.
+
 ### 3.6.4 — Lolite Chat Guest Account Repair — 2026-09-25
 - Reworked no-email account creation so Lolite Chat first uses Supabase Anonymous Sign-Ins and automatically falls back to a secure server-side guest-account flow if anonymous sign-ins are unavailable.
 - Guest accounts are created server-side with an auto-confirmed internal identity; the secret credentials never reach the browser.
