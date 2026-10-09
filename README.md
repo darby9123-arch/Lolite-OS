@@ -8,6 +8,12 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.9.0 — WebGL Liquid Glass & Browser Cleanup — 2026-10-09
+- Removed Lolite Browser and Ultraviolet Browser from the desktop, Start menu, search, App Store and loaded runtime; removed their obsolete client modules.
+- Replaced the CSS-only liquid-glass highlight with a WebGL shader rendering animated fluid caustics, refractive-style colour flow and specular edge reflections on windows, panels and taskbar.
+- Kept translucent backdrop blur as the live background layer, with a CSS fallback when WebGL is unavailable.
+- Connected the WebGL effect to the Liquid Glass setting and Reduce Motion; updated cache versions to 3.9.0.
+
 ### 3.8.0 — Real File Explorer — 2026-10-09
 - Rebuilt Files with sidebar locations, breadcrumbs, back/forward/up navigation and folder-aware browsing.
 - Added nested folders, file creation, uploads into the current folder, search, file-type icons and readable sizes.
