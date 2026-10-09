@@ -20,6 +20,11 @@ app.use((_req, res, next) => {
   res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
   next();
 });
+// UV is hosted under /uv/ but must control the /service/ proxy route.
+app.use("/uv/sw.js", (_req, res, next) => {
+  res.setHeader("Service-Worker-Allowed", "/");
+  next();
+});
 
 app.use("/scram/", express.static(scramjetPath));
 app.use("/utils/", express.static(dirOf("@mercuryworkshop/scramjet-utils")));
