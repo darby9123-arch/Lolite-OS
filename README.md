@@ -8,6 +8,12 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.9.1 — Lolite AI API Repair — 2026-10-09
+- Switched Lolite AI to the supported `gpt-4.1-mini` default model while preserving the `OPENAI_MODEL` override.
+- Improved API health reporting, timeout handling, provider error messages and empty-response handling.
+- Increased the client timeout and prepared the client for a dedicated GitHub-linked Vercel API deployment.
+- The Vercel deployment must have `OPENAI_API_KEY` configured in its server-side environment; the key is never stored in the browser.
+
 ### 3.9.0 — WebGL Liquid Glass & Browser Cleanup — 2026-10-09
 - Removed Lolite Browser and Ultraviolet Browser from the desktop, Start menu, search, App Store and loaded runtime; removed their obsolete client modules.
 - Replaced the CSS-only liquid-glass highlight with a WebGL shader rendering animated fluid caustics, refractive-style colour flow and specular edge reflections on windows, panels and taskbar.
