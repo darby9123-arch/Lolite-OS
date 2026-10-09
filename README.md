@@ -8,6 +8,10 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.9.2 — AI Endpoint Routing Fix — 2026-10-09
+- Routed the GitHub Pages Lolite AI client to the live `lolite-os.vercel.app/api/ai` endpoint instead of a nonexistent deployment hostname.
+- Confirmed the public API health endpoint responds successfully; AI generation still requires the private `OPENAI_API_KEY` environment variable to be configured in Vercel.
+
 ### 3.9.1 — Lolite AI API Repair — 2026-10-09
 - Switched Lolite AI to the supported `gpt-4.1-mini` default model while preserving the `OPENAI_MODEL` override.
 - Improved API health reporting, timeout handling, provider error messages and empty-response handling.
