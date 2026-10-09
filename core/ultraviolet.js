@@ -35,14 +35,14 @@
     if(!window.__uv$config||!window.__uv$config.encodeUrl)throw new Error('Ultraviolet configuration is missing.');
     if(!('serviceWorker' in navigator))throw new Error('This browser does not support service workers.');
     if(location.protocol!=='https:'&&location.hostname!=='localhost')throw new Error('Ultraviolet requires HTTPS or localhost.');
-    await navigator.serviceWorker.register('/uv/sw.js',{scope:'/'});
+    await navigator.serviceWorker.register(window.__uv$config.sw||'/uv/uv.sw.js',{scope:'/'});
     await navigator.serviceWorker.ready;
     lastUrl=target.href;input.value=target.href;
     frame.src=window.__uv$config.prefix+window.__uv$config.encodeUrl(target.href);
     setStatus(status,'Opening '+target.hostname+' through Ultraviolet. If the page stays blank, the host may not support the required proxy endpoints.');
    }catch(e){
     const message=e?.message||String(e);
-    setStatus(status,message.includes('/uv/')||message.includes('Ultraviolet')?'Ultraviolet runtime could not start: '+message+'. The site must serve /uv/uv.bundle.js, /uv/handler.js, /uv/sw.js and a working /bare/ endpoint; a static GitHub Pages deployment cannot provide the proxy server.':'Ultraviolet could not start: '+message,true);
+    setStatus(status,message.includes('/uv/')||message.includes('Ultraviolet')?'Ultraviolet runtime could not start: '+message+'. The site must serve /uv/uv.bundle.js, /uv/handler.js, /uv/uv.sw.js and a working /bare/ endpoint; a static GitHub Pages deployment cannot provide the proxy server.':'Ultraviolet could not start: '+message,true);
     console.error('Lolite Ultraviolet startup failed',e);
    }
   };
