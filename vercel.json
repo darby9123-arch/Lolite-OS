@@ -17,9 +17,5 @@
     { "src": "/epoxy/(.*)", "dest": "/server.mjs" },
     { "src": "/baremux/(.*)", "dest": "/server.mjs" },
     { "src": "/(.*)", "dest": "/$1" }
-  ],
-  "functions": {
-    "api/ai.js": { "maxDuration": 30 },
-    "server.mjs": { "maxDuration": 60 }
-  }
+  ]
 }
