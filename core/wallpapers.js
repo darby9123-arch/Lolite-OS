@@ -1,4 +1,4 @@
-/* Lolite OS 3.7.0 wallpaper library: static and animated CSS-only wallpapers. */
+/* Lolite OS 3.7.3 wallpaper library: reliable static/live wallpaper application and matching UI themes. */
 (()=>{
   const wallpapers={
     Lolite:[
@@ -57,9 +57,36 @@
     ]
   };
   const all=Object.values(wallpapers).flat();
-  const find=id=>all.find(x=>x[1]===id)||all[0];
-  const apply=id=>{const w=find(id);if(!w)return;const el=document.getElementById('wallpaper');if(el){el.style.background=w[2];el.dataset.motion=w[3]||'';el.classList.toggle('wallpaper-animated',!!w[3])}localStorage.wallpaperId=w[1];localStorage.wallpaper=w[1];const panel=document.querySelector('[data-window-id="settings"] .content');if(panel)panel.innerHTML=window.page('settings')};
+  const find=id=>all.find(x=>x[1]===id)||null;
+  const tones={
+    'lolite-aurora':['#8b6cff','#4d8dff'],'purple-bloom':['#c084fc','#8b5cf6'],'blue-pulse':['#3b82f6','#60a5fa'],
+    'liquid-violet':['#c084fc','#60a5fa'],'neon-waves':['#22d3ee','#8b5cf6'],'midnight-mesh':['#94a3b8','#818cf8'],
+    'forest-mist':['#4ade80','#86efac'],'ocean-dawn':['#38bdf8','#7dd3fc'],'mountain-evening':['#818cf8','#a5b4fc'],
+    'deep-space':['#6366f1','#60a5fa'],'purple-nebula':['#e879f9','#a78bfa'],'blue-galaxy':['#60a5fa','#818cf8'],
+    'pixel-night':['#9ca3af','#6b7280'],'pixel-purple':['#c084fc','#a78bfa'],'arcade':['#a78bfa','#60a5fa'],
+    'cyber-grid':['#4ade80','#22d3ee'],'game-over':['#f87171','#fb7185'],'obsidian':['#9ca3af','#64748b'],
+    'dark-violet':['#a78bfa','#818cf8'],'soft-slate':['#cbd5e1','#94a3b8'],'minimal-blue':['#60a5fa','#93c5fd'],
+    'vaporwave':['#f472b6','#c084fc'],'retro-sunset':['#fb923c','#f472b6'],'world-green':['#84cc16','#60a5fa'],
+    'world-snow':['#e2e8f0','#93c5fd'],'world-desert':['#fbbf24','#38bdf8'],'animated-aurora':['#34d399','#8b5cf6'],
+    'animated-nebula':['#e879f9','#8b5cf6'],'animated-ocean':['#38bdf8','#0ea5e9'],'animated-matrix':['#4ade80','#10b981'],
+    'animated-solar':['#fb923c','#f43f5e'],'animated-galaxy':['#60a5fa','#a78bfa']
+  };
+  const apply=id=>{
+    const w=find(id);if(!w)return false;
+    const el=document.getElementById('wallpaper');
+    if(el){el.style.background=w[2];el.dataset.motion=w[3]||'';el.classList.toggle('wallpaper-animated',!!w[3]);el.classList.toggle('wallpaper-pixel',w[1].startsWith('pixel-'))}
+    const tone=tones[w[1]]||['#8b6cff','#4d8dff'];
+    document.documentElement.style.setProperty('--accent',tone[0]);
+    document.documentElement.style.setProperty('--blue',tone[1]);
+    document.documentElement.style.setProperty('--wallpaper-accent-soft',tone[0]+'26');
+    document.documentElement.dataset.wallpaper=w[1];
+    localStorage.wallpaperId=w[1];localStorage.wallpaper=w[1];
+    const panel=document.querySelector('[data-window-id="settings"] .content');
+    if(panel)panel.innerHTML=window.page('settings');
+    return true;
+  };
   window.loliteWallpaper=apply;
+  window.loliteWallpaperIds=all.map(w=>w[1]);
   window.loliteWallpaperCategory=cat=>{localStorage.wallpaperCategory=cat;const panel=document.querySelector('[data-window-id="settings"] .content');if(panel)panel.innerHTML=window.page('settings')};
   const style=document.createElement('style');style.textContent=`.wallpaper-cats{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 14px}.wallpaper-cat{padding:8px 11px;border-radius:999px;background:#ffffff08;border:1px solid #ffffff10}.wallpaper-cat.active{border-color:#8b5cf6aa;background:#8b5cf622}.wallpaper-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}.wallpaper-card{padding:0;overflow:hidden;text-align:left;background:#ffffff06;border:1px solid #ffffff10;border-radius:14px}.wallpaper-preview{height:82px;position:relative;overflow:hidden}.wallpaper-preview.wallpaper-motion:after{content:'';position:absolute;inset:-30%;background:radial-gradient(ellipse at 30% 40%,#ffffff33,transparent 30%),radial-gradient(ellipse at 70% 60%,#8b5cf655,transparent 38%);animation:wallpaperPreviewFlow 8s ease-in-out infinite alternate}.wallpaper-preview[data-motion='ocean']:after{background:linear-gradient(160deg,#ffffff00,#67e8f933,#ffffff00);animation-duration:5s}.wallpaper-preview[data-motion='matrix']:after{background:repeating-linear-gradient(90deg,#4ade8020 0 1px,transparent 1px 12px);animation-duration:3s}.wallpaper-card b{display:block;padding:9px 10px;font-size:12px}.wallpaper-card.active{outline:2px solid #8b5cf6;outline-offset:1px}`;document.head.append(style);
   style.textContent+=`\n@keyframes wallpaperPreviewFlow{from{transform:translate3d(-5%,3%,0) rotate(-8deg) scale(.95)}to{transform:translate3d(6%,-4%,0) rotate(8deg) scale(1.15)}}\n@keyframes wallpaperAurora{0%,100%{transform:translate3d(-8%,2%,0) scale(1);filter:hue-rotate(0deg)}50%{transform:translate3d(9%,-5%,0) scale(1.18);filter:hue-rotate(55deg)}}\n@keyframes wallpaperNebula{0%,100%{transform:translate3d(-6%,5%,0) rotate(0deg) scale(1);opacity:.5}50%{transform:translate3d(7%,-7%,0) rotate(18deg) scale(1.28);opacity:.95}}\n@keyframes wallpaperOcean{0%,100%{transform:translateX(-9%) skewY(-5deg);opacity:.35}50%{transform:translateX(10%) skewY(5deg);opacity:.8}}\n@keyframes wallpaperMatrix{0%{transform:translateY(-8%);opacity:.35}100%{transform:translateY(8%);opacity:.8}}\n@keyframes wallpaperSolar{0%,100%{transform:scale(.9) translateY(3%);filter:brightness(.85)}50%{transform:scale(1.18) translateY(-5%);filter:brightness(1.25)}}\n@keyframes wallpaperGalaxy{0%,100%{transform:rotate(-10deg) scale(.95)}50%{transform:rotate(14deg) scale(1.2)}}\n#wallpaper.wallpaper-animated{isolation:isolate;overflow:hidden}\n#wallpaper.wallpaper-animated:before{content:'';position:absolute;inset:-22%;pointer-events:none;background:radial-gradient(ellipse at 25% 40%,#34d39955,transparent 28%),radial-gradient(ellipse at 75% 65%,#8b5cf655,transparent 35%),radial-gradient(ellipse at 55% 15%,#38bdf833,transparent 25%);mix-blend-mode:screen;animation:wallpaperAurora 16s ease-in-out infinite}\n#wallpaper[data-motion='nebula']:before{background:radial-gradient(ellipse at 55% 40%,#e879f966,transparent 24%),radial-gradient(ellipse at 25% 65%,#6d28d966,transparent 40%);animation-name:wallpaperNebula;animation-duration:22s}\n#wallpaper[data-motion='ocean']:before{background:repeating-linear-gradient(170deg,#7dd3fc00 0 12%,#7dd3fc22 13%,#0ea5e922 18%,#7dd3fc00 24%);animation-name:wallpaperOcean;animation-duration:12s}\n#wallpaper[data-motion='matrix']:before{inset:-10%;background:repeating-linear-gradient(90deg,#4ade8020 0 1px,transparent 1px 36px),repeating-linear-gradient(0deg,#4ade8018 0 1px,transparent 1px 36px);animation-name:wallpaperMatrix;animation-duration:8s}\n#wallpaper[data-motion='solar']:before{background:radial-gradient(ellipse at 50% 110%,#fb923caa 0,transparent 48%),radial-gradient(ellipse at 30% 100%,#f43f5e66 0,transparent 40%);animation-name:wallpaperSolar;animation-duration:11s}\n#wallpaper[data-motion='galaxy']:before{background:repeating-radial-gradient(ellipse at 60% 40%,#93c5fd22 0 2px,transparent 3px 28px),radial-gradient(ellipse at 60% 40%,#7c3aed88,transparent 40%);animation-name:wallpaperGalaxy;animation-duration:26s}\n@media(prefers-reduced-motion:reduce){#wallpaper.wallpaper-animated:before,.wallpaper-preview.wallpaper-motion:after{animation:none!important}}`;
