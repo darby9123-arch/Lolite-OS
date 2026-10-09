@@ -27,6 +27,19 @@ app.use("/uv/sw.js", (_req, res, next) => {
   next();
 });
 
+app.get("/uv/uv.config.js", (_req, res) => {
+  res.type("application/javascript").send(`self.__uv$config = {
+    prefix: "/service/",
+    bare: "/bare/",
+    encodeUrl: Ultraviolet.codec.xor.encode,
+    decodeUrl: Ultraviolet.codec.xor.decode,
+    handler: "/uv/handler.js",
+    bundle: "/uv/uv.bundle.js",
+    config: "/uv/uv.config.js",
+    sw: "/uv/sw.js"
+  };`);
+});
+
 // Bare HTTP requests must reach the proxy server before the static-file handler.
 app.use((req, res, next) => {
   if (bareServer.shouldRoute(req)) {
