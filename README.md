@@ -4,7 +4,7 @@
 
 # Lolite OS
 
-**Browser hosting note:** GitHub Pages is a static preview and cannot run the proxy backend. See [Browser Hosting Requirements](docs/BROWSER-HOSTING.md). The browser launchers link to the Node-backed deployment when opened from GitHub Pages.
+**Browser hosting note:** GitHub Pages is a static preview and cannot run the proxy backend. Scramjet also needs a persistent WebSocket-capable Node host. See [Browser Hosting Requirements](docs/BROWSER-HOSTING.md); the repository now includes a `Dockerfile` and `render.yaml` for that host.
 
 The Vercel version includes the Node-backed Ultraviolet proxy endpoints. The GitHub Pages copy is static and cannot run the proxy backend.
 
