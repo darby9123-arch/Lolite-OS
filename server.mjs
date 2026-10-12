@@ -51,7 +51,7 @@ app.use("/controller", express.static(path.join(__dirname, "node_modules/@mercur
 app.use("/clients/epoxy", express.static(path.join(__dirname, "node_modules/@mercuryworkshop/epoxy-transport/dist")));
 app.get("/sw.js", (_req, res) => {
   res.setHeader("Service-Worker-Allowed", "/");
-  res.type("application/javascript").send('importScripts("/controller/controller.sw.js");\\naddEventListener("fetch", (event) => { if ($scramjetController.shouldRoute(event)) event.respondWith($scramjetController.route(event)); });');
+  res.type("application/javascript").send('importScripts("/controller/controller.sw.js");\naddEventListener("fetch", (event) => { if ($scramjetController.shouldRoute(event)) event.respondWith($scramjetController.route(event)); });');
 });
 
 // Serve Lolite's own static files and use the npm package for Ultraviolet runtime files.
