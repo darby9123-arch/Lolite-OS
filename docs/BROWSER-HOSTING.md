@@ -1,27 +1,40 @@
-# Lolite OS browser hosting
+# Browser hosting and deployment
 
-## Why the GitHub Pages copy cannot run the browsers
+## GitHub Pages limitation
 
-The GitHub Pages URL is a project site under `/Lolite-OS/`. GitHub Pages serves static files; it does not run `server.mjs`, Express, the Bare proxy, or a WebSocket/Wisp proxy. The current Ultraviolet code also requests root paths such as `/uv/...`, which are outside the project-site prefix on GitHub Pages.
+GitHub Pages cannot run Node.js, HTTP proxy endpoints, or WebSocket upgrades. The project site is also mounted below `/Lolite-OS/`, while the browser service workers intentionally use origin-root routes. GitHub Pages cannot host working Ultraviolet or Scramjet proxy services by itself.
 
-This means the GitHub Pages copy cannot provide working proxied browsing by itself. Adding browser UI or copying the service-worker script into the repository does not create the server-side proxy.
+## What was added
 
-## Recommended hosting layout
+- `server.mjs` serves Ultraviolet assets and its Bare HTTP proxy.
+- `server.mjs` serves Scramjet runtime/controller/Epoxy transport files from installed npm packages.
+- `/sw.js` routes Scramjet requests through its service worker.
+- `/wisp/` WebSocket upgrades are routed to Wisp for Scramjet's Epoxy transport.
+- `/healthz` provides a deployment health check.
+- `Dockerfile` lets you deploy the Node server on a host that supports persistent Node processes and WebSockets.
 
-1. Keep GitHub Pages as the static preview if you want, but use the deployed Node-backed Lolite site for the actual browser apps: https://lolite-os.vercel.app/
-2. Ultraviolet needs its runtime files served from the same origin as its service worker and a working Bare backend. The existing `server.mjs` is the intended Node-backed route for `/uv/`, `/service/`, and `/bare/`. A long-running Node host is the safer option if WebSocket upgrades are needed.
-3. Scramjet needs its built runtime and controller assets, a service worker, a compatible transport client, and a reachable Wisp WebSocket endpoint. The current `core/scramjet.js` is only a diagnostic adapter; it is not a Scramjet controller or proxy implementation. The server must not advertise Scramjet as working until those pieces are deployed and initialized.
-4. For both browsers to work reliably, the simplest architecture is to serve the Lolite frontend and browser runtime from one Node-backed origin and run the required proxy transports there (or configure the runtime to use a separately hosted, HTTPS/WSS-enabled proxy endpoint with the necessary cross-origin permissions).
+## Deploy the full browser host
 
-## Current status
+Use a Docker-capable Node host that supports WebSocket upgrades (for example, a Render web service or Railway service). Connect the `darby9123-arch/Lolite-OS` repository and deploy from its root using the included Dockerfile. The app listens on the `PORT` environment variable.
 
-- Ultraviolet: the browser UI attempts to register the service worker and use the configured runtime, but the GitHub Pages copy cannot reach a same-origin proxy backend.
-- Scramjet: the current UI reports missing runtime/controller pieces. It does not yet browse websites.
-- The browser launchers now link GitHub Pages users to the Node-backed Lolite deployment rather than implying that static hosting can proxy sites.
+After deployment, check `https://YOUR-HOST/healthz` and verify these runtime files return HTTP 200:
 
-## Verify after deployment
+- `/uv/uv.bundle.js`
+- `/uv/uv.handler.js`
+- `/uv/uv.sw.js`
+- `/scramjet/scramjet.js`
+- `/scramjet/scramjet.wasm`
+- `/controller/controller.api.js`
+- `/controller/controller.inject.js`
+- `/controller/controller.sw.js`
+- `/clients/epoxy/index.js`
 
-- Open the Node-backed deployment and check that `/uv/uv.bundle.js`, `/uv/uv.sw.js`, and `/bare/` are served by the application.
-- Register the Ultraviolet service worker and test a simple HTTPS destination.
-- For Scramjet, verify the actual controller bundle, Scramjet runtime/WASM, service-worker route, and Wisp WebSocket endpoint before testing a destination.
-- Test on a fresh browser session after deployment, because stale service-worker registrations can keep old behavior alive.
+Then open the hosted Lolite desktop, launch each browser, and test an HTTPS website. A successful asset check alone does not prove the proxy works.
+
+## Existing Vercel deployment
+
+The existing Vercel site may still serve Ultraviolet HTTP endpoints, but Vercel Functions are not a suitable host for the persistent Wisp WebSocket service used by Scramjet. Keep Vercel for the current site/API if desired, but deploy the full browser-capable Node server separately and use that host for Scramjet. Do not expect GitHub Pages or the current Vercel function deployment to provide the full Scramjet transport.
+
+## Security note
+
+A public web proxy can be abused. Before advertising the Node host publicly, put appropriate access controls, usage limits, and monitoring in front of proxy routes. Wisp can relay network traffic and should not be exposed as an unrestricted general-purpose relay.
