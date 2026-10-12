@@ -1,69 +1,110 @@
-/* Scramjet browser launcher for Lolite OS. */
+/* Scramjet browser for Lolite OS. Requires the Node server routes configured in server.mjs. */
 (() => {
   const previousPage = window.page;
-  const style = document.createElement('style');
-  style.textContent = '.sj-app{height:100%;display:flex;flex-direction:column;gap:10px;min-height:0}.sj-bar{display:flex;gap:8px}.sj-bar input{flex:1;min-width:0;padding:10px;border-radius:8px;background:#0d1118;color:#fff;border:1px solid #303847}.sj-state{padding:12px;border:1px solid #65333d;border-radius:8px;color:#ffb0b8}.sj-stage{flex:1;min-height:220px;display:grid;place-items:center;text-align:center;padding:24px;background:#10141c;border-radius:10px}';
+  const style = document.createElement("style");
+  style.textContent = ".sj-app{height:100%;display:flex;flex-direction:column;gap:10px;min-height:0}.sj-bar{display:flex;gap:8px}.sj-bar input{flex:1;min-width:0;padding:10px;border-radius:8px;background:#0d1118;color:#fff;border:1px solid #303847}.sj-state{padding:10px;border:1px solid #344052;border-radius:8px;color:#cbd5e1;font-size:12px}.sj-state.error{border-color:#65333d;color:#ffb0b8}.sj-stage{flex:1;min-height:220px;display:flex;background:#fff;border-radius:10px;overflow:hidden}.sj-frame{width:100%;height:100%;min-height:220px;border:0;background:#fff}";
   document.head.appendChild(style);
-  function showHostNotice(el, message) { el.textContent = message; if (location.hostname.endsWith('github.io')) { el.append(document.createTextNode(' ')); const link = document.createElement('a'); link.href = 'https://lolite-os.vercel.app/'; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = 'Open the Node-backed Lolite OS deployment'; link.style.color = '#c9baff'; link.style.textDecoration = 'underline'; el.append(link); } }
-  const browserPage = () '<div class="sj-app"><h2>Scramjet Browser</h2><form id="sj-form" class="sj-bar"><input id="sj-url" placeholder="Enter a website or search the web" aria-label="Website address"><button class="primary">Go</button></form><div id="sj-state" class="sj-state" role="status">Checking Scramjet runtime…</div><div id="sj-stage" class="sj-stage"><div><h3>Scramjet runtime required</h3><p class="muted">The Scramjet client, controller, service worker and proxy transport must be built and served before browsing can work.</p></div></div></div>';
-  window.page = id => id === 'scramjet' ? browserPage() : previousPage(id);
+  const page = () => '<div class="sj-app"><h2>Scramjet Browser</h2><form id="sj-form" class="sj-bar"><input id="sj-url" placeholder="Enter a website or search the web" aria-label="Website address" autocomplete="url" spellcheck="false"><button class="primary" type="submit">Go</button><button class="soft" id="sj-home" type="button">Home</button><button class="soft" id="sj-reload" type="button">Reload</button></form><div id="sj-state" class="sj-state" role="status">Starting Scramjet…</div><div id="sj-stage" class="sj-stage"><iframe class="sj-frame" id="sj-frame" title="Scramjet browsing area" allow="fullscreen; clipboard-read; clipboard-write"></iframe></div></div>';
+  const script = (src) => new Promise((resolve, reject) => {
+    const existing = [...document.scripts].find(s => new URL(s.src, location.href).pathname === src);
+    if (existing) { if (existing.dataset.loaded === "1") resolve(); else { existing.addEventListener("load", resolve, {once:true}); existing.addEventListener("error", () => reject(new Error("Could not load " + src)), {once:true}); } return; }
+    const el = document.createElement("script"); el.src = src; el.onload = () => { el.dataset.loaded = "1"; resolve(); }; el.onerror = () => reject(new Error("Could not load " + src)); document.head.appendChild(el);
+  });
+  const status = (el, text, error=false) => { el.textContent = text; el.classList.toggle("error", error); };
+  const normalize = raw => {
+    let value = String(raw || "").trim();
+    if (!value) return "";
+    if (!/^[a-z][a-z\d+.-]*:\/\//i.test(value)) value = /^(localhost|[\w-]+\.)+[a-z]{2,}([/:?#]|$)/i.test(value) ? "https://" + value : "https://duckduckgo.com/?q=" + encodeURIComponent(value);
+    const url = new URL(value);
+    if (!["http:", "https:"].includes(url.protocol)) throw new Error("Only HTTP and HTTPS websites are supported.");
+    return url.href;
+  };
+  async function init(content) {
+    const input = content.querySelector("#sj-url");
+    const statusEl = content.querySelector("#sj-state");
+    const frameEl = content.querySelector("#sj-frame");
+    let frame = null;
+    const go = raw => {
+      try { const url = normalize(raw); if (!url) return; input.value = url; if (!frame) throw new Error("Scramjet is still initializing."); frame.go(url); status(statusEl, "Loading " + new URL(url).hostname + " through Scramjet…"); }
+      catch (e) { status(statusEl, e.message || "Could not open that address.", true); }
+    };
+    content.querySelector("#sj-form").onsubmit = e => { e.preventDefault(); go(input.value); };
+    content.querySelector("#sj-home").onclick = () => go("https://example.com/");
+    content.querySelector("#sj-reload").onclick = () => { if (frame) frame.reload(); else status(statusEl, "Scramjet is not ready yet.", true); };
+    try {
+      if (!("serviceWorker" in navigator)) throw new Error("This browser does not support service workers.");
+      if (location.protocol !== "https:" && location.hostname !== "localhost") throw new Error("Scramjet requires HTTPS or localhost.");
+      status(statusEl, "Loading Scramjet runtime files…");
+      await Promise.all([script("/scramjet/scramjet.js"), script("/controller/controller.api.js"), script("/clients/epoxy/index.js")]);
+      const runtime = window.$scramjetController;
+      const EpoxyClient = window.EpoxyTransport?.EpoxyClient;
+      if (!runtime?.Controller || !runtime.config) throw new Error("Scramjet controller API was not exported by /controller/controller.api.js.");
+      if (!EpoxyClient) throw new Error("Epoxy transport was not exported by /clients/epoxy/index.js.");
+      const registration = await navigator.serviceWorker.register("/sw.js", {scope:"/"});
+      await navigator.serviceWorker.ready;
+      let sw = navigator.serviceWorker.controller || registration.active;
+      if (!navigator.serviceWorker.controller) {
+        await new Promise(resolve => {
+          const timeout = setTimeout(resolve, 5000);
+          navigator.serviceWorker.addEventListener("controllerchange", () => { clearTimeout(timeout); resolve(); }, {once:true});
+        });
+        sw = navigator.serviceWorker.controller || registration.active;
+      }
+      if (!sw) throw new Error("Scramjet service worker did not activate. Refresh the page and retry.");
+      runtime.config.prefix = "/~/sj/";
+      runtime.config.scramjetPath = "/scramjet/scramjet.js";
+      runtime.config.injectPath = "/controller/controller.inject.js";
+      runtime.config.wasmPath = "/scramjet/scramjet.wasm";
+      const wisp = (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/wisp/";
+      const controller = new runtime.Controller({serviceworker: sw, transport: new EpoxyClient({wisp})});
+      await controller.wait();
+      frame = controller.createFrame(frameEl);
+      window.LoliteScramjetController = controller;
+      window.LoliteScramjetFrame = frame;
+      status(statusEl, "Scramjet is ready. Enter a website to browse.");
+      const params = new URLSearchParams(location.search);
+      const initial = params.get("sj");
+      if (initial) go(initial);
+    } catch (e) {
+      console.error("Lolite Scramjet initialization failed:", e);
+      let message = "Scramjet could not start: " + (e.message || String(e));
+      if (location.hostname.endsWith("github.io")) {
+        message += " GitHub Pages cannot run the required proxy backend. Open the Node-backed deployment at https://lolite-os.vercel.app/ for Ultraviolet; Scramjet also requires a WebSocket-capable Node host.";
+      }
+      status(statusEl, message, true);
+    }
+  }
+  window.page = id => id === "scramjet" ? page() : previousPage(id);
   const previousOpen = window.openApp;
   window.openApp = function(id, title, w, h) {
-    previousOpen(id, title || (id === 'scramjet' ? 'Scramjet Browser' : title), w || 900, h || 650);
-    if (id !== 'scramjet') return;
-    setTimeout(async () => {
-      const content = window.state?.windows?.[id]?.el?.querySelector('.content');
+    previousOpen(id, title || (id === "scramjet" ? "Scramjet Browser" : title), w || 900, h || 650);
+    if (id !== "scramjet") return;
+    setTimeout(() => {
+      const content = window.state?.windows?.[id]?.el?.querySelector(".content") || document.querySelector("#windows .window:last-child .content");
       if (!content || content.dataset.scramjetBrowserReady) return;
-      content.dataset.scramjetBrowserReady = '1';
-      const input = content.querySelector('#sj-url');
-      const status = content.querySelector('#sj-state');
-      const stage = content.querySelector('#sj-stage');
-      const go = async raw => {
-        let url = String(raw || '').trim();
-        if (!url) return;
-        if (!/^[a-z][a-z\d+.-]*:\/\//i.test(url)) url = /^(localhost|[\w-]+\.)+[a-z]{2,}([/:?#]|$)/i.test(url) ? 'https://' + url : 'https://duckduckgo.com/?q=' + encodeURIComponent(url);
-        try { const parsed = new URL(url); if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('Only HTTP and HTTPS are supported.'); url = parsed.href; }
-        catch (error) { status.textContent = error.message || 'Invalid address.'; return; }
-        input.value = url;
-        const paths = ['/scramjet/scramjet.bundle.js', '/controller/controller.mjs', '/controller/controller.sw.js'];
-        const checks = await Promise.all(paths.map(async path => { try { const response = await fetch(path, {method:'HEAD', cache:'no-store'}); return {path, ok:response.ok, status:response.status}; } catch { return {path, ok:false, status:'network error'}; } }));
-        const missing = checks.filter(item => !item.ok);
-        if (missing.length) {
-          showHostNotice(status, 'Scramjet cannot browse yet. Missing: ' + missing.map(item => item.path + ' (' + item.status + ')').join(', ') + '.');
-          stage.innerHTML = '<div><h3>Runtime not installed</h3><p class="muted">This host does not serve the required Scramjet runtime. GitHub Pages is static-only; full browsing needs the Node proxy server and a built Scramjet client/controller.</p></div>';
-          return;
-        }
-        status.textContent = 'Runtime files were found, but the Scramjet controller initialization bundle is not connected.';
-      };
-      content.querySelector('#sj-form').onsubmit = event => { event.preventDefault(); go(input.value); };
-      try {
-        const response = await fetch('/scramjet/scramjet.bundle.js', {method:'HEAD', cache:'no-store'});
-        if (!response.ok) throw new Error('Scramjet client bundle returned HTTP ' + response.status);
-        status.textContent = 'Scramjet client asset found. Enter a website to check the controller.';
-      } catch (error) {
-        showHostNotice(status, 'Scramjet runtime is not bundled on this host. ' + error.message);
-      }
+      content.dataset.scramjetBrowserReady = "1";
+      init(content);
     }, 0);
   };
   function addLauncher() {
-    const icons = document.getElementById('icons');
-    if (icons && !document.getElementById('scramjet-launcher')) {
-      const button = document.createElement('button');
-      button.id = 'scramjet-launcher'; button.className = 'desktop-icon';
+    const icons = document.getElementById("icons");
+    if (icons && !document.getElementById("scramjet-launcher")) {
+      const button = document.createElement("button");
+      button.id = "scramjet-launcher"; button.className = "desktop-icon";
       button.innerHTML = '<b class="app-symbol app-browser" aria-hidden="true"></b><span>Scramjet Browser</span>';
-      button.ondblclick = () => window.openApp('scramjet', 'Scramjet Browser', 900, 650);
+      button.ondblclick = () => window.openApp("scramjet", "Scramjet Browser", 900, 650);
       icons.appendChild(button);
     }
-    const start = document.getElementById('start');
-    const list = start?.querySelector('.start-list');
-    if (list && !list.querySelector('[data-scramjet-launch]')) {
-      const button = document.createElement('button');
-      button.dataset.scramjetLaunch = '1'; button.textContent = 'Scramjet Browser';
-      button.onclick = () => { window.openApp('scramjet', 'Scramjet Browser', 900, 650); start.classList.add('hidden'); };
+    const start = document.getElementById("start");
+    const list = start?.querySelector(".start-list");
+    if (list && !list.querySelector("[data-scramjet-launch]")) {
+      const button = document.createElement("button");
+      button.dataset.scramjetLaunch = "1"; button.textContent = "Scramjet Browser";
+      button.onclick = () => { window.openApp("scramjet", "Scramjet Browser", 900, 650); start.classList.add("hidden"); };
       list.appendChild(button);
     }
   }
   new MutationObserver(addLauncher).observe(document.documentElement, {childList:true, subtree:true});
   addLauncher();
-  window.LoliteScramjetBrowser = {open: () => window.openApp('scramjet', 'Scramjet Browser', 900, 650)};
+  window.LoliteScramjetBrowser = {open: () => window.openApp("scramjet", "Scramjet Browser", 900, 650)};
 })();
