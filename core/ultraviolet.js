@@ -17,6 +17,7 @@
  const browserPage=()=>`<div class="uv-app"><div><h2>Ultraviolet Browser</h2><p class="muted">Browse through Lolite's Ultraviolet proxy when the Node server is available.</p></div><form class="uv-toolbar" id="uvForm"><div class="uv-address"><input id="uvAddress" type="text" autocomplete="url" spellcheck="false" placeholder="Enter a website or search the web" aria-label="Website address"><button class="primary" type="submit">Go</button></div><button class="soft" id="uvHome" type="button">Home</button><button class="soft" id="uvReload" type="button">Reload</button><button class="soft" id="uvOpenTab" type="button">Open in tab</button></form><div id="uvStatus" class="uv-status" role="status">Checking Ultraviolet runtime…</div><div class="uv-frame-wrap"><iframe class="uv-frame" id="uvFrame" title="Ultraviolet browsing area" allow="fullscreen; clipboard-read; clipboard-write"></iframe></div><p class="muted">Note: websites that block embedding, require unsupported browser features, or rely on WebSockets may not work.</p></div>`;
  const loadScript=src=>new Promise((resolve,reject)=>{const existing=[...document.scripts].find(s=>new URL(s.src,location.href).pathname===src);if(existing){resolve();return}const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>reject(new Error('Could not load '+src));document.head.appendChild(s)});
  const setStatus=(el,msg,error=false)=>{if(!el)return;el.textContent=msg;el.classList.toggle('error',error)};
+ function showHostNotice(el,msg){if(!el)return;setStatus(el,msg,true);if(location.hostname.endsWith('github.io')){el.append(document.createTextNode(' '));const link=document.createElement('a');link.href='https://lolite-os.vercel.app/';link.target='_blank';link.rel='noopener noreferrer';link.textContent='Open the Node-backed Lolite OS deployment';link.style.color='#c9baff';link.style.textDecoration='underline';el.append(link)}}
  async function start(content){
   const form=content.querySelector('#uvForm'),input=content.querySelector('#uvAddress'),frame=content.querySelector('#uvFrame'),status=content.querySelector('#uvStatus');
   let lastUrl='';
@@ -42,7 +43,7 @@
     setStatus(status,'Opening '+target.hostname+' through Ultraviolet. If the page stays blank, the host may not support the required proxy endpoints.');
    }catch(e){
     const message=e?.message||String(e);
-    setStatus(status,message.includes('/uv/')||message.includes('Ultraviolet')?'Ultraviolet runtime could not start: '+message+'. The site must serve /uv/uv.bundle.js, /uv/handler.js, /uv/uv.sw.js and a working /bare/ endpoint; a static GitHub Pages deployment cannot provide the proxy server.':'Ultraviolet could not start: '+message,true);
+    showHostNotice(status,message.includes('/uv/')||message.includes('Ultraviolet')?'Ultraviolet runtime could not start: '+message+'. The site must serve /uv/uv.bundle.js, /uv/handler.js, /uv/uv.sw.js and a working /bare/ endpoint; a static GitHub Pages deployment cannot provide the proxy server.':'Ultraviolet could not start: '+message);
     console.error('Lolite Ultraviolet startup failed',e);
    }
   };
@@ -54,7 +55,7 @@
    const r=await fetch('/uv/uv.bundle.js',{method:'HEAD',cache:'no-store'});
    if(!r.ok)throw new Error('Ultraviolet assets are not available on this host (HTTP '+r.status+').');
    setStatus(status,'Ultraviolet assets found. Enter a website to begin.');
-  }catch(e){setStatus(status,'Ultraviolet proxy server is not available here. The app needs the Node server (server.mjs); static GitHub Pages cannot run the proxy backend. '+(e.message||''),true)}
+  }catch(e){showHostNotice(status,'Ultraviolet proxy server is not available here. The app needs the Node server (server.mjs); static GitHub Pages cannot run the proxy backend. '+(e.message||''))}
  }
  window.page=function(id){if(id==='browser'||id==='ultraviolet')return browserPage();return oldPage(id)};
  const oldOpen=window.openApp;
