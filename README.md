@@ -1,6 +1,7 @@
-## [Launch Lolite OS](https://lolite-os.vercel.app/)
+## Launch Lolite OS
 
-**Open Lolite OS online:** https://lolite-os.vercel.app/
+- **[Open Lolite OS on Vercel](https://lolite-os.vercel.app/)** — hosted version
+- **[Open Lolite OS on GitHub Pages](https://darby9123-arch.github.io/Lolite-OS/)** — static version
 
 # Lolite OS
 
