@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: lolite-os-browser-host
+    runtime: docker
+    plan: free
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
