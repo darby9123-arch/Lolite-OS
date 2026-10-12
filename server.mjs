@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createBareServer } from "@tomphttp/bare-server-node";
 import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
+import * as wisp from "wisp-server-node";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -42,6 +43,15 @@ app.use((req, res, next) => {
   next();
 });
 
+// Serve Scramjet runtime and transport files from the installed npm packages.
+app.use("/scramjet", express.static(path.join(__dirname, "node_modules/@mercuryworkshop/scramjet/dist")));
+app.use("/controller", express.static(path.join(__dirname, "node_modules/@mercuryworkshop/scramjet-controller/dist")));
+app.use("/clients/epoxy", express.static(path.join(__dirname, "node_modules/@mercuryworkshop/epoxy-transport/dist")));
+app.get("/sw.js", (_req, res) => {
+  res.setHeader("Service-Worker-Allowed", "/");
+  res.type("application/javascript").send('importScripts("/controller/controller.sw.js");\\naddEventListener("fetch", (event) => { if ($scramjetController.shouldRoute(event)) event.respondWith($scramjetController.route(event)); });');
+});
+
 // Serve Lolite's own static files and use the npm package for Ultraviolet runtime files.
 app.use(express.static(__dirname));
 app.use("/uv/", express.static(uvPath));
@@ -58,6 +68,10 @@ if (!process.env.VERCEL) {
     console.log(`Lolite OS listening on http://localhost:${server.address().port}`);
   });
   server.on("upgrade", (req, socket, head) => {
-    if (bareServer.shouldRoute(req)) bareServer.routeUpgrade(req, socket, head);
+    if (bareServer.shouldRoute(req)) { bareServer.routeUpgrade(req, socket, head); return; }
+    if (req.url?.startsWith("/wisp/")) {
+      if (typeof wisp.routeRequest === "function") wisp.routeRequest(req, socket, head);
+      else socket.destroy();
+    }
   });
 }
