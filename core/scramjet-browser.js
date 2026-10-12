@@ -40,15 +40,17 @@
       const EpoxyClient = window.EpoxyTransport?.EpoxyClient;
       if (!runtime?.Controller || !runtime.config) throw new Error("Scramjet controller API was not exported by /controller/controller.api.js.");
       if (!EpoxyClient) throw new Error("Epoxy transport was not exported by /clients/epoxy/index.js.");
-      const registration = await navigator.serviceWorker.register("/sw.js", {scope:"/"});
-      await navigator.serviceWorker.ready;
-      let sw = navigator.serviceWorker.controller || registration.active;
-      if (!navigator.serviceWorker.controller) {
-        await new Promise(resolve => {
-          const timeout = setTimeout(resolve, 5000);
-          navigator.serviceWorker.addEventListener("controllerchange", () => { clearTimeout(timeout); resolve(); }, {once:true});
+      const registration = await navigator.serviceWorker.register("/sw.js", {scope:"/~/sj/"});
+      let sw = registration.active || registration.waiting || registration.installing;
+      if (!sw || sw.state !== "activated") {
+        await new Promise((resolve, reject) => {
+          const worker = sw;
+          if (!worker) { reject(new Error("Scramjet service worker registration has no worker.")); return; }
+          const timeout = setTimeout(() => reject(new Error("Scramjet service worker activation timed out. Refresh and retry.")), 10000);
+          const done = () => { if (worker.state === "activated") { clearTimeout(timeout); worker.removeEventListener("statechange", done); resolve(); } else if (worker.state === "redundant") { clearTimeout(timeout); worker.removeEventListener("statechange", done); reject(new Error("Scramjet service worker became redundant.")); } };
+          worker.addEventListener("statechange", done); done();
         });
-        sw = navigator.serviceWorker.controller || registration.active;
+        sw = registration.active || registration.waiting;
       }
       if (!sw) throw new Error("Scramjet service worker did not activate. Refresh the page and retry.");
       runtime.config.prefix = "/~/sj/";
