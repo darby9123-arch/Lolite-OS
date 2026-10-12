@@ -9,6 +9,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const bareServer = createBareServer("/bare/");
 
+app.get("/healthz", (_req, res) => res.json({ ok: true, service: "lolite-os", browsers: { ultraviolet: true, scramjet: true, wisp: true } }));
+
 app.use((_req, res, next) => {
   res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
   res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
