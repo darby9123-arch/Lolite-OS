@@ -353,3 +353,37 @@ html.glass .card,html.glass .appstore-card,html.glass .game-hero,html.glass .res
 html.glass .primary{box-shadow:inset 0 1px 0 #ffffff50,0 5px 15px #0002}
 html.glass.reduce .liquid-glass-webgl,html.reduce-motion .liquid-glass-webgl{opacity:.48}
 @media(prefers-reduced-motion:reduce){.liquid-glass-webgl{opacity:.48}}
+
+
+/* Lolite OS 3.9.23 — fit app windows to the viewport and tidy the taskbar */
+.window{
+  min-width:280px;
+  min-height:190px;
+  max-width:calc(100vw - 24px);
+  max-height:calc(100dvh - 84px);
+  resize:both;
+  overflow:hidden;
+}
+.window>.content{min-width:0;min-height:0;overscroll-behavior:contain}
+#taskbar{
+  left:0!important;right:0!important;bottom:0!important;
+  width:100%!important;height:64px!important;
+  padding:7px clamp(10px,2vw,24px)!important;
+  border-left:0!important;border-right:0!important;border-bottom:0!important;
+  border-radius:12px 12px 0 0!important;
+  gap:8px!important;
+  background:linear-gradient(180deg,rgba(24,29,39,.97),rgba(12,15,22,.98))!important;
+  box-shadow:0 -8px 28px #0004,inset 0 1px #ffffff12!important;
+}
+#taskbar>.task{flex-shrink:0;height:44px!important;min-width:44px!important;border-radius:9px!important}
+#tasks{flex:1 1 auto!important;justify-content:center!important;min-width:0!important;overflow-x:auto!important;overflow-y:hidden!important}
+.taskwin{flex:0 1 170px;min-width:42px;max-width:170px;height:42px;padding:0 13px!important;border-radius:9px!important}
+.tray{flex:0 0 auto;margin-left:0!important;border-left:1px solid #303743!important;padding-left:10px!important;gap:3px!important}
+#taskbar .tray #clock{min-width:92px;line-height:1.35;font-variant-numeric:tabular-nums}
+@media(max-width:700px){
+  #taskbar{height:60px!important;padding:5px 7px!important;gap:4px!important}
+  #searchBtn span{display:none}
+  .taskwin{max-width:95px;padding:0 8px!important}
+  .tray{gap:0!important;padding-left:5px!important}
+  #taskbar .tray #clock{min-width:65px;font-size:10px}
+}
