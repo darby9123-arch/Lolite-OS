@@ -1,10 +1,13 @@
-/* Lolite OS — browser hardware acceleration help shortcut */
+/* Lolite OS — lightweight hardware acceleration help shortcut */
 (()=> {
+  let scheduled=false;
   function addGuideShortcut(){
+    scheduled=false;
     const icons=document.getElementById('icons');
     if(icons && !document.getElementById('hardware-acceleration-shortcut')){
       const b=document.createElement('button');
       b.id='hardware-acceleration-shortcut';
+      b.type='button';
       b.className='desktop-icon';
       b.innerHTML='<b class="app-symbol" aria-hidden="true" style="display:grid;place-items:center;font-size:22px;color:#bdb5ff">⚡</b><span>Hardware Acceleration Guide</span>';
       b.addEventListener('dblclick',()=>window.loliteOpenAccelerationGuide?.());
@@ -20,7 +23,20 @@
       features.appendChild(card);
     }
   }
-  const observer=new MutationObserver(addGuideShortcut);
-  observer.observe(document.documentElement,{childList:true,subtree:true});
-  addGuideShortcut();
+  function schedule(){
+    if(scheduled)return;
+    scheduled=true;
+    requestAnimationFrame(addGuideShortcut);
+  }
+  // Observe only the two containers this shortcut needs; do not watch the whole document.
+  const observer=new MutationObserver(schedule);
+  function attach(){
+    const icons=document.getElementById('icons');
+    if(icons)observer.observe(icons,{childList:true});
+    const home=document.querySelector('.home-feature-grid');
+    if(home)observer.observe(home,{childList:true});
+    addGuideShortcut();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',attach,{once:true});
+  else attach();
 })();
