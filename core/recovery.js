@@ -23,12 +23,12 @@
     report(event.message||'A script failed',event.filename,event.lineno);
   },true);
   window.addEventListener('unhandledrejection',event=>report(event.reason?.stack||event.reason?.message||event.reason||'An async operation failed'));
-  const apps=[['app-home','Home','home'],['app-games','Game Store','games'],['app-files','Files','files'],['app-browser','Ultraviolet Browser','browser'],['app-settings','Settings','settings'],['app-store','App Store','appstore']];
+  const apps=[['app-home','Home','home'],['app-games','Game Store','games'],['app-files','Files','files'],['app-browser','Ultraviolet Browser','browser'],['app-settings','Settings','settings'],['app-store','App Store','appstore'],['app-symbol','Hardware Acceleration Guide','hardware-guide']];
   function renderFallbackIcons(){
     const icons=document.getElementById('icons');
     if(!icons||typeof window.renderIcons==='function'||icons.querySelector('.desktop-icon[data-recovery-app]'))return;
     icons.innerHTML=apps.map(([cls,label,id])=>'<button class="desktop-icon" data-recovery-app="'+id+'" type="button"><b class="app-symbol '+cls+'" aria-hidden="true"></b><span>'+label+'</span></button>').join('');
-    icons.querySelectorAll('[data-recovery-app]').forEach(button=>button.addEventListener('click',()=>window.openApp(button.dataset.recoveryApp,button.querySelector('span')?.textContent||'App')));
+    icons.querySelectorAll('[data-recovery-app]').forEach(button=>button.addEventListener('click',()=>{if(button.dataset.recoveryApp==='hardware-guide'){window.loliteOpenAccelerationGuide();return;}if(typeof window.openApp==='function')window.openApp(button.dataset.recoveryApp,button.querySelector('span')?.textContent||'App');else window.loliteOpenAccelerationGuide();}));
   }
   window.loliteOpenAccelerationGuide=window.loliteOpenAccelerationGuide||function(){
     const body='<div style="padding:18px;overflow:auto;height:100%;color:#eef1f5;background:#11151e"><h2 style="margin-top:0">Hardware Acceleration Guide</h2><p>Hardware acceleration lets your browser use your graphics hardware for smoother animations and web games.</p><h3>Chrome, Brave or Opera GX</h3><ol><li>Open browser Settings.</li><li>Search for “hardware acceleration”.</li><li>Turn on “Use graphics acceleration when available”.</li><li>Restart the browser.</li></ol><h3>Firefox</h3><ol><li>Open Settings → General → Performance.</li><li>Enable recommended performance settings, or enable hardware acceleration if available.</li><li>Restart Firefox.</li></ol><p><b>Tip:</b> Options vary by browser and device. If the screen flickers, turn the setting off again.</p></div>';
