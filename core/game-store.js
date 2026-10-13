@@ -97,7 +97,6 @@
  const categoryNames=['All Games','Featured','Popular Games','IO & Casual','Baldi’s Basics','Horror','Racing','Puzzle','Platformers & Arcade','Simulation & Sandbox','Sports','Classics'];
  const navMarks={'All Games':'ALL','Featured':'★','Popular Games':'TOP','IO & Casual':'IO','Baldi’s Basics':'BB','Horror':'HR','Racing':'RACE','Puzzle':'PUZ','Platformers & Arcade':'PLAY','Simulation & Sandbox':'SIM','Sports':'SPRT','Classics':'CL'};
  let games=manifest.map(file=>({file,title:pretty(file),url:'html games/'+encodeURIComponent(file),category:categorize({file})}));
- games.push({file:'lolite-external-gta5',title:'GTA V (Browser)',url:'https://gta2.deloskiyt.pl/',category:'Featured',external:true,recommended:true});
  let active='Featured',query='';
  const isPopular=g=>/baldi|fnaf|granny|mario|angrybirds|pvz|minecraft|growagarden|slope|escaperoad|gta|cookieclicker/i.test(g.file);
  const matchesCategory=g=>active==='All Games'||active==='Featured'||active==='Popular Games'?true:g.category===active;
