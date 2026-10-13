@@ -20,7 +20,10 @@
       features.appendChild(card);
     }
   }
-  const observer=new MutationObserver(addGuideShortcut);
-  observer.observe(document.documentElement,{childList:true,subtree:true});
+  // Avoid watching the entire document: Lolite's animated desktop changes DOM often,
+  // and a document-wide observer can make Firefox report that the page is slowing down.
   addGuideShortcut();
+  document.addEventListener('DOMContentLoaded',addGuideShortcut,{once:true});
+  window.setTimeout(addGuideShortcut,400);
+  window.setTimeout(addGuideShortcut,1200);
 })();
