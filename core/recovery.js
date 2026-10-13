@@ -1,5 +1,6 @@
 /* Lolite OS recovery: verify the actual desktop rendered, not merely that functions exist. */
 (()=> {
+ window.__LoliteDiag?.mark('recovery.js started');
  const $=s=>document.querySelector(s);
  function showGuide(){
   let panel=$('#lolite-recovery-guide');
@@ -25,7 +26,7 @@
    icons.appendChild(b);
   }
  }
- function ensureVisible(){const d=$('#desktop');if(d){d.classList.remove('hidden');d.style.display='block';d.style.visibility='visible';d.style.opacity='1';}fallback();}
+ function ensureVisible(){window.__LoliteDiag?.mark('recovery fallback started');const d=$('#desktop');if(d){d.classList.remove('hidden');d.style.display='block';d.style.visibility='visible';d.style.opacity='1';}fallback();window.__LoliteDiag?.mark('recovery fallback completed','icons='+document.querySelectorAll('#icons .desktop-icon').length);}
  window.addEventListener('error',e=>{if(e.message)console.error('[Lolite startup]',e.message,e.filename,e.lineno);});
  window.addEventListener('unhandledrejection',e=>console.error('[Lolite async error]',e.reason));
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(ensureVisible,1200),{once:true});else setTimeout(ensureVisible,1200);
