@@ -9,7 +9,7 @@ const $=sel=>document.querySelector('.window[data-window-id="chatroom"] #lcRoot 
 const root=()=>document.querySelector('.window[data-window-id="chatroom"] #lcRoot');
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const fmt=x=>esc(x).replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/(^|\s)\*([^*\n]+)\*/g,'$1<i>$2</i>').replace(/`([^`\n]+)`/g,'<code>$1</code>');
-const state={user:null,me:null,profiles:[],conversations:[],members:[],requests:[],blocks:[],messages:[],reactions:[],view:'channel',channel:'general',conversationId:null,replyTo:null,authTab:'login',authError:'',search:'',modal:null,error:'',busy:false,again:false,loading:true};
+const state={user:null,me:null,profiles:[],conversations:[],members:[],requests:[],blocks:[],messages:[],reactions:[],view:'channel',channel:'general',conversationId:null,replyTo:null,authTab:'login',authError:'',search:'',modal:null,showPins:false,error:'',busy:false,again:false,loading:true};
 const meId=()=>state.user?.id;
 const person=id=>state.profiles.find(p=>p.id===id);
 const self=()=>state.me||person(meId());
@@ -71,7 +71,7 @@ function messageHtml(m){
  (reply?'<div class="lc-replyref">↳ '+esc(label(person(reply.sender_id)))+': '+esc(reply.content.slice(0,75))+'</div>':'')+
  '<div class="lc-msg-content">'+fmt(m.content)+'</div>'+
  (Object.keys(counts).length?'<div class="lc-msg-reactions">'+Object.keys(counts).map(em=>'<button type="button" class="lc-reaction" data-lc-action="react" data-lc-id="'+m.id+'" data-lc-emoji="'+esc(em)+'">'+esc(em)+' '+counts[em].length+'</button>').join('')+'</div>':'')+
- '<div class="lc-msg-actions"><button type="button" data-lc-action="reply" data-lc-id="'+m.id+'">Reply</button>'+
+ '<div class="lc-msg-actions"><button type="button" data-lc-action="reply" data-lc-id="'+m.id+'">Reply</button><button type="button" data-lc-action="copy" data-lc-id="'+m.id+'">Copy</button>'+
  ['👍','❤️','😂'].map(em=>'<button type="button" aria-label="React '+esc(em)+'" data-lc-action="react" data-lc-id="'+m.id+'" data-lc-emoji="'+esc(em)+'">'+em+'</button>').join('')+
  (own?'<button type="button" data-lc-action="edit" data-lc-id="'+m.id+'">Edit</button><button type="button" data-lc-action="pin" data-lc-id="'+m.id+'">'+(m.is_pinned?'Unpin':'Pin')+'</button><button type="button" data-lc-action="delete" data-lc-id="'+m.id+'">Delete</button>':
  '<button type="button" data-lc-action="report" data-lc-id="'+m.id+'">Report</button>')+
@@ -80,12 +80,12 @@ function messageHtml(m){
 function chatHtml(){
  const c=activeConv();
  if(!c)return '<main class="lc-main"><div class="lc-placeholder"><div><h2>No chat selected</h2><p>Pick a channel or open a conversation.</p><button class="lc-primary" data-lc-action="browse">Browse chats</button></div></div></main>';
- const list=state.messages.filter(m=>!state.search.trim()||m.content.toLowerCase().includes(state.search.trim().toLowerCase()));
+ const list=state.messages.filter(m=>(!state.showPins||m.is_pinned)&&(!state.search.trim()||m.content.toLowerCase().includes(state.search.trim().toLowerCase())));
  const reply=state.messages.find(m=>m.id===state.replyTo);
- return '<main class="lc-main"><header class="lc-head"><div class="lc-head-title">'+esc(convLabel(c))+'</div><span class="lc-head-sub">'+(c.type==='channel'?'Lolite Hub · Public channel':c.type==='dm'?'Private conversation':'Private group chat')+'</span><button class="lc-iconbtn" title="Search messages" data-lc-action="search">⌕</button></header>'+
+ return '<main class="lc-main"><header class="lc-head"><div class="lc-head-title">'+esc(convLabel(c))+'</div><span class="lc-head-sub">'+(c.type==='channel'?'Lolite Hub · Public channel':c.type==='dm'?'Private conversation':'Private group chat')+'</span><button class="lc-iconbtn" title="Pinned messages" data-lc-action="pins" aria-pressed="'+state.showPins+'">⌁</button><button class="lc-iconbtn" title="Search messages" data-lc-action="search">⌕</button></header>'+
  (state.search!==''?'<div style="padding:10px 16px"><input aria-label="Search loaded messages" data-lc-search value="'+esc(state.search)+'" placeholder="Search last 100 messages…" style="width:100%;padding:8px;background:#101722;color:white;border:1px solid #394759;border-radius:7px"></div>':'')+
  '<section class="lc-message-scroll" aria-label="Chat messages">'+
- (list.length?list.map(messageHtml).join(''):'<div class="lc-placeholder"><div><h2>'+ (state.search?'No matching messages':'Start the conversation')+'</h2><p>'+ (state.search?'Try a different search.':'Your messages appear here, across devices.')+'</p></div></div>')+
+ (list.length?list.map(messageHtml).join(''):'<div class="lc-placeholder"><div><h2>'+ (state.search?'No matching messages':state.showPins?'No pinned messages':'Start the conversation')+'</h2><p>'+ (state.search?'Try a different search.':state.showPins?'Pin a message to find it here.':'Your messages appear here, across devices.')+'</p></div></div>')+
  '</section><form class="lc-composer" data-lc-form="send">'+
  (reply?'<div class="lc-reply-bar"><span>Replying to '+esc(label(person(reply.sender_id)))+'</span><button type="button" class="lc-iconbtn" data-lc-action="cancelReply" aria-label="Cancel reply">×</button></div>':'')+
  '<div class="lc-compose-wrap"><textarea rows="1" maxlength="4000" name="message" data-lc-message-input placeholder="Message '+esc(convLabel(c))+'…" aria-label="Message text" required></textarea><button class="lc-send" type="submit">Send</button></div></form></main>';
@@ -236,14 +236,16 @@ async function dispatch(action,id,button){
  case 'browse':state.view='browse';state.replyTo=null;return refresh(true);
  case 'friends':state.view='friends';state.replyTo=null;return refresh(true);
  case 'profileView':state.view='profile';state.replyTo=null;return render();
- case 'channel':state.view='channel';state.channel=id;state.conversationId=null;state.search='';state.replyTo=null;return refresh(true);
- case 'openConv':state.view='conversation';state.conversationId=id;state.search='';state.replyTo=null;return refresh(true);
+ case 'channel':state.view='channel';state.channel=id;state.conversationId=null;state.search='';state.showPins=false;state.replyTo=null;return refresh(true);
+ case 'openConv':state.view='conversation';state.conversationId=id;state.search='';state.showPins=false;state.replyTo=null;return refresh(true);
  case 'addFriend':state.modal={type:'addFriend'};return render();
  case 'group':state.modal={type:'group'};return render();
  case 'profile':state.modal={type:'profile'};return render();
  case 'closeModal':state.modal=null;return render();
  case 'dm':return createDM(id);
  case 'reply':state.replyTo=Number(id);render();return $('[data-lc-message-input]')?.focus();
+ case 'copy':{const m=state.messages.find(m=>m.id===Number(id));if(!m)return;await navigator.clipboard.writeText(m.content);return flash('Message copied.');}
+ case 'pins':state.showPins=!state.showPins;return render();
  case 'cancelReply':state.replyTo=null;return render();
  case 'react':return react(Number(id),button.dataset.lcEmoji);
  case 'search':state.search=state.search?'':' ';return render();
@@ -326,12 +328,13 @@ document.addEventListener('keydown',e=>{
  e.preventDefault();e.target.form?.requestSubmit()
  }
  if(e.key==='Escape'&&state.modal&&root()){state.modal=null;render()}
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&root()&&state.user){e.preventDefault();state.search=' ';render();$('[data-lc-search]')?.focus()}
 });
 document.addEventListener('input',e=>{
  if(e.target.matches('[data-lc-search]')){
   state.search=e.target.value;
   const list=$('.lc-message-scroll');
-  if(list){const matches=state.messages.filter(m=>!state.search.trim()||m.content.toLowerCase().includes(state.search.trim().toLowerCase()));list.innerHTML=matches.length?matches.map(messageHtml).join(''):'<div class="lc-placeholder">No matching messages</div>'}
+  if(list){const matches=state.messages.filter(m=>(!state.showPins||m.is_pinned)&&(!state.search.trim()||m.content.toLowerCase().includes(state.search.trim().toLowerCase())));list.innerHTML=matches.length?matches.map(messageHtml).join(''):'<div class="lc-placeholder">No matching messages</div>'}
  }
 });
 let initialized=false;
