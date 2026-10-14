@@ -538,3 +538,12 @@ html.reduce .appstore-card,html.reduce .home-feature,html.reduce .lm-app-icon>.l
  #icons .desktop-icon{width:88px!important;height:106px!important;min-height:106px;padding:6px 3px!important}
  #icons .desktop-icon>span:last-child:not(.lolite-icon){line-height:14px!important;min-height:28px}
 }
+
+
+/* Lolite OS 3.10.9 — cohesive, readable interface typography. */
+:root{--lolite-font:"Plus Jakarta Sans","Inter","Segoe UI Variable",system-ui,sans-serif}
+html,body,button,input,select,textarea,option{font-family:var(--lolite-font)!important}
+body{font-weight:450;letter-spacing:-.012em}
+button,input,select,textarea{letter-spacing:inherit}
+h1,h2,h3,h4,.titlebar,.window-title,.start-head,.lm-title,.lm-brand{font-family:var(--lolite-font)!important;letter-spacing:-.035em}
+code,pre,kbd,samp,.terminal-app,.terminal-app *,.code-editor,.monospace{font-family:ui-monospace,"Cascadia Code",Consolas,monospace!important;letter-spacing:normal}
