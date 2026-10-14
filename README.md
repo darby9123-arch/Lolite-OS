@@ -6,11 +6,18 @@
 
 **Browser hosting note:** GitHub Pages is a static preview and cannot run the proxy backend. Scramjet also needs a persistent WebSocket-capable Node host. See [Browser Hosting Requirements](docs/BROWSER-HOSTING.md); the repository now includes a `Dockerfile` and `render.yaml` for that host.
 
-The Vercel version includes the Node-backed Ultraviolet proxy endpoints. The GitHub Pages copy is static and cannot run the proxy backend.
+The Vercel version includes Ultraviolet runtime files and the Bare HTTP endpoint, but its service worker currently fails in browser testing. Scramjet's proxy runtime is unavailable on Vercel. Both browser apps now offer a standard, non-proxy embedded browsing mode for sites that permit framing, with an Open in tab option.
 
 A Lolite-branded browser desktop with a dark purple/blue interface, apps, games, files, wallpapers, AI and a responsive desktop layout.
 
 ## Update Log
+
+### 3.11.0 — Minecraft 1.8 and browser fallback improvements — 2026-10-15
+- Changed the Game Store's Minecraft entry to the upstream-hosted EaglercraftX 1.8 client from [Eaglercraft Extras](https://github.com/x8rr/Eaglercraft-Extras). The game opens in a Lolite window using the official hosted client; Lolite does not bundle copyrighted game files.
+- Added Minecraft 1.8 shortcuts on the desktop, in the Start menu, Search, and the Phone/Tablet launchers.
+- Added normal embedded browsing and an Open in tab option to Scramjet when the proxy runtime is unavailable. Added a corresponding Browse directly fallback to Ultraviolet when its service worker cannot initialize. Standard browsing does not bypass network restrictions and some websites block embedding.
+- Kept the existing Minecraft Pocket Edition HTML file in the repository for compatibility, but replaced the visible Store listing with Minecraft 1.8.
+
 
 ### 3.9.8 — Ultraviolet Worker Path Fix — 2026-10-09
 - Removed the broken mobile startup chooser and restored direct startup to the normal Lolite desktop.
