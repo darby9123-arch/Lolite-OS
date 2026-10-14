@@ -1,1 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480"><defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#0a224e"/><stop offset="1" stop-color="#020714"/></linearGradient><linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e7ffff"/><stop offset=".3" stop-color="#2bbefc"/><stop offset=".65" stop-color="#0755eb"/><stop offset="1" stop-color="#94e7ff"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="9"/></filter></defs><rect width="480" height="480" fill="url(#bg)"/><g transform="translate(106 62)"><path d="M50 62Q50 44 68 51L198 101V306L50 268Z" fill="#245be8" opacity=".42" stroke="#a2d8ff" stroke-width="3"/><path d="M100 25Q100 8 116 15L232 64Q242 68 242 82V290L100 253Z" fill="url(#glass)" opacity=".9" stroke="#e8fbff" stroke-width="3"/><rect x="254" y="82" width="118" height="115" rx="8" transform="skewY(12)" fill="url(#glass)" stroke="#b9faff" stroke-width="3"/><path d="M254 219L372 250V333L254 300Z" fill="#0788e9" stroke="#abecff" stroke-width="3"/><path d="M100 253L370 330Q389 337 389 353Q389 374 368 372L116 321Q100 317 100 300Z" fill="url(#glass)" stroke="#c9f8ff" stroke-width="4"/><path d="M100 253L370 330Q389 337 389 353Q389 374 368 372L116 321Q100 317 100 300Z" fill="#3ac6ff" opacity=".3" filter="url(#glow)"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Lolite OS blue glass logo">
+<defs>
+ <radialGradient id="night"><stop stop-color="#123c85"/><stop offset=".65" stop-color="#071a3b"/><stop offset="1" stop-color="#030916"/></radialGradient>
+ <linearGradient id="panel" x1=".05" y1="0" x2=".95" y2="1"><stop stop-color="#e0faff"/><stop offset=".22" stop-color="#6cd7ff"/><stop offset=".58" stop-color="#1878f6"/><stop offset="1" stop-color="#0635b6"/></linearGradient>
+ <linearGradient id="foot" x1="0" y1="0" x2="1" y2=".85"><stop stop-color="#bff9ff"/><stop offset=".48" stop-color="#39b5ff"/><stop offset="1" stop-color="#1850d4"/></linearGradient>
+ <filter id="halo" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="13"/></filter>
+</defs>
+<rect width="512" height="512" fill="url(#night)"/>
+<ellipse cx="262" cy="421" rx="175" ry="18" fill="#1687ff" opacity=".65" filter="url(#halo)"/>
+<g stroke-linejoin="round">
+ <path d="M119 147 Q119 134 132 138 L185 155 L185 370 Q185 383 173 377 L130 359 Q119 354 119 341Z" fill="#1157c7" opacity=".66" stroke="#a0dfff" stroke-width="3"/>
+ <path d="M169 88 Q169 76 183 82 L270 119 Q281 124 281 136 L281 329 L169 300Z" fill="url(#panel)" stroke="#e7ffff" stroke-width="4"/>
+ <path d="M299 141 Q299 133 308 137 L395 171 Q402 174 402 184 L402 252 Q402 261 393 257 L307 227 Q299 225 299 216Z" fill="url(#panel)" stroke="#c7f7ff" stroke-width="3"/>
+ <path d="M299 250 Q299 243 308 247 L395 281 Q402 285 402 294 L402 364 L299 332Z" fill="#1376de" stroke="#aeeaff" stroke-width="3"/>
+ <path d="M169 300 L404 366 Q424 371 424 387 Q424 408 402 404 L190 358 Q169 353 169 336Z" fill="url(#foot)" stroke="#e3ffff" stroke-width="4"/>
+ <path d="M170 300 L403 366 L404 381 L170 323Z" fill="#b7faff" opacity=".36"/>
+</g>
+</svg>
