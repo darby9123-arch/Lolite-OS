@@ -9,7 +9,7 @@
       b.id='hardware-acceleration-shortcut';
       b.type='button';
       b.className='desktop-icon';
-      b.innerHTML='<b class="app-symbol" aria-hidden="true" style="display:grid;place-items:center;font-size:22px;color:#bdb5ff">⚡</b><span>Hardware Acceleration Guide</span>';
+      b.setAttribute('aria-label','Hardware Acceleration Guide');b.innerHTML=window.LoliteIcons.tile('guide')+'<span>Hardware Acceleration Guide</span>';
       b.addEventListener('dblclick',()=>window.loliteOpenAccelerationGuide?.());
       icons.appendChild(b);
     }
@@ -18,7 +18,7 @@
       const card=document.createElement('article');
       card.id='home-hardware-guide';
       card.className='home-feature';
-      card.innerHTML='<div class="home-feature-icon">⚡</div><h3>Hardware Acceleration Guide</h3><p>Get browser-specific steps for Brave, Opera GX, Firefox, Chrome or Safari.</p><button type="button">Learn more →</button>';
+      card.innerHTML='<div class="home-feature-icon">'+window.LoliteIcons.tile('guide')+'</div><h3>Hardware Acceleration Guide</h3><p>Get browser-specific steps for Brave, Opera GX, Firefox, Chrome or Safari.</p><button type="button">Learn more →</button>';
       card.querySelector('button').addEventListener('click',()=>window.loliteOpenAccelerationGuide?.());
       features.appendChild(card);
     }
