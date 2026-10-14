@@ -11,14 +11,15 @@
  function resize(item){if(!item.el.isConnected)return;const r=item.el.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,1.35),w=Math.max(1,Math.round(r.width*dpr)),h=Math.max(1,Math.round(r.height*dpr));if(item.canvas.width!==w||item.canvas.height!==h){item.canvas.width=w;item.canvas.height=h;item.gl.viewport(0,0,w,h)}}
  function detach(item){item.observer?.disconnect();item.canvas.remove();try{item.gl.getExtension('WEBGL_lose_context')?.loseContext()}catch{}active.delete(item.el)}
  function enabled(){return root.classList.contains('glass')&&localStorage.getItem('glass')==='true'}
- function sync(){const on=enabled();root.classList.toggle('webgl-glass',on&&active.size>0);if(!on){for(const item of [...active.values()])detach(item);root.classList.remove('webgl-glass');return}document.querySelectorAll(selectors.join(',')).forEach(attach);root.classList.toggle('webgl-glass',active.size>0);for(const item of [...active.values()])if(!item.el.isConnected)detach(item)}
+ function setWebglClass(on){if(root.classList.contains('webgl-glass')!==!!on)root.classList.toggle('webgl-glass',!!on)}
+ function sync(){const on=enabled();if(!on){for(const item of [...active.values()])detach(item);setWebglClass(false);return}document.querySelectorAll(selectors.join(',')).forEach(attach);for(const item of [...active.values()])if(!item.el.isConnected)detach(item);setWebglClass(active.size>0)}
  let lastScan=0,lastDraw=0,raf=0;
  function start(){if(!raf&&enabled())raf=requestAnimationFrame(frame)}
  function stop(){if(raf)cancelAnimationFrame(raf);raf=0;sync()}
  function frame(now){raf=0;if(!enabled()){sync();return}if(now-lastScan>500){sync();lastScan=now}if(now-lastDraw<32){start();return}lastDraw=now;const paused=reduce();for(const item of active.values()){const gl=item.gl;resize(item);gl.useProgram(item.program);gl.bindBuffer(gl.ARRAY_BUFFER,item.buffer);const pos=gl.getAttribLocation(item.program,'a_position');gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);gl.uniform2f(item.res,item.canvas.width,item.canvas.height);gl.uniform1f(item.time,paused?0:(now-item.start)*0.001);gl.uniform1f(item.strength,paused?0.8:1.0);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.drawArrays(gl.TRIANGLE_STRIP,0,4)}start()}
  const api={setEnabled(on){localStorage.setItem('glass',on?'true':'false');root.classList.toggle('glass',!!on);if(on){sync();start()}else stop()},refresh(){sync();start()}};
  window.LoliteLiquidGlass=api;
- const mo=new MutationObserver(()=>{if(enabled()){sync();start()}else{sync();if(raf){cancelAnimationFrame(raf);raf=0}}});mo.observe(root,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+ const mo=new MutationObserver(()=>{if(enabled()){sync();start()}else if(active.size||raf||root.classList.contains('webgl-glass')){stop()}});mo.observe(root,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{sync();start()},{once:true});else{sync();start()}
  window.addEventListener('resize',()=>active.forEach(resize));
 })();
