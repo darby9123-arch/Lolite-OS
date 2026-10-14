@@ -1,0 +1,100 @@
+
+/* Lolite Chat 3.10 — native, free, responsive desktop messenger */
+.window[data-window-id="chatroom"]>.content{padding:0!important;overflow:hidden!important;min-height:0!important}
+.lc-root,.lc-root *{box-sizing:border-box}
+.lc-root{height:100%;min-height:0;background:#131821;color:#e9edf5;font:13px/1.45 "Segoe UI",system-ui,sans-serif}
+.lc-root button,.lc-root input,.lc-root textarea,.lc-root select{font:inherit}
+.lc-root button{cursor:pointer}
+.lc-root .lc-muted{color:#98a3b6}
+.lc-shell{display:grid;grid-template-columns:61px 226px minmax(0,1fr);height:100%;overflow:hidden}
+.lc-rail{background:#0c1017;border-right:1px solid #252d3a;display:flex;flex-direction:column;align-items:center;gap:9px;padding:12px 5px}
+.lc-logo{width:40px;height:40px;border-radius:12px;background:#7266db;color:#fff;font-size:22px;font-weight:900;display:grid;place-items:center;margin-bottom:8px;box-shadow:0 4px 12px #0003}
+.lc-rail-btn{display:grid;place-items:center;width:41px;height:41px;border:1px solid transparent;border-radius:12px;background:#1b2230;color:#aab4c5;font-size:18px;transition:background .15s,color .15s}
+.lc-rail-btn:hover,.lc-rail-btn.active{background:#353153;color:#fff;border-color:#6860a6}
+.lc-rail-bottom{margin-top:auto}
+.lc-side{display:flex;flex-direction:column;min-height:0;background:#171c27;border-right:1px solid #2b3240}
+.lc-side-head{padding:17px 14px 14px;border-bottom:1px solid #2b3240;display:flex;justify-content:space-between;align-items:center;gap:5px}
+.lc-side-head h2{font-size:15px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc-side-scroll{flex:1;min-height:0;overflow:auto;padding:12px 8px}
+.lc-section-title{color:#8894a8;text-transform:uppercase;font-weight:800;font-size:10px;letter-spacing:.11em;padding:14px 9px 7px;display:flex;justify-content:space-between}
+.lc-side-row{width:100%;display:flex;align-items:center;gap:10px;text-align:left;padding:9px 10px;border:0;border-radius:7px;background:transparent;color:#bac4d2;font-weight:550;min-width:0}
+.lc-side-row:hover,.lc-side-row.active{background:#2a3242;color:#fff}
+.lc-side-row span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lc-side-row small{margin-left:auto;color:#7a879b}
+.lc-avatar{width:33px;height:33px;min-width:33px;display:grid;place-items:center;background:linear-gradient(145deg,#7165ca,#3d4880);border:1px solid #ffffff21;color:#fff;border-radius:11px;font-weight:750;font-size:11px;letter-spacing:.02em}
+.lc-side-account{border-top:1px solid #2b3240;padding:9px;display:flex;align-items:center;gap:9px;min-height:62px}
+.lc-side-account b{display:block;font-size:12px;max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc-side-account small{color:#8c98aa}
+.lc-iconbtn{border:0;color:#b9c3d5;border-radius:8px;padding:7px 9px;background:transparent}
+.lc-iconbtn:hover{background:#303849;color:#fff}
+.lc-main{min-height:0;display:flex;flex-direction:column;background:#1b212c}
+.lc-head{height:59px;min-height:59px;padding:0 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #303746}
+.lc-head-title{font-size:15px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc-head-sub{color:#91a0b4;font-size:11px;margin-left:auto;white-space:nowrap}
+.lc-message-scroll{min-height:0;flex:1;overflow:auto;padding:16px 19px 20px;overscroll-behavior:contain}
+.lc-msg{display:grid;grid-template-columns:36px minmax(0,1fr);gap:11px;padding:9px 7px;margin-bottom:3px;border-radius:8px;position:relative}
+.lc-msg:hover{background:#ffffff07}
+.lc-msg-body{min-width:0}
+.lc-msg-title{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+.lc-msg-title b{font-size:12px}
+.lc-msg-title time,.lc-msg-title small{font-size:10px;color:#8c97a9}
+.lc-msg-content{color:#d5dbe5;font-size:13px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:3px}
+.lc-msg-actions{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;opacity:.55}
+.lc-msg:hover .lc-msg-actions,.lc-msg:focus-within .lc-msg-actions{opacity:1}
+.lc-msg-actions button{border:0;background:#2a3342;color:#c2ccdb;padding:3px 7px;border-radius:6px;font-size:11px}
+.lc-msg-actions button:hover{background:#434e61;color:#fff}
+.lc-reaction{background:#292e44;color:#e6e7ff;padding:2px 7px;border-radius:6px;font-size:11px;border:1px solid #4b4e78}
+.lc-msg-reactions{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
+.lc-replyref{border-left:2px solid #8477e8;color:#aab6cd;padding-left:8px;font-size:11px;margin:5px 0}
+.lc-typing{color:#98a3b6;font-size:11px;padding:0 20px 4px}
+.lc-composer{padding:10px 17px 16px}
+.lc-reply-bar{background:#272d3c;padding:8px 12px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;gap:12px;color:#b6c0d3;font-size:11px}
+.lc-compose-wrap{display:flex;gap:9px;align-items:center;background:#2a3240;border:1px solid #3c4657;border-radius:10px;padding:8px}
+.lc-compose-wrap:focus-within{border-color:#8075e1}
+.lc-compose-wrap textarea{flex:1;min-width:0;background:none;border:0;outline:0;resize:none;color:#fff;max-height:110px;min-height:28px;padding:6px;line-height:20px}
+.lc-primary,.lc-send{background:#766be0;color:#fff;border:0;border-radius:8px;padding:9px 13px;font-weight:700}
+.lc-primary:hover,.lc-send:hover{background:#8b80f0}
+.lc-primary:disabled,.lc-send:disabled{opacity:.5;cursor:default}
+.lc-secondary{border:1px solid #434c60;background:#282f3d;color:#dce2ed;padding:9px 13px;border-radius:8px}
+.lc-secondary:hover{background:#3a4355}
+.lc-danger{background:#5c2e3c;color:#ffd7dd}
+.lc-placeholder{flex:1;display:grid;place-items:center;text-align:center;padding:30px;color:#acb6c8}
+.lc-placeholder h2{color:#e9edf5;margin:10px 0 3px;font-size:20px}
+.lc-placeholder p{max-width:340px;margin:0 auto 15px}
+.lc-pills{display:flex;gap:7px;flex-wrap:wrap}
+.lc-pill{font-size:10px;color:#bec8dc;background:#292e44;border-radius:30px;padding:3px 8px}
+.lc-card{background:#222a38;border:1px solid #374153;border-radius:10px;padding:13px;margin:10px 0;display:flex;gap:12px;align-items:center;min-width:0}
+.lc-card-info{min-width:0;flex:1}
+.lc-card-info b,.lc-card-info small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lc-card-info small{color:#909daf;font-size:11px}
+.lc-card-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.lc-card button{padding:6px 10px;font-size:11px}
+.lc-area{height:100%;overflow:auto;padding:18px 22px}
+.lc-area h2{margin:0 0 5px;font-size:19px}
+.lc-area .lc-muted{margin:0 0 16px}
+.lc-modal-layer{position:absolute;inset:44px 0 0;background:#020409b9;display:grid;place-items:center;z-index:100;min-height:0;padding:16px}
+.lc-dialog{width:min(440px,100%);max-height:100%;overflow:auto;border:1px solid #42495a;background:#1d2431;border-radius:13px;padding:22px;box-shadow:0 18px 55px #0009}
+.lc-dialog h2{font-size:19px;margin:0 0 6px}
+.lc-dialog p{color:#a9b4c5;font-size:12px;margin:0 0 15px}
+.lc-dialog label,.lc-auth label{display:block;color:#c1cbda;font-size:12px;margin:12px 0 5px;font-weight:600}
+.lc-dialog input,.lc-dialog textarea,.lc-dialog select,.lc-auth input{display:block;width:100%;border:1px solid #414a5b;border-radius:8px;background:#111822;color:#fff;padding:11px;outline:none}
+.lc-dialog input:focus,.lc-dialog textarea:focus,.lc-auth input:focus{border-color:#8b80ee}
+.lc-dialog textarea{resize:vertical;min-height:72px}
+.lc-dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.lc-auth-screen{height:100%;overflow:auto;display:flex;align-items:center;justify-content:center;padding:23px;background:radial-gradient(circle at 20% 10%,#31306055,transparent 52%),#111723}
+.lc-auth{width:min(420px,100%);border:1px solid #3a4254;background:#1d2430;border-radius:16px;padding:25px;box-shadow:0 20px 40px #0006}
+.lc-auth h1{font-size:24px;letter-spacing:-.5px;margin:10px 0 6px}
+.lc-auth p{color:#a9b4c5;margin:0 0 16px}
+.lc-auth .lc-logo{margin:0}
+.lc-auth-tabs{display:flex;gap:8px;margin:15px 0}
+.lc-auth-tabs button{flex:1;padding:11px;border:1px solid #41485b;border-radius:9px;background:#252d3d;color:#c7d0df}
+.lc-auth-tabs button.active{background:#3c356a;color:#fff;border-color:#8a7ce6}
+.lc-auth-hint{font-size:11px!important;margin:12px 0!important;color:#96a2b6!important}
+.lc-auth .lc-primary{width:100%;margin-top:16px}
+.lc-error{color:#ffb3bb;font-size:12px;margin:10px 0}
+.lc-success{color:#9addb3;font-size:12px;margin:10px 0}
+.lc-loader{height:100%;display:grid;place-items:center;color:#a4afc0}
+.lc-toast{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:#202c3c;color:#fff;border:1px solid #667289;padding:10px 14px;border-radius:9px;z-index:50;pointer-events:none}
+@media(max-width:860px){.lc-shell{grid-template-columns:52px 185px minmax(0,1fr)}.lc-rail{padding:8px 4px}.lc-rail-btn{width:38px;height:38px}.lc-side-head{padding:16px 10px}.lc-card{flex-wrap:wrap}}
+@media(max-width:620px){.lc-shell{grid-template-columns:48px minmax(0,1fr)}.lc-side{display:none}.lc-head{padding:0 12px}.lc-message-scroll{padding:10px 7px}.lc-composer{padding:7px}.lc-area{padding:12px}.lc-modal-layer{inset:38px 0 0;padding:8px}.lc-rail-btn{width:36px;height:36px}.lc-rail{gap:7px}}
+@media(prefers-reduced-motion:reduce){.lc-root *, .lc-root *:before, .lc-root *:after{animation:none!important;transition:none!important}}
