@@ -93,7 +93,7 @@
     if (icons && !document.getElementById("scramjet-launcher")) {
       const button = document.createElement("button");
       button.id = "scramjet-launcher"; button.className = "desktop-icon";
-      button.innerHTML = '<b class="app-symbol app-browser" aria-hidden="true"></b><span>Scramjet Browser</span>';
+      button.setAttribute('aria-label','Scramjet Browser');button.innerHTML=window.LoliteIcons.tile('scramjet')+'<span>Scramjet Browser</span>';
       button.ondblclick = () => window.openApp("scramjet", "Scramjet Browser", 900, 650);
       icons.appendChild(button);
     }
@@ -101,7 +101,7 @@
     const list = start?.querySelector(".start-list");
     if (list && !list.querySelector("[data-scramjet-launch]")) {
       const button = document.createElement("button");
-      button.dataset.scramjetLaunch = "1"; button.textContent = "Scramjet Browser";
+      button.dataset.scramjetLaunch = "1"; button.innerHTML = window.LoliteIcons.tile('scramjet')+'<span>Scramjet Browser</span>';
       button.onclick = () => { window.openApp("scramjet", "Scramjet Browser", 900, 650); start.classList.add("hidden"); };
       list.appendChild(button);
     }
