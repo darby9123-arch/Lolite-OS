@@ -387,3 +387,69 @@ html.glass.reduce .liquid-glass-webgl,html.reduce-motion .liquid-glass-webgl{opa
   .tray{gap:0!important;padding-left:5px!important}
   #taskbar .tray #clock{min-width:65px;font-size:10px}
 }
+
+
+/* Lolite OS 3.9.42 — shared SVG application icon language, inspired by Windows 11. */
+.lolite-icon{
+  --icon-from:#7492c2;--icon-to:#455b83;
+  position:relative;display:inline-grid;place-items:center;
+  width:50px;height:50px;flex:0 0 auto;vertical-align:middle;
+  border-radius:14px;isolation:isolate;overflow:hidden;
+  background:linear-gradient(145deg,var(--icon-from),var(--icon-to));
+  border:1px solid rgba(255,255,255,.27);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.27),0 5px 14px rgba(0,0,0,.26);
+  transition:transform .18s ease,filter .18s ease;
+}
+.lolite-icon::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(160deg,rgba(255,255,255,.18),transparent 42%,rgba(0,0,0,.09));
+}
+.lolite-icon svg{display:block;position:relative;z-index:1;width:82%;height:82%;overflow:visible;filter:drop-shadow(0 1.4px 1px rgba(4,19,47,.15))}
+.desktop-icon{
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  gap:6px;width:104px;height:94px;padding:7px 5px!important;
+  text-align:center;border-radius:9px!important;
+  background:transparent;
+}
+.desktop-icon > span:last-child:not(.lolite-icon){
+  font:500 12px/1.2 "Segoe UI",system-ui,sans-serif;
+  text-shadow:0 1px 4px rgba(0,0,0,.75);
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+  overflow:hidden;max-width:100%;margin:0!important;overflow-wrap:anywhere;
+}
+.desktop-icon:hover .lolite-icon{transform:translateY(-2px);filter:brightness(1.08)}
+.desktop-icon:focus-visible{outline:2px solid #9bc4ff;outline-offset:2px}
+#start .start-list button{display:flex;align-items:center;gap:12px;text-align:left;min-height:45px}
+#start .start-list .lolite-icon{width:29px;height:29px;border-radius:9px}
+#start .start-list .lolite-icon svg{width:86%;height:86%}
+#tasks .taskwin{display:flex;align-items:center;justify-content:center;gap:9px;white-space:nowrap}
+#tasks .taskwin .lolite-icon{width:23px;height:23px;border-radius:7px}
+#tasks .taskwin .lolite-icon svg{width:86%;height:86%}
+#tasks .taskwin > span:last-child:not(.lolite-icon){overflow:hidden;text-overflow:ellipsis}
+.appstore-icon{
+  width:54px!important;height:54px!important;overflow:visible!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  padding:0!important;display:grid;place-items:center;
+}
+.appstore-icon .lolite-icon{width:54px;height:54px;border-radius:16px}
+.appstore-card:hover .lolite-icon{transform:translateY(-2px)}
+.home-feature-icon{
+  width:39px!important;height:39px!important;padding:0!important;
+  border:0!important;background:transparent!important;overflow:visible;
+}
+.home-feature-icon .lolite-icon{width:39px;height:39px;border-radius:11px}
+.lm-app-icon > .lolite-icon{width:54px;height:54px;border-radius:16px}
+.lm-app-icon > span:last-child:not(.lolite-icon){font-size:11px;line-height:1.25;text-align:center}
+#lmDock .lm-app-icon > .lolite-icon{width:46px;height:46px;border-radius:14px}
+.tablet-mode #loliteMobileShell .lm-app-icon > .lolite-icon{width:68px;height:68px;border-radius:19px}
+.tablet-mode #loliteMobileShell #lmDock .lolite-icon{width:50px;height:50px}
+@media(max-width:700px){
+  .desktop-icon{width:88px;height:88px;padding:5px!important}
+  .desktop-icon .lolite-icon{width:44px;height:44px;border-radius:13px}
+  #tasks .taskwin .lolite-icon{width:22px;height:22px}
+}
+@media(prefers-reduced-motion:reduce){
+  .lolite-icon{transition:none!important}
+  .desktop-icon:hover .lolite-icon,.appstore-card:hover .lolite-icon{transform:none}
+}
+html.reduce .lolite-icon{transition:none!important}
