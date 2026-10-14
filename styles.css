@@ -504,3 +504,37 @@ html.reduce .lolite-icon{transition:none!important}
 }
 html.reduce .window,html.reduce #icons .desktop-icon,html.reduce #loliteMobileShell,html.reduce #lolite-welcome .welcome-box{animation:none!important}
 html.reduce .appstore-card,html.reduce .home-feature,html.reduce .lm-app-icon>.lolite-icon,html.reduce #icons .desktop-icon .lolite-icon{transition:none!important;transform:none!important}
+
+
+/* Lolite OS 3.9.47 — allow full two-line desktop app names without clipping. */
+#icons{grid-auto-rows:116px!important;row-gap:6px}
+#icons .desktop-icon{
+  width:104px!important;
+  height:112px!important;
+  min-height:112px;
+  padding:8px 5px!important;
+  gap:6px!important;
+  justify-content:flex-start!important;
+  overflow:visible!important;
+}
+#icons .desktop-icon>.lolite-icon{flex-shrink:0}
+#icons .desktop-icon>span:last-child:not(.lolite-icon){
+  margin:0!important;
+  padding:0 2px 2px;
+  width:100%;
+  max-height:none!important;
+  min-height:30px;
+  line-height:15px!important;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  text-overflow:clip;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+@media(max-width:700px){
+ #icons{grid-auto-rows:110px!important;row-gap:4px}
+ #icons .desktop-icon{width:88px!important;height:106px!important;min-height:106px;padding:6px 3px!important}
+ #icons .desktop-icon>span:last-child:not(.lolite-icon){line-height:14px!important;min-height:28px}
+}
