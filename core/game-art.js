@@ -8,7 +8,7 @@ window.loliteGameArt=Object.freeze({
     "title": "GTA: Vice City (reVCDOS)"
   },
   "clangrybirds2.html": {
-    "src": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/78/04/ca/7804ca49-20cd-e1f6-77e0-2b24b0dadcb8/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+    "src": "https://www5.minijuegosgratis.com/v3/games/thumbnails/210455_1.jpg",
     "title": "Angry Birds 2"
   },
   "clbadmondaysimulator.html": {
@@ -32,7 +32,7 @@ window.loliteGameArt=Object.freeze({
     "title": "BitLife"
   },
   "clblockblast.html": {
-    "src": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a0/bf/50/a0bf5039-c12a-5743-0215-27c851c87d27/AppIcon-0-0-1x_U007emarketing-0-11-0-sRGB-85-220.png/512x512bb.jpg",
+    "src": "https://www3.minijuegosgratis.com/v3/games/thumbnails/230248_1.jpg",
     "title": "Block Blast"
   },
   "clcookieclicker.html": {
@@ -44,7 +44,7 @@ window.loliteGameArt=Object.freeze({
     "title": "Cookie Clicker Mod Menu"
   },
   "clcrazycars.html": {
-    "src": "https://img.poki-cdn.com/cdn-cgi/image/q=78,scq=50,width=1200,height=1200,fit=cover,f=png/2bc8004fcbb4387908a636e2a9d9ab4a/crazy-cars-logo.png",
+    "src": "https://cdn2.y8.com/cloudimage/155729/file/w380h285_retina_webp-66f88795828c8100227407fc73613c23.webp",
     "title": "Crazy Cars"
   },
   "clcuttherope.html": {
@@ -144,7 +144,7 @@ window.loliteGameArt=Object.freeze({
     "title": "Half-Life"
   },
   "clholeio.html": {
-    "src": "https://img.poki-cdn.com/cdn-cgi/image/q=78,scq=50,width=1200,height=1200,fit=cover,f=png/6a2eb719b17f667cda6680a8bb2f4e40/hole-io-logo.jfif",
+    "src": "https://www4.minijuegosgratis.com/v3/games/thumbnails/225259_1.jpg",
     "title": "Hole.io"
   },
   "clinfinitecraft.html": {
@@ -156,7 +156,7 @@ window.loliteGameArt=Object.freeze({
     "title": "Lobotomy Dash"
   },
   "lolite-2048.html": {
-    "src": "https://img.poki-cdn.com/cdn-cgi/image/q=78,scq=50,width=1200,height=1200,fit=cover,f=png/cb8c967c-4a78-4ffa-8506-cbac69746f4f/2048-logo.png",
+    "src": "https://cdn2.y8.com/cloudimage/403809/file/w380h285_retina_webp-97778169bd8eef64466607e4ac7746b5.webp",
     "title": "2048"
   },
   "lolite-pong.html": {
@@ -188,7 +188,7 @@ window.loliteGameArt=Object.freeze({
     "title": "Moto X3M 3"
   },
   "clmotox3mm.html": {
-    "src": "https://img.poki-cdn.com/cdn-cgi/image/q=78,scq=50,width=1200,height=1200,fit=cover,f=png/2c6d5a46cdbceada277c870ce1c389ee/moto-x3m-logo.jpg",
+    "src": "https://www1.minijuegosgratis.com/v3/games/thumbnails/209046_1.jpg",
     "title": "Moto X3M"
   },
   "clmotox3mpoolparty.html": {
@@ -196,7 +196,7 @@ window.loliteGameArt=Object.freeze({
     "title": "Moto X3M Pool Party"
   },
   "clmotox3mspookyland.html": {
-    "src": "https://img.poki-cdn.com/cdn-cgi/image/q=78,scq=50,width=1200,height=1200,fit=cover,f=png/3f8a297822df891a1c158576b6461014/moto-x3m-spooky-land-logo.png",
+    "src": "https://www3.minijuegosgratis.com/v3/games/thumbnails/230453_1.jpg",
     "title": "Moto X3M Spooky Land"
   },
   "clmotox3mwinter.html": {
@@ -220,7 +220,7 @@ window.loliteGameArt=Object.freeze({
     "title": "OvO"
   },
   "clpaperio.html": {
-    "src": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/50/0a/b3/500ab395-f5ea-78b9-b5d8-651d891f1234/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+    "src": "https://www5.minijuegosgratis.com/v3/games/thumbnails/219241_1.jpg",
     "title": "Paper.io"
   },
   "clpaperio3d.html": {
@@ -260,7 +260,7 @@ window.loliteGameArt=Object.freeze({
     "title": "Ragdoll Hit"
   },
   "clRedBall4.html": {
-    "src": "https://is1-ssl.mzstatic.com/image/thumb/Purple112/v4/45/29/e5/4529e579-8031-e851-e459-ffb7da4202f3/AppIcon-0-0-1x_U007emarketing-0-7-0-85-220.png/512x512bb.jpg",
+    "src": "https://www1.minijuegosgratis.com/v3/games/thumbnails/22727_1.jpg",
     "title": "Red Ball 4"
   },
   "clrocketleague.html": {
@@ -312,11 +312,11 @@ window.loliteGameArt=Object.freeze({
     "title": "Survivor.io"
   },
   "cltemplerun2.html": {
-    "src": "https://img.poki-cdn.com/cdn-cgi/image/q=78,scq=50,width=1200,height=1200,fit=cover,f=png/b5c8b617f65be7cc4d56dd3657590ae7/temple-run-2-logo.png",
+    "src": "https://img.y8.com/cloud/y8-thumbs/56116/big.gif",
     "title": "Temple Run 2"
   },
   "cltinyfishing.html": {
-    "src": "https://img.poki-cdn.com/cdn-cgi/image/q=78,scq=50,width=1200,height=1200,fit=cover,f=png/c8cb366d52fc2a67fb313c344efdbc9e/tiny-fishing-logo.png",
+    "src": "https://www3.minijuegosgratis.com/v3/games/thumbnails/236001_1.jpg",
     "title": "Tiny Fishing"
   },
   "clvex3.html": {
@@ -332,7 +332,7 @@ window.loliteGameArt=Object.freeze({
     "title": "Wrestle Bros"
   },
   "zombie-rush.html": {
-    "src": "https://img.poki-cdn.com/cdn-cgi/image/q=78,scq=50,width=1200,height=1200,fit=cover,f=png/ce219d03b723f2d07e4d3c00d1cd104a/zombie-rush-logo.png",
+    "src": "https://cdn2.y8.com/cloudimage/145777/file/w380h285_retina_webp-b175527e882d8a4459ed860e7ef16a4d.webp",
     "title": "Zombie Rush"
   }
 });
