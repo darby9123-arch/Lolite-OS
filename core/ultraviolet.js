@@ -58,6 +58,7 @@
     console.error('Lolite Ultraviolet startup failed',e);
     // Fallback is a normal iframe, not a proxy. Keep the address usable.
     direct(target.href);
+    setStatus(status,'Ultraviolet could not initialize its proxy on this host. Opened the address in standard browsing mode instead; Open in tab is available.',true);
    }
   };
   form.onsubmit=e=>{e.preventDefault();go(input.value)};
