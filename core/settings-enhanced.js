@@ -6,8 +6,8 @@
   const outline='#25233a', white='#ffffff', purple='#9d87e8', cyan='#a4a3ed';
   const cursors={
     // Crisp 32px vector cursors: simple silhouettes, subtle violet accents, precise hotspots.
-    lolite:svgCursor('<path d="M5 3.5V26l5.9-5.7 4.9 9 4.4-2.3-4.9-9H24Z" fill="#FFFFFF" stroke="#25233A" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.2 9v11.1l3.3-3.2 2.7 4.8" fill="none" stroke="#9D87E8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',5,4),
-    pointer:svgCursor('<path d="M10 28c-2.6-3.1-5.5-6.7-4.2-8.5 1.3-1.7 3.3-.8 5.7 1.5V8a2.5 2.5 0 0 1 5 0v9.5a2.5 2.5 0 0 1 4.8 0 2.5 2.5 0 0 1 4.8.9 2.4 2.4 0 0 1 4.3 1.4V24c0 5.5-3.5 7-8.3 7h-5.7c-2.8 0-4.7-1.1-6.4-3Z" fill="#FFFFFF" stroke="#25233A" stroke-width="1.7" stroke-linejoin="round"/><path d="M13.9 8.5v12" stroke="#9D87E8" stroke-width="1.6" stroke-linecap="round"/>',14,7),
+    lolite:svgCursor('<path d="M5 3.5V26l5.9-5.7 4.9 9 4.4-2.3-4.9-9H24Z" fill="#FFFFFF" stroke="#25233A" stroke-width="1.8" stroke-linejoin="round"/>',5,4),
+    pointer:svgCursor('<path d="M10 28c-2.6-3.1-5.5-6.7-4.2-8.5 1.3-1.7 3.3-.8 5.7 1.5V8a2.5 2.5 0 0 1 5 0v9.5a2.5 2.5 0 0 1 4.8 0 2.5 2.5 0 0 1 4.8.9 2.4 2.4 0 0 1 4.3 1.4V24c0 5.5-3.5 7-8.3 7h-5.7c-2.8 0-4.7-1.1-6.4-3Z" fill="#FFFFFF" stroke="#25233A" stroke-width="1.7" stroke-linejoin="round"/>',14,7),
     text:svgCursor('<path d="M7 6 H25 M16 6 V26 M7 26 H25" fill="none" stroke="'+outline+'" stroke-width="6" stroke-linecap="round"/><path d="M7 6 H25 M16 6 V26 M7 26 H25" fill="none" stroke="'+cyan+'" stroke-width="2.5" stroke-linecap="round"'),
     wait:svgCursor('<circle cx="16" cy="16" r="11" fill="'+outline+'" stroke="'+white+'" stroke-width="2"/><path d="M16 8 V16 L22 20" fill="none" stroke="'+purple+'" stroke-width="3" stroke-linecap="round"'),
     progress:svgCursor('<circle cx="16" cy="16" r="10" fill="none" stroke="'+outline+'" stroke-width="5"/><path d="M16 6 A10 10 0 0 1 26 16" fill="none" stroke="'+cyan+'" stroke-width="4" stroke-linecap="round"'),
