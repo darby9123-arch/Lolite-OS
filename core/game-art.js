@@ -172,7 +172,7 @@ window.loliteGameArt=Object.freeze({
     "title": "Super Mario 64"
   },
   "clmelonplayground.html": {
-    "src": null,
+    "src": "https://i.pinimg.com/564x/bf/4e/d4/bf4ed4964af088da039f754b2ee01bf0.jpg",
     "title": "Melon Playground"
   },
   "clminecraftpocketedition.html": {
@@ -304,7 +304,7 @@ window.loliteGameArt=Object.freeze({
     "title": "Subway Surfers: Miami"
   },
   "clsupermariobros.html": {
-    "src": null,
+    "src": "https://assets-prd.ignimgs.com/2022/01/08/smb-nesart-1641603921866.jpg",
     "title": "Super Mario Bros."
   },
   "clsurvivorio.html": {
