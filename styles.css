@@ -453,3 +453,54 @@ html.glass.reduce .liquid-glass-webgl,html.reduce-motion .liquid-glass-webgl{opa
   .desktop-icon:hover .lolite-icon,.appstore-card:hover .lolite-icon{transform:none}
 }
 html.reduce .lolite-icon{transition:none!important}
+
+
+/* Lolite OS Motion v3.9.43 — subtle, responsive, GPU-friendly transitions */
+:root{--motion-ease:cubic-bezier(.2,.8,.2,1);--motion-short:145ms;--motion-medium:210ms}
+.window{animation:none!important;transition:box-shadow 180ms ease,border-color 180ms ease!important;transform-origin:top left}
+.window:focus-within{border-color:rgba(157,166,202,.38)}
+.window .titlebar{transition:background-color 160ms ease}
+.window .controls button{transition:background-color 130ms ease,filter 130ms ease}
+.window .controls button:hover{background:rgba(255,255,255,.13)!important}
+.window .controls button.close:hover{background:rgba(222,62,75,.8)!important}
+#icons .desktop-icon{
+  animation:loliteDesktopArrive 340ms var(--motion-ease) both!important;
+  animation-delay:0ms!important;
+  transition:background-color 150ms ease,border-color 150ms ease!important;
+}
+#icons .desktop-icon:nth-child(2){animation-delay:25ms!important}
+#icons .desktop-icon:nth-child(3){animation-delay:50ms!important}
+#icons .desktop-icon:nth-child(4){animation-delay:75ms!important}
+#icons .desktop-icon:nth-child(5){animation-delay:100ms!important}
+#icons .desktop-icon:nth-child(6){animation-delay:125ms!important}
+#icons .desktop-icon:nth-child(7){animation-delay:150ms!important}
+#icons .desktop-icon:nth-child(8){animation-delay:175ms!important}
+@keyframes loliteDesktopArrive{from{opacity:0;transform:translate3d(0,9px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+#icons .desktop-icon:hover{background:rgba(255,255,255,.065);border-color:rgba(255,255,255,.10)}
+#icons .desktop-icon .lolite-icon{transition:transform 180ms var(--motion-ease),filter 180ms ease!important}
+#icons .desktop-icon:hover .lolite-icon{transform:translate3d(0,-2px,0) scale(1.035);filter:brightness(1.07)}
+#taskbar>.task,#tasks .taskwin,.start-list button,.lm-app-icon,.appstore-card button,.home-feature button,.store-tab{
+  transition:background-color 150ms ease,border-color 150ms ease,filter 150ms ease,box-shadow 160ms ease!important;
+}
+#taskbar>.task:hover,#tasks .taskwin:hover{background-color:rgba(255,255,255,.10)!important}
+#taskbar .taskwin.active{box-shadow:inset 0 -2px 0 var(--accent),inset 0 0 0 1px rgba(255,255,255,.09)}
+#start .start-list button:hover{background-color:rgba(148,162,204,.12)}
+#searchPanel .search-result{transition:background-color 150ms ease,transform 150ms var(--motion-ease)}
+#searchPanel .search-result:hover{transform:translate3d(2px,0,0)}
+.appstore-card{transition:border-color 180ms ease,background-color 180ms ease,transform 200ms var(--motion-ease),box-shadow 200ms ease!important}
+.appstore-card:hover{transform:translate3d(0,-2px,0)!important}
+.appstore-icon .lolite-icon{transition:transform 180ms var(--motion-ease)!important}
+.lm-app-icon>.lolite-icon{transition:transform 180ms var(--motion-ease),filter 180ms ease}
+.lm-app-icon:hover>.lolite-icon{transform:translate3d(0,-2px,0);filter:brightness(1.08)}
+.home-feature{transition:border-color 180ms ease,transform 200ms var(--motion-ease)!important}
+.home-feature:hover{transform:translate3d(0,-2px,0)}
+#lolite-welcome .welcome-box{animation:loliteWelcomeArrive 350ms var(--motion-ease) both}
+@keyframes loliteWelcomeArrive{from{opacity:0;transform:translate3d(0,12px,0) scale(.985)}to{opacity:1;transform:translate3d(0,0,0) scale(1)}}
+#loliteMobileShell{animation:loliteMobileArrive 200ms var(--motion-ease) both}
+@keyframes loliteMobileArrive{from{opacity:.4;transform:translate3d(0,9px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+@media(prefers-reduced-motion:reduce){
+ .window,#icons .desktop-icon,#loliteMobileShell,#lolite-welcome .welcome-box{animation:none!important}
+ .appstore-card,.home-feature,.lm-app-icon>.lolite-icon,#icons .desktop-icon .lolite-icon{transition:none!important;transform:none!important}
+}
+html.reduce .window,html.reduce #icons .desktop-icon,html.reduce #loliteMobileShell,html.reduce #lolite-welcome .welcome-box{animation:none!important}
+html.reduce .appstore-card,html.reduce .home-feature,html.reduce .lm-app-icon>.lolite-icon,html.reduce #icons .desktop-icon .lolite-icon{transition:none!important;transform:none!important}
