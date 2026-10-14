@@ -177,7 +177,7 @@ window.loliteGameArt=Object.freeze({
   },
   "clminecraftpocketedition.html": {
     "src": "https://www5.minijuegosgratis.com/v3/games/thumbnails/239764_1.jpg",
-    "title": "Minecraft: Pocket Edition"
+    "title": "Minecraft 1.8"
   },
   "clmotox3m2.html": {
     "src": "https://www1.minijuegosgratis.com/v3/games/thumbnails/213509_1.jpg",
