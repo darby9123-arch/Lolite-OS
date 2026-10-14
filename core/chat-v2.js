@@ -80,7 +80,7 @@ function messageHtml(m){
 function chatHtml(){
  const c=activeConv();
  if(!c)return '<main class="lc-main"><div class="lc-placeholder"><div><h2>No chat selected</h2><p>Pick a channel or open a conversation.</p><button class="lc-primary" data-lc-action="browse">Browse chats</button></div></div></main>';
- const list=state.messages.filter(m=>!state.search||m.content.toLowerCase().includes(state.search.toLowerCase()));
+ const list=state.messages.filter(m=>!state.search.trim()||m.content.toLowerCase().includes(state.search.trim().toLowerCase()));
  const reply=state.messages.find(m=>m.id===state.replyTo);
  return '<main class="lc-main"><header class="lc-head"><div class="lc-head-title">'+esc(convLabel(c))+'</div><span class="lc-head-sub">'+(c.type==='channel'?'Lolite Hub · Public channel':c.type==='dm'?'Private conversation':'Private group chat')+'</span><button class="lc-iconbtn" title="Search messages" data-lc-action="search">⌕</button></header>'+
  (state.search!==''?'<div style="padding:10px 16px"><input aria-label="Search loaded messages" data-lc-search value="'+esc(state.search)+'" placeholder="Search last 100 messages…" style="width:100%;padding:8px;background:#101722;color:white;border:1px solid #394759;border-radius:7px"></div>':'')+
@@ -169,7 +169,9 @@ async function refresh(quiet=false){
  state.busy=true;state.error='';
  if(!quiet){state.loading=true;render()}
  try{
-  const usr=check(await sb.auth.getUser())?.user;
+  const authResponse=await sb.auth.getUser();
+  if(authResponse.error&&authResponse.error.name!=='AuthSessionMissingError')throw authResponse.error;
+  const usr=authResponse.data?.user||null;
   state.user=usr||null;
   if(usr){
    const a=await Promise.all([
