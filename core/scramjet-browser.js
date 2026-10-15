@@ -20,11 +20,13 @@
     return url.href;
   };
   async function init(content) {
+    const resume = () => {
+      content.dataset.loliteBrowserSignedIn = "1";
+      void init(content);
+    };
+    content._loliteBrowserResume = resume;
     if (!content.dataset.loliteBrowserSignedIn) {
-      const allowed = await window.LoliteBrowserAccounts?.guard(content, () => {
-        content.dataset.loliteBrowserSignedIn = "1";
-        void init(content);
-      });
+      const allowed = await window.LoliteBrowserAccounts?.guard(content, resume);
       if (!allowed) {
         const state = content.querySelector("#sj-state");
         if (state) state.textContent = "Sign in with your Lolite Chat account to use the browser.";
@@ -38,6 +40,10 @@
     let frame = null;
     let directUrl = "";
     const go = raw => {
+      if (content.dataset.loliteBrowserSignedIn !== "1") {
+        status(statusEl, "Sign in to Lolite Chat before browsing.", true);
+        return;
+      }
       try { const url = normalize(raw); if (!url) return; input.value = url; if(frame){frame.go(url);status(statusEl,"Loading "+new URL(url).hostname+" through Scramjet…");}
         else{
           directUrl=url;frameEl.src=url;
