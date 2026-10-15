@@ -23,7 +23,7 @@
   };
   async function syncServerSession(session) {
     if (!isLocalBackend()) return false;
-    // Only the same-origin Node backend can set a secure, HttpOnly browser-session cookie.
+    // The same-origin Node backend verifies the Supabase access token; no passwords are sent to it.
     try {
       const response = await fetch("/api/browser/session", {
         method: session ? "POST" : "DELETE",
