@@ -20,6 +20,18 @@
     return url.href;
   };
   async function init(content) {
+    if (!content.dataset.loliteBrowserSignedIn) {
+      const allowed = await window.LoliteBrowserAccounts?.guard(content, () => {
+        content.dataset.loliteBrowserSignedIn = "1";
+        void init(content);
+      });
+      if (!allowed) {
+        const state = content.querySelector("#sj-state");
+        if (state) state.textContent = "Sign in with your Lolite Chat account to use the browser.";
+        return;
+      }
+      content.dataset.loliteBrowserSignedIn = "1";
+    }
     const input = content.querySelector("#sj-url");
     const statusEl = content.querySelector("#sj-state");
     const frameEl = content.querySelector("#sj-frame");
