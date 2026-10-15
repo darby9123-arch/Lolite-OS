@@ -54,7 +54,7 @@
     content.querySelector("#sj-form").onsubmit = e => { e.preventDefault(); go(input.value); };
     content.querySelector("#sj-home").onclick = () => go("https://example.com/");
     content.querySelector("#sj-reload").onclick = () => { if(frame)frame.reload(); else if(directUrl)frameEl.src=directUrl; else status(statusEl,"Enter a website to browse."); };
-    content.querySelector("#sj-open-tab").onclick = () => {const url=directUrl||(()=>{try{return normalize(input.value)}catch{return ""}})();if(url)window.open(url,"_blank","noopener,noreferrer");else status(statusEl,"Enter a website first.");};
+    content.querySelector("#sj-open-tab").onclick = () => {if(content.dataset.loliteBrowserSignedIn!=="1"){status(statusEl,"Sign in first.",true);return;}const url=directUrl||(()=>{try{return normalize(input.value)}catch{return ""}})();if(url)window.open(url,"_blank","noopener,noreferrer");else status(statusEl,"Enter a website first.");};
     // Scramjet's proxy transport is not available on the public Lolite hosts.
     // Use an ordinary iframe instead of attempting a failing service worker.
     status(statusEl, "Standard browser mode is ready. Enter a web address or search. Some websites block embedding; Open in tab works in those cases.");
