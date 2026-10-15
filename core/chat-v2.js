@@ -4,7 +4,7 @@
 'use strict';
 const URL='https://rztxhwfdbrzuhdqpegar.supabase.co';
 const KEY='sb_publishable_I3eswNK0zu8qQvDp1Kcfbw_zZzzi18u';
-const sb=window.supabase?.createClient?.(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+const sb=window.LoliteBrowserAccounts?.getClient?.() || window.supabase?.createClient?.(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
 const $=sel=>document.querySelector('.window[data-window-id="chatroom"] #lcRoot '+sel);
 const root=()=>document.querySelector('.window[data-window-id="chatroom"] #lcRoot');
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
