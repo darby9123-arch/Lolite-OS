@@ -19,6 +19,18 @@
  const setStatus=(el,msg,error=false)=>{if(!el)return;el.textContent=msg;el.classList.toggle('error',error)};
  function showHostNotice(el,msg){if(!el)return;setStatus(el,msg,true);if(location.hostname.endsWith('github.io')){el.append(document.createTextNode(' '));const link=document.createElement('a');link.href='https://lolite-os.vercel.app/';link.target='_blank';link.rel='noopener noreferrer';link.textContent='Open the Node-backed Lolite OS deployment';link.style.color='#c9baff';link.style.textDecoration='underline';el.append(link)}}
  async function start(content){
+  if (!content.dataset.loliteBrowserSignedIn) {
+   const allowed = await window.LoliteBrowserAccounts?.guard(content, () => {
+    content.dataset.loliteBrowserSignedIn = "1";
+    void start(content);
+   });
+   if (!allowed) {
+    const s = content.querySelector("#uvStatus");
+    if(s)s.textContent = "Sign in with your Lolite Chat account to use the browser.";
+    return;
+   }
+   content.dataset.loliteBrowserSignedIn = "1";
+  }
   const form=content.querySelector('#uvForm'),input=content.querySelector('#uvAddress'),frame=content.querySelector('#uvFrame'),status=content.querySelector('#uvStatus');
   let lastUrl='';
   const direct=raw=>{
