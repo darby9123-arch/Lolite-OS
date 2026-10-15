@@ -53,12 +53,17 @@
       renderGate(content, resume, "Account sign-in is temporarily unavailable. Reload Lolite OS and retry.");
       return false;
     }
-    const { data, error } = await supabase.auth.getSession();
-    if (!error && data?.session?.user) {
-      await syncCurrentSession(data.session);
-      return true;
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      if (data?.session?.user) {
+        void syncCurrentSession(data.session);
+        return true;
+      }
+      renderGate(content, resume);
+    } catch (error) {
+      renderGate(content, resume, "Could not check your account: " + (error?.message || String(error)));
     }
-    renderGate(content, resume);
     return false;
   }
   function renderGate(content, resume, initialError) {
@@ -113,13 +118,36 @@
         }
       };
     }
+    gate._loliteResume = resume;
     if (initialError) showMessage(gate, initialError, true);
   }
   // A normal Lolite Chat sign-out also clears the backend session for this tab's origin.
   const sb = getClient();
   sb?.auth.onAuthStateChange((event, session) => {
-    if (event === "SIGNED_OUT") void syncCurrentSession(null);
-    if (event === "TOKEN_REFRESHED" && session) void syncCurrentSession(session);
+    if (event === "SIGNED_OUT") {
+      void syncCurrentSession(null);
+      // Close any existing browser frames when the shared Lolite Chat account signs out.
+      document.querySelectorAll(".sj-app, .uv-app").forEach(app => {
+        const content = app.closest(".content");
+        if (!content) return;
+        delete content.dataset.loliteBrowserSignedIn;
+        const frame = app.querySelector("iframe");
+        if (frame) frame.src = "about:blank";
+        if (typeof content._loliteBrowserResume === "function")
+          renderGate(content, content._loliteBrowserResume);
+      });
+    }
+    if ((event === "TOKEN_REFRESHED" || event === "SIGNED_IN") && session) {
+      void syncCurrentSession(session);
+      // Opening Lolite Chat and signing in also unlocks existing browser windows.
+      document.querySelectorAll(".lb-account-gate").forEach(gate => {
+        const resume = gate._loliteResume;
+        if (typeof resume === "function") {
+          gate.remove();
+          resume();
+        }
+      });
+    }
   });
   window.LoliteBrowserAccounts = { getClient, guard, syncCurrentSession };
 })();
