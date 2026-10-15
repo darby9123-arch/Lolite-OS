@@ -1,5 +1,7 @@
 # Browser hosting and deployment
 
+> **Current security status (2026-10-15):** The browser apps now share Lolite Chat accounts. The public Bare, Wisp and rewritten proxy transport endpoints are disabled; deploying the Node server does **not** enable a general-purpose proxy. The server provides `POST /api/browser/session` to verify a user's Supabase access token. Normal embedded browsing is available on sites that permit it.
+
 ## GitHub Pages limitation
 
 GitHub Pages cannot run Node.js, HTTP proxy endpoints, or WebSocket upgrades. The project site is also mounted below `/Lolite-OS/`, while the browser service workers intentionally use origin-root routes. GitHub Pages cannot host working Ultraviolet or Scramjet proxy services by itself.
