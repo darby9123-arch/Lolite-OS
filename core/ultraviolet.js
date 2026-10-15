@@ -35,31 +35,85 @@
   }
   const form=content.querySelector('#uvForm'),input=content.querySelector('#uvAddress'),frame=content.querySelector('#uvFrame'),status=content.querySelector('#uvStatus');
   let lastUrl='';
-  const direct=raw=>{
-    if(content.dataset.loliteBrowserSignedIn !== "1"){
-     setStatus(status,"Sign in to Lolite Chat before browsing.",true);
-     return;
+  const normalize=raw=>{
+    let value=String(raw||'').trim();
+    if(!value)return null;
+    if(!/^[a-z][a-z0-9+.-]*:\/\//i.test(value))
+      value=/^(localhost|[\w-]+\.)+[a-z]{2,}([/:?#]|$)/i.test(value)
+        ?'https://'+value
+        :'https://duckduckgo.com/?q='+encodeURIComponent(value);
+    const target=new URL(value);
+    if(!['http:','https:'].includes(target.protocol))
+      throw new Error('Only HTTP and HTTPS websites are supported.');
+    return target;
+  };
+  // Search providers block third-party frames with X-Frame-Options/CSP.
+  // Respect those headers rather than showing Firefox's frame-block page.
+  const needsTab=target=>{
+    const host=target.hostname.toLowerCase();
+    return host==='duckduckgo.com'||host.endsWith('.duckduckgo.com')||
+      host==='google.com'||host.endsWith('.google.com')||
+      host==='bing.com'||host.endsWith('.bing.com');
+  };
+  const showFrameNotice=(heading,description,url='')=>{
+    frame.removeAttribute('src');
+    const link=url
+      ?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:14px;padding:10px 16px;border-radius:9px;background:#318aff;color:white;text-decoration:none;font-weight:600">Open in a browser tab ↗</a>'
+      :'';
+    frame.srcdoc='<!doctype html><html lang="en"><meta charset="utf-8"><body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#10192a;color:#f1f6ff;font:14px system-ui,sans-serif;text-align:center"><main style="max-width:420px;padding:28px"><h2 style="margin:0 0 8px">'+esc(heading)+'</h2><p style="color:#b4c4dc;line-height:1.6">'+esc(description)+'</p>'+link+'</main></body></html>';
+  };
+  const direct=(raw,openNewTab=true)=>{
+    if(content.dataset.loliteBrowserSignedIn!=="1"){
+      setStatus(status,'Sign in to Lolite Chat before browsing.',true);
+      return;
     }
     try{
-      let value=String(raw||'').trim();if(!value)return;
-      if(!/^[a-z][a-z0-9+.-]*:\/\//i.test(value))
-        value=/^(localhost|[\w-]+\.)+[a-z]{2,}([/:?#]|$)/i.test(value)?'https://'+value:'https://duckduckgo.com/?q='+encodeURIComponent(value);
-      const target=new URL(value);
-      if(!['http:','https:'].includes(target.protocol))throw new Error('Only HTTP/HTTPS websites are supported.');
-      lastUrl=target.href;input.value=target.href;frame.src=target.href;
-      setStatus(status,'Standard browsing · '+target.hostname+'. No proxy is used. Some sites block embedded pages; use Open in tab when needed.');
-    }catch(e){setStatus(status,e.message||'Invalid address',true)}
+      const target=normalize(raw);
+      if(!target)return;
+      lastUrl=target.href;
+      input.value=lastUrl;
+      if(needsTab(target)){
+        showFrameNotice('Open this site in a browser tab',
+          'DuckDuckGo and other search engines do not permit embedded pages. Use the button below to view this website.',lastUrl);
+        if(openNewTab)window.open(lastUrl,'_blank','noopener,noreferrer');
+        setStatus(status,'This website blocks embedding in Firefox. Use Open in tab if a new tab did not appear.');
+        return;
+      }
+      frame.removeAttribute('srcdoc');
+      frame.src=lastUrl;
+      setStatus(status,'Standard browsing · '+target.hostname+'. Some websites block embedding; use Open in tab if needed.');
+    }catch(error){
+      setStatus(status,error?.message||'Invalid address',true);
+    }
   };
-  // Only the standards-based embedded mode is available on Lolite's current hosts.
-  // Do not route pages to /service/: that backend is deliberately disabled.
-  const go=raw=>direct(raw);
-  form.onsubmit=e=>{e.preventDefault();go(input.value)};
-  content.querySelector('#uvDirect').onclick=()=>direct(input.value);
-  content.querySelector('#uvHome').onclick=()=>{input.value='https://duckduckgo.com/';go(input.value)};
-  content.querySelector('#uvReload').onclick=()=>{if(lastUrl)go(lastUrl);else setStatus(status,'Enter a website first.')};
-  content.querySelector('#uvOpenTab').onclick=()=>{if(content.dataset.loliteBrowserSignedIn!=="1"){setStatus(status,"Sign in first.",true);return}if(lastUrl)window.open(lastUrl,'_blank','noopener,noreferrer');else setStatus(status,'Open a website first.')};
-  setStatus(status,
-   'Standard browser mode is ready. Enter a web address or search. Some websites cannot display inside another page; use Open in tab for those.');
+  const go=raw=>direct(raw,true);
+  form.onsubmit=event=>{event.preventDefault();go(input.value)};
+  content.querySelector('#uvDirect').onclick=()=>direct(input.value,true);
+  content.querySelector('#uvHome').onclick=()=>{
+    lastUrl='';
+    input.value='';
+    showFrameNotice('Welcome to Lolite Browser','Enter an address or search in the bar above. Searches open in a regular tab because search engines block embedding.');
+    setStatus(status,'Browser home. Sites that allow embedding open here; search engines open in a new tab.');
+  };
+  content.querySelector('#uvReload').onclick=()=>{
+    if(lastUrl)direct(lastUrl,false);
+    else setStatus(status,'Enter a website first.');
+  };
+  content.querySelector('#uvOpenTab').onclick=()=>{
+    if(content.dataset.loliteBrowserSignedIn!=="1"){
+      setStatus(status,'Sign in first.',true);return;
+    }
+    try{
+      const target=normalize(input.value||lastUrl);
+      if(!target){setStatus(status,'Enter a website first.');return}
+      lastUrl=target.href;
+      window.open(lastUrl,'_blank','noopener,noreferrer');
+      setStatus(status,'Opening '+target.hostname+' in a normal browser tab.');
+    }catch(error){setStatus(status,error?.message||'Invalid address',true)}
+  };
+  showFrameNotice('Welcome to Lolite Browser',
+    'Enter a web address or search above. Sites that allow embedding can appear here. Search engines open in a separate tab.');
+  setStatus(status,'Standard browser mode is ready. Search engines require a separate tab.');
 
  }
  window.page=function(id){if(id==='browser'||id==='ultraviolet')return browserPage();return oldPage(id)};
