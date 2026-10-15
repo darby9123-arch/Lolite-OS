@@ -13,6 +13,12 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.11.1 — Shared browser account sign-in — 2026-10-15
+- Scramjet and Ultraviolet browser windows now ask for a Lolite Chat username and password before browsing.
+- Reused the existing Supabase Auth accounts and registration flow instead of storing passwords in a new database.
+- Added a backend account-token verification endpoint and closed the unauthenticated Bare and Wisp transport routes. General-purpose proxies are not enabled on the public host.
+- Standard embedded browsing remains available after sign-in on websites that allow it.
+
 ### 3.11.0 — Minecraft 1.8 and browser fallback improvements — 2026-10-15
 - Changed the Game Store's Minecraft entry to the upstream-hosted EaglercraftX 1.8 client from [Eaglercraft Extras](https://github.com/x8rr/Eaglercraft-Extras). The game opens in a Lolite window using the official hosted client; Lolite does not bundle copyrighted game files.
 - Added Minecraft 1.8 shortcuts on the desktop, in the Start menu, Search, and the Phone/Tablet launchers.
