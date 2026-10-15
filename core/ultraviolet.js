@@ -14,7 +14,7 @@
  const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
  const oldPage=window.page;
  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const browserPage=()=>`<div class="uv-app"><div><h2>Ultraviolet Browser</h2><p class="muted">Browse through Lolite's Ultraviolet proxy when the Node server is available.</p></div><form class="uv-toolbar" id="uvForm"><div class="uv-address"><input id="uvAddress" type="text" autocomplete="url" spellcheck="false" placeholder="Enter a website or search the web" aria-label="Website address"><button class="primary" type="submit">Go</button></div><button class="soft" id="uvDirect" type="button">Browse directly</button><button class="soft" id="uvHome" type="button">Home</button><button class="soft" id="uvReload" type="button">Reload</button><button class="soft" id="uvOpenTab" type="button">Open in tab</button></form><div id="uvStatus" class="uv-status" role="status">Checking Ultraviolet runtime…</div><div class="uv-frame-wrap"><iframe class="uv-frame" id="uvFrame" title="Ultraviolet browsing area" allow="fullscreen; clipboard-read; clipboard-write"></iframe></div><p class="muted">Note: websites that block embedding, require unsupported browser features, or rely on WebSockets may not work.</p></div>`;
+ const browserPage=()=>`<div class="uv-app"><div><h2>Ultraviolet Browser</h2><p class="muted">Browse websites in Lolite using standard embedded mode. The Ultraviolet proxy is not enabled.</p></div><form class="uv-toolbar" id="uvForm"><div class="uv-address"><input id="uvAddress" type="text" autocomplete="url" spellcheck="false" placeholder="Enter a website or search the web" aria-label="Website address"><button class="primary" type="submit">Go</button></div><button class="soft" id="uvDirect" type="button">Browse directly</button><button class="soft" id="uvHome" type="button">Home</button><button class="soft" id="uvReload" type="button">Reload</button><button class="soft" id="uvOpenTab" type="button">Open in tab</button></form><div id="uvStatus" class="uv-status" role="status">Preparing browser…</div><div class="uv-frame-wrap"><iframe class="uv-frame" id="uvFrame" title="Ultraviolet browsing area" allow="fullscreen; clipboard-read; clipboard-write"></iframe></div><p class="muted">Note: websites that block embedding, require unsupported browser features, or rely on WebSockets may not work.</p></div>`;
  const loadScript=src=>new Promise((resolve,reject)=>{const existing=[...document.scripts].find(s=>new URL(s.src,location.href).pathname===src);if(existing){resolve();return}const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>reject(new Error('Could not load '+src));document.head.appendChild(s)});
  const setStatus=(el,msg,error=false)=>{if(!el)return;el.textContent=msg;el.classList.toggle('error',error)};
  function showHostNotice(el,msg){if(!el)return;setStatus(el,msg,true);if(location.hostname.endsWith('github.io')){el.append(document.createTextNode(' '));const link=document.createElement('a');link.href='https://lolite-os.vercel.app/';link.target='_blank';link.rel='noopener noreferrer';link.textContent='Open the Node-backed Lolite OS deployment';link.style.color='#c9baff';link.style.textDecoration='underline';el.append(link)}}
@@ -44,45 +44,17 @@
       setStatus(status,'Standard browsing · '+target.hostname+'. No proxy is used. Some sites block embedded pages; use Open in tab when needed.');
     }catch(e){setStatus(status,e.message||'Invalid address',true)}
   };
-  const go=async raw=>{
-   let value=(raw||'').trim();if(!value)return;
-   if(!/^[a-z][a-z0-9+.-]*:\/\//i.test(value)){
-    if(/^(localhost|[\w-]+\.)+[a-z]{2,}([/:?#]|$)/i.test(value))value='https://'+value;
-    else value='https://duckduckgo.com/?q='+encodeURIComponent(value);
-   }
-   let target;try{target=new URL(value)}catch{setStatus(status,'That address is not valid.',true);return}
-   if(!['http:','https:'].includes(target.protocol)){setStatus(status,'Only http:// and https:// websites can be opened.',true);return}
-   try{
-    setStatus(status,'Loading Ultraviolet…');
-    await loadScript('/uv/uv.bundle.js');
-    await loadScript('/uv/uv.config.js');
-    if(!window.__uv$config||!window.__uv$config.encodeUrl)throw new Error('Ultraviolet configuration is missing.');
-    if(!('serviceWorker' in navigator))throw new Error('This browser does not support service workers.');
-    if(location.protocol!=='https:'&&location.hostname!=='localhost')throw new Error('Ultraviolet requires HTTPS or localhost.');
-    await navigator.serviceWorker.register(window.__uv$config.sw||'/uv/uv.sw.js',{scope:'/'});
-    await navigator.serviceWorker.ready;
-    lastUrl=target.href;input.value=target.href;
-    frame.src=window.__uv$config.prefix+window.__uv$config.encodeUrl(target.href);
-    setStatus(status,'Opening '+target.hostname+' through Ultraviolet. If the page stays blank, the host may not support the required proxy endpoints.');
-   }catch(e){
-    const message=e?.message||String(e);
-    showHostNotice(status,message.includes('/uv/')||message.includes('Ultraviolet')?'Ultraviolet runtime could not start: '+message+'. The site must serve /uv/uv.bundle.js, /uv/handler.js, /uv/uv.sw.js and a working /bare/ endpoint; a static GitHub Pages deployment cannot provide the proxy server.':'Ultraviolet could not start: '+message);
-    console.error('Lolite Ultraviolet startup failed',e);
-    // Fallback is a normal iframe, not a proxy. Keep the address usable.
-    direct(target.href);
-    setStatus(status,'Ultraviolet could not initialize its proxy on this host. Opened the address in standard browsing mode instead; Open in tab is available.',true);
-   }
-  };
+  // Only the standards-based embedded mode is available on Lolite's current hosts.
+  // Do not route pages to /service/: that backend is deliberately disabled.
+  const go=raw=>direct(raw);
   form.onsubmit=e=>{e.preventDefault();go(input.value)};
   content.querySelector('#uvDirect').onclick=()=>direct(input.value);
   content.querySelector('#uvHome').onclick=()=>{input.value='https://duckduckgo.com/';go(input.value)};
   content.querySelector('#uvReload').onclick=()=>{if(lastUrl)go(lastUrl);else setStatus(status,'Enter a website first.')};
   content.querySelector('#uvOpenTab').onclick=()=>{if(lastUrl)window.open(lastUrl,'_blank','noopener,noreferrer');else setStatus(status,'Open a website first.')};
-  try{
-   const r=await fetch('/uv/uv.bundle.js',{method:'HEAD',cache:'no-store'});
-   if(!r.ok)throw new Error('Ultraviolet assets are not available on this host (HTTP '+r.status+').');
-   setStatus(status,'Ultraviolet runtime files found, but the service-worker proxy may not initialize here. Use Browse directly for normal embedded browsing.');
-  }catch(e){showHostNotice(status,'Ultraviolet proxy is unavailable here. Browse directly works for sites allowing embedded viewing; Open in tab uses your browser normally. '+(e.message||''))}
+  setStatus(status,
+   'Standard browser mode is ready. Enter a web address or search. Some websites cannot display inside another page; use Open in tab for those.');
+
  }
  window.page=function(id){if(id==='browser'||id==='ultraviolet')return browserPage();return oldPage(id)};
  const oldOpen=window.openApp;
