@@ -13,6 +13,12 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.11.3 — Firefox search and iframe handling — 2026-10-16
+- DuckDuckGo, Google, and Bing prevent their pages from being embedded inside Lolite's standard browser windows.
+- When users search or open these sites, Lolite opens a normal browser tab instead of displaying Firefox's "Can't Open This Page" iframe error.
+- Added a clean built-in browser home, a clear "Open in a browser tab" fallback, and improved Home, Reload, and Open in tab buttons.
+- Both browser apps continue to support ordinary embedded browsing for sites that allow it. The proxy transports remain disabled.
+
 ### 3.11.2 — Browser account and fallback fixes — 2026-10-15
 - Fixed both browser apps attempting unavailable proxy transports, which could leave blank or failed pages.
 - Both browser apps now present standard embedded browsing after signing in with an existing Lolite Chat account, with Open in tab for websites that block embedding.
