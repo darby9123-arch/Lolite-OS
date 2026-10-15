@@ -58,11 +58,8 @@ app.get("/healthz", (_req, res) => res.json({
   ok: true, service: "lolite-os", accounts: "supabase", browserLogin: true, proxyTransport: "disabled"
 }));
 
-app.use((_req, res, next) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
-  next();
-});
+// No COEP isolation is required while proxy transports are disabled.
+// In standard iframe mode it can prevent otherwise embeddable sites from loading.
 
 // The Ultraviolet worker lives in /uv/ but needs permission to control /service/.
 app.use(["/uv/sw.js", "/uv/uv.sw.js"], (_req, res, next) => {
