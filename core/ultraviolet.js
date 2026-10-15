@@ -57,7 +57,7 @@
   content.querySelector('#uvDirect').onclick=()=>direct(input.value);
   content.querySelector('#uvHome').onclick=()=>{input.value='https://duckduckgo.com/';go(input.value)};
   content.querySelector('#uvReload').onclick=()=>{if(lastUrl)go(lastUrl);else setStatus(status,'Enter a website first.')};
-  content.querySelector('#uvOpenTab').onclick=()=>{if(lastUrl)window.open(lastUrl,'_blank','noopener,noreferrer');else setStatus(status,'Open a website first.')};
+  content.querySelector('#uvOpenTab').onclick=()=>{if(content.dataset.loliteBrowserSignedIn!=="1"){setStatus(status,"Sign in first.",true);return}if(lastUrl)window.open(lastUrl,'_blank','noopener,noreferrer');else setStatus(status,'Open a website first.')};
   setStatus(status,
    'Standard browser mode is ready. Enter a web address or search. Some websites cannot display inside another page; use Open in tab for those.');
 
