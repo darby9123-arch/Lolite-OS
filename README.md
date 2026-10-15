@@ -1,6 +1,7 @@
 ## Launch Lolite OS
 
-- **[Open Lolite OS on Vercel](https://lolite-os.vercel.app/)** — hosted version
+- **[Launch Lolite OS on GitHub Pages](https://darby9123-arch.github.io/Lolite-OS/)** — play and use Lolite OS in your browser
+- **[Open Lolite OS on Vercel](https://lolite-os.vercel.app/)** — alternate hosted version
 
 # Lolite OS
 
