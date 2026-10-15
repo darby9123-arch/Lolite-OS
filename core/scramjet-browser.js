@@ -37,29 +37,75 @@
     const input = content.querySelector("#sj-url");
     const statusEl = content.querySelector("#sj-state");
     const frameEl = content.querySelector("#sj-frame");
-    let frame = null;
     let directUrl = "";
-    const go = raw => {
-      if (content.dataset.loliteBrowserSignedIn !== "1") {
-        status(statusEl, "Sign in to Lolite Chat before browsing.", true);
+    const needsTab = target => {
+      const host=target.hostname.toLowerCase();
+      return host==="duckduckgo.com"||host.endsWith(".duckduckgo.com")||
+        host==="google.com"||host.endsWith(".google.com")||
+        host==="bing.com"||host.endsWith(".bing.com");
+    };
+    const showFrameNotice=(heading,description,url="")=>{
+      frameEl.removeAttribute("src");
+      const esc=value=>String(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+      const link=url
+        ?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:14px;padding:10px 16px;border-radius:9px;background:#318aff;color:white;text-decoration:none;font-weight:600">Open in a browser tab ↗</a>'
+        :"";
+      frameEl.srcdoc='<!doctype html><html lang="en"><meta charset="utf-8"><body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#10192a;color:#f1f6ff;font:14px system-ui,sans-serif;text-align:center"><main style="max-width:420px;padding:28px"><h2 style="margin:0 0 8px">'+esc(heading)+'</h2><p style="color:#b4c4dc;line-height:1.6">'+esc(description)+'</p>'+link+'</main></body></html>';
+    };
+    const go=(raw,openNewTab=true)=>{
+      if(content.dataset.loliteBrowserSignedIn!=="1"){
+        status(statusEl,"Sign in to Lolite Chat before browsing.",true);
         return;
       }
-      try { const url = normalize(raw); if (!url) return; input.value = url; if(frame){frame.go(url);status(statusEl,"Loading "+new URL(url).hostname+" through Scramjet…");}
-        else{
-          directUrl=url;frameEl.src=url;
-          status(statusEl,"Standard browsing mode · "+new URL(url).hostname+". This does not use a proxy. Some websites do not allow embedding; use Open in tab if needed.");
-        } }
-      catch (e) { status(statusEl, e.message || "Could not open that address.", true); }
+      try{
+        const url=normalize(raw);
+        if(!url)return;
+        directUrl=url;
+        input.value=url;
+        const target=new URL(url);
+        if(needsTab(target)){
+          showFrameNotice("Open this site in a browser tab",
+            "DuckDuckGo and other search engines do not permit embedded pages. Use the button below to view this website.",url);
+          if(openNewTab)window.open(url,"_blank","noopener,noreferrer");
+          status(statusEl,"This website blocks embedding in Firefox. Use Open in tab if a new tab did not appear.");
+          return;
+        }
+        frameEl.removeAttribute("srcdoc");
+        frameEl.src=url;
+        status(statusEl,"Standard browsing · "+target.hostname+". Some websites block embedding; use Open in tab if needed.");
+      }catch(error){
+        status(statusEl,error?.message||"Could not open that address.",true);
+      }
     };
-    content.querySelector("#sj-form").onsubmit = e => { e.preventDefault(); go(input.value); };
-    content.querySelector("#sj-home").onclick = () => go("https://example.com/");
-    content.querySelector("#sj-reload").onclick = () => { if(frame)frame.reload(); else if(directUrl)frameEl.src=directUrl; else status(statusEl,"Enter a website to browse."); };
-    content.querySelector("#sj-open-tab").onclick = () => {if(content.dataset.loliteBrowserSignedIn!=="1"){status(statusEl,"Sign in first.",true);return;}const url=directUrl||(()=>{try{return normalize(input.value)}catch{return ""}})();if(url)window.open(url,"_blank","noopener,noreferrer");else status(statusEl,"Enter a website first.");};
-    // Scramjet's proxy transport is not available on the public Lolite hosts.
-    // Use an ordinary iframe instead of attempting a failing service worker.
-    status(statusEl, "Standard browser mode is ready. Enter a web address or search. Some websites block embedding; Open in tab works in those cases.");
-    const initial = new URLSearchParams(location.search).get("sj");
-    if (initial) go(initial);
+    content.querySelector("#sj-form").onsubmit=event=>{event.preventDefault();go(input.value)};
+    content.querySelector("#sj-home").onclick=()=>{
+      directUrl="";
+      input.value="";
+      showFrameNotice("Welcome to Lolite Browser","Enter a web address or search above. Search engines require a separate tab because they block embedding.");
+      status(statusEl,"Browser home. Sites that allow embedding can open here.");
+    };
+    content.querySelector("#sj-reload").onclick=()=>{
+      if(directUrl)go(directUrl,false);
+      else status(statusEl,"Enter a website to browse.");
+    };
+    content.querySelector("#sj-open-tab").onclick=()=>{
+      if(content.dataset.loliteBrowserSignedIn!=="1"){
+        status(statusEl,"Sign in first.",true);return;
+      }
+      try{
+        const url=normalize(input.value||directUrl);
+        if(!url){status(statusEl,"Enter a website first.");return}
+        directUrl=url;
+        window.open(url,"_blank","noopener,noreferrer");
+        status(statusEl,"Opening "+new URL(url).hostname+" in a normal browser tab.");
+      }catch(error){status(statusEl,error?.message||"Invalid address.",true)}
+    };
+    // Standard iframe browsing is not a proxy and respects each site's frame policy.
+    showFrameNotice("Welcome to Lolite Browser","Enter a web address or search above. Websites that permit embedding can open here.");
+    status(statusEl,"Standard browser mode is ready. Search engines require a separate tab.");
+    const initial=new URLSearchParams(location.search).get("sj");
+    if(initial)go(initial,false);
+
   }
   window.page = id => id === "scramjet" ? page() : previousPage(id);
   const previousOpen = window.openApp;
