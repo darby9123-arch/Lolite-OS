@@ -13,6 +13,12 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.11.2 — Browser account and fallback fixes — 2026-10-15
+- Fixed both browser apps attempting unavailable proxy transports, which could leave blank or failed pages.
+- Both browser apps now present standard embedded browsing after signing in with an existing Lolite Chat account, with Open in tab for websites that block embedding.
+- Improved account-session error handling. Logging in through Lolite Chat can unlock open browser windows; logging out locks them again.
+- **Proxy status:** Scramjet and Ultraviolet transport remains disabled, so this is standard web browsing, not a working proxy.
+
 ### 3.11.1 — Shared browser account sign-in — 2026-10-15
 - Scramjet and Ultraviolet browser windows now ask for a Lolite Chat username and password before browsing.
 - Reused the existing Supabase Auth accounts and registration flow instead of storing passwords in a new database.
