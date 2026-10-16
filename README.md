@@ -13,6 +13,13 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.12.0 — A unified Lolite interface — 2026-10-16
+- Redesigned desktop, full-width taskbar, Start menu and Home dashboard.
+- Shared slate surfaces, accent colours, typography and controls across Settings, Files, Game Store, App Store, Chat, AI, browsers and creative tools.
+- Refreshed device chooser, mobile surfaces and welcome screen.
+- Added visible keyboard focus, labelled window controls, responsive layouts and reduced-motion support.
+- Existing app functionality, files, preferences and optional Liquid Glass are preserved.
+
 ### 3.11.3 — Firefox search and iframe handling — 2026-10-16
 - DuckDuckGo, Google, and Bing prevent their pages from being embedded inside Lolite's standard browser windows.
 - When users search or open these sites, Lolite opens a normal browser tab instead of displaying Firefox's "Can't Open This Page" iframe error.
@@ -91,3 +98,4 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 ### 3.7.2 — Premium 3D Brand & App Icons — 2026-10-09
 - Rebuilt the Lolite logo finish with layered bevels, a glossy highlight, deeper extrusions and cleaner reflections.
 - Refined app icon consistency and the desktop visual style.
+
