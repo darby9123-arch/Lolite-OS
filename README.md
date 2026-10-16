@@ -13,6 +13,14 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.13.0 — Windows-inspired File Explorer — 2026-10-16
+- Rebuilt Files with a Windows-style command bar, address breadcrumbs, editable paths, sidebar and status bar.
+- Added Details / Large icons views, sorting, folder search, multi-selection, context menus and keyboard shortcuts.
+- Added transactional copy, cut, paste, rename and delete, with collision-safe imports and folder-boundary checks.
+- Added safe image/text previews, downloads and ZIP extraction into the current folder.
+- Fixed the storage API exposure that prevented the previous Explorer module from initializing.
+- Files remain stored locally in browser IndexedDB; this does not provide unrestricted access to the computer filesystem.
+
 ### 3.12.0 — A unified Lolite interface — 2026-10-16
 - Redesigned desktop, full-width taskbar, Start menu and Home dashboard.
 - Shared slate surfaces, accent colours, typography and controls across Settings, Files, Game Store, App Store, Chat, AI, browsers and creative tools.

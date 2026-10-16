@@ -19,5 +19,9 @@ const FileOS=(()=>{
   function crc32(bytes){let c=0xffffffff;for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return (c^0xffffffff)>>>0}
   function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
   async function registerGames(entries){const html=entries.find(e=>/^(.*\/)?index\.html$/i.test(e.name));if(!html)return;const root=html.name.replace(/index\.html$/i,'');const title=root.split('/').filter(Boolean).pop()||'Installed Game';const installs=JSON.parse(localStorage.loliteGames||'[]');if(!installs.some(x=>x.path===root)){installs.push({title,path:root,installed:Date.now()});localStorage.loliteGames=JSON.stringify(installs);toast(title+' added to Game Library')}}
-  return {filesPage,chooseUpload,chooseZip,handleUpload,handleZip,newFolder,deleteFile,makeZip,render,all,put,registerGames};
+  async function batch(writes=[],deletes=[]){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readwrite"),store=tx.objectStore(STORE);deletes.forEach(path=>store.delete(path));writes.forEach(row=>store.put({...row,updated:Date.now()}));tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error("File operation cancelled"))})}
+  return {batch,remove,readZip,downloadBlob,filesPage,chooseUpload,chooseZip,handleUpload,handleZip,newFolder,deleteFile,makeZip,render,all,put,registerGames};
 })();
+
+
+window.FileOS=FileOS;
