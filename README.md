@@ -13,6 +13,14 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.14.0 — File viewers and Explorer workspace — 2026-10-16
+- Added media playback, subtitles, image transforms/export, PDF pages/search, code editing, CSV tables, spreadsheet values, document text previews, fonts and 3D models.
+- Added a tempo-aware MIDI parser and basic synthesizer.
+- Added worker-based ZIP/TAR/GZ/TGZ inspection/extraction with integrity and path checks.
+- Added tabs, Recent, Favorites, recoverable Trash, filters, thumbnails, internal drag/drop and an optional preview/properties pane.
+- Optional decoders load on demand; media codec support varies by browser. See [File viewer compatibility](docs/FILE-VIEWERS.md) for exact support and limitations.
+- Preserves original files; edits require Save or export. Archive extraction uses a separate destination folder.
+
 ### 3.13.0 — Windows-inspired File Explorer — 2026-10-16
 - Rebuilt Files with a Windows-style command bar, address breadcrumbs, editable paths, sidebar and status bar.
 - Added Details / Large icons views, sorting, folder search, multi-selection, context menus and keyboard shortcuts.
