@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lolite Launcher</title><link rel="stylesheet" href="launcher.css"><script defer src="launcher.js"></script></head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><img src="logo.svg" alt="Lolite logo"><div>Lolite<span>DESKTOP LAUNCHER</span></div></div>
+    <div class="nav-label">YOUR WORKSPACE</div>
+    <nav aria-label="Launcher sections"><button class="nav active" data-tab="home"><span>◈</span> Overview</button><button class="nav" data-tab="updates"><span>↓</span> Updates <i id="updateDot" hidden></i></button><button class="nav" data-tab="settings"><span>⚙</span> Settings</button></nav>
+    <div class="side-bottom"><div class="connection"><i></i><span id="connection">Ready when you are</span></div><small>Lolite OS for Windows<br><span id="sideVersion">Loading version…</span></small></div>
+  </aside>
+  <main>
+    <header class="topbar"><div><span class="eyebrow">WELCOME BACK</span><h1 id="pageTitle">Your space. Ready to go.</h1></div><span class="channel" id="channel">STABLE CHANNEL</span></header>
+    <section class="page" id="home">
+      <div class="hero"><div class="hero-glow"></div><img class="hero-logo" src="logo.svg" alt=""><div class="hero-copy"><span class="eyebrow">THE LOLITE EXPERIENCE, ON WINDOWS</span><h2>A desktop<br>of your own.</h2><p>Your apps. Your games. Your files.<br>Pick up right where you left off.</p><button class="primary launch" id="launch">Launch Lolite OS <span>↗</span></button><small id="launchNote">Your desktop is installed on this computer.</small></div><div class="hero-footer"><span><i></i> INSTALLED LOCALLY</span><span>WINDOWS 10 / 11 · 64-BIT</span></div></div>
+      <div class="stats"><div><span>INSTALLED VERSION</span><strong id="installed">—</strong></div><div><span>LATEST AVAILABLE</span><strong id="latest">Not checked</strong></div><div><span>UPDATE STATUS</span><strong id="briefStatus">Ready</strong></div></div>
+      <div class="section-heading"><h2>Keep everything up to date</h2><button class="text-button" data-go="updates">View updates ↗</button></div>
+      <div class="status-card"><div class="status-icon">↓</div><div><h3 id="statusTitle">Lolite is ready</h3><p id="statusText">Checking the installed version…</p></div><button id="check">Check for updates</button></div>
+      <div class="section-heading"><h2>What’s new</h2><span class="muted">From the official Lolite releases</span></div>
+      <div class="news" id="news"><article><span class="news-tag">DESKTOP EDITION</span><h3>A new home for Lolite OS</h3><p>Your familiar desktop, now with native Windows file dialogs, offline apps and a dedicated update launcher.</p></article><article><span class="news-tag">BUILT AROUND YOUR FILES</span><h3>Keep your world intact</h3><p>Your projects, settings and wallpapers live separately from the app. Updates and repairs preserve your personal data.</p></article></div>
+    </section>
+    <section class="page" id="updates" hidden>
+      <div class="panel update-panel"><span class="eyebrow">INSTALLATION & UPDATES</span><h2 id="updateHeading">You’re in control.</h2><p id="updateMessage">Check for an update whenever you’re ready.</p><progress id="progress" max="100" value="0" aria-label="Update progress"></progress><div class="download-details"><span id="downloadSize">—</span><span id="speed">—</span><span id="eta">—</span></div><div class="actions"><button class="primary" id="download">Download update</button><button id="pause" hidden>Pause download</button><button class="primary" id="install" hidden>Install update</button><button id="checkAgain">Check for updates</button><button id="postpone">Later</button></div><p class="fineprint">Lolite OS closes before installation. Your files and settings are preserved. Windows Setup shows installation progress.</p></div>
+      <div class="panel"><h2>Release notes</h2><pre id="releaseNotes">Release notes will appear after checking for updates.</pre></div>
+      <div class="panel"><h2>Update history</h2><div id="history" class="history"><p class="muted">No updates installed yet.</p></div></div>
+    </section>
+    <section class="page" id="settings" hidden>
+      <div class="panel"><span class="eyebrow">MAKE IT YOURS</span><h2>Launcher preferences</h2><div id="preferences"></div></div>
+      <div class="panel"><h2>Installation</h2><div class="maintenance"><div><strong>Repair installation</strong><p>Verify program files and reinstall missing or damaged components.</p></div><button id="repair">Repair installation</button></div><div class="maintenance"><div><strong>Temporary downloads</strong><p>Clear partial downloads. Keep the last verified installer for recovery.</p></div><button id="clear">Clear temporary files</button></div><div class="actions"><button id="installationFolder">Open installation folder</button><button id="dataFolder">Open application data</button></div></div>
+      <div class="about"><img src="logo.svg" alt=""><div><strong>Lolite OS <span id="aboutVersion"></span></strong><p>A little space for everything you love.<br><span id="signatureInfo">Installer downloads are verified against the official release checksum.</span></p></div></div>
+    </section>
+    <div class="toast" id="error" role="alert" hidden></div>
+  </main>
+</body></html>

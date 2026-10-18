@@ -1,5 +1,7 @@
 ## Launch Lolite OS
 
+- **[Download Lolite OS for Windows](https://github.com/darby9123-arch/Lolite-OS/releases)** — install `LoliteOS-Setup.exe` from a desktop release; includes the app and dedicated launcher
+- **[Windows build, update and distribution guide](docs/DESKTOP.md)**
 - **[Launch Lolite OS on GitHub Pages](https://darby9123-arch.github.io/Lolite-OS/)** — play and use Lolite OS in your browser
 - **[Open Lolite OS on Vercel](https://lolite-os.vercel.app/)** — alternate hosted version
 
@@ -12,6 +14,13 @@ The Vercel version includes Ultraviolet runtime files and the Bare HTTP endpoint
 A Lolite-branded browser desktop with a dark purple/blue interface, apps, games, files, wallpapers, AI and a responsive desktop layout.
 
 ## Update Log
+
+### 3.15.0 — Windows desktop and Lolite Launcher — 2026-10-18
+- Added a bundled Electron desktop application and a separate Lolite Launcher entry executable.
+- Added native file dialogs, selected-folder import, local fonts and offline file-viewer libraries.
+- Added verified GitHub release downloads, pause/resume, stable/beta settings, repair checks and recovery installers.
+- Added an NSIS installer with shortcuts and data-preserving upgrades/uninstall, plus Windows build and release automation.
+- Desktop signing credentials are optional and never stored in the repository. See the desktop guide for verification status and configuration.
 
 ### 3.14.0 — File viewers and Explorer workspace — 2026-10-16
 - Added media playback, subtitles, image transforms/export, PDF pages/search, code editing, CSV tables, spreadsheet values, document text previews, fonts and 3D models.
