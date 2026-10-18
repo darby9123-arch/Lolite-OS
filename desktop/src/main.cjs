@@ -9,10 +9,13 @@ const {Store}=require('./storage.cjs');
 const {Updater,verifyInstaller}=require('./updater.cjs');
 const {trustedFrame,safeRelative}=require('./security.cjs');
 const {fileAccess}=require('./files.cjs');
+const {createClient}=require('./network.cjs');
+const {readReadme}=require('./readme.cjs');
 const version=require('../package.json').version;
 const base=path.join(__dirname,'..');
-const smoke=process.argv.includes('--smoke-test')||process.argv.includes('--smoke-launcher');
-const requestedRole=process.argv.includes('--launcher')||/Lolite Launcher\.exe$/i.test(process.execPath)||process.argv.includes('--smoke-launcher')?'launcher':'os';
+const feedSmoke=process.argv.includes('--smoke-feed');
+const smoke=process.argv.includes('--smoke-test')||process.argv.includes('--smoke-launcher')||feedSmoke;
+const requestedRole=process.argv.includes('--launcher')||/Lolite Launcher\.exe$/i.test(process.execPath)||process.argv.includes('--smoke-launcher')||feedSmoke?'launcher':'os';
 // Both entry executables share one main process and one data profile.
 app.setName('Lolite OS');
 const dataRoot=smoke&&process.env.LOLITE_SMOKE_DATA?path.resolve(process.env.LOLITE_SMOKE_DATA):path.join(app.getPath('appData'),'Lolite OS');
@@ -20,7 +23,8 @@ fs.mkdirSync(path.join(dataRoot,'profile'),{recursive:true});
 app.setPath('userData',dataRoot);
 app.setPath('sessionData',path.join(dataRoot,'profile'));
 const store=new Store(dataRoot);
-let launcher=null,os=null,updater=null,updating=false,healthTimer=null,healthy=false;
+let launcher=null,os=null,updater=null,updating=false,healthTimer=null,healthy=false,updateClient=null;
+let navigation={tab:'home',serial:0},lastAutoCheck=0;
 protocol.registerSchemesAsPrivileged([{scheme:'lolite',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true,stream:true,allowServiceWorkers:false}}]);
 if(!app.requestSingleInstanceLock({role:requestedRole})){app.quit();}
 else {
@@ -94,10 +98,15 @@ async function openExternal(value,owner){
     if(response===1)await shell.openExternal(url.href);
   }catch(error){store.log(error.message);}
 }
-function showLauncher(){
-  if(launcher){launcher.show();launcher.restore();launcher.focus();return launcher;}
+function checkOnOpen(){
+  if(!smoke&&updater&&store.data.settings.checkOnStartup&&!updater.busy&&Date.now()-lastAutoCheck>60000){lastAutoCheck=Date.now();updater.check().catch(()=>{});}
+}
+function showLauncher(page='home',check=true){
+  navigation={tab:page,serial:navigation.serial+1};
+  if(launcher){launcher.show();launcher.restore();launcher.focus();emit();if(check)checkOnOpen();return launcher;}
   launcher=new BrowserWindow(windowOptions('launcher'));secureWindow(launcher,'launcher');
   launcher.on('closed',()=>{launcher=null;});launcher.loadURL('lolite://launcher/index.html');
+  launcher.webContents.once('did-finish-load',()=>{emit();if(check)checkOnOpen();});
   return launcher;
 }
 function showOS(){
@@ -110,38 +119,55 @@ function showOS(){
   emit();return os;
 }
 let nativeFiles;
-function emit(){if(launcher&&!launcher.isDestroyed())launcher.webContents.send('launcher:state',{...updater.snapshot(),running:!!os,packaged:app.isPackaged});}
+function launcherState(){return {...updater.snapshot(),navigation,running:!!os,packaged:app.isPackaged};}
+function emit(){
+  if(launcher&&!launcher.isDestroyed())launcher.webContents.send('launcher:state',launcherState());
+  if(os&&!os.isDestroyed())os.webContents.send('desktop:update-state',{phase:updater.state.phase,latest:updater.state.latest,message:updater.state.message});
+}
 function handle(channel,host,fn){ipcMain.handle(channel,async(event,...args)=>{if(!trustedFrame(event,host))throw Error('This page is not authorized to use desktop commands.');return fn(...args);});}
 async function start(){
   app.setAppUserModelId('com.lolite.os');Menu.setApplicationMenu(null);
   await installProtocol();secureSession();
-  if(smoke)session.defaultSession.enableNetworkEmulation({offline:true});
-  updater=new Updater({store,version});updater.on('state',emit);
+  if(smoke&&!feedSmoke)session.defaultSession.enableNetworkEmulation({offline:true});
+  const updateSession=session.fromPartition('lolite-release-client',{cache:false});
+  updateClient=createClient(updateSession.fetch.bind(updateSession));
+  updater=new Updater({store,version,...updateClient});updater.on('state',emit);
   nativeFiles=fileAccess({dialog,getWindow:()=>os});
   for(const op of ['open','save','folder','list','read'])handle('files:'+op,'app',arg=>nativeFiles[op](arg));
   handle('desktop:version','app',()=>version);
-  handle('desktop:launcher','app',()=>{showLauncher();return true;});
+  handle('desktop:launcher','app',async(page='home')=>{
+    if(!['home','updates','readme'].includes(page))throw Error('Unknown launcher page.');
+    showLauncher(page,page!=='updates');
+    if(page==='updates'&&!updater.busy){lastAutoCheck=Date.now();await updater.check();}
+    return true;
+  });
   handle('desktop:fullscreen','app',()=>{os.setFullScreen(!os.isFullScreen());return os.isFullScreen();});
-  handle('desktop:ready','app',()=>{healthy=true;clearTimeout(healthTimer);if(store.data.pending?.to===version){store.history('Update healthy',version);delete store.data.pending;store.save();}if(smoke)smokeDesktop().catch(fatal);return true;});
-  handle('launcher:state','launcher',()=>({...updater.snapshot(),running:!!os,packaged:app.isPackaged}));
+  handle('desktop:ready','app',()=>{healthy=true;clearTimeout(healthTimer);if(store.data.pending?.to===version){store.history('Update healthy',version);delete store.data.pending;store.save();}if(smoke)smokeDesktop().catch(fatal);emit();return true;});
+  handle('launcher:state','launcher',launcherState);
   handle('launcher:launch','launcher',()=>{showOS();return true;});
-  for(const action of ['check','download','pause','clear'])handle('launcher:'+action,'launcher',()=>updater[action==='clear'?'clearCache':action]());
-  handle('launcher:settings','launcher',patch=>{if(updater.busy)throw Error('Wait for the update operation before changing settings.');const changed=patch?.beta!==undefined&&patch.beta!==store.data.settings.beta;const settings=store.settings(patch);if(changed){updater.release=null;updater.ready=null;updater.set({phase:'idle',latest:null,message:'Channel changed. Check for updates.'});}emit();return settings;});
+  for(const action of ['check','download','pause','clear','reinstall'])handle('launcher:'+action,'launcher',()=>updater[({clear:'clearCache',reinstall:'reinstallLatest'})[action]||action]());
+  let readmeRequest=null;
+  handle('launcher:readme','launcher',refresh=>{
+    if(typeof refresh!=='boolean')throw Error('Invalid README request.');
+    if(!readmeRequest)readmeRequest=readReadme({directory:dataRoot,bundled:path.join(base,'launcher/README.md'),json:updateClient.json,refresh:refresh&&!smoke}).finally(()=>{readmeRequest=null;});
+    return readmeRequest;
+  });
+  handle('launcher:settings','launcher',patch=>{if(updater.busy)throw Error('Wait for the update operation before changing settings.');const changed=patch?.beta!==undefined&&patch.beta!==store.data.settings.beta;const settings=store.settings(patch);if(changed){updater.release=null;updater.ready=null;updater.set({phase:'idle',latest:null,notes:'',total:0,transferred:0,progress:0,checkStatus:'unchecked',message:'Channel changed. Checking its releases…'});updater.check().catch(()=>{});}emit();return settings;});
   handle('launcher:folder','launcher',async which=>{if(!['installation','data'].includes(which))throw Error('Unknown folder.');const target=which==='data'?dataRoot:app.isPackaged?path.dirname(process.execPath):base;const error=await shell.openPath(target);if(error)throw Error(error);});
   handle('launcher:repair','launcher',async()=>{if(!app.isPackaged)throw Error('Repair is available in the installed Windows application.');if(os)throw Error('Close Lolite OS before checking and repairing program files.');return updater.repair(path.dirname(process.execPath));});
   handle('launcher:install','launcher',async()=>{
     if(updating)throw Error('Installation is already being prepared.');
     if(!app.isPackaged||process.platform!=='win32')throw Error('Install updates from the installed Windows application.');
     if(os){const {response}=await dialog.showMessageBox(launcher,{type:'question',buttons:['Cancel','Close Lolite OS and install'],defaultId:0,cancelId:0,message:'Save your work before installing.',detail:'Lolite OS must close before application files can be replaced.'});if(response!==1)return;await new Promise(resolve=>{const current=os;current.once('closed',resolve);current.close();setTimeout(resolve,1500);});if(os)throw Error('Lolite OS is still open. Save your work and close it first.');}
-    updating=true;try{const installer=await updater.prepareInstall();await runInstaller(installer);}catch(e){updating=false;throw e;}
+    updating=true;try{const installer=await updater.prepareInstall();await runInstaller(installer);}catch(e){updating=false;updater.busy=false;updater.error(e);throw e;}
   });
   const pending=store.data.pending;
   if(pending&&pending.to!==version){updater.set({phase:'error',message:'The previous installation did not finish. Your existing version and user data are available. Retry the update.'});delete store.data.pending;store.save();}
   if(requestedRole==='launcher')showLauncher();else showOS();
   if(pending?.to===version&&pending.launch)showOS();
-  if(smoke&&requestedRole==='launcher')launcher.webContents.once('did-finish-load',()=>smokeLauncher().catch(fatal));
-  if(smoke)setTimeout(()=>{smokeResult({ok:false,error:'Startup health check timed out'});app.exit(1);},40000).unref();
-  if(!smoke&&store.data.settings.checkOnStartup&&requestedRole==='launcher')updater.check().catch(()=>{});
+  if(smoke&&requestedRole==='launcher')launcher.webContents.once('did-finish-load',()=>{(feedSmoke?smokePublishedFeed():smokeLauncher()).catch(fatal);});
+  if(smoke)setTimeout(()=>{smokeResult({ok:false,error:'Startup health check timed out'});app.exit(1);},feedSmoke?90000:40000).unref();
+  checkOnOpen();
 }
 async function runInstaller(file){
   // The only input is a hash-verified installer from the fixed official repository.
@@ -157,10 +183,10 @@ async function recover(reason){
   if(pending?.to===version&&pending.recovery&&process.platform==='win32'){
     try{await verifyInstaller(pending.recovery.file,pending.recovery.release);updating=true;os?.destroy();store.history('Automatic rollback',pending.recovery.release.version,reason);store.data.lastInstaller=pending.recovery;delete store.data.pending;store.save();await runInstaller(pending.recovery.file);return;}catch(e){updating=false;store.log('Rollback unavailable: '+e.message);}
   }
-  showLauncher();updater.set({phase:'error',message:reason+' Use Repair Installation. Your personal files are preserved.'});
+  showLauncher('updates',false);updater.set({phase:'error',message:reason+' Use Repair Installation. Your personal files are preserved.'});
 }
 app.on('window-all-closed',()=>app.quit());
-app.on('before-quit',()=>{clearTimeout(healthTimer);store.save();});
+app.on('before-quit',()=>{clearTimeout(healthTimer);updater?.pause();store.save();});
 function smokeResult(result){if(process.env.LOLITE_SMOKE_RESULT)fs.writeFileSync(process.env.LOLITE_SMOKE_RESULT,JSON.stringify({...result,version},null,2));}
 async function smokeDesktop(){
   const result=await os.webContents.executeJavaScript(`(async()=>{const rows=await FileOS.all();await FileOS.put('Documents/desktop-smoke.txt',new Blob(['persistent desktop data']));const catalog=await fetch('game-catalog.json').then(r=>r.json());const pdf=await import('lolite://app/vendor/pdf.mjs');const nativeVersion=await loliteDesktop.version();const offline=await fetch('https://api.github.com/repos/darby9123-arch/Lolite-OS/releases',{cache:'no-store'}).then(()=>false,()=>true);openApp('files','File Explorer');return {bridge:!!window.loliteDesktop,node:typeof require,icons:document.querySelectorAll('#icons .desktop-icon').length,files:!!window.FileOS,previous:rows.some(r=>r.path==='Documents/desktop-smoke.txt'),offline,catalog:catalog.length,pdf:typeof pdf.getDocument,nativeVersion}})()`);
@@ -172,8 +198,13 @@ async function smokeDesktop(){
 }
 async function smokeLauncher(){
   await launcher.webContents.executeJavaScript('document.fonts.ready.then(()=>true)');
-  const result=await launcher.webContents.executeJavaScript(`(async()=>{const s=await loliteLauncher.state();await loliteLauncher.settings({autoDownload:true});const updated=await loliteLauncher.state();await loliteLauncher.settings({autoDownload:s.settings.autoDownload});return {bridge:!!window.loliteLauncher,node:typeof require,buttons:document.querySelectorAll('button').length,installed:s.installed,settings:updated.settings.autoDownload}})()`);
-  if(!result.bridge||result.node!=='undefined'||result.buttons<8||result.installed!==version||!result.settings)throw Error('Launcher smoke test failed.');
+  const result=await launcher.webContents.executeJavaScript(`(async()=>{const s=await loliteLauncher.state();await loliteLauncher.settings({autoDownload:true});const updated=await loliteLauncher.state();await loliteLauncher.settings({autoDownload:s.settings.autoDownload});await loadReadme(false);const readme=document.getElementById('readmeContent').textContent.includes('Lolite OS');const probe=document.createElement('div');renderLoliteReadme('<script>alert(1)</script><img src=x onerror=alert(1)><a href="javascript:alert(1)" onclick="alert(1)">Bad</a><iframe src="https://example.com"></iframe>',probe);const safe=!probe.querySelector('script,img,iframe,[onclick],[onerror],[href^="javascript:"]');tab('updates');render({...s,phase:'current',latest:s.installed,checkStatus:'success',busy:false});return {bridge:!!window.loliteLauncher,node:typeof require,buttons:document.querySelectorAll('button').length,installed:s.installed,settings:updated.settings.autoDownload,readme,safe,reinstall:typeof loliteLauncher.reinstall==='function'&&!document.getElementById('reinstall').disabled}})()`);
+  if(!result.bridge||result.node!=='undefined'||result.buttons<8||result.installed!==version||!result.settings||!result.readme||!result.safe||!result.reinstall)throw Error('Launcher smoke test failed: '+JSON.stringify(result));
   if(process.env.LOLITE_SMOKE_SCREENSHOT)await fsp.writeFile(process.env.LOLITE_SMOKE_SCREENSHOT,(await launcher.webContents.capturePage()).toPNG());
   smokeResult({ok:true,...result});app.quit();
+}
+async function smokePublishedFeed(){
+  await updater.check();
+  if(updater.state.checkStatus!=='success'||!['current','available'].includes(updater.state.phase))throw Error('Installed launcher could not verify its live release feed.');
+  smokeResult({ok:true,latest:updater.state.latest,phase:updater.state.phase,checkedAt:updater.state.checkedAt,transport:'Chromium system network'});app.quit();
 }

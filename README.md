@@ -15,6 +15,14 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.15.1 — Reliable desktop updates and fresh reinstall — 2026-10-19
+- Added **Reinstall latest files**: recheck GitHub, download a fresh verified installer even at the current version, then replace program files while keeping personal data.
+- Desktop and launcher startup now check the official release feed; the desktop has direct **Updates** and **README** buttons.
+- Added the GitHub README inside the launcher, with refresh, a saved offline copy and safe Markdown rendering.
+- Added last-successful-check timestamps, clearer errors, Windows system-proxy networking and stale-download protection.
+- Changed Windows release automation to assign a new patch version when application files change, so new source changes reach desktop users.
+- Removed Vice City from the game catalogue and featured carousel.
+
 ### 3.15.0 — Windows desktop and Lolite Launcher — 2026-10-18
 - Added a bundled Electron desktop application and a separate Lolite Launcher entry executable.
 - Added native file dialogs, selected-folder import, local fonts and offline file-viewer libraries.

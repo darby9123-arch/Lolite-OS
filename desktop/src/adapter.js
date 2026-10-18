@@ -10,9 +10,10 @@
       fs.chooseUpload=()=>run(async()=>{const items=await native.openFiles();await fs.handleUpload(items.map(f=>new File([f.bytes],f.name,{lastModified:f.modified})));});
     }
     const bar=document.createElement('div');bar.className='native-tools';bar.setAttribute('aria-label','Windows desktop controls');
-    for(const [label,fn] of [['Lolite Launcher',()=>native.launcher()],['Open from PC',async()=>{window.openApp?.('files','File Explorer');await fs.chooseUpload();}],['Browse PC folder',browseFolder]]){
-      const b=document.createElement('button');b.textContent=label;b.onclick=()=>run(fn);bar.append(b);
+    for(const [label,fn] of [['Lolite Launcher',()=>native.launcher()],['Updates',()=>native.launcher('updates')],['README',()=>native.launcher('readme')],['Open from PC',async()=>{window.openApp?.('files','File Explorer');await fs.chooseUpload();}],['Browse PC folder',browseFolder]]){
+      const b=document.createElement('button');b.textContent=label;if(label==='Updates')b.id='native-updates';b.onclick=()=>run(fn);bar.append(b);
     }
+    let notified='';native.onUpdate(s=>{const b=document.getElementById('native-updates');if(b){b.textContent=['available','ready'].includes(s.phase)?'Update available':'Updates';b.title=s.message;}if(s.phase==='available'&&s.latest!==notified){notified=s.latest;notice('Lolite OS '+s.latest+' is available. Open Updates to download it.');}});
     document.querySelector('.tray')?.prepend(bar);
     const offline=document.createElement('div');offline.id='desktop-offline';offline.textContent='Offline · Local apps and saved files are available. Online games, chat and downloads need a connection.';document.body.append(offline);
     const online=()=>{offline.hidden=navigator.onLine;};online();window.addEventListener('online',online);window.addEventListener('offline',online);

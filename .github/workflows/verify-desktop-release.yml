@@ -1,8 +1,5 @@
 name: Verify published desktop updater
 on:
-  push:
-    branches: [main]
-    paths: ['.github/scripts/verify-desktop-release.cjs', '.github/workflows/verify-desktop-release.yml']
   workflow_dispatch:
   workflow_run:
     workflows: ['Build and release Lolite Desktop']
@@ -17,6 +14,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
@@ -26,6 +25,8 @@ jobs:
         run: npm ci --omit=dev --ignore-scripts --prefix desktop
       - name: Exercise the actual published update feed and installer
         run: node .github/scripts/verify-desktop-release.cjs
+        env:
+          LOLITE_EXPECTED_COMMIT: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/upload-artifact@v5
         with:
           name: live-release-verification

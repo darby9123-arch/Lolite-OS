@@ -5,3 +5,5 @@ dist/
 *.log
 launcher/fonts/
 launcher/logo.svg
+launcher/marked.js
+launcher/README.md

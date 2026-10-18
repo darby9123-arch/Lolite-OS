@@ -1,14 +1,13 @@
-Lolite OS now has a Windows desktop edition with its own dedicated Lolite Launcher.
+## Desktop updates that refresh your files
 
-- Bundled desktop, utilities, local games, fonts and file viewers.
-- Native Windows Open/Save dialogs and authorized folder imports.
-- Stable and beta release channels, download progress, pause/resume, SHA-512 verification and update history.
-- Program-file integrity checks and verified repair installers.
-- Fullscreen/windowed mode and remembered window placement.
-- Separate user data, safe upgrade handling and recovery to a previous verified installer when available.
+- **Reinstall latest files** checks GitHub again and downloads a fresh, fully verified installer, even if the installed version already matches. Choose **Reinstall files** when the download is ready.
+- Checks run when you start either Lolite OS or Lolite Launcher. The desktop taskbar includes **Updates** and **README** shortcuts.
+- The launcher shows its official release source and the time of its last successful check. Failed checks report an error and cannot reuse stale update targets.
+- Updates use Windows system network/proxy settings, bypass stale HTTP caches, and keep HTTPS source restrictions and SHA-512 verification.
+- Read the repository README inside the launcher. Refresh it from GitHub or use the saved/bundled copy offline.
+- New main-branch app changes receive a new desktop release version after Windows verification. Existing released installers are never overwritten.
+- Vice City has been removed from the catalogue, artwork and featured games.
 
-Download **LoliteOS-Setup.exe**. The installer includes **Lolite OS.exe** and **Lolite Launcher.exe**; both require the installed runtime files.
+Your projects, files, wallpapers and settings remain in the separate Lolite data folder. Save your work before clicking Install or Reinstall. You can postpone installation.
 
-Online games, chat, online content and the first AI model download still require an internet connection. Browser-based Lolite data is separate: export your files from the website and import them into the desktop app.
-
-This build may be unsigned until the project owner configures a Windows code-signing certificate. The launcher verifies installer size and SHA-512 against the official GitHub release metadata. Code-signing setup and complete build instructions are in `docs/DESKTOP.md`.
+Download **LoliteOS-Setup.exe** to upgrade an older installation manually if its launcher cannot connect. It includes both **Lolite OS.exe** and **Lolite Launcher.exe**. The build is unsigned unless a valid signing certificate has been configured.

@@ -25,6 +25,8 @@ foreach ($name in @('Lolite OS.exe', 'Lolite Launcher.exe', 'resources/app.asar'
 }
 $null = Test-Lolite 'Lolite OS.exe' '--smoke-test' 'desktop'
 $null = Test-Lolite 'Lolite Launcher.exe' '--smoke-launcher' 'launcher'
+# Reinstall must restore an actually missing application archive, preserving the profile.
+Remove-Item (Join-Path $installRoot 'resources/app.asar')
 Install-Lolite
 $report = Test-Lolite 'Lolite OS.exe' '--smoke-test' 'upgrade'
 if (-not $report.previous) { throw 'IndexedDB data was lost during upgrade.' }

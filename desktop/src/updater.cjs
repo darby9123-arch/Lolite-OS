@@ -42,17 +42,17 @@ class Updater extends EventEmitter {
   constructor({store,version,request=network.request,json=network.json}) {
     super();this.store=store;this.version=version;this.request=request;this.json=json;
     this.cache=path.join(store.directory,'updates');fs.mkdirSync(this.cache,{recursive:true});
-    this.state={phase:'idle',message:'Ready to launch.',installed:version,latest:null,progress:0,transferred:0,total:0,speed:0,eta:null};
+    this.state={phase:'idle',message:'Updates have not been checked this session.',installed:version,latest:null,progress:0,transferred:0,total:0,speed:0,eta:null,checkedAt:store.data.lastCheck?.at||null,checkStatus:'unchecked',operation:'update'};
     this.release=null;this.ready=null;this.busy=false;this.controller=null;
   }
   set(patch) {Object.assign(this.state,patch);this.emit('state',this.snapshot());}
-  snapshot(){return {...this.state,settings:{...this.store.data.settings},history:[...this.store.data.history]};}
+  snapshot(){return {...this.state,busy:this.busy,canDownload:!!this.release,settings:{...this.store.data.settings},history:[...this.store.data.history]};}
   error(error){this.store.log(error.stack||error);this.set({phase:'error',message:error.message||String(error),speed:0,eta:null});}
   async list() {
     const releases=await this.json(`https://api.github.com/repos/${config.repository}/releases?per_page=50`);
     if(!Array.isArray(releases)) throw Error('Unexpected release response.');
     return releases.filter(r=>!r.draft && /^desktop-v/.test(r.tag_name) && semver.valid(r.tag_name.slice(9)) &&
-      (this.store.data.settings.beta || !r.prerelease) && r.assets?.some(a=>a.name===config.manifest))
+      (this.store.data.settings.beta || (!r.prerelease && !semver.prerelease(r.tag_name.slice(9)))))
       .sort((a,b)=>semver.rcompare(a.tag_name.slice(9),b.tag_name.slice(9)));
   }
   async metadata(release) {
@@ -60,20 +60,26 @@ class Updater extends EventEmitter {
     if(!asset || !officialAsset(asset.browser_download_url,release.tag_name,config.manifest)) throw Error('Invalid release metadata location.');
     return validateManifest(await this.json(asset.browser_download_url,128*1024),release);
   }
-  async check() {
+  async check({reinstall=false}={}) {
     if(this.busy) throw Error('Wait for the current update operation to finish.');
-    this.busy=true;this.ready=null;this.repairing=false;
-    this.set({phase:'checking',message:'Checking official GitHub releases…',progress:0});
+    this.busy=true;this.ready=null;this.release=null;this.repairing=false;
+    this.set({phase:'checking',checkStatus:'checking',message:'Checking official GitHub releases…',progress:0,transferred:0,total:0,speed:0,eta:null,latest:null,notes:'',operation:reinstall?'reinstall':'update'});
     try {
       const releases=await this.list();
       this.set({announcements:releases.slice(0,5).map(r=>({version:r.tag_name.slice(9),date:r.published_at,notes:String(r.body||'').slice(0,4000)}))});
-      if(!releases.length){this.release=null;this.set({phase:'current',latest:null,message:'No desktop release has been published on this channel yet.'});return;}
+      if(!releases.length)throw Error('No desktop release has been published on this channel yet. Try again after a Windows release is published.');
       this.release=await this.metadata(releases[0]);
       const available=semver.gt(this.release.version,this.version);
-      this.set({phase:available?'available':'current',latest:this.release.version,notes:this.release.notes,total:this.release.size,message:available?'A new version is ready to download.':'You have the latest version on this channel.'});
-    } catch(e){this.error(e);throw e;} finally{this.busy=false;}
-    if(this.state.phase==='available' && this.store.data.settings.autoDownload) await this.download();
+      const ahead=semver.lt(this.release.version,this.version),checkedAt=new Date().toISOString();
+      this.store.data.lastCheck={at:checkedAt,latest:this.release.version,channel:this.store.data.settings.beta?'beta':'stable'};this.store.save();
+      this.set({phase:available?'available':ahead?'ahead':'current',checkStatus:'success',checkedAt,latest:this.release.version,notes:this.release.notes,total:this.release.size,message:available?'A new version is ready to download.':ahead?'Your installed version is newer than the latest release on this channel.':'You have the latest published version. You can still reinstall its files below.'});
+      if(ahead){this.release=null;if(reinstall)throw Error('Reinstall would downgrade your installed version. Enable its release channel or wait for a newer release.');}
+    } catch(e){this.release=null;this.set({checkStatus:'error'});this.error(e);throw e;} finally{this.busy=false;this.set({});}
+    if(reinstall)await this.download({fresh:true});
+    else if(this.state.phase==='available' && this.store.data.settings.autoDownload) await this.download();
   }
+  // An explicit reinstall always rechecks the official feed and discards cached target bytes.
+  reinstallLatest(){return this.check({reinstall:true});}
   fileFor(release,partial=false){return path.join(this.cache,`${release.version}-${release.sha512.slice(0,20)}${partial?'.part':'.exe'}`);}
   async transfer(release,signal) {
     const destination=this.fileFor(release),partial=this.fileFor(release,true);
@@ -104,22 +110,23 @@ class Updater extends EventEmitter {
     try{await verifyInstaller(partial,release);}catch(e){await fsp.rm(partial,{force:true});throw e;}
     await fsp.rename(partial,destination);return destination;
   }
-  async download() {
+  async download({fresh=false}={}) {
     if(this.busy)throw Error('Another operation is running.');
     if(!this.release)throw Error('Check for updates first.');
     this.busy=true;this.controller=new AbortController();this.ready=null;
-    this.set({phase:'downloading',message:this.repairing?'Downloading verified repair installer…':'Downloading update…',progress:0});
+    this.set({phase:'downloading',message:this.state.operation==='reinstall'?'Downloading a fresh copy of the latest files…':this.repairing?'Downloading verified repair installer…':'Downloading update…',progress:0,transferred:0,speed:0,eta:null});
     try {
+      if(fresh){await fsp.rm(this.fileFor(this.release),{force:true});await fsp.rm(this.fileFor(this.release,true),{force:true});}
       const file=await this.transfer(this.release,this.controller.signal);
       this.ready={file,release:this.release};
-      this.set({phase:'ready',progress:100,transferred:this.release.size,message:this.repairing?'Repair installer verified. Close Lolite OS to reinstall.':'Update verified. Install whenever you are ready.'});
+      this.set({phase:'ready',progress:100,transferred:this.release.size,message:this.state.operation==='reinstall'?'Fresh installer verified. Choose Reinstall files to replace the application files.':this.repairing?'Repair installer verified. Close Lolite OS to reinstall.':'Update verified. Install whenever you are ready.'});
     } catch(e){if(this.controller.signal.aborted)this.set({phase:'paused',message:'Download paused. Your progress has been saved.',speed:0,eta:null});else{this.error(e);throw e;}}
-    finally{this.busy=false;this.controller=null;}
+    finally{this.busy=false;this.controller=null;this.set({});}
   }
   pause(){if(this.state.phase==='downloading' && this.controller)this.controller.abort();}
   async repair(root) {
     if(this.busy)throw Error('Another operation is running.');
-    this.busy=true;this.ready=null;this.set({phase:'repairing',progress:0,message:'Checking installed program files…'});
+    this.busy=true;this.ready=null;this.repairing=false;this.set({phase:'repairing',operation:'repair',progress:0,message:'Checking installed program files…'});
     try {
       const manifest=JSON.parse(await fsp.readFile(path.join(root,'resources','integrity.json'),'utf8'));
       if(!Array.isArray(manifest.files) || !manifest.files.length) throw Error('Installation integrity manifest is missing. Reinstall using the official setup file.');
@@ -130,21 +137,21 @@ class Updater extends EventEmitter {
         this.set({progress:(i+1)/manifest.files.length*100,message:`Checking file ${i+1} of ${manifest.files.length}…`});
       }
       this.store.history('Integrity check',this.version,damaged.length?`${damaged.length} damaged or missing files`:'All program files verified');
-      if(!damaged.length){this.set({phase:'current',message:'Repair check complete. All program files are intact.',progress:100});return;}
+      if(!damaged.length){this.set({phase:'intact',message:'Repair check complete. All program files are intact. Use Reinstall latest files to refresh them anyway.',progress:100});return;}
       const releases=await this.list();
       const current=releases.find(r=>r.tag_name===`desktop-v${this.version}`);
       if(!current)throw Error(`Found ${damaged.length} damaged files. This version has no published repair installer. Use the official setup file to reinstall.`);
       this.release=await this.metadata(current);this.repairing=true;
       this.set({latest:this.release.version,total:this.release.size,notes:this.release.notes,message:`Found ${damaged.length} damaged files. Preparing repair…`});
-    }catch(e){this.error(e);throw e;}finally{this.busy=false;}
+    }catch(e){this.error(e);throw e;}finally{this.busy=false;this.set({});}
     if(this.repairing) await this.download();
   }
   async prepareInstall() {
     if(this.busy || !this.ready) throw Error('Download and verify an update first.');
     const target=this.ready;
-    await verifyInstaller(target.file,target.release);
     this.busy=true;this.set({phase:'installing',message:'Preparing recovery and installation…',progress:0});
     try {
+      await verifyInstaller(target.file,target.release);
       let recovery=this.store.data.lastInstaller;
       if(target.release.version!==this.version && (!recovery || recovery.release.version!==this.version)) {
         try{
@@ -153,7 +160,7 @@ class Updater extends EventEmitter {
         }catch(e){this.store.log('Recovery copy unavailable: '+e.message);recovery=null;}
       }
       this.store.data.pending={from:this.version,to:target.release.version,recovery:target.release.version===this.version?null:recovery,launch:this.store.data.settings.launchAfterUpdate,time:Date.now()};
-      this.store.data.lastInstaller=target;this.store.history(this.repairing?'Repair requested':'Update requested',target.release.version);
+      this.store.data.lastInstaller=target;this.store.history(this.state.operation==='reinstall'?'Reinstall requested':this.repairing?'Repair requested':'Update requested',target.release.version);
       this.set({phase:'installing',progress:100,message:'Windows Setup will finish installation. User files are preserved.'});
       return target.file;
     } catch(e){this.busy=false;this.error(e);throw e;}

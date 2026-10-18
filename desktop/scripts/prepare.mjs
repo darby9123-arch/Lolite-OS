@@ -19,6 +19,8 @@ const packages=path.join(root,'node_modules');
 const copy=async (from,to)=>{await fs.mkdir(path.dirname(path.join(vendor,to)),{recursive:true});await fs.copyFile(path.join(packages,from),path.join(vendor,to));};
 await copy('@supabase/supabase-js/dist/umd/supabase.js','supabase.js');
 await copy('marked/marked.min.js','marked.js');
+await fs.copyFile(path.join(packages,'marked/marked.min.js'),path.join(root,'launcher/marked.js'));
+await fs.copyFile(path.join(repo,'README.md'),path.join(root,'launcher/README.md'));
 await copy('heic2any/dist/heic2any.min.js','heic2any.js');
 await copy('pako/dist/pako.min.js','pako.js');
 await copy('utif/UTIF.js','utif.js');
@@ -59,7 +61,7 @@ for(const name of ['index.html',...(await fs.readdir(path.join(web,'core'))).fil
   // Fonts are bundled; suppress redundant online font requests.
   source=source.replaceAll(/<link[^>]+(?:fonts\.googleapis\.com|fonts\.gstatic\.com)[^>]*>/g,'');
   if(name==='index.html')source=source.replace('</head>','<link rel="stylesheet" href="vendor/fonts.css"><link rel="stylesheet" href="desktop-adapter.css"><script type="importmap">{"imports":{"three":"lolite://app/vendor/three/three.mjs"}}</script><script defer src="desktop-adapter.js"></script></head>');
-  if(name==='core/version-check.js') source=source.replace(/const CURRENT_VERSION='[^']*'/,`const CURRENT_VERSION='${pkg.version}'`);
+  if(name==='core/version-check.js')source=`window.LoliteVersion={current:'${pkg.version}',check:()=>window.loliteDesktop?.launcher('updates')};`;
   if(name==='core/file-viewers.js')source=source.replace('isEvalSupported:false','isEvalSupported:false,cMapUrl:"lolite://app/vendor/cmaps/",cMapPacked:true,standardFontDataUrl:"lolite://app/vendor/standard_fonts/"');
   // Isolate all frames, including uploaded blob HTML, from the privileged desktop origin.
   source=source.replaceAll('<iframe ','<iframe sandbox="allow-scripts allow-forms allow-pointer-lock allow-downloads allow-modals" ');

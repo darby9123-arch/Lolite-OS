@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lolite Launcher</title><link rel="stylesheet" href="launcher.css"><script defer src="launcher.js"></script></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lolite Launcher</title><link rel="stylesheet" href="launcher.css"><script defer src="marked.js"></script><script defer src="readme.js"></script><script defer src="launcher.js"></script></head>
 <body>
   <aside class="sidebar">
     <div class="brand"><img src="logo.svg" alt="Lolite logo"><div>Lolite<span>DESKTOP LAUNCHER</span></div></div>
     <div class="nav-label">YOUR WORKSPACE</div>
-    <nav aria-label="Launcher sections"><button class="nav active" data-tab="home"><span>◈</span> Overview</button><button class="nav" data-tab="updates"><span>↓</span> Updates <i id="updateDot" hidden></i></button><button class="nav" data-tab="settings"><span>⚙</span> Settings</button></nav>
+    <nav aria-label="Launcher sections"><button class="nav active" data-tab="home"><span>◈</span> Overview</button><button class="nav" data-tab="updates"><span>↓</span> Updates <i id="updateDot" hidden></i></button><button class="nav" data-tab="readme"><span>≡</span> GitHub README</button><button class="nav" data-tab="settings"><span>⚙</span> Settings</button></nav>
     <div class="side-bottom"><div class="connection"><i></i><span id="connection">Ready when you are</span></div><small>Lolite OS for Windows<br><span id="sideVersion">Loading version…</span></small></div>
   </aside>
   <main>
@@ -18,9 +18,15 @@
       <div class="news" id="news"><article><span class="news-tag">DESKTOP EDITION</span><h3>A new home for Lolite OS</h3><p>Your familiar desktop, now with native Windows file dialogs, offline apps and a dedicated update launcher.</p></article><article><span class="news-tag">BUILT AROUND YOUR FILES</span><h3>Keep your world intact</h3><p>Your projects, settings and wallpapers live separately from the app. Updates and repairs preserve your personal data.</p></article></div>
     </section>
     <section class="page" id="updates" hidden>
+      <div class="update-source"><span>Official GitHub Releases · darby9123-arch/Lolite-OS</span><span id="lastChecked">No successful check yet</span></div>
       <div class="panel update-panel"><span class="eyebrow">INSTALLATION & UPDATES</span><h2 id="updateHeading">You’re in control.</h2><p id="updateMessage">Check for an update whenever you’re ready.</p><progress id="progress" max="100" value="0" aria-label="Update progress"></progress><div class="download-details"><span id="downloadSize">—</span><span id="speed">—</span><span id="eta">—</span></div><div class="actions"><button class="primary" id="download">Download update</button><button id="pause" hidden>Pause download</button><button class="primary" id="install" hidden>Install update</button><button id="checkAgain">Check for updates</button><button id="postpone">Later</button></div><p class="fineprint">Lolite OS closes before installation. Your files and settings are preserved. Windows Setup shows installation progress.</p></div>
+      <div class="panel reinstall-panel"><div><span class="eyebrow">MISSING A FEATURE OR FILE?</span><h2>Get a fresh copy.</h2><p>Download and reinstall the latest published desktop files, even if your version is already up to date. Your projects, files, wallpapers and settings stay with you.</p></div><button id="reinstall">Reinstall latest files</button></div>
       <div class="panel"><h2>Release notes</h2><pre id="releaseNotes">Release notes will appear after checking for updates.</pre></div>
       <div class="panel"><h2>Update history</h2><div id="history" class="history"><p class="muted">No updates installed yet.</p></div></div>
+    </section>
+    <section class="page" id="readme" hidden>
+      <div class="panel readme-toolbar"><div><span class="eyebrow">FROM THE OFFICIAL REPOSITORY</span><h2>Lolite OS · README</h2><p id="readmeStatus" role="status">A bundled copy is available offline.</p></div><div class="actions"><button id="refreshReadme">Refresh from GitHub</button><a class="button-link" href="https://github.com/darby9123-arch/Lolite-OS/blob/main/README.md" target="_blank" rel="noopener noreferrer">View on GitHub ↗</a></div></div>
+      <article class="panel readme-content" id="readmeContent" aria-label="Lolite OS README"></article>
     </section>
     <section class="page" id="settings" hidden>
       <div class="panel"><span class="eyebrow">MAKE IT YOURS</span><h2>Launcher preferences</h2><div id="preferences"></div></div>

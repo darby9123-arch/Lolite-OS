@@ -49,7 +49,7 @@ test('tampered and oversized downloads never become installable',async t=>{
 test('stable excludes beta releases and never offers an older release as an update',async t=>{
   const beta={...manifest,version:'4.0.0-beta.1',channel:'beta'},store=new Store(await temp(t));
   const updater=new Updater({store,version:'3.15.2',json:async url=>url.includes('api.github.com')?[release(beta),release()]:manifest});
-  await updater.check();assert.equal(updater.state.phase,'current');assert.equal(updater.state.latest,'3.15.1');
+  await updater.check();assert.equal(updater.state.phase,'ahead');assert.equal(updater.state.latest,'3.15.1');assert.equal(updater.release,null);
   store.settings({beta:true});updater.json=async url=>url.includes('api.github.com')?[release(beta),release()]:beta;await updater.check();assert.equal(updater.state.phase,'available');
 });
 test('settings and data survive updater cache clearing and a new session',async t=>{
