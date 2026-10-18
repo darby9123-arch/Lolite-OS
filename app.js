@@ -22,9 +22,46 @@ function launchGame(g){if(g==='Pong')return pong();if(gameFiles[g]){openApp('gam
 function pong(){openApp('pong','Pong',650,470);setTimeout(()=>{const c=state.windows.pong.el.querySelector('.content');c.innerHTML='<canvas id="pong" class="gamecanvas"></canvas>';const x=c.querySelector('#pong'),ctx=x.getContext('2d');x.width=600;x.height=340;let p=135,q=135,b={x:295,y:165,vx:4,vy:3};addEventListener('keydown',e=>{if(e.key==='ArrowUp')p=Math.max(0,p-20);if(e.key==='ArrowDown')p=Math.min(270,p+20)});(function loop(){if(!state.windows.pong)return;ctx.clearRect(0,0,600,340);ctx.fillStyle='#fff';ctx.fillRect(14,p,10,70);ctx.fillRect(576,q,10,70);ctx.fillRect(b.x,b.y,10,10);ctx.fillRect(298,0,4,340);b.x+=b.vx;b.y+=b.vy;if(b.y<0||b.y>330)b.vy*=-1;if(b.x<28&&b.y>p-5&&b.y<p+75)b.vx=Math.abs(b.vx);if(b.x>565&&b.y>q-5&&b.y<q+75)b.vx=-Math.abs(b.vx);q+=(b.y-q)*.025;if(b.x<0||b.x>600)b={x:295,y:165,vx:b.x<0?4:-4,vy:3};requestAnimationFrame(loop)})()},30)}
 function worldTool(t){const c=$('#worldCanvas');if(!c)return;const ctx=c.getContext('2d'),cols={water:'#2878d8',land:'#78a84b',forest:'#226b3c',desert:'#d6ae59',snow:'#e9f3ff',people:'#ffb15c'};ctx.fillStyle=cols[t];const x=Math.floor(Math.random()*c.width/8)*8,y=Math.floor(Math.random()*c.height/8)*8;ctx.fillRect(x,y,32,32);toast('Placed '+t)}
 function toggleGlass(v){document.documentElement.classList.toggle('glass',v);localStorage.glass=v?'true':'false';window.LoliteLiquidGlass?.setEnabled(!!v)}function toggleReduce(v){document.documentElement.classList.toggle('reduce',v);localStorage.reduce=v}function setWallpaper(w){if(window.loliteWallpaper&&window.loliteWallpaperIds?.includes(w)){window.loliteWallpaper(w);return}const el=$('#wallpaper');if(el){el.style.background=w==='space'?'radial-gradient(circle at 70% 20%,#253d78,#080611 65%)':w==='sunset'?'radial-gradient(circle at 50% 0%,#7b3d75,#12091f 65%)':'radial-gradient(circle at 20% 15%,#3b1a72,#17102e 32%,#080611 75%)';el.classList.remove('wallpaper-animated','wallpaper-pixel');el.dataset.motion=''}document.documentElement.style.setProperty('--accent','#8b6cff');document.documentElement.style.setProperty('--blue','#4d8dff');localStorage.wallpaper=w}function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;$('#toast').append(d);setTimeout(()=>d.remove(),2400)}
-window.loliteToggleFullscreen=async()=>{try{if(document.fullscreenElement){if(document.exitFullscreen)await document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();return}const el=document.getElementById('desktop')||document.documentElement;const req=el.requestFullscreen||el.webkitRequestFullscreen;if(req)await req.call(el);else{toast('This browser does not support fullscreen.');return}}catch(err){console.error('Fullscreen request failed',err);toast('Fullscreen was blocked by the browser. Use F11 if needed.')}};
-document.addEventListener('webkitfullscreenchange',()=>{const b=$('#fullscreenBtn');if(!b)return;const on=!!(document.fullscreenElement||document.webkitFullscreenElement);b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on));b.title=on?'Exit Fullscreen':'Fullscreen'});document.addEventListener('fullscreenchange',()=>{const b=$('#fullscreenBtn');if(!b)return;const on=!!(document.fullscreenElement||document.webkitFullscreenElement);b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on));b.title=on?'Exit Fullscreen':'Fullscreen';b.textContent=on?'⛶':'⛶'});document.addEventListener('fullscreenerror',()=>toast('Fullscreen was blocked by the browser. Use F11 if needed.'));
-document.addEventListener('DOMContentLoaded',()=>{$('#fullscreenBtn')?.addEventListener('click',window.loliteToggleFullscreen)});
+// Request fullscreen in the click handler so browser user activation is preserved.
+(()=>{
+  let nativeFullscreen=false, pending=false;
+  const current=()=>document.fullscreenElement||document.webkitFullscreenElement;
+  const sync=()=>{
+    const button=document.getElementById('fullscreenBtn');if(!button)return;
+    const on=nativeFullscreen||!!current();
+    button.classList.toggle('active',on);
+    button.setAttribute('aria-pressed',String(on));
+    button.title=on?'Exit fullscreen':'Fullscreen';
+    button.setAttribute('aria-label',button.title);
+  };
+  window.loliteToggleFullscreen=async()=>{
+    if(pending)return;pending=true;
+    try{
+      if(current()){
+        const exit=document.exitFullscreen||document.webkitExitFullscreen;
+        if(exit)await exit.call(document);
+      }else if(window.loliteDesktop?.fullscreen){
+        await window.loliteDesktop.fullscreen();
+      }else{
+        // Include body-level dialogs and overlays in the fullscreen surface.
+        const root=document.documentElement;
+        const request=root.requestFullscreen||root.webkitRequestFullscreen;
+        if(!request){toast('This browser does not support fullscreen.');return;}
+        await request.call(root);
+      }
+    }catch(error){console.error('Fullscreen request failed',error);toast('Fullscreen could not start. Try the fullscreen button again or use F11.');}
+    finally{pending=false;sync();}
+  };
+  document.addEventListener('fullscreenchange',sync);
+  document.addEventListener('webkitfullscreenchange',sync);
+  const init=()=>{
+    document.getElementById('fullscreenBtn')?.addEventListener('click',window.loliteToggleFullscreen);
+    window.loliteDesktop?.onFullscreen?.(on=>{nativeFullscreen=!!on;sync();});
+    window.loliteDesktop?.fullscreenState?.().then(on=>{nativeFullscreen=!!on;sync();}).catch(console.error);
+    sync();
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
 (()=>{let last=0;const frame=t=>{if(t-last<33){requestAnimationFrame(frame);return}last=t;const root=document.documentElement;if(root.classList.contains('glass')&&!root.classList.contains('reduce')){root.style.setProperty('--liquid-x',50+Math.sin(t*.00017)*24+'%');root.style.setProperty('--liquid-y',50+Math.cos(t*.00013)*22+'%');root.style.setProperty('--liquid-tilt',Math.sin(t*.00011)*3+'deg')}requestAnimationFrame(frame)};requestAnimationFrame(frame)})();
 $('#startBtn').onclick=()=>{$('#start').classList.toggle('hidden');$('#start').innerHTML='<div class="start-head"><div class="boot-logo">L</div><div><b>lolite OS</b><div class="muted">Your desktop, upgraded.</div></div></div><div class="start-list">'+[['⌂','Home','home'],['🎮','Games','games'],['▣','Minecraft 1.8','minecraft18'],['📁','Files','files'],['🌐','Ultraviolet Browser','browser'],['⚙','Settings','settings'],['▦','App Store','appstore']].map(x=>`<button onclick="${x[2]==='minecraft18'?'window.lolitePlayMinecraft?.()':`openApp('${x[2]}','${x[1]}')`};$('#start').classList.add('hidden')">${window.LoliteIcons.tile(x[2])}<span>${x[1]}</span></button>`).join('')+'</div>'};
 function openSearch(){const p=$('#searchPanel');p.classList.remove('hidden');p.innerHTML='<div class="searchbox"><input id="globalSearch" autofocus placeholder="Search apps, files and settings…"></div><div id="globalResults" class="search-results"></div>';const input=$('#globalSearch');const run=()=>{const q=input.value.trim().toLowerCase();const apps=[['Home','home'],['Game Store','games'],['Minecraft 1.8','minecraft18'],['Files','files'],['Settings','settings'],['World Sandbox','world']];const matches=apps.filter(x=>!q||x[0].toLowerCase().includes(q));$('#globalResults').innerHTML=matches.length?matches.map(x=>`<button class="search-result" onclick="${x[1]==='minecraft18'?'window.lolitePlayMinecraft?.()':`openApp('${x[1]}','${x[0]}')`};$('#searchPanel').classList.add('hidden')">${window.LoliteIcons.tile(x[1])}<b>${x[0]}</b><span>Application</span></button>`).join(''):'<div class="muted" style="padding:14px">No matching apps found.</div>'};input.oninput=run;run()}$('#searchBtn').onclick=openSearch;$('#settingsBtn').onclick=()=>openApp('settings','Settings');$('#clock').parentElement?.addEventListener('click',()=>toast(new Date().toLocaleDateString([], {weekday:'long',day:'numeric',month:'long',year:'numeric'})));document.addEventListener('keydown',e=>{if(e.altKey&&e.key==='Tab'){e.preventDefault();const ids=Object.keys(state.windows);if(ids.length){const visible=ids.filter(id=>state.windows[id].el.style.display!=='none');const next=visible[(visible.indexOf(Object.keys(state.windows).find(id=>state.windows[id].el.style.display!=='none'))+1)%visible.length];if(next)restoreWin(next)}}if(e.key==='Escape'){$('#searchPanel')?.classList.add('hidden');$('#start')?.classList.add('hidden')}});setInterval(()=>{$('#clock').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+'  '+new Date().toLocaleDateString([], {day:'numeric',month:'short'})},1000);

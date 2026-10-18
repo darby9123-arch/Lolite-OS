@@ -87,7 +87,8 @@ function secureWindow(win,role){
   win.webContents.setWindowOpenHandler(({url})=>{openExternal(url,win);return {action:'deny'};});
   win.webContents.on('will-navigate',(event,url)=>{if(url!==`lolite://${host}/index.html`){event.preventDefault();openExternal(url,win);}});
   win.webContents.on('will-attach-webview',event=>event.preventDefault());
-  win.webContents.on('before-input-event',(event,input)=>{if(input.key==='F11'&&input.type==='keyDown'){event.preventDefault();win.setFullScreen(!win.isFullScreen());}if(input.key==='Escape'&&input.type==='keyDown'&&win.isFullScreen())win.setFullScreen(false);});
+  win.webContents.on('before-input-event',(event,input)=>{if(input.key==='F11'&&input.type==='keyDown'&&!input.isAutoRepeat){event.preventDefault();win.setFullScreen(!win.isFullScreen());}if(input.key==='Escape'&&input.type==='keyDown'&&win.isFullScreen())win.setFullScreen(false);});
+  if(role==='os')for(const name of ['enter-full-screen','leave-full-screen'])win.on(name,()=>win.webContents.send('desktop:fullscreen-state',win.isFullScreen()));
   win.on('close',()=>{store.data.windows ||= {};store.data.windows[role]={...win.getNormalBounds(),maximized:win.isMaximized()};store.save();});
   win.once('ready-to-show',()=>{if(store.data.windows?.[role]?.maximized)win.maximize();if(role==='os'&&store.data.settings.fullscreen)win.setFullScreen(true);win.show();if(store.data.settings.startMinimized&&!smoke)win.minimize();});
   win.webContents.on('render-process-gone',(_event,details)=>{store.log(`${role} renderer: ${details.reason}`);if(role==='os')recover('The new desktop renderer stopped unexpectedly.');});
@@ -141,6 +142,7 @@ async function start(){
     if(page==='updates'&&!updater.busy){lastAutoCheck=Date.now();await updater.check();}
     return true;
   });
+  handle('desktop:fullscreen-state','app',()=>os.isFullScreen());
   handle('desktop:fullscreen','app',()=>{os.setFullScreen(!os.isFullScreen());return os.isFullScreen();});
   handle('desktop:ready','app',()=>{healthy=true;clearTimeout(healthTimer);if(store.data.pending?.to===version){store.history('Update healthy',version);delete store.data.pending;store.save();}if(smoke)smokeDesktop().catch(fatal);emit();return true;});
   handle('launcher:state','launcher',launcherState);

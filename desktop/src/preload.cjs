@@ -8,7 +8,8 @@ if(process.isMainFrame && location.protocol==='lolite:' && location.pathname==='
     onState:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('launcher:state',listener);return ()=>ipcRenderer.removeListener('launcher:state',listener);}
   });
   if(location.hostname==='app')contextBridge.exposeInMainWorld('loliteDesktop',{
-    openFiles:()=>call('files:open'),saveFile:file=>call('files:save',file),chooseFolder:()=>call('files:folder'),listFolder:request=>call('files:list',request),readFile:request=>call('files:read',request),launcher:page=>call('desktop:launcher',page),fullscreen:()=>call('desktop:fullscreen'),ready:()=>call('desktop:ready'),version:()=>call('desktop:version'),
+    openFiles:()=>call('files:open'),saveFile:file=>call('files:save',file),chooseFolder:()=>call('files:folder'),listFolder:request=>call('files:list',request),readFile:request=>call('files:read',request),launcher:page=>call('desktop:launcher',page),fullscreen:()=>call('desktop:fullscreen'),fullscreenState:()=>call('desktop:fullscreen-state'),
+    onFullscreen:callback=>{const listener=(_event,on)=>callback(on);ipcRenderer.on('desktop:fullscreen-state',listener);return ()=>ipcRenderer.removeListener('desktop:fullscreen-state',listener);},ready:()=>call('desktop:ready'),version:()=>call('desktop:version'),
     onUpdate:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('desktop:update-state',listener);return ()=>ipcRenderer.removeListener('desktop:update-state',listener);}
   });
 }
