@@ -15,6 +15,13 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.15.3 — Cloud Gaming launcher — 2026-10-19
+- Added a dedicated **Cloud Gaming** desktop app with a searchable provider catalogue, favourites and one-click launch buttons.
+- Added Cloud Gaming to the desktop, Start menu and Lolite home dashboard with a new themed SVG icon.
+- Included official launch points for Xbox Cloud Gaming, NVIDIA GeForce NOW, Boosteroid and Amazon Luna, with account and regional availability notes.
+- Cloud gaming runs on each provider's remote servers and opens in its supported browser environment; availability, subscriptions and games depend on the provider.
+- The third-party onefile SVG was reviewed but not imported: its cloud gaming feature relies on an external API and API key, and the file alone does not provide streaming servers.
+
 ### 3.15.2 — Windows update download redirects — 2026-10-19
 - Fixed Electron cancelling GitHub release-asset redirects during update checks and downloads.
 - Redirect destinations remain restricted to the official HTTPS release service.
