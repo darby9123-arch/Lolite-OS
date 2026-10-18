@@ -1,6 +1,5 @@
 'use strict';
 const https = require('node:https');
-const {Readable} = require('node:stream');
 const {allowedDownloadURL} = require('./security.cjs');
 function request(url, {headers={}, signal, redirects=0} = {}) {
   if (!allowedDownloadURL(url)) return Promise.reject(Error('Blocked update URL outside the official release service.'));
@@ -25,27 +24,37 @@ async function readJSON(send, url, maxBytes=1024*1024) {
 }
 const json=(url,maxBytes)=>readJSON(request,url,maxBytes);
 // The installed app uses Chromium's system-proxy support. Node remains available for CI.
-function createClient(fetcher, timeoutMs=30000) {
-  async function send(url,{headers={},signal,redirects=0}={}) {
+function createClient(createRequest, timeoutMs=30000) {
+  async function send(url,{headers={},signal}={}) {
     if(!allowedDownloadURL(url))throw Error('Blocked update URL outside the official release service.');
-    if(redirects>5)throw Error('Too many update redirects.');
-    const controller=new AbortController();let timer;
-    const arm=()=>{clearTimeout(timer);timer=setTimeout(()=>controller.abort(Error('The update server stopped responding. Please retry.')),timeoutMs);timer.unref?.();};
-    const cancel=()=>controller.abort(signal.reason);signal?.addEventListener('abort',cancel,{once:true});if(signal?.aborted)cancel();
-    const cleanup=()=>{clearTimeout(timer);signal?.removeEventListener('abort',cancel);};
-    arm();
-    try{
-      const response=await fetcher(url,{method:'GET',redirect:'manual',cache:'no-store',credentials:'omit',signal:controller.signal,headers:{'User-Agent':'Lolite-Launcher','Accept':'application/vnd.github+json','Cache-Control':'no-cache',...headers}});
-      if([301,302,303,307,308].includes(response.status)){
-        await response.body?.cancel();cleanup();
-        const location=response.headers.get('location');if(!location)throw Error('Update redirect is missing its destination.');
-        return send(new URL(location,url).href,{headers,signal,redirects:redirects+1});
-      }
-      const stream=Readable.from((async function*(){try{if(response.body)for await(const chunk of response.body){arm();yield Buffer.from(chunk);}}finally{cleanup();}})());
-      stream.statusCode=response.status;stream.headers=Object.fromEntries(response.headers.entries());
-      stream.once('close',()=>{cleanup();controller.abort();});
-      return stream;
-    }catch(error){cleanup();throw error;}
+    if(signal?.aborted)throw signal.reason;
+    return new Promise((resolve,reject)=>{
+      const req=createRequest({url,method:'GET',redirect:'manual',cache:'no-store',credentials:'omit',headers:{'User-Agent':'Lolite-Launcher','Accept':'application/vnd.github+json','Cache-Control':'no-cache',...headers}});
+      let timer,response,failed=false,redirects=0,current=url;
+      const cleanup=()=>{clearTimeout(timer);signal?.removeEventListener('abort',cancel);};
+      const fail=error=>{if(failed)return;failed=true;cleanup();response?.destroy(error);try{req.abort();}catch{}reject(error);};
+      const cancel=()=>fail(signal.reason);
+      const arm=()=>{clearTimeout(timer);timer=setTimeout(()=>fail(Error('The update server stopped responding. Please retry.')),timeoutMs);timer.unref?.();};
+      req.on('error',fail);req.on('close',cleanup);
+      // Electron must follow a manual redirect synchronously inside this event.
+      // net.fetch with redirect:manual cancels GitHub's asset redirect instead.
+      req.on('redirect',(_status,method,destination)=>{
+        try{const next=new URL(destination,current).href;
+          if(method!=='GET'||!allowedDownloadURL(next))throw Error('Blocked update URL outside the official release service.');
+          if(++redirects>5)throw Error('Too many update redirects.');
+          current=next;arm();req.followRedirect();
+        }catch(e){fail(e);}
+      });
+      req.on('response',res=>{
+        response=res;res.once('end',cleanup);res.once('close',cleanup);res.on('error',fail);
+        res.once('aborted',()=>fail(Error('The update download was interrupted. Please retry.')));
+        // Observe arrivals without putting the stream into flowing mode before its consumer is ready.
+        res.on('readable',arm);resolve(res);
+      });
+      signal?.addEventListener('abort',cancel,{once:true});
+      if(signal?.aborted){cancel();return;}
+      arm();req.end();
+    });
   }
   return {request:send,json:(url,maxBytes)=>readJSON(send,url,maxBytes)};
 }

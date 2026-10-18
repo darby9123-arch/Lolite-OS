@@ -15,6 +15,11 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.15.2 — Windows update download redirects — 2026-10-19
+- Fixed Electron cancelling GitHub release-asset redirects during update checks and downloads.
+- Redirect destinations remain restricted to the official HTTPS release service.
+- Extended published-release verification to invoke the installed launcher's actual reinstall command and download through its native network client.
+
 ### 3.15.1 — Reliable desktop updates and fresh reinstall — 2026-10-19
 - Added **Reinstall latest files**: recheck GitHub, download a fresh verified installer even at the current version, then replace program files while keeping personal data.
 - Desktop and launcher startup now check the official release feed; the desktop has direct **Updates** and **README** buttons.

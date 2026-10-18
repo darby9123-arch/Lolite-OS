@@ -1,5 +1,7 @@
 ## Desktop updates that refresh your files
 
+Includes the 3.15.2 fix for GitHub download redirects in the Windows launcher.
+
 - **Reinstall latest files** checks GitHub again and downloads a fresh, fully verified installer, even if the installed version already matches. Choose **Reinstall files** when the download is ready.
 - Checks run when you start either Lolite OS or Lolite Launcher. The desktop taskbar includes **Updates** and **README** shortcuts.
 - The launcher shows its official release source and the time of its last successful check. Failed checks report an error and cannot reuse stale update targets.

@@ -1,8 +1,5 @@
 name: Verify published desktop updater
 on:
-  push:
-    branches: [main]
-    paths: ['.github/scripts/verify-desktop-release.cjs', '.github/workflows/verify-desktop-release.yml']
   workflow_dispatch:
   workflow_run:
     workflows: ['Build and release Lolite Desktop']

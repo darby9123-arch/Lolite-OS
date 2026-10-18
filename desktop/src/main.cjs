@@ -130,7 +130,7 @@ async function start(){
   await installProtocol();secureSession();
   if(smoke&&!feedSmoke)session.defaultSession.enableNetworkEmulation({offline:true});
   const updateSession=session.fromPartition('lolite-release-client',{cache:false});
-  updateClient=createClient(updateSession.fetch.bind(updateSession));
+  updateClient=createClient(options=>net.request({...options,session:updateSession}));
   updater=new Updater({store,version,...updateClient});updater.on('state',emit);
   nativeFiles=fileAccess({dialog,getWindow:()=>os});
   for(const op of ['open','save','folder','list','read'])handle('files:'+op,'app',arg=>nativeFiles[op](arg));
@@ -166,7 +166,7 @@ async function start(){
   if(requestedRole==='launcher')showLauncher();else showOS();
   if(pending?.to===version&&pending.launch)showOS();
   if(smoke&&requestedRole==='launcher')launcher.webContents.once('did-finish-load',()=>{(feedSmoke?smokePublishedFeed():smokeLauncher()).catch(fatal);});
-  if(smoke)setTimeout(()=>{smokeResult({ok:false,error:'Startup health check timed out'});app.exit(1);},feedSmoke?90000:40000).unref();
+  if(smoke)setTimeout(()=>{smokeResult({ok:false,error:'Startup health check timed out'});app.exit(1);},feedSmoke?180000:40000).unref();
   checkOnOpen();
 }
 async function runInstaller(file){
@@ -206,5 +206,8 @@ async function smokeLauncher(){
 async function smokePublishedFeed(){
   await updater.check();
   if(updater.state.checkStatus!=='success'||!['current','available'].includes(updater.state.phase))throw Error('Installed launcher could not verify its live release feed.');
-  smokeResult({ok:true,latest:updater.state.latest,phase:updater.state.phase,checkedAt:updater.state.checkedAt,transport:'Chromium system network'});app.quit();
+  const checkedPhase=updater.state.phase;
+  await launcher.webContents.executeJavaScript('loliteLauncher.reinstall()');
+  if(updater.state.phase!=='ready'||!updater.ready)throw Error('Installed launcher failed to download and verify through its reinstall IPC.');
+  smokeResult({ok:true,latest:updater.state.latest,phase:checkedPhase,checkedAt:updater.state.checkedAt,downloadVerified:true,transport:'Chromium system network'});app.quit();
 }

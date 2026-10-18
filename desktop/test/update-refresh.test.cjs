@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs/promises'),path=require('node:path'),os=require('node:os'),crypto=require('node:crypto');
-const {Readable}=require('node:stream');
+const {Readable}=require('node:stream'),{EventEmitter}=require('node:events');
 const {Store}=require('../src/storage.cjs'),{Updater}=require('../src/updater.cjs');
 const {createClient}=require('../src/network.cjs'),{readReadme}=require('../src/readme.cjs');
 const {chooseVersion}=require('../../.github/scripts/select-desktop-version.cjs');
@@ -41,12 +41,26 @@ test('concurrent refresh and a modified verified installer cannot be installed',
   const {updater}=await fixture(t);updater.busy=true;await assert.rejects(()=>updater.reinstallLatest(),/current update operation/);updater.busy=false;
   await updater.reinstallLatest();await fs.writeFile(updater.ready.file,Buffer.alloc(2048,0));await assert.rejects(()=>updater.prepareInstall(),/verification failed/);assert.equal(updater.busy,false);assert.equal(updater.store.data.pending,undefined);
 });
-test('Chromium requests bypass caches and validate each redirect before following it',async()=>{
-  const calls=[];const client=createClient(async(url,opts)=>{calls.push({url,opts});return calls.length===1?new Response(null,{status:302,headers:{location:'https://release-assets.githubusercontent.com/test'}}):new Response('{"verified":true}');});
+test('Chromium follows approved redirects synchronously and blocks untrusted destinations',async()=>{
+  function factory(destination,calls){return options=>{
+    calls.push(options);const req=new EventEmitter();let followed=false,aborted=false;
+    req.followRedirect=()=>{followed=true;calls.push('followed');};req.abort=()=>{aborted=true;req.emit('close');};
+    req.end=()=>queueMicrotask(()=>{
+      req.emit('redirect',302,'GET',destination,{});
+      if(!followed){if(!aborted)req.emit('error',Error('Redirect was cancelled'));return;}
+      const res=Object.assign(Readable.from([Buffer.from('{"verified":true}')]),{statusCode:200,headers:{}});
+      res.on('end',()=>req.emit('close'));req.emit('response',res);
+    });return req;
+  };}
+  const calls=[],client=createClient(factory('https://release-assets.githubusercontent.com/test',calls));
   assert.deepEqual(await client.json(`https://github.com/${repo}/releases/download/desktop-v3.15.1/lolite-desktop.json`),{verified:true});
-  for(const {opts} of calls){assert.equal(opts.redirect,'manual');assert.equal(opts.cache,'no-store');assert.equal(opts.credentials,'omit');}
-  let count=0;const blocked=createClient(async()=>{count++;return new Response(null,{status:302,headers:{location:'https://untrusted.example/payload'}});});
-  await assert.rejects(()=>blocked.json(`https://api.github.com/repos/${repo}/releases`),/Blocked update URL/);assert.equal(count,1);
+  assert.equal(calls[0].redirect,'manual');assert.equal(calls[0].cache,'no-store');assert.equal(calls[0].credentials,'omit');assert.equal(calls[1],'followed');
+  const blockedCalls=[],blocked=createClient(factory('https://untrusted.example/payload',blockedCalls));
+  await assert.rejects(()=>blocked.json(`https://api.github.com/repos/${repo}/releases`),/Blocked update URL/);assert.equal(blockedCalls.length,1);
+});
+test('Chromium checks and downloads honour cancellation',async()=>{
+  let aborted=false;const client=createClient(()=>{const req=new EventEmitter();req.end=()=>{};req.abort=()=>{aborted=true;req.emit('close');};return req;});
+  const controller=new AbortController(),pending=client.request(`https://api.github.com/repos/${repo}/releases`,{signal:controller.signal});controller.abort();await assert.rejects(()=>pending,/abort/i);assert.equal(aborted,true);
 });
 test('README refresh caches the official document and falls back offline',async t=>{
   const {dir}=await fixture(t),bundled=path.join(dir,'README.md');await fs.writeFile(bundled,'# Bundled Lolite');
