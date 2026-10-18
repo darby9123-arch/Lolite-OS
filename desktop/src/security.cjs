@@ -14,6 +14,7 @@ function safeRelative(value) {
   return parts.join(path.sep);
 }
 async function grantedPath(root, relative) {
+  root = await fs.realpath(root);
   const candidate = path.resolve(root, safeRelative(relative));
   const real = await fs.realpath(candidate);
   const rel = path.relative(root, real);

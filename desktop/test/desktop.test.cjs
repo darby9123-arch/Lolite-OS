@@ -22,7 +22,7 @@ test('IPC allows only the exact top-level application page',()=>{
 });
 test('folder grants cannot escape through symbolic links',async t=>{
   const root=await temp(t);await fs.mkdir(path.join(root,'allowed'));await fs.writeFile(path.join(root,'secret'),'secret');await fs.writeFile(path.join(root,'allowed','ok.txt'),'ok');
-  assert.equal(await grantedPath(path.join(root,'allowed'),'ok.txt'),path.join(root,'allowed','ok.txt'));
+  assert.equal(await grantedPath(path.join(root,'allowed'),'ok.txt'),await fs.realpath(path.join(root,'allowed','ok.txt')));
   try{await fs.symlink(path.join(root,'secret'),path.join(root,'allowed','escape'));}catch(e){if(e.code==='EPERM'){t.diagnostic('Symlink creation unavailable on this Windows runner');return;}throw e;}
   await assert.rejects(()=>grantedPath(path.join(root,'allowed'),'escape'),/outside/);
 });
