@@ -62,7 +62,7 @@ class Updater extends EventEmitter {
   }
   async check() {
     if(this.busy) throw Error('Wait for the current update operation to finish.');
-    this.busy=true;this.ready=null;
+    this.busy=true;this.ready=null;this.repairing=false;
     this.set({phase:'checking',message:'Checking official GitHub releases…',progress:0});
     try {
       const releases=await this.list();
@@ -135,7 +135,7 @@ class Updater extends EventEmitter {
       const current=releases.find(r=>r.tag_name===`desktop-v${this.version}`);
       if(!current)throw Error(`Found ${damaged.length} damaged files. This version has no published repair installer. Use the official setup file to reinstall.`);
       this.release=await this.metadata(current);this.repairing=true;
-      this.set({message:`Found ${damaged.length} damaged files. Preparing repair…`});
+      this.set({latest:this.release.version,total:this.release.size,notes:this.release.notes,message:`Found ${damaged.length} damaged files. Preparing repair…`});
     }catch(e){this.error(e);throw e;}finally{this.busy=false;}
     if(this.repairing) await this.download();
   }

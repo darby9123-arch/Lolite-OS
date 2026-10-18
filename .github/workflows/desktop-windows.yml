@@ -1,7 +1,7 @@
 name: Build and release Lolite Desktop
 on:
   push:
-    branches: [main, 'desktop/**']
+    branches: [main]
     paths: ['desktop/**', 'app.js', 'index.html', 'styles.css', 'core/**', 'assets/**', 'games/**', 'html games/**', '.github/workflows/desktop-windows.yml']
     tags: ['desktop-v*']
   pull_request:

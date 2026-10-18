@@ -11,7 +11,7 @@ for(const [key,title,description] of options){const label=document.createElement
 let lastHistory='',lastNews='';
 function render(s){
   $('installed').textContent=s.installed;$('sideVersion').textContent='Version '+s.installed;$('aboutVersion').textContent=s.installed;
-  $('latest').textContent=s.latest||'Not published';$('channel').textContent=s.settings.beta?'BETA CHANNEL':'STABLE CHANNEL';
+  $('latest').textContent=s.latest||(s.phase==='current'?'Not published':'Not checked');$('channel').textContent=s.settings.beta?'BETA CHANNEL':'STABLE CHANNEL';
   $('briefStatus').textContent=({idle:'Ready',checking:'Checking…',available:'Update available',current:'Up to date',downloading:'Downloading…',paused:'Paused',verifying:'Verifying…',ready:'Ready to install',installing:'Installing…',repairing:'Checking files…',error:'Needs attention'})[s.phase]||s.phase;
   $('statusTitle').textContent=$('briefStatus').textContent;$('statusText').textContent=s.message;$('updateMessage').textContent=s.message;
   $('updateHeading').textContent=s.latest?'Lolite OS '+s.latest:'You’re in control.';

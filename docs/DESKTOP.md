@@ -52,7 +52,7 @@ Outputs:
 
 The `Build and release Lolite Desktop` workflow builds on Windows, runs security/updater tests, then installs and launches both actual Windows executables. It installs again to verify IndexedDB survives an upgrade and checks that silent uninstall preserves data. Screenshots and health reports are included with the workflow artifact.
 
-Pull requests and `desktop/**` branches build test artifacts. A successful build on `main`, or a `desktop-v*` tag matching `desktop/package.json`, publishes a GitHub Release if that version does not already exist. To release:
+Pull requests and manual workflow runs build test artifacts. A successful build on `main`, or a `desktop-v*` tag matching `desktop/package.json`, publishes a GitHub Release if that version does not already exist. To release:
 
 1. Increment `desktop/package.json` using semantic versioning and update its lockfile. Use `3.16.0-beta.1` for a beta or `3.16.0` for stable.
 2. Update `desktop/RELEASE-NOTES.md` with the actual changes.
