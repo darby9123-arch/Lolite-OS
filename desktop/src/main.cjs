@@ -16,6 +16,7 @@ const requestedRole=process.argv.includes('--launcher')||/Lolite Launcher\.exe$/
 // Both entry executables share one main process and one data profile.
 app.setName('Lolite OS');
 const dataRoot=smoke&&process.env.LOLITE_SMOKE_DATA?path.resolve(process.env.LOLITE_SMOKE_DATA):path.join(app.getPath('appData'),'Lolite OS');
+fs.mkdirSync(path.join(dataRoot,'profile'),{recursive:true});
 app.setPath('userData',dataRoot);
 app.setPath('sessionData',path.join(dataRoot,'profile'));
 const store=new Store(dataRoot);
@@ -160,8 +161,8 @@ app.on('window-all-closed',()=>app.quit());
 app.on('before-quit',()=>{clearTimeout(healthTimer);store.save();});
 function smokeResult(result){if(process.env.LOLITE_SMOKE_RESULT)fs.writeFileSync(process.env.LOLITE_SMOKE_RESULT,JSON.stringify({...result,version},null,2));}
 async function smokeDesktop(){
-  const result=await os.webContents.executeJavaScript(`(async()=>{const rows=await FileOS.all();await FileOS.put('Documents/desktop-smoke.txt',new Blob(['persistent desktop data']));return {bridge:!!window.loliteDesktop,node:typeof require,icons:document.querySelectorAll('#icons .desktop-icon').length,files:!!window.FileOS,previous:rows.some(r=>r.path==='Documents/desktop-smoke.txt')}})()`);
-  if(!result.bridge||result.node!=='undefined'||!result.files)throw Error('Desktop isolation or storage check failed.');
+  const result=await os.webContents.executeJavaScript(`(async()=>{const rows=await FileOS.all();await FileOS.put('Documents/desktop-smoke.txt',new Blob(['persistent desktop data']));const catalog=await fetch('game-catalog.json').then(r=>r.json());const pdf=await import('lolite://app/vendor/pdf.mjs');const nativeVersion=await loliteDesktop.version();openApp('files','File Explorer');return {bridge:!!window.loliteDesktop,node:typeof require,icons:document.querySelectorAll('#icons .desktop-icon').length,files:!!window.FileOS,previous:rows.some(r=>r.path==='Documents/desktop-smoke.txt'),offline:!navigator.onLine,catalog:catalog.length,pdf:typeof pdf.getDocument,nativeVersion}})()`);
+  if(!result.bridge||result.node!=='undefined'||!result.files||!result.offline||result.catalog<50||result.pdf!=='function'||result.nativeVersion!==version)throw Error('Desktop offline, isolation or storage check failed: '+JSON.stringify(result));
   await os.webContents.executeJavaScript(`new Promise(resolve=>{const f=document.createElement('iframe');f.sandbox='allow-scripts';f.srcdoc='<script>try{parent.loliteDesktop.version();parent.postMessage("unsafe","*")}catch(e){parent.postMessage("isolated","*")}<\/script>';window.addEventListener('message',e=>{if(e.source===f.contentWindow){f.remove();resolve(e.data)}},{once:true});document.body.append(f)})`).then(value=>{if(value!=='isolated')throw Error('Child frame isolation failed');});
   await os.webContents.executeJavaScript(`(async()=>{await document.fonts.ready;for(let i=0;i<40&&document.getElementById('lolite-splash')&&!document.getElementById('lolite-splash').classList.contains('is-done');i++)await new Promise(r=>setTimeout(r,250));})()`);
   if(process.env.LOLITE_SMOKE_SCREENSHOT)await fsp.writeFile(process.env.LOLITE_SMOKE_SCREENSHOT,(await os.webContents.capturePage()).toPNG());
@@ -169,8 +170,8 @@ async function smokeDesktop(){
 }
 async function smokeLauncher(){
   await launcher.webContents.executeJavaScript('document.fonts.ready.then(()=>true)');
-  const result=await launcher.webContents.executeJavaScript(`({bridge:!!window.loliteLauncher,node:typeof require,buttons:document.querySelectorAll('button').length})`);
-  if(!result.bridge||result.node!=='undefined'||result.buttons<8)throw Error('Launcher smoke test failed.');
+  const result=await launcher.webContents.executeJavaScript(`(async()=>{const s=await loliteLauncher.state();await loliteLauncher.settings({autoDownload:true});const updated=await loliteLauncher.state();await loliteLauncher.settings({autoDownload:s.settings.autoDownload});return {bridge:!!window.loliteLauncher,node:typeof require,buttons:document.querySelectorAll('button').length,installed:s.installed,settings:updated.settings.autoDownload}})()`);
+  if(!result.bridge||result.node!=='undefined'||result.buttons<8||result.installed!==version||!result.settings)throw Error('Launcher smoke test failed.');
   if(process.env.LOLITE_SMOKE_SCREENSHOT)await fsp.writeFile(process.env.LOLITE_SMOKE_SCREENSHOT,(await launcher.webContents.capturePage()).toPNG());
   smokeResult({ok:true,...result});app.quit();
 }

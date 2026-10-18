@@ -32,5 +32,7 @@ $uninstaller = Get-ChildItem $installRoot -Filter 'Uninstall*.exe' | Select-Obje
 if (-not $uninstaller) { throw 'Uninstaller is missing.' }
 $process = Start-Process -FilePath $uninstaller.FullName -ArgumentList '/S' -PassThru
 if (-not $process.WaitForExit(60000)) { throw 'Uninstaller timed out.' }
+for ($attempt=0; $attempt -lt 120 -and (Test-Path (Join-Path $installRoot 'Lolite OS.exe')); $attempt++) { Start-Sleep -Milliseconds 250 }
+if (Test-Path (Join-Path $installRoot 'Lolite OS.exe')) { throw 'Uninstaller left the application executable behind.' }
 if (-not (Test-Path (Join-Path $env:LOLITE_SMOKE_DATA 'keep-my-project.txt'))) { throw 'Uninstaller removed personal data.' }
 Write-Host 'Windows installation, both executables, storage persistence and uninstall verified.'
