@@ -14,7 +14,8 @@ const network=require('../../desktop/src/network.cjs');
   async function install(file){await exec(file,['/S',`/D=${root}`],{timeout:120000});if(!fs.existsSync(path.join(root,'resources/app.asar')))throw Error('Setup did not restore application files.');}
   async function smoke(exe,mode,name){
     const report=path.join(directory,name+'.json');
-    await exec(path.join(root,exe),[mode],{timeout:100000,env:{...process.env,LOLITE_SMOKE_DATA:data,LOLITE_SMOKE_RESULT:report}});
+    try{await exec(path.join(root,exe),[mode],{timeout:100000,env:{...process.env,LOLITE_SMOKE_DATA:data,LOLITE_SMOKE_RESULT:report}});}
+    catch(e){if(fs.existsSync(report))console.error(fs.readFileSync(report,'utf8'));const log=path.join(data,'launcher.log');if(fs.existsSync(log))console.error(fs.readFileSync(log,'utf8').slice(-8000));throw e;}
     const value=JSON.parse(fs.readFileSync(report,'utf8'));if(!value.ok)throw Error(name+' failed: '+JSON.stringify(value));return value;
   }
   try{
