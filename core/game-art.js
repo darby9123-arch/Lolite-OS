@@ -3,10 +3,6 @@
  * Fallback for specialty mods without verified logos: the title's own generated poster.
  */
 window.loliteGameArt=Object.freeze({
-  "revcdos-official": {
-    "src": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/12110/header.jpg",
-    "title": "GTA: Vice City (reVCDOS)"
-  },
   "clangrybirds2.html": {
     "src": "https://www5.minijuegosgratis.com/v3/games/thumbnails/210455_1.jpg",
     "title": "Angry Birds 2"
