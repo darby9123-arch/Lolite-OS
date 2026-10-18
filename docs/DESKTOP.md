@@ -50,7 +50,7 @@ Outputs:
 
 ## Releases and updates
 
-The `Build and release Lolite Desktop` workflow builds on Windows, runs security/updater tests, then installs and launches both actual Windows executables. It installs again to verify IndexedDB survives an upgrade and checks that silent uninstall preserves data. Screenshots and health reports are included with the workflow artifact. The reinstall test deliberately removes the application archive and verifies that Setup restores it while preserving IndexedDB.
+The `Build and release Lolite Desktop` workflow builds on Windows, runs security/updater tests, then installs and launches both actual Windows executables. Before publication, that packaged runtime must also download and verify an existing public desktop installer through Chromium networking; it does not execute that older installer. This gate requires an existing official desktop release. It installs again to verify IndexedDB survives an upgrade and checks that silent uninstall preserves data. Screenshots and health reports are included with the workflow artifact. The reinstall test deliberately removes the application archive and verifies that Setup restores it while preserving IndexedDB.
 
 Pull requests build test artifacts. A successful build on `main` publishes a new Windows release for changed application sources. If the requested package version is already released, the workflow selects the next patch version (or next beta prerelease), updates the build copy of the package/lockfile, and packages that version. Rebuilding an already published source commit does not replace its release. A `desktop-v*` tag must still match the explicit package version. To request a specific version:
 

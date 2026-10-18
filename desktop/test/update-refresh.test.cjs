@@ -62,6 +62,21 @@ test('Chromium checks and downloads honour cancellation',async()=>{
   let aborted=false;const client=createClient(()=>{const req=new EventEmitter();req.end=()=>{};req.abort=()=>{aborted=true;req.emit('close');};return req;});
   const controller=new AbortController(),pending=client.request(`https://api.github.com/repos/${repo}/releases`,{signal:controller.signal});controller.abort();await assert.rejects(()=>pending,/abort/i);assert.equal(aborted,true);
 });
+test('native response streams reach the verified installer without stalling or losing early bytes',async t=>{
+  const {updater}=await fixture(t);
+  const client=createClient(()=>{
+    const req=new EventEmitter();req.abort=()=>req.emit('close');
+    req.end=()=>queueMicrotask(()=>{
+      const res=Object.assign(Readable.from([bytes.subarray(0,1000),bytes.subarray(1000)]),{statusCode:200,headers:{'content-length':String(bytes.length)}});
+      res.once('end',()=>req.emit('close'));req.emit('response',res);
+    });return req;
+  });
+  updater.request=async(url,options)=>{
+    const stream=await client.request(url,{...options,signal:AbortSignal.any([options.signal,AbortSignal.timeout(2000)])});
+    await new Promise(resolve=>setTimeout(resolve,25));return stream;
+  };
+  await updater.reinstallLatest();assert.equal(updater.state.phase,'ready');assert.deepEqual(await fs.readFile(updater.ready.file),bytes);
+});
 test('README refresh caches the official document and falls back offline',async t=>{
   const {dir}=await fixture(t),bundled=path.join(dir,'README.md');await fs.writeFile(bundled,'# Bundled Lolite');
   const base={directory:dir,bundled,json:async()=>{throw Error('Offline');}};

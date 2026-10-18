@@ -13,7 +13,7 @@ function Test-Lolite($exe, $mode, $name) {
   $env:LOLITE_SMOKE_RESULT = Join-Path (Resolve-Path 'dist') "smoke-$name.json"
   $env:LOLITE_SMOKE_SCREENSHOT = Join-Path (Resolve-Path 'dist') "smoke-$name.png"
   $process = Start-Process -FilePath (Join-Path $installRoot $exe) -ArgumentList $mode -PassThru
-  if (-not $process.WaitForExit(60000)) { $process.Kill(); throw "$name timed out." }
+  if (-not $process.WaitForExit(200000)) { $process.Kill(); throw "$name timed out." }
   if (-not (Test-Path $env:LOLITE_SMOKE_RESULT)) { throw "$name produced no health report." }
   $report = Get-Content $env:LOLITE_SMOKE_RESULT | ConvertFrom-Json
   if (-not $report.ok) { throw "$name failed: $($report.error)" }
@@ -25,6 +25,7 @@ foreach ($name in @('Lolite OS.exe', 'Lolite Launcher.exe', 'resources/app.asar'
 }
 $null = Test-Lolite 'Lolite OS.exe' '--smoke-test' 'desktop'
 $null = Test-Lolite 'Lolite Launcher.exe' '--smoke-launcher' 'launcher'
+$null = Test-Lolite 'Lolite Launcher.exe' '--smoke-network' 'network'
 # Reinstall must restore an actually missing application archive, preserving the profile.
 Remove-Item (Join-Path $installRoot 'resources/app.asar')
 Install-Lolite

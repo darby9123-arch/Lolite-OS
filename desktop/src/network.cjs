@@ -1,5 +1,6 @@
 'use strict';
 const https = require('node:https');
+const {Transform} = require('node:stream');
 const {allowedDownloadURL} = require('./security.cjs');
 function request(url, {headers={}, signal, redirects=0} = {}) {
   if (!allowedDownloadURL(url)) return Promise.reject(Error('Blocked update URL outside the official release service.'));
@@ -46,10 +47,14 @@ function createClient(createRequest, timeoutMs=30000) {
         }catch(e){fail(e);}
       });
       req.on('response',res=>{
-        response=res;res.once('end',cleanup);res.once('close',cleanup);res.on('error',fail);
+        response=new Transform({transform(chunk,encoding,done){arm();done(null,chunk);}});
+        response.statusCode=res.statusCode;response.headers=res.headers;
+        res.once('end',cleanup);res.on('error',fail);
         res.once('aborted',()=>fail(Error('The update download was interrupted. Please retry.')));
-        // Observe arrivals without putting the stream into flowing mode before its consumer is ready.
-        res.on('readable',arm);resolve(res);
+        response.on('error',fail);response.once('close',()=>{cleanup();if(!response.readableEnded){res.destroy();req.abort();}});
+        // Buffer until the caller attaches and preserve backpressure. A readable listener
+        // on the native response would prevent pipeline() from flowing during downloads.
+        res.pipe(response);resolve(response);
       });
       signal?.addEventListener('abort',cancel,{once:true});
       if(signal?.aborted){cancel();return;}

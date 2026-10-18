@@ -15,6 +15,10 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### 3.15.4 — Complete native installer downloads — 2026-10-18
+- Fixed a native response-stream stall while writing installer downloads to disk.
+- Added a full-download regression test covering buffering, delayed consumers and installer verification.
+
 ### 3.15.3 — Cloud Gaming launcher — 2026-10-19
 - Added a dedicated **Cloud Gaming** desktop app with a searchable provider catalogue, favourites and one-click launch buttons.
 - Added Cloud Gaming to the desktop, Start menu and Lolite home dashboard with a new themed SVG icon.

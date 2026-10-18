@@ -1,7 +1,7 @@
 {
   "name": "lolite-desktop",
   "productName": "Lolite OS",
-  "version": "3.15.2",
+  "version": "3.15.4",
   "private": true,
   "description": "Lolite OS for Windows with Lolite Launcher",
   "author": "Lolite OS",
@@ -14,7 +14,9 @@
     "build:win": "npm run prepare:app && electron-builder --win nsis --x64 --publish never && node scripts/release.mjs",
     "pack:win": "npm run prepare:app && electron-builder --win dir --x64 --publish never"
   },
-  "dependencies": { "semver": "7.7.4" },
+  "dependencies": {
+    "semver": "7.7.4"
+  },
   "devDependencies": {
     "electron": "44.9.0",
     "electron-builder": "26.15.3",

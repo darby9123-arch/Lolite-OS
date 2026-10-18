@@ -14,8 +14,9 @@ const {readReadme}=require('./readme.cjs');
 const version=require('../package.json').version;
 const base=path.join(__dirname,'..');
 const feedSmoke=process.argv.includes('--smoke-feed');
-const smoke=process.argv.includes('--smoke-test')||process.argv.includes('--smoke-launcher')||feedSmoke;
-const requestedRole=process.argv.includes('--launcher')||/Lolite Launcher\.exe$/i.test(process.execPath)||process.argv.includes('--smoke-launcher')||feedSmoke?'launcher':'os';
+const networkSmoke=process.argv.includes('--smoke-network');
+const smoke=process.argv.includes('--smoke-test')||process.argv.includes('--smoke-launcher')||feedSmoke||networkSmoke;
+const requestedRole=process.argv.includes('--launcher')||/Lolite Launcher\.exe$/i.test(process.execPath)||process.argv.includes('--smoke-launcher')||feedSmoke||networkSmoke?'launcher':'os';
 // Both entry executables share one main process and one data profile.
 app.setName('Lolite OS');
 const dataRoot=smoke&&process.env.LOLITE_SMOKE_DATA?path.resolve(process.env.LOLITE_SMOKE_DATA):path.join(app.getPath('appData'),'Lolite OS');
@@ -129,7 +130,7 @@ function handle(channel,host,fn){ipcMain.handle(channel,async(event,...args)=>{i
 async function start(){
   app.setAppUserModelId('com.lolite.os');Menu.setApplicationMenu(null);
   await installProtocol();secureSession();
-  if(smoke&&!feedSmoke)session.defaultSession.enableNetworkEmulation({offline:true});
+  if(smoke&&!feedSmoke&&!networkSmoke)session.defaultSession.enableNetworkEmulation({offline:true});
   const updateSession=session.fromPartition('lolite-release-client',{cache:false});
   updateClient=createClient(options=>net.request({...options,session:updateSession}));
   updater=new Updater({store,version,...updateClient});updater.on('state',emit);
@@ -167,8 +168,8 @@ async function start(){
   if(pending&&pending.to!==version){updater.set({phase:'error',message:'The previous installation did not finish. Your existing version and user data are available. Retry the update.'});delete store.data.pending;store.save();}
   if(requestedRole==='launcher')showLauncher();else showOS();
   if(pending?.to===version&&pending.launch)showOS();
-  if(smoke&&requestedRole==='launcher')launcher.webContents.once('did-finish-load',()=>{(feedSmoke?smokePublishedFeed():smokeLauncher()).catch(fatal);});
-  if(smoke)setTimeout(()=>{smokeResult({ok:false,error:'Startup health check timed out'});app.exit(1);},feedSmoke?180000:40000).unref();
+  if(smoke&&requestedRole==='launcher')launcher.webContents.once('did-finish-load',()=>{(networkSmoke?smokeNativeNetwork():feedSmoke?smokePublishedFeed():smokeLauncher()).catch(fatal);});
+  if(smoke)setTimeout(()=>{smokeResult({ok:false,error:'Startup health check timed out'});app.exit(1);},feedSmoke||networkSmoke?180000:40000).unref();
   checkOnOpen();
 }
 async function runInstaller(file){
@@ -212,4 +213,12 @@ async function smokePublishedFeed(){
   await launcher.webContents.executeJavaScript('loliteLauncher.reinstall()');
   if(updater.state.phase!=='ready'||!updater.ready)throw Error('Installed launcher failed to download and verify through its reinstall IPC.');
   smokeResult({ok:true,latest:updater.state.latest,phase:checkedPhase,checkedAt:updater.state.checkedAt,downloadVerified:true,transport:'Chromium system network'});app.quit();
+}
+async function smokeNativeNetwork(){
+  // Exercise this packaged runtime against an existing public release before publishing.
+  // Download only: never install or downgrade the test app.
+  const probe=new Updater({store:new Store(path.join(dataRoot,'network-probe')),version:'0.0.0',...updateClient});
+  await probe.check();await probe.download();
+  if(probe.state.phase!=='ready'||!probe.ready)throw Error('Native release download failed.');
+  smokeResult({ok:true,downloadVerified:true,latest:probe.state.latest,transport:'Chromium system network'});app.quit();
 }
