@@ -39,7 +39,7 @@ function roomBox(){
 }
 function socialBox(){
  if(!roomCode||roomStatus!=="Connected")return "";
- return '<div class="columns" style="margin-top:16px"><section class="panel"><h2>Roleplay Together</h2><p>Send quick, safe in-game actions to everyone in your room.</p><div class="selectrow">'+Object.entries(EMOTES).map(function(x){return button(esc(x[1]),"emote",x[0],"soft")}).join("")+'</div><div class="section-head"><h2>Community Challenge</h2><span>Live co-op goal</span></div><p>Work together to spruce up the town square. Each player can help once every 10 seconds.</p><div class="progress"><span style="width:'+Math.min(100,community/10*100)+'%"></span></div><p><b>'+community+' / 10</b> contributions this room session</p>'+button("Help improve the town","contribute",undefined,"primary",community>=10||Date.now()-lastAction<10000)+'</section><section class="panel"><h2>Room Activity</h2><div class="log">'+(events.length?events.map(function(e){return '<div class="log-item"><span>'+esc(e.text)+'</span><small>'+esc(e.at)+'</small></div>'}).join(""):'<p class="subtle">Start with a wave or help the town.</p>')+'</div></section></div>';
+ return '<div class="columns" style="margin-top:16px"><section class="panel"><h2>Roleplay Together</h2><p>Send quick, safe in-game actions to everyone in your room.</p><div class="selectrow">'+Object.entries(EMOTES).map(function(x){return button(esc(x[1]),"emote",x[0],"soft")}).join("")+'</div><div class="section-head"><h2>Community Challenge</h2><span>Live co-op goal</span></div><p>Work together to spruce up the town square. Each player can help once every 10 seconds.</p><div class="progress"><span style="width:'+Math.min(100,community/10*100)+'%"></span></div><p><b>'+community+' / 10</b> contributions this room session</p>'+button("Help improve the town","contribute",undefined,"primary",community>=10)+'</section><section class="panel"><h2>Room Activity</h2><div class="log">'+(events.length?events.map(function(e){return '<div class="log-item"><span>'+esc(e.text)+'</span><small>'+esc(e.at)+'</small></div>'}).join(""):'<p class="subtle">Start with a wave or help the town.</p>')+'</div></section></div>';
 }
 function friendsBox(){
  if(!connected)return"";
@@ -206,7 +206,8 @@ function onRoomAction(action){
  if(!room||roomStatus!=="Connected")return tell("Join a room first.");
  var now=Date.now();
  if(action==="contribute"){
-  if(community>=10||now-lastAction<10000)return;
+  if(community>=10)return;
+  if(now-lastAction<10000)return tell("You can help again after 10 seconds.");
   lastAction=now;community++;
   mark(display()+" helped improve the town"+(community===10?" — community goal reached!":""));
   room.send({type:"broadcast",event:"quest",payload:{type:"town",name:display()}});
