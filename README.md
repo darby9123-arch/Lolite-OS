@@ -34,6 +34,19 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Chat notifications avoid putting private message text into operating-system notification previews.
 
 
+### Lolite Life RP City Update — Hands-On Gameplay, Businesses & Shop — 2026-10-20
+- Reworked the **Life RP dashboard** with shortcuts to active gameplay, quests, promotions, businesses, minigames, and the shop.
+- Replaced the old two-answer-only shifts with **three randomly selected work scenarios** from an expanded set of almost 100 occupation and industry questions, followed by a playable skill minigame. Completed work still pays virtual cash and resident XP.
+- Added **16 playable activities** (12 regular and four member-exclusive) built around memory matching, precision sliders, order assembly, quick visual targets, rhythm sequences and navigation patterns. Mini game accuracy affects payouts; unfinished activities do not pay.
+- Added the **City Quest Board** with 12 story quests and rotating daily and weekly tasks. Players must accept, complete, and claim quests to earn virtual cash, resident XP, and seasonal XP.
+- Changed the **battle pass** into a 28-day, 18-tier season, with fixed free and premium rewards. **Season XP is earned through quest claims rather than every ordinary shift or minigame.** Premium rewards cost virtual game money only.
+- Added **eight rank promotions** with specific requirements for work shifts, activity completions, quests, properties, businesses, XP, and promotion fees. Some careers, businesses, and activities are gated behind progression.
+- Added **six player-owned businesses**, each with stock purchases, upgrades, customers served through interactive minigames, reputation milestones and revenue from successfully completed orders.
+- Added a **shop** with 18 products, including six Lolite Life RP themes with matching actual Lolite OS wallpapers, cursor packs, house décor/profile titles, and launcher shortcuts for Lolite Pong, Lolite 2048, Lolite Sokoban and the existing Minecraft 1.8 entry.
+- Introduced **Lolite Plus** (4,500 virtual coins) and **Lolite Pro** (12,500 virtual coins or an 8,000-coin upgrade from Plus). These are fictional, one-time in-game upgrades; no real payments, subscriptions or billing are involved.
+- Expanded **resident profiles** with interactive avatar selection, collected items, wardrobe/equip actions, badges, purchased game launchers and stats.
+- **Licensing note:** the Minecraft item only unlocks a shortcut to Lolite's existing launcher. It is not a purchase, license or entitlement to official Minecraft. Existing Lolite apps and Online Mode remain intact.
+
 ### Lolite Life RP Online Mode — Private Rooms & Cloud Saves — 2026-10-20
 - Added an **Online Mode** tab to the Life RP app, using existing Lolite Chat accounts (no second registration).
 - Players can create or join **private code-based multiplayer rooms**, see who's present live, and exchange preset roleplay actions without sharing location or personal contact details.
