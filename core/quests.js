@@ -144,7 +144,7 @@ function coursesPage(){
 function marketPage(){
  const s=read();
  return head("Lolite Market","Buy RP upgrades, game shortcuts and useful apps.")+
- '<section class="lq-hero"><h2>Make your virtual money useful.</h2><p>Lolite Plus and Pro are one-time <b>in-game</b> unlocks, not actual subscriptions or payments. You can now buy full Game Store titles and actual App Store apps using this same wallet; some starter titles remain free.</p></section>'+
+ '<section class="lq-hero"><h2>Make your virtual money useful.</h2><p>Lolite Plus and Pro are one-time <b>in-game</b> unlocks, not actual subscriptions or payments. You can now buy full Game Store titles and actual App Store apps using this same wallet; some starter titles remain free.</p><div class="lq-actions">'+button("Browse Game Store","open","games","primary")+button("Browse App Store","open","appstore","primary")+'</div></section>'+
  '<div class="lq-grid">'+goods.map(g=>{const have=owned(g,s),cost=price(g,s);return '<article class="lq-card"><span class="lq-tag">'+esc(g.type.toUpperCase())+'</span><h3>'+esc(g.name)+'</h3><p>'+esc(g.desc)+'</p><div class="lq-actions"><span class="lq-money">'+fmt(cost)+'</span>'+button(have?"Owned":s.cash<cost?"Need more cash":"Buy","buy",g.id,have?"":"primary",have||s.cash<cost)+(have&&(g.type==="game"||g.type==="app")?button("Open →","launch",g.id):"")+(have&&(g.type==="cursor"||g.type==="wallpaper")?button("Apply","apply",g.id):"")+'</div></article>'}).join("")+'</div>';
 }
 function walletPage(){const s=read();return head("Your Wallet","Same in-game balance across Lolite Quests and Life RP.")+
