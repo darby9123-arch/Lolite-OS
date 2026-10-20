@@ -35,12 +35,10 @@ async function openConversation(id){
 }
 async function createFriendChat(id){
  if(!friends().includes(id))throw Error('Only friends can be called. Send a friend request first.');
- let conv=s().conversations.filter(x=>x.type==='dm').find(x=>{
-  const ids=members(x.id);return ids.length===2&&ids.includes(uid())&&ids.includes(id)
- });
- if(!conv){await chat().createDM(id);conv=s().conversations.find(x=>x.id===s().conversationId)}
- if(!conv)throw Error('Could not start your direct message. Try again.');
- return conv.id;
+ // The chat creation RPC returns an ID; avoid relying on stale refreshed arrays.
+ const conversationId=await chat().createDM(id);
+ if(!conversationId)throw Error('Could not start your direct message. Try again.');
+ return conversationId;
 }
 function renderCallsHtml(){
  const list=(s()?.conversations||[]).filter(c=>c.type==='group'&&members(c.id).includes(uid()));
@@ -167,7 +165,8 @@ async function hangup(update=true){
 }
 async function startCall(convId){
  if(sending)return;if(currentCall){say('Finish the current call before starting another.');return}
- const c=s()?.conversations.find(c=>c.id===convId);
+ let c=s()?.conversations.find(c=>c.id===convId);
+ if(!c){await chat()?.refresh?.();c=s()?.conversations.find(c=>c.id===convId)}
  if(!c||!['dm','group'].includes(c.type))return say('Open a private chat or a group to call.');
  const targets=[...new Set(members(c.id))].filter(x=>x!==uid());
  if(!targets.length)return say('This chat has nobody else to call.');
