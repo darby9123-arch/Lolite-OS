@@ -314,10 +314,10 @@ function startMini(){
  if(!challenge)return;challenge.stage="skill";challenge.mini={total:1,wins:0,misses:0,success:false};challenge.skillStarted=false;bridge.refresh();
 }
 function startSkillOnRender(){
- var c=challenge;if(!c||c.stage!=="skill"||c.skillStarted)return;
+ var c=challenge;if(!c||c.stage!=="skill")return;
  var target=document.getElementById("lr-skillgame");
- if(!target||!window.LoliteSkillGames)return;
- c.skillStarted=true;
+ if(!target||!window.LoliteSkillGames||(c.skillStarted&&c.gameContainer===target))return;
+ c.gameContainer=target;c.skillStarted=true;
  window.LoliteSkillGames.start(target,{mode:c.gameType,advanced:c.source.member==="pro"},function(result){
   if(challenge!==c)return;
   c.mini={total:result.total,wins:result.score,misses:result.misses,success:result.success};
