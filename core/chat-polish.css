@@ -52,15 +52,15 @@
 #lcRoot .lc-section-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;min-height:18px;padding:1px 6px;border:1px solid #354152;border-radius:6px;background:#202c3b;color:#b5c4d7;font-size:10px;letter-spacing:0}
 #lcRoot .lc-list-empty{padding:9px 11px 12px;font-size:10.5px;line-height:1.5;color:#8193ac}
 #lcRoot .lc-search-empty{margin-top:13px}
-#lcRoot .lc-side-row{display:flex;align-items:center;gap:10px;padding:9px 10px;min-height:54px;background:none;border:1px solid transparent;border-radius:10px;color:#d6e1ef;text-align:left;min-width:0;width:100%;font-weight:500}
+#lcRoot .lc-side-row{display:flex;align-items:center;gap:8px;padding:6px 9px;min-height:45px;background:none;border:1px solid transparent;border-radius:10px;color:#d6e1ef;text-align:left;min-width:0;width:100%;font-weight:500}
 #lcRoot .lc-side-row:hover{background:#223248;color:#fff}
 #lcRoot .lc-side-row.active{background:#273c55;border-color:#3c5876;color:#fff}
-#lcRoot .lc-side-thumb{display:flex;align-items:center;justify-content:center;flex:none;width:36px;height:36px}
-#lcRoot .lc-side-thumb .lc-avatar{width:36px;height:36px;min-width:36px;border-radius:12px;font-size:11px}
+#lcRoot .lc-side-thumb{display:flex;align-items:center;justify-content:center;flex:none;width:31px;height:31px}
+#lcRoot .lc-side-thumb .lc-avatar{width:31px;height:31px;min-width:31px;border-radius:10px;font-size:10px}
 #lcRoot .lc-side-label{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
 #lcRoot .lc-side-label strong{font-size:12px;line-height:1.35;font-weight:750;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #lcRoot .lc-side-label small{font-size:10.5px;color:#93a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#lcRoot .lc-list-icon{display:grid;place-items:center;width:36px;height:36px;border:1px solid #324661;border-radius:12px;background:#25354b;color:#a7c7ff}
+#lcRoot .lc-list-icon{display:grid;place-items:center;width:31px;height:31px;border:1px solid #324661;border-radius:12px;background:#25354b;color:#a7c7ff}
 #lcRoot .lc-list-group{background:#273647;color:#b7d3f6}
 #lcRoot .lc-avatar{border-radius:12px;background:linear-gradient(135deg,#6684ac,#4b5f86);border:1px solid #95b6de2b;font-weight:800;box-shadow:none}
 #lcRoot .lc-side-account{display:flex;align-items:center;gap:9px;padding:12px 13px;min-height:68px;border-top:1px solid #2a394e;background:#151f2c}
@@ -69,10 +69,10 @@
 #lcRoot .lc-account-label small{font-size:10px;color:#8ea1b9;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 /* Main / chat header */
 #lcRoot .lc-main{min-width:0;min-height:0;background:var(--lc-page);display:flex;flex-direction:column}
-#lcRoot .lc-head{padding:0 19px;min-height:76px;height:76px;border-bottom:1px solid #293649;background:#121a25;gap:11px;display:flex;align-items:center}
+#lcRoot .lc-head{padding:0 16px;min-height:65px;height:65px;border-bottom:1px solid #293649;background:#121a25;gap:11px;display:flex;align-items:center}
 #lcRoot .lc-chat-header-avatar{flex:none;display:flex;align-items:center;justify-content:center}
-#lcRoot .lc-chat-header-avatar .lc-avatar{width:42px;height:42px;min-width:42px;font-size:12px;border-radius:14px}
-#lcRoot .lc-chat-header-avatar .lc-list-icon{width:42px;height:42px;border-radius:13px}
+#lcRoot .lc-chat-header-avatar .lc-avatar{width:35px;height:35px;min-width:35px;font-size:11px;border-radius:11px}
+#lcRoot .lc-chat-header-avatar .lc-list-icon{width:35px;height:35px;border-radius:11px}
 #lcRoot .lc-head-identity{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
 #lcRoot .lc-head-title{font-size:15px;letter-spacing:-.2px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #lcRoot .lc-head-sub{font-size:10.5px;color:#91a5bd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0}
@@ -83,30 +83,30 @@
 #lcRoot .lc-message-search input{flex:1;min-width:0;background:#243449;border:1px solid #3a5272;border-radius:8px;padding:9px 10px;color:#edf4ff;outline:none}
 #lcRoot .lc-message-search input:focus{border-color:#73a7f5}
 /* Messages and composer */
-#lcRoot .lc-message-scroll{padding:21px clamp(14px,3vw,34px) 30px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#354459 transparent}
-#lcRoot .lc-msg{display:grid;grid-template-columns:38px minmax(0,1fr);gap:10px;margin-bottom:9px;padding:12px;border:1px solid transparent;border-radius:12px;max-width:100%;transition:background-color .12s}
+#lcRoot .lc-message-scroll{padding:12px clamp(10px,2.5vw,25px) 18px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#354459 transparent}
+#lcRoot .lc-msg{display:grid;grid-template-columns:30px minmax(0,1fr);gap:9px;margin:0 auto 3px;padding:7px 9px;border:1px solid transparent;border-radius:9px;max-width:690px;transition:background-color .12s}
 #lcRoot .lc-msg:hover{background:#1b2635;border-color:#23364d}
 #lcRoot .lc-msg-own{background:#192739;border-color:#24384f}
 #lcRoot .lc-msg-own:hover{background:#21324a}
-#lcRoot .lc-user-avatar{align-self:start;width:36px;height:36px;border-radius:11px}
-#lcRoot .lc-msg .lc-avatar{width:36px;height:36px;min-width:36px}
+#lcRoot .lc-user-avatar{align-self:start;width:30px;height:30px;border-radius:9px}
+#lcRoot .lc-msg .lc-avatar{width:29px;height:29px;min-width:29px;border-radius:9px;font-size:10px}
 #lcRoot .lc-msg-body{width:100%;min-width:0}
-#lcRoot .lc-msg-title{display:flex;gap:8px;align-items:center;min-height:19px;flex-wrap:wrap}
+#lcRoot .lc-msg-title{display:flex;gap:7px;align-items:center;min-height:16px;flex-wrap:wrap}
 #lcRoot .lc-user-name{color:#e6f1ff;font-size:12px;font-weight:800}
 #lcRoot .lc-msg-title time,#lcRoot .lc-msg-title small{font-size:10px;color:#90a1b9}
 #lcRoot .lc-msg-pin{display:inline-flex;align-items:center;gap:4px}
-#lcRoot .lc-msg-content{font-size:13px;line-height:1.7;color:#d8e3f0;margin-top:5px;overflow-wrap:anywhere;white-space:pre-wrap}
-#lcRoot .lc-msg-reactions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+#lcRoot .lc-msg-content{font-size:12.5px;line-height:1.5;color:#d8e3f0;margin-top:2px;overflow-wrap:anywhere;white-space:pre-wrap}
+#lcRoot .lc-msg-reactions{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
 #lcRoot .lc-msg .lc-reaction{background:#283b54;border:1px solid #375472;border-radius:8px;color:#eaf3fe;padding:3px 7px}
-#lcRoot .lc-msg-actions{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:9px;opacity:0;transform:translateY(-2px);transition:opacity .12s,transform .12s}
+#lcRoot .lc-msg-actions{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:4px;opacity:0;transform:translateY(-2px);transition:opacity .12s,transform .12s}
 #lcRoot .lc-msg:hover .lc-msg-actions,#lcRoot .lc-msg:focus-within .lc-msg-actions{opacity:1;transform:none}
-#lcRoot .lc-msg-actions button{background:#293a51;border:1px solid #3a4f6b;border-radius:7px;color:#c8d8eb;font-size:10px;font-weight:650;padding:4px 9px}
+#lcRoot .lc-msg-actions button{background:#293a51;border:1px solid #3a4f6b;border-radius:6px;color:#c8d8eb;font-size:10px;font-weight:650;padding:3px 7px}
 #lcRoot .lc-msg-actions button:hover{color:#fff;background:#3a5475}
 #lcRoot .lc-replyref{padding:7px 10px;margin-top:8px;border-left:2px solid var(--lc-accent);border-radius:0 7px 7px 0;background:#223349;color:#c2d6ef;font-size:10.5px}
-#lcRoot .lc-composer{flex:none;background:#121a25;padding:11px clamp(14px,3vw,28px) 13px;border-top:1px solid #283548}
-#lcRoot .lc-compose-wrap{display:flex;align-items:flex-end;gap:10px;border:1px solid #35475e;background:#202d3e;border-radius:12px;padding:7px 8px 7px 13px}
+#lcRoot .lc-composer{flex:none;background:#121a25;padding:8px clamp(10px,2.5vw,24px) 9px;border-top:1px solid #283548}
+#lcRoot .lc-compose-wrap{display:flex;align-items:flex-end;gap:8px;border:1px solid #35475e;background:#202d3e;border-radius:12px;padding:7px 8px 7px 13px}
 #lcRoot .lc-compose-wrap:focus-within{border-color:#6399e7;box-shadow:0 0 0 2px #5c96ea1e}
-#lcRoot .lc-compose-wrap textarea{font-size:13px;line-height:1.6;max-height:135px;min-height:36px;padding:8px 0 6px;color:#f1f6ff;background:none}
+#lcRoot .lc-compose-wrap textarea{font-size:12.5px;line-height:1.5;max-height:120px;min-height:31px;padding:6px 0 4px;color:#f1f6ff;background:none}
 #lcRoot .lc-compose-wrap textarea::placeholder{color:#889cb7}
 #lcRoot .lc-primary,#lcRoot .lc-send{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#6497e8;color:#09182a;border:1px solid #74aaff;border-radius:9px;padding:10px 14px;font-weight:800;white-space:nowrap}
 #lcRoot .lc-primary:hover,#lcRoot .lc-send:hover{background:#87b2f5;border-color:#a8c8ff}
@@ -147,7 +147,7 @@
 #lcRoot .lc-shortcut-cards button strong{font-size:12px}
 #lcRoot .lc-shortcut-cards button small{font-size:10px;color:#9eb2ce}
 #lcRoot .lc-inbox-rows{background:#172232;border:1px solid #2c3c52;border-radius:12px;padding:5px 8px;margin-top:8px}
-#lcRoot .lc-inbox-rows .lc-side-row{min-height:57px;border-bottom:1px solid #25354a;border-radius:8px}
+#lcRoot .lc-inbox-rows .lc-side-row{min-height:47px;border-bottom:1px solid #25354a;border-radius:8px}
 #lcRoot .lc-inbox-rows .lc-side-row:last-child{border-bottom:0}
 #lcRoot .lc-profile-card{max-width:550px;overflow:hidden;border-radius:15px;border:1px solid #3c526f;background:#1a293b}
 #lcRoot .lc-profile-banner{height:91px;background:linear-gradient(110deg,#3d6296,#213c66 48%,#273b53)}
@@ -244,7 +244,7 @@
  #lcRoot .lc-head .lc-voice-join{padding:7px 8px;max-width:64px;text-overflow:ellipsis;overflow:hidden}
  #lcRoot .lc-head .lc-call-header{padding:7px 8px!important;max-width:95px}
  #lcRoot .lc-message-scroll{padding:10px 8px 14px}
- #lcRoot .lc-msg{padding:9px 7px;gap:7px}
+ #lcRoot .lc-msg{padding:6px 6px;gap:7px}
  #lcRoot .lc-msg-actions{opacity:1}
  #lcRoot .lc-composer{padding:8px}
  #lcRoot .lc-compose-help{display:none}
@@ -275,4 +275,15 @@
  #lcRoot .lc-call-header{font-size:0!important}
  #lcRoot .lc-call-header svg{width:18px;height:18px}
  #lcRoot .lc-inbox-page .lc-page-header .lc-primary{font-size:10px}
+}
+
+/* Chat density: match the composer and messages rather than stretching them across wide windows. */
+#lcRoot .lc-msg-own{background:#182637;border-color:#223449}
+#lcRoot .lc-msg:has(.lc-msg-actions:focus-within){background:#223348}
+#lcRoot .lc-composer .lc-compose-wrap,#lcRoot .lc-composer .lc-reply-bar,#lcRoot .lc-composer .lc-compose-help{max-width:690px;margin-left:auto;margin-right:auto}
+#lcRoot .lc-compose-help{margin-top:4px}
+@container lolite-chat (max-width: 635px){
+ #lcRoot .lc-msg{max-width:100%}
+ #lcRoot .lc-composer .lc-compose-wrap{max-width:100%}
+ #lcRoot .lc-message-scroll{padding:8px 6px 12px}
 }
