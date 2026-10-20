@@ -168,7 +168,7 @@ function paintProfile(){
  const incoming=s.requests?.find(x=>x.from_id===p.id&&x.to_id===myId()&&x.status==='pending');
  const buttons=mine?'<button type="button" class="lc-secondary" data-lc-useraction="close">Close</button>':
   blocked?'<button type="button" class="lc-secondary" data-lc-useraction="close">Close</button>':
-  '<button type="button" class="lc-secondary" data-lc-useraction="message">Message</button>'+
+  '<button type="button" class="lc-secondary" data-lc-useraction="message">Message</button>'+(accepted?'<button type="button" class="lc-primary" data-lc-call="friend" data-lc-id="'+esc(p.id)+'">☎ Call</button>':'')+
   (accepted?'':incoming?'<button type="button" class="lc-primary" data-lc-useraction="accept">Accept friend</button>':sent?'<button type="button" class="lc-secondary" disabled>Request sent</button>':'<button type="button" class="lc-primary" data-lc-useraction="friend">Add friend</button>');
  const layer=document.createElement('div');layer.className='lc-modal-layer lc-user-modal';layer.innerHTML='<div class="lc-dialog" role="dialog" aria-modal="true" aria-label="User profile"><button type="button" class="lc-user-close" data-lc-useraction="close" aria-label="Close profile">×</button><div class="lc-user-profile"><div class="lc-avatar">'+esc((p.avatar||name(p.id).slice(0,2)).toUpperCase())+'</div><h2>'+esc(name(p.id))+'</h2><div>@'+esc(p.username)+'</div><p>'+esc(p.about||'No bio yet')+'</p><small>'+esc(p.status||'online')+'</small></div><div class="lc-dialog-actions">'+buttons+'</div></div>';
  root().appendChild(layer);
@@ -188,7 +188,7 @@ document.addEventListener('click',async e=>{
   return;
  }
  const user=e.target.closest('[data-lc-user]');
- if(!user||!root()?.contains(user)||e.target.closest('[data-lc-action]'))return;
+ if(!user||!root()?.contains(user)||e.target.closest('[data-lc-action],[data-lc-call]'))return;
  e.preventDefault();focusedProfile=user.dataset.lcUser;paintProfile();
 });
 
@@ -267,28 +267,32 @@ async function synchronizePeers(){
 async function joinVoice(){
  const sb=client(),s=state(),c=conversation();
  if(!sb||!s?.user||!c||!['dm','group'].includes(c.type))return notice('Open a direct message or group to join voice.');
- if(voice?.id===c.id)return;
- if(!navigator.mediaDevices?.getUserMedia||!window.RTCPeerConnection)return notice('Voice chat needs a secure browser with WebRTC and microphone support.');
+ if(voice?.id===c.id)return true;
+ if(!navigator.mediaDevices?.getUserMedia||!window.RTCPeerConnection){notice('Voice chat needs a secure browser with WebRTC and microphone support.');return false;}
  stopVoice();
  let stream;
  try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false})}
- catch(e){return notice('Microphone access is required to join voice chat.')}
+ catch(e){notice('Microphone access is required to join voice chat.');return false;}
  const id=c.id;
  const channel=sb.channel('lc-voice-'+id,{config:{private:true,presence:{key:myId()}}});
  const v={id,stream,channel,peers:new Map(),muted:false,deafened:false};
  voice=v;
  channel.on('broadcast',{event:'rtc'},({payload})=>signal(payload));
  channel.on('presence',{event:'sync'},()=>synchronizePeers());
- channel.subscribe(async(status,error)=>{
-  if(voice!==v)return;
-  if(status==='SUBSCRIBED'){
-   try{await channel.track({user_id:myId(),joined_at:new Date().toISOString()});refreshVoiceUI()}
-   catch(e){notice('Unable to join voice presence.');stopVoice()}
-  }else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
-   notice('Voice connection unavailable. Check your connection.');stopVoice();
-  }
+ const connected=await new Promise(resolve=>{
+  let resolved=false;
+  const done=value=>{if(resolved)return;resolved=true;clearTimeout(timer);resolve(value)};
+  const timer=setTimeout(()=>done(false),12000);
+  channel.subscribe(async(status,error)=>{
+   if(voice!==v)return done(false);
+   if(status==='SUBSCRIBED'){
+    try{await channel.track({user_id:myId(),joined_at:new Date().toISOString()});done(true)}
+    catch(e){console.warn('Voice presence unavailable',e);done(false)}
+   }else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED')done(false);
+  });
  });
- refreshVoiceUI();notice('Microphone is on. You joined the voice room.');
+ if(!connected){notice('Private voice room could not connect. Please try again.');stopVoice();return false;}
+ refreshVoiceUI();notice('Microphone is on. You joined the voice room.');return true;
 }
 function stopVoice(){
  if(!voice)return;
@@ -296,7 +300,7 @@ function stopVoice(){
  for(const p of v.peers.values()){try{p.pc.close()}catch{}p.audio.remove()}
  for(const t of v.stream.getTracks())t.stop();
  client()?.removeChannel(v.channel)?.catch?.(()=>{});
- refreshVoiceUI();
+ refreshVoiceUI();window.LoliteChatCalls?.voiceStopped?.();
 }
 document.addEventListener('click',async e=>{
  const b=e.target.closest('[data-lc-voice]');if(!b||!root()?.contains(b))return;
@@ -314,5 +318,5 @@ function afterRender(){
  if(conversation()){showReadReceipts().catch(console.error)}
  poll().catch(console.error);
 }
-window.LoliteChatExtra={afterRender,stopVoice};
+window.LoliteChatExtra={afterRender,stopVoice,joinVoice,isMuted:()=>!!voice?.muted,toggleMute:()=>{if(voice){voice.muted=!voice.muted;voice.stream.getAudioTracks().forEach(t=>t.enabled=!voice.muted);refreshVoiceUI()}},closeProfile:()=>{focusedProfile=null;root()?.querySelector('.lc-user-modal')?.remove()}};
 })();
