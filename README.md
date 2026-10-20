@@ -44,6 +44,18 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Chat notifications avoid putting private message text into operating-system notification previews.
 
 
+### Lolite Quests & Life RP Skill Arcade Update — 2026-10-21
+- Added the **Lolite Quests** app to the desktop, Start/Home and App Store; it uses the **same virtual cash balance** as Life RP. There is no real-money billing or new currency.
+- Added 7 **active-window use quests** for Quick Notes, Paint, Files, Academy, Game Store, Settings and the App Store. Only foreground time with recent genuine interaction counts (90–180 seconds per quest), and each quest can be claimed once.
+- Academy quiz completion now earns **$85 virtual cash per new completed lesson**, plus **$450 per fully completed course**. Previously completed lessons are credited retroactively, with one-time reward bookkeeping to prevent duplicate claims.
+- Lolite Quests' **Market** lets players spend this money on virtual Plus/Pro membership unlocks, OS cursor packs, wallpapers, game launcher shortcuts and two new purchasable mini apps: **Focus Board** (working checklist) and **Arcade Shelf** (purchased game launcher hub).
+- Replaced Life RP's simple selection-button minigames with **six real Canvas-based challenges**: moving targets, timing locks, rhythm notes, memory flipping, timed kitchen stations and navigable mazes. Players must finish successfully to receive cash and XP; failure pays nothing.
+- Added **persistent 1–15 minute cooldowns** after successful jobs, activities and customer work; higher-paying tasks have longer cooldowns. Unfinished or failed tasks do not start a cooldown.
+- Made Life RP **Season Pass significantly harder**: 650 season XP per free tier, 1,200 *separate Premium XP* per premium tier. Premium requires Specialist rank, six claimed quests, nine completed shifts, one property, one business, and a one-time $12,000 in-game unlock. Premium XP is awarded only by harder claimed quests after activation.
+- Added a **paged battle pass**, claimable/locked tier filters, a compact scrollable RP sidebar and shortcuts to the Quest Board, OS Quests, minigames, jobs and shop.
+- Virtual cash saves with RP progress locally and can join its opt-in Life RP Online cloud-save workflow. This is a client-side game economy; it is not an authoritative anti-cheat multiplayer economy.
+- Minecraft purchases only unlock a launcher shortcut within Lolite and **do not grant any Minecraft licence**. Previously available games remain accessible outside the virtual shop.
+
 ### Lolite Life RP City Update — Hands-On Gameplay, Businesses & Shop — 2026-10-20
 - Reworked the **Life RP dashboard** with shortcuts to active gameplay, quests, promotions, businesses, minigames, and the shop.
 - Replaced the old two-answer-only shifts with **three randomly selected work scenarios** from an expanded set of almost 100 occupation and industry questions, followed by a playable skill minigame. Completed work still pays virtual cash and resident XP.
