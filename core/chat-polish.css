@@ -6,6 +6,8 @@
  --lc-surface:#1a2432;--lc-surface-raised:#202d3d;--lc-border:#293549;
  --lc-text:#f2f6fd;--lc-secondary:#a0aec2;--lc-muted:#8190a7;
  --lc-accent:#6c9ff5;--lc-accent-soft:#223857;--lc-focus:#8cbbff;
+ container-type:inline-size;
+ container-name:lolite-chat;
  font:500 12px/1.55 "Plus Jakarta Sans","Segoe UI",system-ui,sans-serif;
  background:var(--lc-page);color:var(--lc-text);
  color-scheme:dark
@@ -169,7 +171,7 @@
 #lcRoot .lc-dialog :is(input,textarea,select):focus,#lcRoot .lc-auth input:focus{border-color:#719fdf}
 #lcRoot .lc-dialog-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:20px}
 #lcRoot .lc-friend-picker{display:flex;flex-direction:column;gap:5px;max-height:220px;overflow:auto;margin-top:8px;border-radius:10px;border:1px solid #30435b;padding:7px;background:#132031}
-#lcRoot .lc-friend-choice{display:flex;align-items:center;gap:10px;margin:0!important;padding:9px;border-radius:8px;cursor:pointer}
+#lcRoot .lc-dialog .lc-friend-choice{display:flex;align-items:center;gap:10px;margin:0!important;padding:9px;border-radius:8px;cursor:pointer}
 #lcRoot .lc-friend-choice:hover{background:#253b56}
 #lcRoot .lc-friend-choice input[type="checkbox"]{flex:none;width:16px;height:16px;accent-color:#6b9ff2;margin:0}
 #lcRoot .lc-friend-choice .lc-avatar{width:31px;height:31px;min-width:31px}
@@ -200,7 +202,7 @@
 #lcRoot .lc-voice-bar{background:#1b3044;border-bottom:1px solid #34536e}
 #lcRoot .lc-seen-by{font-size:10px;color:#86b4ee}
 /* Responsive: retain a usable chats entry on narrow screens. */
-@media(max-width:1080px){
+@container lolite-chat (max-width: 1080px){
  #lcRoot .lc-shell{grid-template-columns:74px 225px minmax(0,1fr)}
  #lcRoot .lc-rail{padding:15px 8px}
  #lcRoot .lc-rail-btn.active::before{left:-9px}
@@ -209,7 +211,7 @@
  #lcRoot .lc-side-shortcuts{padding-left:9px;padding-right:9px}
  #lcRoot .lc-head{padding:0 12px;gap:7px}
 }
-@media(max-width:790px){
+@container lolite-chat (max-width: 790px){
  #lcRoot .lc-shell{grid-template-columns:65px 185px minmax(0,1fr)}
  #lcRoot .lc-rail{padding:10px 5px}
  #lcRoot .lc-brand{padding-bottom:16px}
@@ -224,7 +226,7 @@
  #lcRoot .lc-chat-header-avatar .lc-avatar,#lcRoot .lc-chat-header-avatar .lc-list-icon{height:35px;width:35px;min-width:35px}
  #lcRoot .lc-msg-actions{opacity:1;transform:none}
 }
-@media(max-width:635px){
+@container lolite-chat (max-width: 635px){
  #lcRoot .lc-shell{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) 65px}
  #lcRoot .lc-rail{grid-column:1;grid-row:2;display:flex;flex-direction:row;justify-content:space-around;align-items:center;gap:3px;padding:5px 10px;background:#111b28;border-right:0;border-top:1px solid #33455a;z-index:3}
  #lcRoot .lc-brand,#lcRoot .lc-rail-separator{display:none}
@@ -260,4 +262,17 @@
 }
 @media(prefers-reduced-motion:reduce){
  #lcRoot *,#lcRoot *::before,#lcRoot *::after{animation:none!important;transition:none!important}
+}
+
+/* Small finish details: preserve flexible call headers and touch-friendly actions. */
+#lcRoot .lc-head .lc-call-header svg{width:15px;height:15px;flex:none}
+#lcRoot .lc-call-card button svg{width:16px;height:16px;flex:none}
+#lcRoot .lc-incoming-ring svg{width:31px;height:31px}
+#lcRoot .lc-msg-own .lc-user-name{color:#a9d0ff}
+#lcRoot .lc-friend-picker input[type="checkbox"]:focus-visible{outline:2px solid #95bdff;outline-offset:3px}
+#lcRoot .lc-dialog .lc-friend-choice:has(input:checked){background:#29425f;border-radius:8px}
+@container lolite-chat (max-width: 635px){
+ #lcRoot .lc-call-header{font-size:0!important}
+ #lcRoot .lc-call-header svg{width:18px;height:18px}
+ #lcRoot .lc-inbox-page .lc-page-header .lc-primary{font-size:10px}
 }
