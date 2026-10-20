@@ -3,6 +3,7 @@
 'use strict';
 const URL='README.md',GH='https://github.com/darby9123-arch/Lolite-OS#update-log';
 const fallback=[
+ ['Free & Paid Stores — 2026-10-21','39 complete free-to-play games, free Paint and Calculator, Free/Paid store filters, and one-click Get for free apps. Paid extras remain optional.'],
  ['Lolite Dollars — Paid Game Store & App Store — 2026-10-21','Buy real in-OS game and app unlocks with earned Lolite Dollars. Owned games appear in My Library, optional paid apps install after purchase, and wallet balances are shared with Lolite Quests and Life RP.'],
  ['Lolite Quests & Life RP Skill Arcade — 2026-10-21','Six skill-based minigames, reward cooldowns, a harder Premium Season Pass, shared virtual wallet and Quests app for course and active-app rewards.'],
  ['Lolite Life RP City Update — Hands-on Jobs, Shops, Ranks, Businesses & Minigames — 2026-10-20','Playable job shifts, 16 minigame activities, quests, actual customer work, in-game Plus and Pro memberships, and customisation shop.'],
