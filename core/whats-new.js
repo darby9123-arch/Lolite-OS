@@ -127,13 +127,19 @@ document.addEventListener('click',e=>{
 const previousPage=window.page;
 window.page=function(id){return id==='updates'?appMarkup():previousPage(id)};
 const loading=(async()=>{
- try{
-  const res=await fetch(URL,{cache:'no-store'});
-  if(!res.ok)throw Error('README could not be loaded');
-  const parsed=prepare(parseMarkdown(await res.text()));
-  if(parsed.length<3)throw Error('No release notes found');
-  entries=parsed;selected=null;refresh();
- }catch(error){console.warn('Lolite What’s New: bundled fallback',error)}
+ // Static hosting may transform README.md into HTML or omit the original file.
+ // Both URLs are public project files, and the request sends no user credentials.
+ const sources=[URL,'https://raw.githubusercontent.com/darby9123-arch/Lolite-OS/main/README.md'];
+ for(const source of sources){
+  try{
+   const res=await fetch(source,{cache:'no-store',credentials:'omit'});
+   if(!res.ok)continue;
+   const parsed=prepare(parseMarkdown(await res.text()));
+   if(parsed.length<3)continue;
+   entries=parsed;selected=null;refresh();
+   break;
+  }catch(error){console.warn('Lolite What’s New: source unavailable',source,error)}
+ }
  return entries;
 })();
 window.LoliteWhatsNew=Object.freeze({
