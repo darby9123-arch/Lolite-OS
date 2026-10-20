@@ -35,7 +35,7 @@ const self=()=>state.me||person(meId());
 const label=p=>p?.display_name||p?.username||'Lolite User';
 const initials=p=>(p?.avatar||label(p).slice(0,2)).slice(0,2).toUpperCase();
 const avatar=p=>'<span class="lc-avatar">'+esc(initials(p))+'</span>';
-const friends=()=>state.requests.filter(r=>r.status==='accepted').map(r=>person(r.from_id===meId()?r.to_id:r.from_id)).filter(Boolean);
+const friends=()=>[...new Map(state.requests.filter(r=>r.status==='accepted').map(r=>person(r.from_id===meId()?r.to_id:r.from_id)).filter(Boolean).map(p=>[p.id,p])).values()];
 const blocked=id=>state.blocks.some(b=>b.blocked_id===id);
 const isFriend=id=>friends().some(p=>p.id===id);
 const activeConv=()=>state.view==='channel'?state.conversations.find(c=>c.type==='channel'&&c.name===state.channel):state.conversations.find(c=>c.id===state.conversationId);
