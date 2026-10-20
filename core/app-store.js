@@ -38,6 +38,7 @@
 };input.addEventListener('input',draw);tabs.addEventListener('click',e=>{const b=e.target.closest('.store-tab');if(!b)return;filter=b.dataset.filter;tabs.querySelectorAll('.store-tab').forEach(x=>{const active=x===b;x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active))});draw()});draw()}
  window.addEventListener('lolite-store-purchase',()=>render());
  window.addEventListener('lolite-wallet-updated',()=>render());
+ window.loliteAppStoreFocus=id=>{const app=apps.find(x=>x.id===id);if(!app)return;setTimeout(()=>{const input=document.getElementById('appStoreSearch');if(input){input.value=app.name;input.dispatchEvent(new Event('input',{bubbles:true}));input.focus()}},65)};
  const oldPage=window.page;window.page=function(id){if(id==='appstore'){setTimeout(render,0);return '<div class="appstore"><div class="store-empty">Loading App Store…</div></div>'}return oldPage(id)};
  const oldIcons=window.renderIcons;window.renderIcons=function(){oldIcons();const installed=get();const box=document.getElementById('icons');if(!box)return;apps.filter(a=>installed.includes(a.id)&&a.id!=='academy'&&a.id!=='life-rp').forEach(a=>{const b=document.createElement('button');b.className='desktop-icon';b.ondblclick=()=>window.loliteOpenApp(a.id);b.setAttribute('aria-label',a.name);b.innerHTML=window.LoliteIcons.tile(a.id)+'<span>'+a.name+'</span>';box.appendChild(b)})};
 })();
