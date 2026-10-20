@@ -56,6 +56,15 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Chat notifications avoid putting private message text into operating-system notification previews.
 
 
+### Lolite Dollars — Paid Game Store & App Store — 2026-10-21
+- The **actual Game Store titles now have one-time Lolite Dollar prices** and direct checkout. Buying unlocks the title's real, existing embedded game player; pressing Play or the featured hero before buying cannot launch a paid game. Purchased titles remain accessible through **My Library**.
+- Added **Free to Play** and **My Library** store views, ownership badges, price labels, and a live shared Lolite Dollars wallet linked to Lolite Quests. Selected original starter titles remain free.
+- Added **price tiers** for different games (for example, Escape Road and Baldi's Basics). The existing Minecraft 1.8 client costs 3,500 **virtual** Lolite Dollars to unlock through the store; this does **not** purchase or grant an official Minecraft licence.
+- The **App Store now requires a virtual purchase before installing its paid apps**, and paid apps check their entitlement when opened through desktop shortcuts, search or Start. After purchase, the real installed app launches; uninstallation does not remove ownership and reinstalling is free.
+- The App Store offers functional paid apps including **Paint**, **Wallpaper Editor**, **Calculator**, **Lolite AI**, **Focus Board**, and **Arcade Shelf**. Essentials (Life RP, Lolite Quests, Academy, Chat and Notes) remain free.
+- **Shared persistent purchases** deduct from the same currency earned through RP jobs, Lolite Quests and Academy lessons. Existing installed App Store apps are grandfathered; recognized previous RP/Quests item purchases also confer the matching entitlement.
+- Purchases are entirely **fictional local-game unlocks**, not real payments, online store licences or an authoritative DRM system. Optional RP Online cloud saves can sync this progress when used.
+  
 ### Lolite Quests & Life RP Skill Arcade Update — 2026-10-21
 - Added the **Lolite Quests** app to the desktop, Start/Home and App Store; it uses the **same virtual cash balance** as Life RP. There is no real-money billing or new currency.
 - Added 7 **active-window use quests** for Quick Notes, Paint, Files, Academy, Game Store, Settings and the App Store. Only foreground time with recent genuine interaction counts (90–180 seconds per quest), and each quest can be claimed once.
