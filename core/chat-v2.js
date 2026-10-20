@@ -55,7 +55,8 @@ function sideHtml(){
 function railHtml(){
  return '<aside class="lc-rail"><div class="lc-logo">L</div>'+
  '<button title="Channels and chats" class="lc-rail-btn '+(['channel','conversation','browse'].includes(state.view)?'active':'')+'" data-lc-action="browse">⌂</button>'+
- '<button title="Friends" class="lc-rail-btn '+(state.view==='friends'?'active':'')+'" data-lc-action="friends">♧'+(unreadCount()?'<small style="font-size:9px;color:#fff">'+unreadCount()+'</small>':'')+'</button>'+
+ '<button title="Friends" class="lc-rail-btn '+(state.view==='friends'?'active':'')+'" data-lc-action="friends">♧'+(unreadCount()?'<small style="font-size:9px;color:#fff">'+unreadCount()+'</small>':'')+'</button>'+ 
+ '<button title="Voice calls" class="lc-rail-btn '+(state.view==='calls'?'active':'')+'" data-lc-action="calls" aria-label="Voice calls">☎</button>'+ 
  '<button title="Add friend" class="lc-rail-btn" data-lc-action="addFriend">＋</button>'+
  '<button title="New group" class="lc-rail-btn" data-lc-action="group">☷</button>'+
  '<button title="Your profile" class="lc-rail-btn lc-rail-bottom '+(state.view==='profile'?'active':'')+'" data-lc-action="profileView">◎</button></aside>';
@@ -140,10 +141,10 @@ function render(){
  if(state.loading){r.innerHTML='<div class="lc-loader">Connecting to Lolite Chat…</div>';return}
  if(state.error){r.innerHTML='<div class="lc-placeholder"><div><h2>Could not connect</h2><p>'+esc(state.error)+'</p><button class="lc-primary" data-lc-action="retry">Retry</button></div></div>';return}
  if(!state.user){r.innerHTML=authHtml();return}
- const main=state.view==='friends'?friendsHtml():state.view==='browse'?browseHtml():state.view==='profile'?profileHtml():chatHtml();
+ const main=state.view==='calls'?(window.LoliteChatCalls?.renderCallsHtml?.()||'<main class="lc-main"><div class="lc-placeholder">Loading voice calls…</div></main>'):state.view==='friends'?friendsHtml():state.view==='browse'?browseHtml():state.view==='profile'?profileHtml():chatHtml();
  r.innerHTML='<div class="lc-shell">'+railHtml()+sideHtml()+main+'</div>'+modalHtml();
  $('.lc-message-scroll')?.scrollTo(0,999999);
-  window.LoliteChatExtra?.afterRender?.();
+  window.LoliteChatExtra?.afterRender?.();window.LoliteChatCalls?.afterRender?.();
 }
 async function loadMessages(){
  const c=activeConv();
@@ -236,6 +237,7 @@ async function dispatch(action,id,button){
  case 'tabRegister':state.authTab='register';state.authError='';return render();
  case 'browse':state.view='browse';state.replyTo=null;return refresh(true);
  case 'friends':state.view='friends';state.replyTo=null;return refresh(true);
+  case 'calls':state.view='calls';state.conversationId=null;state.replyTo=null;return refresh(true);
  case 'profileView':state.view='profile';state.replyTo=null;return render();
  case 'channel':state.view='channel';state.channel=id;state.conversationId=null;state.search='';state.showPins=false;state.replyTo=null;return refresh(true);
  case 'openConv':state.view='conversation';state.conversationId=id;state.search='';state.showPins=false;state.replyTo=null;return refresh(true);
