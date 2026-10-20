@@ -15,6 +15,11 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### Game cover image fix — 2026-10-20
+- Game Store cover cards now start with a distinct, built-in SVG poster for each game, so there is always artwork even if a third-party image host blocks hotlinking or goes offline.
+- Verified remote images replace the poster only after loading, and any failed images restore the per-game poster automatically.
+- Kept wide images as covers and square logos with a blurred backdrop; added an image observer fallback and refreshed script caching.
+
 ### Game Store artwork reliability fix — 2026-10-20
 - Repaired the SVG fallback covers so their gradients and background shapes render properly instead of becoming transparent.
 - Stopped bulk-loading all remote cover images at once; visible game cards now get priority.
