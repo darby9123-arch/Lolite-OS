@@ -15,6 +15,14 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### Lolite Life RP — Jobs, Properties & Season Pass — 2026-10-20
+- Launched **Lolite Life RP**, an interactive in-desktop roleplaying game accessible from the desktop, Start menu, Home and App Store.
+- Choose from **20 careers** with decision-based two-step shifts and virtual paychecks, plus **12 side activities** with XP and cash rewards.
+- Buy, upgrade, and select homes from **10 properties**, with time-based rental earnings that can be collected from a unified virtual wallet.
+- Added an **18-tier battle pass** with claimable free rewards and a premium track purchasable with earned *in-game cash only* (no real-money purchases).
+- Added daily check-ins, resident missions, level progression, profile/avatar customisation, badges, transaction history and local progress saving.
+- Battle pass, cash and properties are purely fictional game features; save data remains local to the device or browser.
+
 ### What's New — Live release notes — 2026-10-20
 - Replaced the old placeholder announcements on the Lolite Home screen and welcome screen with **real changes** pulled from this README's Update Log.
 - Added a modern **What's New** section with dated release cards for recent features like Academy, game artwork repairs, Cloud Gaming and desktop improvements.
