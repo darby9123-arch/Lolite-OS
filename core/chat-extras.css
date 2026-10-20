@@ -1,0 +1,42 @@
+/* Lolite Chat — voice rooms, native-alert controls, profile popover, and read receipts */
+.lc-user-avatar,.lc-user-name{padding:0;border:0;background:none;color:inherit;cursor:pointer;text-align:left}
+.lc-user-avatar{display:block;width:36px;height:36px}
+.lc-user-avatar:hover .lc-avatar,.lc-card[data-lc-user]:hover .lc-avatar{outline:2px solid #9385ed}
+.lc-user-name{font-size:12px;font-weight:750;color:#f2f2ff}
+.lc-user-name:hover{text-decoration:underline}
+.lc-card[data-lc-user]{cursor:pointer}
+.lc-card[data-lc-user] button{cursor:pointer}
+.lc-seen-by{font-size:10px;color:#a2aafa;margin:7px 0 0;text-align:right}
+.lc-head .lc-voice-join{flex:none;border:1px solid #6571aa;border-radius:9px;background:#333e62;color:#f1f5ff;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer}
+.lc-head .lc-voice-join:hover,.lc-head .lc-voice-join.active{background:#415d81}
+.lc-voice-bar{flex:none;display:flex;align-items:center;gap:7px;background:#252f47;padding:8px 12px;border-bottom:1px solid #425275;flex-wrap:wrap}
+.lc-voice-status{font-size:11px;font-weight:750;color:#b1f5d7}
+.lc-voice-people{font-size:10px;color:#b8c5d9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40%;margin-right:auto}
+.lc-voice-bar button{border:1px solid #5c6781;border-radius:7px;padding:6px 10px;background:#34415b;color:#fff;font-size:10px;cursor:pointer}
+.lc-voice-bar button:hover{background:#4b5a79}
+.lc-user-close{float:right;color:#e3e9ff;background:none;border:0;font-size:24px;cursor:pointer}
+.lc-user-profile{text-align:center;margin:10px auto}
+.lc-user-profile .lc-avatar{width:65px;height:65px;border-radius:20px;font-size:23px;margin:0 auto 11px}
+.lc-user-profile h2{margin:6px 0 1px;color:#fff}
+.lc-user-profile div,.lc-user-profile small{color:#a4b1c9}
+.lc-user-profile p{margin:12px auto!important;white-space:pre-wrap;overflow-wrap:anywhere}
+.lc-notification-bell{position:relative;min-width:38px}
+#lcNotifCount{position:absolute;top:0;right:0;min-width:16px;height:16px;padding:2px;border-radius:10px;background:#ef5267;color:#fff;font:700 9px/12px "Plus Jakarta Sans",sans-serif;text-align:center}
+#lcNotifCount[hidden]{display:none!important}
+.lc-notif-panel{position:fixed;right:14px;bottom:63px;z-index:2147483500;width:min(390px,calc(100vw - 28px));max-height:min(530px,75vh);background:#1e2534;color:#f4f6fd;border:1px solid #4a566d;border-radius:14px;box-shadow:0 22px 70px #000b;overflow:hidden;display:flex;flex-direction:column;font:12px "Plus Jakarta Sans","Segoe UI",sans-serif}
+.lc-notif-panel header{display:flex;align-items:center;justify-content:space-between;padding:15px 16px;border-bottom:1px solid #344052}
+.lc-notif-panel header strong{font-size:15px}
+.lc-notif-panel button{cursor:pointer;font:inherit}
+.lc-notif-panel header button{border:0;background:none;color:#cbd7e7;font-size:24px}
+.lc-notif-settings{padding:9px 13px;display:flex;justify-content:space-between;align-items:center;background:#263044;color:#acbfd4;font-size:10px;gap:9px}
+.lc-notif-settings button,.lc-notif-panel footer button{padding:6px 10px;background:#35446a;border:1px solid #54678a;color:#e7f1ff;border-radius:7px}
+.lc-notif-list{min-height:100px;overflow:auto;flex:1}
+.lc-notif-item{display:flex;flex-direction:column;gap:4px;width:100%;padding:12px 16px;text-align:left;color:#f0f2fa;background:#252e42;border:0;border-bottom:1px solid #374051}
+.lc-notif-item.is-read{background:#1f2735;opacity:.75}
+.lc-notif-item:hover{background:#34415b}
+.lc-notif-item span{color:#adb9c9;font-size:11px}
+.lc-notif-item time{color:#8f9bb0;font-size:10px}
+.lc-notif-empty{padding:20px;color:#aebbd0;text-align:center;line-height:1.5}
+.lc-notif-panel footer{padding:11px 14px;display:flex;justify-content:flex-end;gap:8px;border-top:1px solid #384357}
+@media(max-width:860px){.lc-head .lc-voice-join{padding:7px 9px;font-size:10px}.lc-voice-people{max-width:29%}}
+@media(max-width:620px){.lc-head-sub{display:none!important}.lc-voice-bar{gap:5px}.lc-voice-people{max-width:100%;order:2;width:100%}.lc-head .lc-voice-join{margin-left:auto}}
