@@ -168,7 +168,7 @@ function paintProfile(){
  const incoming=s.requests?.find(x=>x.from_id===p.id&&x.to_id===myId()&&x.status==='pending');
  const buttons=mine?'<button type="button" class="lc-secondary" data-lc-useraction="close">Close</button>':
   blocked?'<button type="button" class="lc-secondary" data-lc-useraction="close">Close</button>':
-  '<button type="button" class="lc-secondary" data-lc-useraction="message">Message</button>'+(accepted?'<button type="button" class="lc-primary" data-lc-call="friend" data-lc-id="'+esc(p.id)+'">☎ Call</button>':'')+
+  '<button type="button" class="lc-secondary" data-lc-useraction="message">Message</button>'+(accepted?'<button type="button" class="lc-primary" data-lc-call="friend" data-lc-id="'+esc(p.id)+'">'+(window.LoliteChatIcons?.('phone',14)||'')+' Call</button>':'')+
   (accepted?'':incoming?'<button type="button" class="lc-primary" data-lc-useraction="accept">Accept friend</button>':sent?'<button type="button" class="lc-secondary" disabled>Request sent</button>':'<button type="button" class="lc-primary" data-lc-useraction="friend">Add friend</button>');
  const layer=document.createElement('div');layer.className='lc-modal-layer lc-user-modal';layer.innerHTML='<div class="lc-dialog" role="dialog" aria-modal="true" aria-label="User profile"><button type="button" class="lc-user-close" data-lc-useraction="close" aria-label="Close profile">×</button><div class="lc-user-profile"><div class="lc-avatar">'+esc((p.avatar||name(p.id).slice(0,2)).toUpperCase())+'</div><h2>'+esc(name(p.id))+'</h2><div>@'+esc(p.username)+'</div><p>'+esc(p.about||'No bio yet')+'</p><small>'+esc(p.status||'online')+'</small></div><div class="lc-dialog-actions">'+buttons+'</div></div>';
  root().appendChild(layer);
@@ -200,7 +200,7 @@ function showVoiceUI(){
  const r=root(),s=state(),c=conversation();if(!r||!s)return;
  const head=r.querySelector('.lc-head');if(!head)return;
  if(c){
-  const btn=document.createElement('button');btn.type='button';btn.className='lc-voice-join '+(voice?.id===c.id?'active':'');btn.dataset.lcVoice=voice?.id===c.id?'leave':'join';btn.textContent=voice?.id===c.id?'Leave voice':'Join voice';btn.title='Join a private audio room with this chat';head.appendChild(btn);
+  const btn=document.createElement('button');btn.type='button';btn.className='lc-voice-join '+(voice?.id===c.id?'active':'');btn.dataset.lcVoice=voice?.id===c.id?'leave':'join';btn.textContent=voice?.id===c.id?'Leave room':'Join room';btn.title='Join an audio room without ringing anyone. Use Call to invite people.';head.appendChild(btn);
  }
  if(!voice)return;
  const toolbar=document.createElement('section');toolbar.className='lc-voice-bar';
