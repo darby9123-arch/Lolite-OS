@@ -28,6 +28,10 @@
  .store-cover-art-backdrop{position:absolute;inset:-12px;z-index:0;background-size:cover;background-position:center;filter:blur(13px) brightness(.55);opacity:0;transition:opacity .25s ease;pointer-events:none}
  .store-cover.has-game-art .store-cover-art-backdrop{opacity:.92}
  .store-cover-art{z-index:1;background-position:center!important}
+ .store-cover-picture{width:100%;height:100%;display:block;object-fit:cover;object-position:center;pointer-events:none}
+ .store-cover-picture.is-square{object-fit:contain}
+ .store-cover-art{background-image:none!important}
+
  .store-cover.has-game-art .store-cover-title,.store-cover.has-game-art .store-cover-label{z-index:3}
  .store-featured-square .store-hero-art{display:block;position:absolute;z-index:1;right:0;top:0;bottom:0;width:53%;background-image:var(--hero-art);background-position:center right 12%;background-repeat:no-repeat;background-size:contain;filter:drop-shadow(0 14px 25px #0009);pointer-events:none}
  .store-featured-square .store-hero-copy{max-width:55%}
@@ -124,84 +128,74 @@
  const matchesCategory=g=>active==='All Games'||active==='Featured'||active==='Popular Games'?true:g.category===active;
  const filtered=()=>games.filter(g=>matchesCategory(g)&&(!query||g.title.toLowerCase().includes(query.toLowerCase())||g.category.toLowerCase().includes(query.toLowerCase()))&&(active!=='Popular Games'||isPopular(g)));
  const coverPalette=g=>{let hash=0;for(const ch of g.file)hash=(Math.imul(hash,31)+ch.charCodeAt(0))>>>0;const hue=hash%360,hue2=(hue+48+(hash%73))%360;return [`hsl(${hue} 62% 28%)`,`hsl(${hue2} 48% 13%)`,`${12+(hash%13)}s`,String(hash%6),`-${hash%17000}ms`]};
- const card=g=>{const colors=coverPalette(g);const poster=lolitePosterArt(g.title,g.file);return '<article class="store-card"><div class="store-cover has-game-art" data-game-file="'+g.file+'" data-skin="'+colors[3]+'" style="--cover-a:'+colors[0]+';--cover-b:'+colors[1]+';--cover-speed:'+colors[2]+';--cover-delay:'+colors[4]+'" onmouseenter=\'window.loliteStorePreview(this,"'+g.file+'","'+g.title.replace(/"/g,'&quot;')+'")\' onfocus=\'window.loliteStorePreview(this,"'+g.file+'","'+g.title.replace(/"/g,'&quot;')+'")\'><div class="store-cover-art" style="background-image:url(&quot;'+poster+'&quot;)" aria-hidden="true"></div><span class="store-cover-label">'+g.category+'</span><strong class="store-cover-title">'+g.title+'</strong></div><div class="store-card-body"><h3 title="'+g.title+'">'+g.title+'</h3><div class="store-card-meta"><span class="store-tag">'+g.category+'</span><span>'+(g.hosted?'Minecraft 1.8 · Hosted client':'In library')+'</span></div><button class="store-play" type="button" title="'+(g.hosted?'Launch Minecraft 1.8 inside Lolite OS':'Launch inside Lolite OS')+'" onclick=\'window.loliteStorePlay("'+g.file+'")\'>'+'Play game'+' <span aria-hidden="true">↗</span></button>'+(g.hosted?'<p class="store-external-note">EaglercraftX 1.8 from <a href="https://github.com/x8rr/Eaglercraft-Extras" target="_blank" rel="noopener noreferrer">Eaglercraft Extras ↗</a>. Playable in Lolite without bundling game files.</p>':'')+(g.recommended?'<div style="margin-top:10px;padding:9px;border:1px solid #4a4773;border-radius:7px;background:#211f38;color:#d9d5ff;font-size:11px;line-height:1.5"><strong>Recommended:</strong> turn on hardware acceleration for smoother performance.<button type="button" class="store-play" style="margin-top:8px" onclick="window.loliteOpenAccelerationGuide()">Learn more</button></div>':'')+'</div></article>'};
+ const card=g=>{const colors=coverPalette(g);const poster=lolitePosterArt(g.title,g.file);return '<article class="store-card"><div class="store-cover has-game-art" data-game-file="'+g.file+'" data-skin="'+colors[3]+'" style="--cover-a:'+colors[0]+';--cover-b:'+colors[1]+';--cover-speed:'+colors[2]+';--cover-delay:'+colors[4]+'" onmouseenter=\'window.loliteStorePreview(this,"'+g.file+'","'+g.title.replace(/"/g,'&quot;')+'")\' onfocus=\'window.loliteStorePreview(this,"'+g.file+'","'+g.title.replace(/"/g,'&quot;')+'")\'><div class="store-cover-art" aria-hidden="true"><img class="store-cover-picture" src="'+poster+'" alt="" loading="lazy" decoding="async"></div><span class="store-cover-label">'+g.category+'</span><strong class="store-cover-title">'+g.title+'</strong></div><div class="store-card-body"><h3 title="'+g.title+'">'+g.title+'</h3><div class="store-card-meta"><span class="store-tag">'+g.category+'</span><span>'+(g.hosted?'Minecraft 1.8 · Hosted client':'In library')+'</span></div><button class="store-play" type="button" title="'+(g.hosted?'Launch Minecraft 1.8 inside Lolite OS':'Launch inside Lolite OS')+'" onclick=\'window.loliteStorePlay("'+g.file+'")\'>'+'Play game'+' <span aria-hidden="true">↗</span></button>'+(g.hosted?'<p class="store-external-note">EaglercraftX 1.8 from <a href="https://github.com/x8rr/Eaglercraft-Extras" target="_blank" rel="noopener noreferrer">Eaglercraft Extras ↗</a>. Playable in Lolite without bundling game files.</p>':'')+(g.recommended?'<div style="margin-top:10px;padding:9px;border:1px solid #4a4773;border-radius:7px;background:#211f38;color:#d9d5ff;font-size:11px;line-height:1.5"><strong>Recommended:</strong> turn on hardware acceleration for smoother performance.<button type="button" class="store-play" style="margin-top:8px" onclick="window.loliteOpenAccelerationGuide()">Learn more</button></div>':'')+'</div></article>'};
  /* Game artwork: individually curated image URLs keyed to the actual game file.
     No Wikipedia fuzzy searches, no stale localStorage art cache, no cross-title borrowing. */
  const coverFor=file=>window.loliteGameArt?.[file]?.src||null;
- // Never bulk preload ~80 remote game covers: visible artwork takes priority.
+ // Local, title-specific artwork is always present; remote images only enhance it.
  const artCache=new Map();
  window.loliteStorePreview=(el,file,title)=>{
-    if(!el || el.dataset.artLoading==='1' || el.dataset.artLoaded==='1')return;
-    const target=el.querySelector('.store-cover-art');
-    if(!target)return;
-    const url=coverFor(file);
-    if(!url){el.dataset.artLoaded='1';return}
-    // Keep the per-game SVG poster visible if a remote image cannot load.
-    const previous=artCache.get(url);
-    if(previous?.failed && Date.now()-previous.time<60000){
-      el.dataset.artLoaded='fallback';
-      return;
-    }
-    if(el.dataset.artLoaded==='fallback' && Date.now()-Number(el.dataset.lastArtAttempt||0)<60000)return;
-    el.dataset.artLoading='1';
-    el.dataset.lastArtAttempt=String(Date.now());
-    const image=new Image();
-    image.decoding='async';
-    let settled=false;
-    const complete=()=>{
-      if(settled)return false;
-      settled=true;
-      clearTimeout(timer);
-      delete el.dataset.artLoading;
-      return true;
-    };
-    const timer=setTimeout(()=>{
-      if(!complete())return;
-      image.onload=null;
-      image.onerror=null;
-      artCache.set(url,{failed:true,time:Date.now()});
-      el.dataset.artLoaded='fallback';
-    },12000);
-    image.onload=()=>{
-      if(!complete())return;
-      if(!image.naturalWidth||!image.naturalHeight){
-        artCache.set(url,{failed:true,time:Date.now()});
-        el.dataset.artLoaded='fallback';
-        return;
-      }
-      artCache.delete(url);
-      if(el.isConnected){
-        const square=image.naturalWidth/image.naturalHeight<1.25;
-        target.style.backgroundImage='url('+JSON.stringify(url)+')';
-        target.style.backgroundSize=square?'contain':'cover';
-        target.style.backgroundRepeat='no-repeat';
-        target.style.backgroundColor=square?'transparent':'#111720';
-        if(square){
-          let backdrop=el.querySelector('.store-cover-art-backdrop');
-          if(!backdrop){
-            backdrop=document.createElement('div');
-            backdrop.className='store-cover-art-backdrop';
-            target.before(backdrop);
-          }
-          backdrop.style.backgroundImage='url('+JSON.stringify(url)+')';
-        }
-      }
-      el.dataset.artLoaded='1';
-    };
-    image.onerror=()=>{
-      if(!complete())return;
-      artCache.set(url,{failed:true,time:Date.now()});
-      el.dataset.artLoaded='fallback';
-    };
-    image.src=url;
-  };
+   if(!el || el.dataset.artLoading==='1' || el.dataset.artLoaded==='1')return;
+   const target=el.querySelector('.store-cover-art');
+   const picture=target?.querySelector('.store-cover-picture');
+   if(!target || !picture)return;
+   const remote=coverFor(file);
+   if(!remote){el.dataset.artLoaded='fallback';return}
+   const old=artCache.get(remote);
+   if(old?.failed && Date.now()-old.time<60000){el.dataset.artLoaded='fallback';return}
+   el.dataset.artLoading='1';
+   const loader=new Image();
+   loader.decoding='async';
+   loader.referrerPolicy='no-referrer';
+   let done=false;
+   const timer=setTimeout(()=>finish(false),12000);
+   function finish(ok){
+     if(done)return;
+     done=true;
+     clearTimeout(timer);
+     delete el.dataset.artLoading;
+     if(!ok || !loader.naturalWidth || !loader.naturalHeight){
+       artCache.set(remote,{failed:true,time:Date.now()});
+       el.dataset.artLoaded='fallback';
+       return;
+     }
+     artCache.delete(remote);
+     if(!el.isConnected)return;
+     const square=loader.naturalWidth/loader.naturalHeight<1.25;
+     picture.referrerPolicy='no-referrer';
+     picture.onerror=()=>{
+       picture.onerror=null;
+       picture.src=lolitePosterArt(title||file,file);
+       picture.classList.remove('is-square');
+       el.dataset.artLoaded='fallback';
+       artCache.set(remote,{failed:true,time:Date.now()});
+     };
+     picture.classList.toggle('is-square',square);
+     picture.src=remote;
+     if(square){
+       let backdrop=el.querySelector('.store-cover-art-backdrop');
+       if(!backdrop){
+         backdrop=document.createElement('div');
+         backdrop.className='store-cover-art-backdrop';
+         target.before(backdrop);
+       }
+       backdrop.style.backgroundImage='url('+JSON.stringify(remote)+')';
+     }
+     el.dataset.artLoaded='1';
+   }
+   loader.onload=()=>finish(true);
+   loader.onerror=()=>finish(false);
+   loader.src=remote;
+ };
   const featuredGames=[{file:'clminecraftpocketedition.html',title:'Minecraft 1.8',description:'EaglercraftX browser edition, hosted by Eaglercraft Extras. Build, explore and play right inside Lolite OS.'},{file:'clbaldisbasics.html',title:'Baldi’s Basics',description:'A weird school trip turns into a frantic arcade-style escape.'},{file:'clangrybirds2.html',title:'Angry Birds 2',description:'Take aim, test your timing, and topple the towers in this colourful classic.'},{file:'clsubwaysurfersmiami.html',title:'Subway Surfers: Miami',description:'Dash through the city, dodge obstacles, and chase your next high score.'},{file:'clmotox3mm.html',title:'Moto X3M',description:'Race through wild obstacle courses and nail the timing to reach the finish.'}];
  let heroIndex=0;
  function heroMarkup(){const g=featuredGames[heroIndex%featuredGames.length];return '<section class="store-hero store-featured-hero" id="store-featured-hero" data-feature-file="'+g.file+'"><div class="store-hero-art" aria-hidden="true"></div><div class="store-hero-copy"><span class="store-eyebrow">'+'HARDWARE ACCELERATION RECOMMENDED'+'</span><h1>'+g.title+'</h1><p>'+g.description+'</p><button class="store-primary" type="button" onclick=\'window.loliteStorePlay("'+g.file+'")\'>'+'▶ &nbsp; Play now'+'</button><div class="store-hero-dots" role="tablist" aria-label="Featured games">'+featuredGames.map((item,i)=>'<button type="button" class="'+(i===heroIndex?'active':'')+'" aria-label="Show '+item.title.replace(/"/g,'&quot;')+'" aria-selected="'+(i===heroIndex)+'" onclick="window.loliteStoreHeroSelect('+i+')" title="'+item.title.replace(/"/g,'&quot;')+'"></button>').join('')+'</div></div><div class="store-hero-side"><strong>'+String(heroIndex+1).padStart(2,'0')+'</strong><span>FEATURED</span></div></section>'}
  async function loadHeroArt(){const hero=document.getElementById('store-featured-hero');if(!hero)return;const g=featuredGames[heroIndex%featuredGames.length];const poster=lolitePosterArt(g.title,g.file);hero.style.setProperty('--hero-art','url(\"'+poster+'\")');hero.classList.add('has-feature-art');try{const art=coverFor(g.file);if(!art||!hero.isConnected||hero.dataset.featureFile!==g.file)return;const img=new Image();img.onload=()=>{if(hero.isConnected&&hero.dataset.featureFile===g.file){hero.style.setProperty('--hero-art','url("'+art.replace(/"/g,'%22')+'")');hero.classList.add('has-feature-art');hero.classList.toggle('store-featured-square',img.naturalWidth/img.naturalHeight<1.25)}};img.src=art}catch(_){}}
  window.loliteStoreHeroSelect=index=>{heroIndex=(Number(index)+featuredGames.length)%featuredGames.length;const hero=document.getElementById('store-featured-hero');if(!hero)return;hero.outerHTML=heroMarkup();loadHeroArt()};
  setInterval(()=>{if(document.getElementById('store-featured-hero'))window.loliteStoreHeroSelect(heroIndex+1)},20000);
- const artworkObserver=new IntersectionObserver(entries=>{for(const entry of entries){if(!entry.isIntersecting)continue;const el=entry.target;artworkObserver.unobserve(el);window.loliteStorePreview(el,el.dataset.gameFile,el.querySelector('.store-cover-title')?.textContent||'Game')}} ,{rootMargin:'900px 0px'});
+ const artworkObserver=typeof IntersectionObserver==='function'
+   ? new IntersectionObserver(entries=>{for(const entry of entries){if(!entry.isIntersecting)continue;const el=entry.target;artworkObserver.unobserve(el);window.loliteStorePreview(el,el.dataset.gameFile,el.querySelector('.store-cover-title')?.textContent||'Game')}},{rootMargin:'900px 0px'})
+   : {observe(el){window.loliteStorePreview(el,el.dataset.gameFile,el.querySelector('.store-cover-title')?.textContent||'Game')},unobserve(){}};
  const artworkMutationObserver=new MutationObserver(()=>{const root=document.querySelector('.store-main');if(!root)return;root.querySelectorAll('.store-cover[data-game-file]').forEach(el=>{if(el.dataset.artObserved==='1')return;el.dataset.artObserved='1';artworkObserver.observe(el)})});
  const watchArtwork=()=>{const root=document.querySelector('.store-main');if(root&&root.dataset.artworkWatching!=='1'){root.dataset.artworkWatching='1';artworkMutationObserver.observe(root,{childList:true,subtree:true});root.querySelectorAll('.store-cover[data-game-file]').forEach(el=>{if(el.dataset.artObserved==='1')return;el.dataset.artObserved='1';artworkObserver.observe(el)})}};
  const storeFinder=new MutationObserver(watchArtwork);storeFinder.observe(document.documentElement,{childList:true,subtree:true});watchArtwork();
