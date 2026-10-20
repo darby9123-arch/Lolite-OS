@@ -6,7 +6,7 @@ var style=document.createElement("style");
 style.textContent='.window[data-window-id="life-rp"]>.content{padding:0!important;height:calc(100% - 44px)!important;overflow:hidden!important}.window[data-window-id="life-rp"] iframe{display:block;border:0;width:100%;height:100%;background:#09111e}';
 document.head.appendChild(style);
 var priorPage=window.page;
-window.page=function(id){return id===appId?'<iframe src="games/life-rp/index.html?v=city-update-2" title="Lolite Life RP" referrerpolicy="same-origin" allow="fullscreen"></iframe>':priorPage(id)};
+window.page=function(id){return id===appId?'<iframe src="games/life-rp/index.html?v=skill-city-3" title="Lolite Life RP" referrerpolicy="same-origin" allow="fullscreen"></iframe>':priorPage(id)};
 var priorOpen=window.openApp;
 window.openApp=function(id,name,w,h){return priorOpen(id,id===appId?title:name,id===appId?(w||1120):w,id===appId?(h||745):h)};
 var priorIcons=window.renderIcons;
