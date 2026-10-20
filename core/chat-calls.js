@@ -10,6 +10,7 @@ const root=()=>document.querySelector('.window[data-window-id="chatroom"] #lcRoo
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;','"':'&quot;'}[c]));
 const p=id=>s()?.profiles?.find(x=>x.id===id);
 const name=id=>p(id)?.display_name||p(id)?.username||'Lolite user';
+const ico=(k,size=18)=>window.LoliteChatIcons?.(k,size)||'';
 const members=id=>(s()?.members||[]).filter(x=>x.conversation_id===id).map(x=>x.user_id);
 const friends=()=>{const x=s();return (x?.requests||[]).filter(r=>r.status==='accepted').map(r=>r.from_id===uid()?r.to_id:r.from_id).filter(id=>id!==uid()&&!x.blocks.some(b=>b.blocked_id===id))};
 let signedIn=null,interval=null,subscription=null,checking=false,answerBusy=false;
@@ -44,11 +45,11 @@ function renderCallsHtml(){
  const list=(s()?.conversations||[]).filter(c=>c.type==='group'&&members(c.id).includes(uid()));
  const fs=friends().map(id=>p(id)).filter(Boolean);
  return '<main class="lc-main"><div class="lc-calls-home">'+
- '<div class="lc-calls-hero"><div class="lc-calls-symbol">☎</div><div><h2>Voice calls</h2><p>Call a friend or start a group voice call. Your microphone is only used when you join or answer.</p></div></div>'+
+ '<div class="lc-calls-hero"><div class="lc-calls-symbol">'+ico('phone',29)+'</div><div><h2>Voice calls</h2><p>Call a friend or start a group voice call. Your microphone is only used when you join or answer.</p></div></div>'+
  '<h3>Call friends</h3>'+(fs.length?'<div class="lc-call-grid">'+fs.map(user=>
- '<article class="lc-call-card"><div class="lc-avatar">'+esc((user.avatar||name(user.id).slice(0,2)).toUpperCase())+'</div><div class="lc-call-details"><strong>'+esc(name(user.id))+'</strong><small>@'+esc(user.username)+'</small></div><button type="button" class="lc-primary" data-lc-call="friend" data-lc-id="'+esc(user.id)+'">☎ Call</button></article>').join('')+'</div>':'<p class="lc-muted">No friends added yet. Open Friends to send someone a request, then call them here.</p><button class="lc-secondary" data-lc-action="friends">Find friends</button>')+
+ '<article class="lc-call-card"><div class="lc-avatar">'+esc((user.avatar||name(user.id).slice(0,2)).toUpperCase())+'</div><div class="lc-call-details"><strong>'+esc(name(user.id))+'</strong><small>@'+esc(user.username)+'</small></div><button type="button" class="lc-primary" data-lc-call="friend" data-lc-id="'+esc(user.id)+'">'+ico('phone',16)+' Call</button></article>').join('')+'</div>':'<p class="lc-muted">No friends added yet. Open Friends to send someone a request, then call them here.</p><button class="lc-secondary" data-lc-action="friends">Find friends</button>')+
  '<h3>Group calls</h3>'+(list.length?'<div class="lc-call-grid">'+list.map(c=>
- '<article class="lc-call-card"><div class="lc-call-group-icon">☷</div><div class="lc-call-details"><strong>'+esc(c.name||'Group chat')+'</strong><small>'+members(c.id).length+' members</small></div><button type="button" class="lc-primary" data-lc-call="group" data-lc-id="'+esc(c.id)+'">☎ Call group</button></article>').join('')+'</div>':'<p class="lc-muted">Start a group chat with your friends to call everyone together.</p><button class="lc-secondary" data-lc-action="group">Create group</button>')+
+ '<article class="lc-call-card"><div class="lc-call-group-icon">'+ico('users',20)+'</div><div class="lc-call-details"><strong>'+esc(c.name||'Group chat')+'</strong><small>'+members(c.id).length+' members</small></div><button type="button" class="lc-primary" data-lc-call="group" data-lc-id="'+esc(c.id)+'">'+ico('phone',16)+' Call group</button></article>').join('')+'</div>':'<p class="lc-muted">Start a group chat with your friends to call everyone together.</p><button class="lc-secondary" data-lc-action="group">Create group</button>')+
  '<div class="lc-calls-info">Calls use secure private-room signalling and WebRTC audio. You can mute or leave at any time. Everyone chooses whether to answer.</div></div></main>';
 }
 function afterRender(){
@@ -58,18 +59,18 @@ function afterRender(){
   const conv=s().conversations.find(c=>c.id===s().conversationId);
   const head=r.querySelector('.lc-head');
   if(head&&conv&&['dm','group'].includes(conv.type)&&!head.querySelector('[data-lc-call]')){
-   const btn=document.createElement('button');btn.type='button';btn.className='lc-primary lc-call-header';btn.dataset.lcCall='group';btn.dataset.lcId=conv.id;btn.textContent=conv.type==='group'?'☎ Call group':'☎ Call';btn.title='Ring everyone in this conversation';head.appendChild(btn);
+   const btn=document.createElement('button');btn.type='button';btn.className='lc-primary lc-call-header';btn.dataset.lcCall='group';btn.dataset.lcId=conv.id;btn.innerHTML=ico('phone',15)+(conv.type==='group'?' Call group':' Call');btn.title='Ring everyone in this conversation';head.appendChild(btn);
   }
  }else if(s().view==='channel'){
   const head=r.querySelector('.lc-head');
   if(head&&!head.querySelector('[data-lc-call]')){
-   const btn=document.createElement('button');btn.type='button';btn.className='lc-primary lc-call-header';btn.dataset.lcCall='show';btn.textContent='☎ Voice & Calls';head.appendChild(btn);
+   const btn=document.createElement('button');btn.type='button';btn.className='lc-primary lc-call-header';btn.dataset.lcCall='show';btn.innerHTML=ico('phone',15)+' Voice & Calls';head.appendChild(btn);
   }
  }else if(s().view==='friends'){
   for(const card of r.querySelectorAll('.lc-card[data-lc-user]')){
    const id=card.dataset.lcUser,actions=card.querySelector('.lc-card-actions');
    if(friends().includes(id)&&actions&&!actions.querySelector('[data-lc-call]')){
-    const b=document.createElement('button');b.type='button';b.className='lc-primary';b.textContent='☎ Call';b.dataset.lcCall='friend';b.dataset.lcId=id;actions.prepend(b);
+    const b=document.createElement('button');b.type='button';b.className='lc-primary';b.innerHTML=ico('phone',14)+' Call';b.dataset.lcCall='friend';b.dataset.lcId=id;actions.prepend(b);
    }
   }
  }
@@ -89,7 +90,7 @@ function renderDock(){
  const status=currentCall.role==='caller'?
   (ringing?'Ringing '+ringing+' member'+(ringing===1?'':'s')+'…':others?'Connected with '+others+' member'+(others===1?'':'s'):'In voice room'):
   'In call with '+esc(conversationName(currentCall.conversation_id));
- el.innerHTML='<div class="lc-call-dock-title"><div class="lc-call-icon">☎</div><div><strong>'+esc(conversationName(currentCall.conversation_id))+'</strong><small>'+esc(status)+'</small></div></div>'+
+ el.innerHTML='<div class="lc-call-dock-title"><div class="lc-call-icon">'+ico('phone',20)+'</div><div><strong>'+esc(conversationName(currentCall.conversation_id))+'</strong><small>'+esc(status)+'</small></div></div>'+
  '<div class="lc-call-dock-actions"><button type="button" data-lc-call="openActive">Open chat</button><button type="button" data-lc-call="toggleMute">'+(extra()?.isMuted?.()?'Unmute':'Mute')+'</button><button type="button" data-lc-call="hangup" class="lc-call-end">End call</button></div>';
 }
 function updateCallDock(){
@@ -107,7 +108,7 @@ function renderIncoming(){
  let box=document.getElementById('lcIncomingCall');
  if(!box){box=document.createElement('div');box.id='lcIncomingCall';box.className='lc-incoming-wrapper';document.body.appendChild(box)}
  box.innerHTML='<div class="lc-incoming-call" role="dialog" aria-label="Incoming Lolite voice call" aria-live="assertive">'+
- '<div class="lc-incoming-ring">☎</div><small>INCOMING VOICE CALL</small><h2>'+esc(name(activeInvite.initiated_by))+'</h2>'+
+ '<div class="lc-incoming-ring">'+ico('phone',31)+'</div><small>INCOMING VOICE CALL</small><h2>'+esc(name(activeInvite.initiated_by))+'</h2>'+
  '<p>'+esc(conversationName(activeInvite.conversation_id))+'</p><div class="lc-incoming-actions">'+
  '<button type="button" data-lc-call="decline" class="lc-call-decline">Decline</button>'+
  '<button type="button" data-lc-call="answer" class="lc-call-answer">Answer</button></div></div>';
