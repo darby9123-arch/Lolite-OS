@@ -474,4 +474,5 @@ window.LoliteLifeRPExpansion=Object.freeze({
  page:function(tab){if(tab==="home")return upgradedHome();if(tab==="quests")return questPage();if(tab==="businesses")return businessesPage();if(tab==="shop")return shopPage();if(tab==="ranks")return rankPage();if(tab==="jobs")return jobPage();if(tab==="activities")return activityPage();if(tab==="profile")return profilePage();if(tab==="pass")return seasonPass();return null},
  onRendered:function(){var e=state().e;document.body.dataset.lifeTheme=e.equipped.theme||"default"}
 });
+bridge.refresh();
 })();
