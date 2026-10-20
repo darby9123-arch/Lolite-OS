@@ -103,9 +103,9 @@ function messageHtml(m){
  const reply=state.messages.find(x=>x.id===m.reply_to);
  const react=state.reactions.filter(r=>r.message_id===m.id);
  const counts={};react.forEach(r=>{(counts[r.emoji]??=[]).push(r.user_id)});
- return '<article class="lc-msg" data-lc-message="'+m.id+'"><button type="button" class="lc-user-avatar" data-lc-user="'+esc(m.sender_id)+'" title="View profile">'+avatar(p)+'</button>'+ 
+ return '<article class="lc-msg '+(own?'lc-msg-own':'')+'" data-lc-message="'+m.id+'"><button type="button" class="lc-user-avatar" data-lc-user="'+esc(m.sender_id)+'" title="View profile">'+avatar(p)+'</button>'+ 
  '<div class="lc-msg-body"><div class="lc-msg-title"><button type="button" class="lc-user-name" data-lc-user="'+esc(m.sender_id)+'" title="View profile">'+esc(label(p))+'</button><time>'+esc(new Date(m.created_at).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))+'</time>'+
- (m.edited_at?'<small>(edited)</small>':'')+(m.is_pinned?'<small>📌 Pinned</small>':'')+'</div>'+
+ (m.edited_at?'<small>(edited)</small>':'')+(m.is_pinned?'<small class="lc-msg-pin">'+lcIcon('pin',12)+' Pinned</small>':'')+'</div>'+
  (reply?'<div class="lc-replyref">↳ '+esc(label(person(reply.sender_id)))+': '+esc(reply.content.slice(0,75))+'</div>':'')+
  '<div class="lc-msg-content">'+fmt(m.content)+'</div>'+
  (Object.keys(counts).length?'<div class="lc-msg-reactions">'+Object.keys(counts).map(em=>'<button type="button" class="lc-reaction" data-lc-action="react" data-lc-id="'+m.id+'" data-lc-emoji="'+esc(em)+'">'+esc(em)+' '+counts[em].length+'</button>').join('')+'</div>':'')+
@@ -415,5 +415,6 @@ window.page=function(id){
  setTimeout(activate,0);
  return '<div class="lc-root" id="lcRoot"><div class="lc-loader">Opening Lolite Chat…</div></div>';
 };
+window.LoliteChatIcons=lcIcon;
 window.LoliteChat={open:()=>window.openApp('chatroom','Lolite Chat',1100,700),refresh:()=>refresh(true),getClient:()=>sb,getState:()=>state,createDM,sendFriendRequest:requestFriend};
 })();
