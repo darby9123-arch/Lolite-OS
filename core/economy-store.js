@@ -5,7 +5,7 @@
 var SAVE="lolite-life-rp-v1",INSTALLED="loliteInstalledApps";
 var FREE_GAMES=new Set(["lolite-pong.html","lolite-2048.html","lolite-sokoban.html"]);
 var FREE_APPS=new Set(["life-rp","lolite-quests","academy","chatroom","notes"]);
-var APP_PRICES=Object.freeze({calculator:180,paint:620,"wallpaper-editor":1450,"lowlight-ai":1800});
+var APP_PRICES=Object.freeze({calculator:180,paint:620,"wallpaper-editor":1450,"lowlight-ai":1800,focus:1200,arcade:2100});
 var PRIOR_GAME=Object.freeze({"lolite-pong.html":"game-pong","lolite-2048.html":"game-2048","lolite-sokoban.html":"game-sokoban","clminecraftpocketedition.html":"game-minecraft"});
 function read(){
  try{var v=JSON.parse(localStorage.getItem(SAVE)||"null");if(v&&typeof v==="object"&&!Array.isArray(v)){
@@ -69,7 +69,7 @@ function hasApp(app){
  var id=typeof app==="string"?app:app?.id;
  if(!id)return false;
  if(appPrice(id)===0)return true;
- var s=read(),p=storeState(s);return p.apps.includes(id);
+ var s=read(),p=storeState(s);return p.apps.includes(id)||(["focus","arcade"].includes(id)&&Array.isArray(s.extras.osApps)&&s.extras.osApps.includes(id));
 }
 function buy(type,thing){
  var key=type==="game"?thing?.file:(typeof thing==="string"?thing:thing?.id);
@@ -82,6 +82,7 @@ function buy(type,thing){
  if(list.includes(key))return {ok:true,alreadyOwned:true,spent:0,balance:s.cash};
  if(s.cash<cost)return {ok:false,reason:"Not enough Lolite Dollars. You need "+money(cost-s.cash)+" more.",shortfall:cost-s.cash};
  s.cash-=cost;list.push(key);
+ if(type==="app"&&["focus","arcade"].includes(key)){s.extras.osApps=Array.isArray(s.extras.osApps)?s.extras.osApps:[];if(!s.extras.osApps.includes(key))s.extras.osApps.push(key)}
  var label=type==="game"?"Game Store: "+thing.title:"App Store: "+key;
  s.history.unshift({label:label,delta:-cost,date:new Date().toLocaleDateString("en-AU")});s.history=s.history.slice(0,15);
  if(!write(s))return {ok:false,reason:"Could not save the purchase. Nothing was charged."};
