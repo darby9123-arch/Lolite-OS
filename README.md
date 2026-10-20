@@ -15,6 +15,16 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### Lolite Chat — Messaging, Groups and Calling Reliability Fix — 2026-10-21
+- Fixed a Supabase row-level-security issue where creating a DM or group and asking for the inserted row immediately could fail. The earlier code could not proceed to add chat members, blocking messages and calls.
+- Added an atomic authenticated conversation-creation RPC (lolite_create_conversation), which validates friendship and membership and saves the chat with all members in one transaction; failed creations do not leave orphan conversations.
+- Updated the Message and Create Group flows to call this RPC and reuse existing DMs.
+- Fixed Call Friend to receive the newly created DM's ID directly rather than relying on a sometimes-stale list of chats.
+- Granted the missing database permission needed for users to edit their own messages, with existing sender-only row-level security still enforced.
+- Re-tested the database under the authenticated role for DM creation, group membership, sending/editing messages, and call invitations, with all temporary test data rolled back.
+- Updated Chat asset cache versions so existing browser sessions fetch the repaired code. A full two-browser voice test is still recommended, and some networks may require TURN for WebRTC connectivity.
+
+
 ### Lolite Chat — Visible Voice Calls and Group Calling — 2026-10-20
 - Added an always-visible **Voice Calls (☎)** navigation tab in Lolite Chat, including a dedicated Call Friends and Call Groups screen. It is available even when no direct-message conversation is selected.
 - Added **Call** actions to friend cards and profiles, and **Call group** to group conversation headers and the Calls screen.
