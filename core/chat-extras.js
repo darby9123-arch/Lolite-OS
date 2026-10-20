@@ -86,10 +86,12 @@ async function poll(){
    sb.from('friend_requests').select('id,from_id,status').eq('to_id',uid).eq('status','pending')
   ]);
   if(results.some(r=>r.error))return;
+  if(uid!==currentUser)return;
   const chats=(results[0].data||[]).filter(c=>c.type==='dm'||c.type==='group');
   const req=results[1].data||[];
   let messages=[];
   if(chats.length){const r=await sb.from('messages').select('id,conversation_id,sender_id,content').in('conversation_id',chats.map(c=>c.id)).order('id',{ascending:false}).limit(80);if(!r.error)messages=r.data||[]}
+  if(uid!==currentUser)return;
   const max=messages.reduce((n,m)=>Math.max(n,Number(m.id)),0),pending=req.map(r=>r.id);
   if(!lastCursor){lastCursor={maxMessage:max,requests:pending};persist();return}
   const old=Number(lastCursor.maxMessage)||0;const seen=new Set(lastCursor.requests||[]);
@@ -107,9 +109,9 @@ async function poll(){
 }
 function setUser(uid){
  if(currentUser===uid)return;
+ stopVoice();focusedProfile=null;
  restoreForUser(uid);if(pollTimer){clearInterval(pollTimer);pollTimer=null}
  if(uid){poll();pollTimer=setInterval(poll,12000)}
- else{stopVoice();focusedProfile=null}
 }
 async function boot(){
  ensureBell();const sb=client();if(!sb)return;
