@@ -15,6 +15,14 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### Lolite Academy — Interactive Guide & Courses — 2026-10-20
+- Added **Lolite Academy**, a fully integrated educational app, available from the desktop, Start menu, workspace search, Home shortcuts and App Store (Education).
+- Added **7 guided courses with 21 practical lessons** covering the desktop, window controls, Game Store/cloud gaming, Files, personalisation, Lolite Chat, and browser troubleshooting.
+- Each lesson includes step-by-step instructions, a useful tip, a **Try it in Lolite** button, and an interactive knowledge-check quiz with correct-answer explanations.
+- Added lesson completion tracking, **20 XP per completed lesson**, progress bars, achievement milestones, course search and filters.
+- Progress is saved **locally on the current device/browser**. No new account or external service is required.
+- Academy uses its own responsive styling and a dedicated icon; it doesn't replace existing apps.
+
 ### Game cover image fix — 2026-10-20
 - Game Store cover cards now start with a distinct, built-in SVG poster for each game, so there is always artwork even if a third-party image host blocks hotlinking or goes offline.
 - Verified remote images replace the poster only after loading, and any failed images restore the per-game poster automatically.
