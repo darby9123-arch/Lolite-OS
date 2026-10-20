@@ -15,6 +15,15 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### Lolite Chat — Voice Rooms, Desktop Notifications & Read Receipts — 2026-10-20
+- Added **live WebRTC voice rooms** to private direct messages and group chats, with microphone consent, Join/Leave, Mute, Deafen and participant names. Audio is peer-to-peer; Supabase private Realtime channels exchange connection signals. Some networks require a TURN relay for reliable connections.
+- Added a **notifications bell** in the Lolite taskbar for new private messages and incoming friend requests. Notifications include a locally saved inbox, unread counter, Mark all seen, and Clear all.
+- Added an **Enable desktop alerts** control; when you grant permission, Lolite can display real system notifications while Lolite is running. Closed-browser push notifications are not included.
+- Added persistent, conversation-member-only **Seen by** read receipts for DMs and groups, saved in Supabase only when messages are actually viewed.
+- Clicking a person's message name, avatar or friend card opens their profile, with options to **Add friend**, accept an incoming request, or start a private message.
+- Chat notifications avoid putting private message text into operating-system notification previews.
+
+
 ### Lolite Life RP — Jobs, Properties & Season Pass — 2026-10-20
 - Launched **Lolite Life RP**, an interactive in-desktop roleplaying game accessible from the desktop, Start menu, Home and App Store.
 - Choose from **20 careers** with decision-based two-step shifts and virtual paychecks, plus **12 side activities** with XP and cash rewards.
