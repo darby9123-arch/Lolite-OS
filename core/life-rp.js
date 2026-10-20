@@ -31,6 +31,18 @@ var earnedGames={
 };
 var earnedWalls=new Set(["ocean-dawn","forest-mist","retro-sunset","cyber-grid","animated-solar","animated-galaxy"]);
 var earnedCursors=new Set(["classic","glass","retro","neon"]);
+window.LoliteRPLaunchGame=function(value){
+ if(value==="minecraft"){window.lolitePlayMinecraft?.();return}
+ var game=Object.prototype.hasOwnProperty.call(earnedGames,value)?earnedGames[value]:null;
+ if(!game)return;
+ var id="life-rp-game-"+value;
+ window.openApp(id,game.title,900,700);
+ var content=document.querySelector('.window[data-window-id="'+id+'"]>.content');
+ if(content){
+ content.style.cssText+=";padding:0!important;overflow:hidden!important";
+ var iframe=document.createElement("iframe");iframe.title=game.title;iframe.src=game.path;iframe.referrerPolicy="same-origin";iframe.style.cssText="width:100%;height:100%;display:block;border:0;background:#090c12";content.replaceChildren(iframe);
+ }
+};
 window.addEventListener("message",function(event){
  if(event.origin!==location.origin||!event.data||event.data.type!=="lolite-life-rp")return;
  var frame=document.querySelector('.window[data-window-id="life-rp"] iframe');
