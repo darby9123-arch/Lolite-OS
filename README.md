@@ -15,6 +15,12 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### Game Store artwork reliability fix — 2026-10-20
+- Repaired the SVG fallback covers so their gradients and background shapes render properly instead of becoming transparent.
+- Stopped bulk-loading all remote cover images at once; visible game cards now get priority.
+- When a third-party image is unavailable or stalls, Lolite keeps the matching game's own generated cover visible and can retry later.
+- Updated the Game Store script cache version to load the fix on GitHub Pages and Vercel.
+
 ### 3.15.4 — Complete native installer downloads — 2026-10-18
 - Fixed a native response-stream stall while writing installer downloads to disk.
 - Added a full-download regression test covering buffering, delayed consumers and installer verification.
