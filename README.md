@@ -56,6 +56,13 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Chat notifications avoid putting private message text into operating-system notification previews.
 
 
+### Free & Paid Stores — 2026-10-21
+- **39 of 82 actual Game Store titles are now free-to-play**, not demos. Examples include Block Blast, Cookie Clicker, Cut the Rope, Fireboy and Watergirl, Slope, Paper.io, Moto X3M, OvO, Snow Rider, Tiny Fishing, and Pong. The other 43 titles keep their earned-virtual-currency purchase prices.
+- The Game Store features a prominent **Free to Play** collection, FREE labels, and **Play for free** actions. Free games launch their actual game windows and do not change the Lolite Dollars wallet; paid games still require a one-time unlock.
+- **Calculator and Lolite Paint are now free**, along with Life RP, Lolite Quests, Academy, Chat and Quick Notes. Optional extras such as Wallpaper Editor, AI, Focus Board and Arcade Shelf remain paid.
+- The App Store now includes explicit **Free** and **Paid** filters. Uninstalled free apps use **Get** and immediately install at zero cost; paid ones continue to use Buy → Install → Open. Existing purchases and installed apps are preserved.
+- Pricing and availability are virtual in-OS unlocks, not external service purchases or paid game licences.
+
 ### Lolite Dollars — Paid Game Store & App Store — 2026-10-21
 - The **actual Game Store titles now have one-time Lolite Dollar prices** and direct checkout. Buying unlocks the title's real, existing embedded game player; pressing Play or the featured hero before buying cannot launch a paid game. Purchased titles remain accessible through **My Library**.
 - Added **Free to Play** and **My Library** store views, ownership badges, price labels, and a live shared Lolite Dollars wallet linked to Lolite Quests. Selected original starter titles remain free.
