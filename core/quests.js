@@ -110,7 +110,7 @@ function qclaim(id){
 }
 function owned(g,s){const e=s.extras;
  if(g.type==="member")return g.id==="plus"?["plus","pro"].includes(e.membership):e.membership==="pro";
- return g.type==="app"?(e.osApps||[]).includes(g.id):(e.owned||[]).includes(g.id);
+ return g.type==="app"?(e.osApps||[]).includes(g.id)||(e.storePurchases?.apps||[]).includes(g.id):(e.owned||[]).includes(g.id);
 }
 function price(g,s){return g.id==="pro"&&s.extras.membership==="plus"?8000:g.price}
 function buy(id){
@@ -144,7 +144,7 @@ function coursesPage(){
 function marketPage(){
  const s=read();
  return head("Lolite Market","Buy RP upgrades, game shortcuts and useful apps.")+
- '<section class="lq-hero"><h2>Make your virtual money useful.</h2><p>Lolite Plus and Pro are one-time <b>in-game</b> unlocks, not actual subscriptions or payments. Previously accessible games remain free in their usual locations; these purchases add collection shortcuts.</p></section>'+
+ '<section class="lq-hero"><h2>Make your virtual money useful.</h2><p>Lolite Plus and Pro are one-time <b>in-game</b> unlocks, not actual subscriptions or payments. You can now buy full Game Store titles and actual App Store apps using this same wallet; some starter titles remain free.</p></section>'+
  '<div class="lq-grid">'+goods.map(g=>{const have=owned(g,s),cost=price(g,s);return '<article class="lq-card"><span class="lq-tag">'+esc(g.type.toUpperCase())+'</span><h3>'+esc(g.name)+'</h3><p>'+esc(g.desc)+'</p><div class="lq-actions"><span class="lq-money">'+fmt(cost)+'</span>'+button(have?"Owned":s.cash<cost?"Need more cash":"Buy","buy",g.id,have?"":"primary",have||s.cash<cost)+(have&&(g.type==="game"||g.type==="app")?button("Open →","launch",g.id):"")+(have&&(g.type==="cursor"||g.type==="wallpaper")?button("Apply","apply",g.id):"")+'</div></article>'}).join("")+'</div>';
 }
 function walletPage(){const s=read();return head("Your Wallet","Same in-game balance across Lolite Quests and Life RP.")+
@@ -161,7 +161,7 @@ function shelfPage(){return head("Arcade Shelf","One place for purchased game sh
 function render(){
  const root=document.querySelector('.window[data-window-id="lolite-quests"] #lq-root');if(!root)return;
  const pages=[["quests","Quest Board"],["courses","Academy Rewards"],["market","Market"],["wallet","Wallet"]];
- const apps=read().extras.osApps||[];
+ const entitlements=read().extras;const apps=[...new Set([...(entitlements.osApps||[]),...(entitlements.storePurchases?.apps||[])])];
  if(apps.includes("focus"))pages.push(["focus","Focus Board"]);
  if(apps.includes("arcade"))pages.push(["arcade","Arcade Shelf"]);
  if(["focus","arcade"].includes(tab)&&!apps.includes(tab))tab="market";
@@ -186,7 +186,7 @@ const page=window.page;window.page=function(id){return id==="lolite-quests"?'<di
 const oldOpen=window.openApp;window.openApp=function(id,title,w,h){const result=oldOpen(id,id==="lolite-quests"?"Lolite Quests":title,id==="lolite-quests"?(w||1040):w,id==="lolite-quests"?(h||710):h);if(id==="lolite-quests")setTimeout(render,0);return result};
 const oldIcons=window.renderIcons;window.renderIcons=function(){if(typeof oldIcons==="function")oldIcons();const area=document.getElementById("icons");if(!area||area.querySelector("[data-lq-shortcut]"))return;const b=document.createElement("button");b.type="button";b.className="desktop-icon";b.dataset.lqShortcut="1";b.innerHTML=(window.LoliteIcons?.tile("academy")||"★")+"<span>Lolite Quests</span>";b.addEventListener("click",()=>window.openApp("lolite-quests","Lolite Quests",1040,710));area.appendChild(b)};
 window.LoliteWallet=Object.freeze({getBalance:balance});
-window.LoliteQuests=Object.freeze({open:()=>window.openApp("lolite-quests","Lolite Quests",1040,710),academyCompleted:academyCompleted,reconcile:reconcile,getBalance:balance,getAppProgress:id=>progress(id),canClaim:id=>{const q=tasks.find(q=>q.id===id);return q?canClaim(q):false}});
+window.LoliteQuests=Object.freeze({open:()=>window.openApp("lolite-quests","Lolite Quests",1040,710),openView:id=>{if(!["focus","arcade"].includes(id))return;tab=id;window.openApp("lolite-quests","Lolite Quests",1040,710);setTimeout(render,65)},academyCompleted:academyCompleted,reconcile:reconcile,getBalance:balance,getAppProgress:id=>progress(id),canClaim:id=>{const q=tasks.find(q=>q.id===id);return q?canClaim(q):false}});
 setTimeout(reconcile,300);
 window.addEventListener("storage",e=>{if(e.key===RP||e.key===USAGE)render()});
 })();
