@@ -305,7 +305,7 @@ function finishChallenge(){
   if(c.kind==="activity"){s.activities++;s.completedActivities[c.id]=(s.completedActivities[c.id]||0)+1;eventUpdate(s,e,"activity")}
   if(c.kind==="business"){e.businesses[c.id].stock--;e.businesses[c.id].served++;eventUpdate(s,e,"business")}
   if(perfect){e.perfectGames++;eventUpdate(s,e,"perfect")}
-  var minutes=Math.min(15,Math.max(1,1+Math.ceil(gain/160)));e.cooldowns[c.kind+":"+c.id]=Date.now()+minutes*60000;
+  var minutes=Math.min(15,Math.max(1,Math.ceil(gain/140)));e.cooldowns[c.kind+":"+c.id]=Date.now()+minutes*60000;
   e.lastMini=c.name;
  });
  toast("Completed "+c.name+"! "+currency(gain)+" earned · "+xp+" XP"+(perfect?" · PERFECT!":""));
@@ -503,7 +503,7 @@ document.addEventListener("click",function(ev){var b=ev.target.closest("[data-lr
 document.addEventListener("input",function(ev){if(ev.target.matches("[data-lr-range]")&&challenge?.mini?.kind==="precision"){challenge.mini.value=Number(ev.target.value);challenge.mini.moved=true;var n=document.getElementById("lr-readout");if(n)n.textContent=String(challenge.mini.value)}});
 document.addEventListener("submit",function(ev){if(ev.target.id==="lr-name-form"){ev.preventDefault();var n=ev.target.elements.name.value.trim().slice(0,24);if(!n)return;update(function(s){s.name=n});toast("Profile name updated.")}});
 window.LoliteLifeRPExpansion=Object.freeze({
- intercept:function(action,id){if(action==="shift"||action==="activity"){launch(action==="shift"?"job":"activity",id);return true}if(action==="tab"&&challenge){window.LoliteSkillGames?.stop();challenge=null}return false},
+ intercept:function(action,id){if(action==="tab"&&id==="osquests"){try{window.parent?.LoliteQuests?.open?.()}catch(e){}return true}if(action==="shift"||action==="activity"){launch(action==="shift"?"job":"activity",id);return true}if(action==="tab"&&challenge){window.LoliteSkillGames?.stop();challenge=null}return false},
  challengeHTML:challengeHTML,
  page:function(tab){if(tab==="home")return upgradedHome();if(tab==="quests")return questPage();if(tab==="businesses")return businessesPage();if(tab==="shop")return shopPage();if(tab==="ranks")return rankPage();if(tab==="jobs")return jobPage();if(tab==="activities")return activityPage();if(tab==="profile")return profilePage();if(tab==="pass")return seasonPass();return null},
  onRendered:function(){var e=state().e;document.body.dataset.lifeTheme=e.equipped.theme||"default";startSkillOnRender()}
