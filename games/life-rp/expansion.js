@@ -266,7 +266,7 @@ function launch(kind,id){
 }
 function finishChallenge(){
  var c=challenge;if(!c)return;challenge=null;
- var all=(c.questions.length+(c.mini?.total||0)),points=c.correct+(c.mini?.wins||0),perfect=points>=all,percent=all?points/all:0;
+ var all=(c.questions.length+(c.mini?.total||0)),points=c.correct+(c.mini?.wins||0),perfect=points>=all&&(!c.mini||c.mini.misses===0),percent=all?points/all:0;
  var base=c.kind==="job"?c.source.pay:c.kind==="activity"?c.source.pay:Math.round(c.source.revenue*(1+((state().e.businesses[c.id]?.level||1)-1)*.25));
  var gain=Math.round(base*(.6+.65*percent)),xp=Math.round(70+points*16+(c.kind==="business"?40:0));
  update(function(s,e){
@@ -279,7 +279,7 @@ function finishChallenge(){
  });
  toast("Completed "+c.name+"! "+currency(gain)+" earned · "+xp+" XP"+(perfect?" · PERFECT!":""));
 }
-function startMini(){var c=challenge;c.stage="mini";c.mini=initMini(c.gameType,c.source.member==="pro");bridge.refresh()}
+function startMini(){var c=challenge;c.stage="minigame";c.mini=initMini(c.gameType,c.source.member==="pro");bridge.refresh()}
 function advanceMini(){
  var c=challenge,m=c.mini;if(!m)return;
  if(m.kind==="memory"){if(m.matches>=m.total)return finishChallenge();return}
