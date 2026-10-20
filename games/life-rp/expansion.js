@@ -149,6 +149,18 @@ function questPage(){
  btn(status==="claimed"?"Claimed":status==="ready"?"Claim rewards":status==="active"?"In progress":"Accept quest",status==="ready"?"questclaim":"questaccept",key,status==="ready"?"primary":"soft",!unlock||status==="claimed"||status==="active")+'</article>'
  }).join("")+'</div><p class="hint">Daily and weekly quests reset automatically on your device calendar. Tasks you complete before accepting a quest will not count.</p>';
 }
+
+function upgradedHome(){
+ var x=state(),p=x.s,e=x.e,job=find(jobs,p.job)||jobs[0],claimed=e.claimedQuests;
+ return '<section class="panel hero"><div><div class="eyebrow">YOUR LOLITE CITY</div><h2>Make a living. Build a life.</h2><p>Work hands-on shifts, complete quests, play minigames, build businesses and earn rewards for real progress.</p><div class="selectrow"><button type="button" class="btn primary" data-lr="beginjob" data-arg="'+esc(job.id)+'">Work as '+esc(job.name)+'</button><button type="button" class="btn soft" data-action="tab" data-id="quests">View quests</button></div></div><div class="hero-art" aria-hidden="true">🏙️</div></section>'+
+ '<div class="grid" style="margin-top:15px">'+
+ '<article class="card"><span class="tag">CAREER</span><h3>'+esc(ranks[e.rank].name)+'</h3><p>Complete shifts and quests to qualify for promotion.</p><button class="btn soft" data-action="tab" data-id="ranks">View ranks</button></article>'+
+ '<article class="card"><span class="tag">QUESTS</span><h3>'+claimed+' claims completed</h3><p>Quests are how you earn new seasonal battle-pass XP.</p><button class="btn primary" data-action="tab" data-id="quests">Quest board</button></article>'+
+ '<article class="card"><span class="tag">BUSINESSES</span><h3>'+Object.keys(e.businesses).length+' owned</h3><p>Serve customers in minigames and grow your company.</p><button class="btn soft" data-action="tab" data-id="businesses">Manage business</button></article>'+
+ '<article class="card"><span class="tag">MEMBERSHIP</span><h3>'+esc(e.membership.toUpperCase())+'</h3><p>Unlock more virtual perks in the shop.</p><button class="btn soft" data-action="tab" data-id="shop">Visit shop</button></article></div>'+
+ '<div class="columns" style="margin-top:16px"><section class="panel"><h2>Daily Check-In</h2><p>Claim your bonus when available: $150 and 90 resident XP.</p><button class="btn gold" data-action="daily" '+(p.lastDaily===day()?'disabled':'')+'>Claim daily reward</button></section>'+
+ '<section class="panel"><h2>Resident Progress</h2><div class="stats"><span>'+p.shifts+' shifts</span><span>'+p.activities+' activities</span><span>'+p.properties.length+' properties</span></div><div class="selectrow" style="margin-top:15px"><button class="btn primary" data-action="tab" data-id="activities">Play minigames</button><button class="btn soft" data-action="tab" data-id="pass">Season Pass</button></div></section></div>';
+}
 function seasonPass(){
  var x=state(),s=x.s,e=x.e,step=400,tier=Math.min(18,Math.floor(s.passXp/step));var road="";
  for(var i=1;i<=18;i++){var unlock=i<=tier,free=s.freeRewards.includes(i),paid=s.premiumRewards.includes(i),freeReward=i%5===0?"Exclusive badge":"Cash "+currency(65+i*25),premReward=i%6===0?"Premium collectible":"Cash "+currency(120+i*42);
@@ -459,7 +471,7 @@ document.addEventListener("submit",function(ev){if(ev.target.id==="lr-name-form"
 window.LoliteLifeRPExpansion=Object.freeze({
  intercept:function(action,id){if(action==="shift"||action==="activity"){launch(action==="shift"?"job":"activity",id);return true}if(action==="tab"&&challenge){challenge=null}return false},
  challengeHTML:challengeHTML,
- page:function(tab){if(tab==="quests")return questPage();if(tab==="businesses")return businessesPage();if(tab==="shop")return shopPage();if(tab==="ranks")return rankPage();if(tab==="jobs")return jobPage();if(tab==="activities")return activityPage();if(tab==="profile")return profilePage();if(tab==="pass")return seasonPass();return null},
+ page:function(tab){if(tab==="home")return upgradedHome();if(tab==="quests")return questPage();if(tab==="businesses")return businessesPage();if(tab==="shop")return shopPage();if(tab==="ranks")return rankPage();if(tab==="jobs")return jobPage();if(tab==="activities")return activityPage();if(tab==="profile")return profilePage();if(tab==="pass")return seasonPass();return null},
  onRendered:function(){var e=state().e;document.body.dataset.lifeTheme=e.equipped.theme||"default"}
 });
 })();
