@@ -15,6 +15,16 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### Lolite Chat — Visible Voice Calls and Group Calling — 2026-10-20
+- Added an always-visible **Voice Calls (☎)** navigation tab in Lolite Chat, including a dedicated Call Friends and Call Groups screen. It is available even when no direct-message conversation is selected.
+- Added **Call** actions to friend cards and profiles, and **Call group** to group conversation headers and the Calls screen.
+- Added actual cross-account call invitations through secure Supabase tables, with a ringing screen, **Answer** and **Decline**, timeouts and end-call handling.
+- Added a floating in-call panel with **Open Chat**, **Mute** and **End Call**; the private WebRTC voice room starts after microphone permission is granted.
+- Incoming calls can be received while Lolite OS is open even if the Chat window is not open. Windows/browser notification banners are used when system permission is granted; notifications while Lolite OS is fully closed are not yet supported.
+- Fixed voice controls being hidden unless a DM or group was already open. Updated static script versions to refresh cached chat files.
+- Connection limitation: WebRTC uses public STUN servers but does not yet have a TURN relay; some restrictive networks may fail to connect.
+
+
 ### Lolite Chat — Voice Rooms, Desktop Notifications & Read Receipts — 2026-10-20
 - Added **live WebRTC voice rooms** to private direct messages and group chats, with microphone consent, Join/Leave, Mute, Deafen and participant names. Audio is peer-to-peer; Supabase private Realtime channels exchange connection signals. Some networks require a TURN relay for reliable connections.
 - Added a **notifications bell** in the Lolite taskbar for new private messages and incoming friend requests. Notifications include a locally saved inbox, unread counter, Mark all seen, and Clear all.
