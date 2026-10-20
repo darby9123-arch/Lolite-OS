@@ -113,7 +113,7 @@ function season(){var start=Date.UTC(2026,9,20),period=28*86400000;return Math.m
 function seasonLabel(){var t=new Date(Date.UTC(2026,9,20)+(season()-1)*28*86400000);var end=new Date(t.getTime()+28*86400000);return "Season "+season()+" · "+t.toLocaleDateString("en-AU",{day:"numeric",month:"short",timeZone:"UTC"})+" – "+end.toLocaleDateString("en-AU",{day:"numeric",month:"short",timeZone:"UTC"})}
 function day(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
 function week(){return Math.floor((Date.now()-Date.UTC(2026,9,20))/(7*86400000))}
-function defaults(){return {rank:0,membership:"free",owned:[],equipped:{theme:"default",cursor:"classic",title:"Resident"},businesses:{},quests:{},claimedQuests:0,season:season(),perfectGames:0,lastMini:"",questEvents:0}}
+function defaults(){return {rank:0,membership:"free",owned:[],equipped:{theme:"default",cursor:"classic",title:"Resident"},businesses:{},quests:{},claimedQuests:0,lastMemberBonusDay:"",season:season(),perfectGames:0,lastMini:"",questEvents:0}}
 function state(){
  var d=bridge.snapshot();var e=d.extras&&typeof d.extras==="object"&&!Array.isArray(d.extras)?d.extras:{};
  var def=defaults();Object.keys(def).forEach(function(k){if(e[k]===undefined||typeof e[k]!==typeof def[k])e[k]=def[k]});
@@ -185,7 +185,7 @@ function rankPage(){
 function membershipPage(){
  var x=state(),s=x.s,e=x.e;var level=e.membership,plus=level==="plus"||level==="pro";
  return '<section class="panel lr-promo"><h2>Lolite Memberships</h2><p>These are <b>fictional, one-time in-game purchases</b> using only the cash earned in Life RP. There is no real payment, billing, renewal or subscription.</p></section>'+
- '<div class="grid" style="margin-top:14px"><article class="card"><span class="tag">FREE</span><h3>Standard</h3><p>All 20 careers, all base minigames, normal businesses, the free battle pass, quests and the starter wardrobe.</p>'+btn(level==="free"?"Current plan":"Included","none",null,"soft",true)+'</article><article class="card"><span class="tag gold">PLUS</span><h3>Lolite Plus</h3><p>Unlock 2 Plus-exclusive activities, Golden Skyline shop theme, Gamer Desk collectible, +1 daily shop bonus after a quest claim and special titles.</p><b>'+currency(4500)+' virtual cash</b>'+btn(plus?"Unlocked":"Buy Lolite Plus","member","plus",plus?"soft":"gold",plus||s.cash<4500)+'</article><article class="card lr-promo"><span class="tag gold">PRO</span><h3>Lolite Pro</h3><p>Everything in Plus, plus 2 Pro-exclusive minigames, the Innovation Lab business, Cosmic Pro theme, Creator Studio collectible and exclusive rankside title.</p><b>'+(level==="plus"?"Upgrade for "+currency(8000):currency(12500))+' virtual cash</b>'+btn(level==="pro"?"Unlocked":"Buy Lolite Pro","member","pro",level==="pro"?"soft":"gold",level==="pro"||s.cash<(level==="plus"?8000:12500))+'</article></div>';
+ '<div class="grid" style="margin-top:14px"><article class="card"><span class="tag">FREE</span><h3>Standard</h3><p>All 20 careers, all base minigames, normal businesses, the free battle pass, quests and the starter wardrobe.</p>'+btn(level==="free"?"Current plan":"Included","none",null,"soft",true)+'</article><article class="card"><span class="tag gold">PLUS</span><h3>Lolite Plus</h3><p>Unlock 2 Plus-exclusive activities, Golden Skyline shop theme, Gamer Desk collectible, a once-per-day bonus after claiming a quest and special titles.</p><b>'+currency(4500)+' virtual cash</b>'+btn(plus?"Unlocked":"Buy Lolite Plus","member","plus",plus?"soft":"gold",plus||s.cash<4500)+'</article><article class="card lr-promo"><span class="tag gold">PRO</span><h3>Lolite Pro</h3><p>Everything in Plus, plus 2 Pro-exclusive minigames, the Innovation Lab business, Cosmic Pro theme, Creator Studio collectible and exclusive rankside title.</p><b>'+(level==="plus"?"Upgrade for "+currency(8000):currency(12500))+' virtual cash</b>'+btn(level==="pro"?"Unlocked":"Buy Lolite Pro","member","pro",level==="pro"?"soft":"gold",level==="pro"||s.cash<(level==="plus"?8000:12500))+'</article></div>';
 }
 function shopPage(){
  var x=state(),s=x.s,e=x.e;var categories=["All","Themes","Cursors","Games","Decor"],list=items.filter(function(i){return shopFilter==="All"||shopFilter===i.cat});
@@ -205,9 +205,9 @@ function businessesPage(){
  kicker("Commercial Properties","Rank and property requirements apply")+
  '<div class="grid">'+businessTypes.map(function(b){
  var ownedBiz=e.businesses[b.id],open=e.rank>=b.rank&&s.properties.length>=b.properties&&canMember(b.member,e);
- var stars=ownedBiz?ownedBiz.level:1,stock=ownedBiz?ownedBiz.stock:0,served=ownedBiz?ownedBiz.served:0;
+ var stars=ownedBiz?ownedBiz.level:1,stock=ownedBiz?ownedBiz.stock:0,served=ownedBiz?ownedBiz.served:0,rep=Math.min(5,1+Math.floor(served/3));
  return '<article class="card"><div class="feature-kicker"><span class="icon-tile">'+b.icon+'</span><span class="tag">'+(ownedBiz?"YOUR BUSINESS":"FOR SALE")+'</span></div><h3>'+esc(b.name)+'</h3><p>'+esc(b.desc)+'</p><div class="stats"><span><b>'+currency(b.price)+'</b> purchase</span><span>Rank '+esc(ranks[b.rank].name)+'</span></div>'+
- (ownedBiz?'<div class="lr-banner"><b>Level '+stars+' · '+served+' orders served</b><p>Supplies '+stock+' · Revenue '+currency(Math.round(b.revenue*(1+(stars-1)*.25)))+'/order</p></div><div class="actions">'+btn("Serve customer","serve",b.id,"primary",stock<1)+btn("Restock "+currency(b.stock),"restock",b.id,"soft",s.cash<b.stock||stock>=5)+btn("Upgrade "+currency(b.price*stars),"upgradebiz",b.id,"gold",s.cash<b.price*stars||stars>=4)+'</div>':
+ (ownedBiz?'<div class="lr-banner"><b>Level '+stars+' · '+served+' orders served · Reputation '+rep+'/5</b><p>Supplies '+stock+' · Revenue '+currency(Math.round(b.revenue*(1+(stars-1)*.25)))+'/order</p></div><div class="actions">'+btn("Serve customer","serve",b.id,"primary",stock<1)+btn("Restock "+currency(b.stock),"restock",b.id,"soft",s.cash<b.stock||stock>=5)+btn("Upgrade "+currency(b.price*stars),"upgradebiz",b.id,"gold",s.cash<b.price*stars||stars>=4)+'</div>':
  '<div class="lr-small">'+(open?"Available to buy":b.member&&!canMember(b.member,e)?"Requires Lolite "+b.member.toUpperCase():"Requires "+ranks[b.rank].name+" and "+b.properties+" owned properties")+'</div>'+btn("Buy for "+currency(b.price),"buybiz",b.id,"primary",!open||s.cash<b.price))+'</article>'
  }).join("")+'</div>';
 }
@@ -387,7 +387,7 @@ function act(name,id){
  if(name==="questclaim"){
   var q=questByKey(id);if(!q||!questsActive().some(function(a){return a.key===id}))return;
   if(e.quests[id]?.status!=="ready")return;
-  update(function(s,e){e.quests[id].status="claimed";e.claimedQuests++;reward(s,"Quest: "+q.title,q.cash,q.xp,q.pass)});
+  update(function(s,e){e.quests[id].status="claimed";e.claimedQuests++;reward(s,"Quest: "+q.title,q.cash,q.xp,q.pass);if(e.membership!=="free"&&e.lastMemberBonusDay!==day()){reward(s,"Membership daily quest bonus",e.membership==="pro"?240:120,30,0);e.lastMemberBonusDay=day()}});
   return toast("Quest rewards claimed! Season XP +"+q.pass);
  }
  if(name==="member"){
