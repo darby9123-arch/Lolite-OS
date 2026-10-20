@@ -24,6 +24,14 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Chat notifications avoid putting private message text into operating-system notification previews.
 
 
+### Lolite Life RP Online Mode — Private Rooms & Cloud Saves — 2026-10-20
+- Added an **Online Mode** tab to the Life RP app, using existing Lolite Chat accounts (no second registration).
+- Players can create or join **private code-based multiplayer rooms**, see who's present live, and exchange preset roleplay actions without sharing location or personal contact details.
+- Added a temporary **co-op town improvement challenge** and a view of existing accepted Lolite Chat friends for sharing invitations through Chat.
+- Added **opt-in cross-device cloud saves** for careers, money, properties, achievements and battle pass. Existing cloud saves offer an explicit choice between loading the cloud copy and replacing it with the local copy.
+- Cloud records have per-user database access controls; multiplayer channels require account authentication and an unguessable room code. Offline mode works as before.
+- The virtual economy is saved per player; there is currently no shared cash, trading, free-text in-game chat, or persistent 3D world. Cloud save is not an anti-cheat or competitive leaderboard system.
+
 ### Lolite Life RP — Jobs, Properties & Season Pass — 2026-10-20
 - Launched **Lolite Life RP**, an interactive in-desktop roleplaying game accessible from the desktop, Start menu, Home and App Store.
 - Choose from **20 careers** with decision-based two-step shifts and virtual paychecks, plus **12 side activities** with XP and cash rewards.
