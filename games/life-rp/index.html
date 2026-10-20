@@ -89,7 +89,7 @@ function level(){return Math.floor(s.totalXp/380)+1}
 function dailyKey(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
 function currentJob(){return byId(jobs,s.job)||jobs[0]}
 function earnedPerHour(){return s.properties.reduce(function(sum,id){var p=byId(properties,id);return sum+(p?p.rent*(s.upgrades[id]?1.5:1):0)},0)}
-function settleRent(){var now=Date.now(),dt=Math.max(0,Math.min(now-s.lastRent,6*3600000)),total=earnedPerHour()*dt/3600000+s.rentCarry,whole=Math.floor(total);s.rentBank+=whole;s.rentCarry=total-whole;s.lastRent=now;save()}
+function settleRent(){var now=Date.now();if(now-s.lastRent<30000)return;var dt=Math.max(0,Math.min(now-s.lastRent,6*3600000)),total=earnedPerHour()*dt/3600000+s.rentCarry,whole=Math.floor(total);s.rentBank+=whole;s.rentCarry=total-whole;s.lastRent=now;save()}
 function xp(amount){s.totalXp+=amount;s.passXp+=amount}
 function nextPassLevel(){return Math.min(18,Math.floor(s.passXp/170))}
 function passReward(t,premium){return t%4===0?{type:"cosmetic",value:(premium?"Gold ":"")+["","City Explorer","Neon Rookie","Homebody","Street Legend","Career Pro","Night Owl","City Builder","Season Star"][Math.floor(t/4)]||"City Star"}:{type:"cash",value:(premium?150:65)+t*(premium?24:10)}}
