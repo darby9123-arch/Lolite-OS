@@ -3,6 +3,7 @@
 'use strict';
 const URL='README.md',GH='https://github.com/darby9123-arch/Lolite-OS#update-log';
 const fallback=[
+ ['Lolite Life RP — Jobs, Properties & Season Pass — 2026-10-20','Twenty careers, twelve activities, ten properties and a virtual-money season pass are now playable.'],
  ['Lolite Academy — Interactive Guide & Courses — 2026-10-20','New Lolite Academy app with 7 courses, 21 guided lessons, quizzes and saved progress.'],
  ['Game cover image fix — 2026-10-20','Game Store covers now show a per-game fallback poster when outside images fail.'],
  ['3.15.3 — Cloud Gaming launcher — 2026-10-19','Cloud Gaming app adds links to official gaming providers, search, and favourites.'],
@@ -14,6 +15,7 @@ const plain=s=>String(s??'').replace(/!?\[([^\]]+)\]\([^)]+\)/g,'$1').replace(/[
 const dateOf=s=>(String(s).match(/20\d{2}-\d{2}-\d{2}/)||[])[0]||'';
 function typeOf(s){
  s=s.toLowerCase();
+ if(s.includes('life rp'))return 'life-rp';
  if(s.includes('academy'))return 'academy';
  if(/cover|artwork|game store/.test(s))return 'artwork';
  if(s.includes('cloud gaming'))return 'cloud';
@@ -62,6 +64,7 @@ function dateText(x){
 }
 const short=x=>x.title.replace(/\s*[—-]\s*20\d{2}-\d{2}-\d{2}\s*$/,'').replace(/^\d+\.\d+(?:\.\d+)?\s*[—-]\s*/,'');
 const destinations={
+ 'life-rp':['life-rp','Lolite Life RP','Play Life RP'],
  academy:['academy','Lolite Academy','Try Academy'],
  artwork:['games','Game Store','View game art'],
  cloud:['cloud-gaming','Cloud Gaming','Try Cloud Gaming'],
