@@ -138,7 +138,7 @@
      const c=courseBy(state.course),l=lessonBy(c,state.lesson);
      if(!l||state.answer===null)return;
      state.checked=true;
-     if(state.answer===l.answer){completed.add(c.id+':'+l.id);save()}
+     if(state.answer===l.answer){const key=c.id+':'+l.id;const first=!completed.has(key);completed.add(key);save();if(first)window.LoliteQuests?.academyCompleted?.(c.id,l.id)}
      render();return;
    }
    if(action==='openapp'&&Object.prototype.hasOwnProperty.call(names,id)){
