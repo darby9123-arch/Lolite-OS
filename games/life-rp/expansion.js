@@ -102,7 +102,7 @@ styles.textContent=[
 '.lr-precision{margin:20px 0;padding:13px;background:#12283b;border:1px solid #345774;border-radius:13px}.lr-precision input{width:100%;accent-color:#6adcea}',
 '.lr-mini-hint{color:#c1d3e9;font-size:13px;line-height:1.6}.lr-small{font-size:11px;color:#97aec7}'
 ].join("");
-document.head.appendChild(styles);
+styles.textContent+="\n.lrg-head{display:flex;justify-content:space-between;gap:12px;color:#cde4f2;font-size:13px;font-weight:750;margin-bottom:9px}.lrg-board{width:100%;height:auto;max-width:760px;aspect-ratio:760/400;border:1px solid #426981;border-radius:12px;touch-action:manipulation;background:#091a29;display:block;margin:auto}.lr-skill-shell{width:100%;margin:12px auto}.lrg-help{color:#b8d6e5!important;text-align:center;margin:11px 0}.lrg-controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px}.lrg-key{border:1px solid #5488a1;background:#244459;color:white;border-radius:9px;padding:12px 20px;min-width:55px;cursor:pointer;font-weight:800}.lrg-key:hover{background:#367294}";document.head.appendChild(styles);
 var challenge=null,shopFilter="All",profileSection="Overview",challengeTimed=null,awaitingSave=false;
 function esc(x){return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;", "'":"&#39;"}[c]})}
 function find(a,id){return a.find(function(t){return t.id===id})}
@@ -113,15 +113,15 @@ function season(){var start=Date.UTC(2026,9,20),period=28*86400000;return Math.m
 function seasonLabel(){var t=new Date(Date.UTC(2026,9,20)+(season()-1)*28*86400000);var end=new Date(t.getTime()+28*86400000);return "Season "+season()+" · "+t.toLocaleDateString("en-AU",{day:"numeric",month:"short",timeZone:"UTC"})+" – "+end.toLocaleDateString("en-AU",{day:"numeric",month:"short",timeZone:"UTC"})}
 function day(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
 function week(){return Math.floor((Date.now()-Date.UTC(2026,9,20))/(7*86400000))}
-function defaults(){return {rank:0,membership:"free",owned:[],equipped:{theme:"default",cursor:"classic",title:"Resident"},businesses:{},quests:{},claimedQuests:0,lastMemberBonusDay:"",season:season(),perfectGames:0,lastMini:"",questEvents:0}}
+function defaults(){return {rank:0,membership:"free",owned:[],equipped:{theme:"default",cursor:"classic",title:"Resident"},businesses:{},quests:{},claimedQuests:0,lastMemberBonusDay:"",cooldowns:{},premiumXp:0,season:season(),perfectGames:0,lastMini:"",questEvents:0}}
 function state(){
  var d=bridge.snapshot();var e=d.extras&&typeof d.extras==="object"&&!Array.isArray(d.extras)?d.extras:{};
  var def=defaults();Object.keys(def).forEach(function(k){if(e[k]===undefined||typeof e[k]!==typeof def[k])e[k]=def[k]});
  if(!Array.isArray(e.owned))e.owned=[];if(!e.equipped||typeof e.equipped!=="object")e.equipped=def.equipped;
- if(!e.businesses||typeof e.businesses!=="object")e.businesses={};if(!e.quests||typeof e.quests!=="object")e.quests={};
+ if(!e.businesses||typeof e.businesses!=="object")e.businesses={};if(!e.quests||typeof e.quests!=="object")e.quests={};if(!e.cooldowns||typeof e.cooldowns!=="object")e.cooldowns={};
  if(!Number.isInteger(e.rank)||e.rank<0||e.rank>=ranks.length)e.rank=0;
  if(!["free","plus","pro"].includes(e.membership))e.membership="free";
- if(e.season!==season()){e.season=season();d.passXp=0;d.freeRewards=[];d.premiumRewards=[];d.premium=false}
+ if(e.season!==season()){e.season=season();d.passXp=0;d.freeRewards=[];d.premiumRewards=[];d.premium=false;e.premiumXp=0}
  d.extras=e;return {s:d,e:e};
 }
 function update(fn){var x=state();fn(x.s,x.e);bridge.replace(x.s)}
@@ -161,13 +161,30 @@ function upgradedHome(){
  '<div class="columns" style="margin-top:16px"><section class="panel"><h2>Daily Check-In</h2><p>Claim your bonus when available: $150 and 90 resident XP.</p><button class="btn gold" data-action="daily" '+(p.lastDaily===day()?'disabled':'')+'>Claim daily reward</button></section>'+
  '<section class="panel"><h2>Resident Progress</h2><div class="stats"><span>'+p.shifts+' shifts</span><span>'+p.activities+' activities</span><span>'+p.properties.length+' properties</span></div><div class="selectrow" style="margin-top:15px"><button class="btn primary" data-action="tab" data-id="activities">Play minigames</button><button class="btn soft" data-action="tab" data-id="pass">Season Pass</button></div></section></div>';
 }
+var passScreen=0,passFilter="all";
 function seasonPass(){
- var x=state(),s=x.s,e=x.e,step=400,tier=Math.min(18,Math.floor(s.passXp/step));var road="";
- for(var i=1;i<=18;i++){var unlock=i<=tier,free=s.freeRewards.includes(i),paid=s.premiumRewards.includes(i),freeReward=i%5===0?"Exclusive badge":"Cash "+currency(65+i*25),premReward=i%6===0?"Premium collectible":"Cash "+currency(120+i*42);
- road+='<article class="card '+(!unlock?"lr-locked":"")+'"><span class="tag">TIER '+i+'</span><h3>'+i*step+' Season XP</h3><div class="stack"><div class="lr-banner"><b>FREE</b><p>'+freeReward+'</p>'+btn(free?"Claimed":unlock?"Claim":"Locked","passclaim","free:"+i,"soft",free||!unlock)+'</div><div class="lr-banner"><b>PREMIUM</b><p>'+premReward+'</p>'+btn(paid?"Claimed":!s.premium?"Premium locked":unlock?"Claim":"Tier locked","passclaim","premium:"+i,"gold",paid||!s.premium||!unlock)+'</div></div></article>'
+ var x=state(),s=x.s,e=x.e,freeTier=Math.min(18,Math.floor(s.passXp/650)),premiumTier=Math.min(18,Math.floor(e.premiumXp/1200));
+ var hardGate=e.rank>=2&&e.claimedQuests>=6&&s.shifts>=9&&s.properties.length>=1&&Object.keys(e.businesses).length>=1;
+ var ready=0,shown=[];
+ for(var i=1;i<=18;i++){
+  var free=s.freeRewards.includes(i),paid=s.premiumRewards.includes(i),canFree=i<=freeTier,canPaid=s.premium&&i<=premiumTier;
+  if((canFree&&!free)||(canPaid&&!paid))ready++;
+  if(passFilter==="claimable"&&!((canFree&&!free)||(canPaid&&!paid)))continue;
+  if(passFilter==="locked"&&(canFree||canPaid))continue;
+  shown.push(i);
  }
- return '<section class="panel lr-promo"><div class="eyebrow">'+esc(seasonLabel())+'</div><h2>Seasonal Battle Pass</h2><p>Unlike the old pass, jobs and minigames do not award battle-pass XP directly. Complete accepted quests and claim their rewards to climb the 18-tier season.</p><div class="progress"><span style="width:'+Math.min(100,s.passXp/7200*100)+'%"></span></div><p>'+s.passXp+' / 7,200 Season XP · Tier '+tier+' of 18</p>'+(s.premium?'<span class="tag gold">PREMIUM ACTIVE THIS SEASON</span>':btn("Buy Premium Pass · "+currency(2800),"premiumseason",null,"gold",s.cash<2800))+'</section>'+
- kicker("Reward Road","Fixed rewards — never random loot boxes")+'<div class="grid">'+road+'</div>';
+ var pages=Math.max(1,Math.ceil(shown.length/6));passScreen=Math.min(passScreen,pages-1);
+ var road=shown.slice(passScreen*6,passScreen*6+6).map(function(i){
+  var f=s.freeRewards.includes(i),p=s.premiumRewards.includes(i),unlockF=i<=freeTier,unlockP=s.premium&&i<=premiumTier;
+  return '<article class="card"><span class="tag">TIER '+i+'</span><h3>Free '+(i*650)+' XP · Premium '+(i*1200)+' XP</h3><div class="stack"><div class="lr-banner"><b>FREE TRACK</b><p>'+(i%5===0?"Season badge":"Cash "+currency(65+i*25))+'</p>'+btn(f?"Claimed":unlockF?"Claim":"Not ready","passclaim","free:"+i,unlockF?"primary":"soft",f||!unlockF)+'</div><div class="lr-banner"><b>PREMIUM TRACK</b><p>'+(i%6===0?"Premium collectible":"Cash "+currency(120+i*42))+'</p>'+btn(p?"Claimed":unlockP?"Claim":"Locked","passclaim","premium:"+i,unlockP?"gold":"soft",p||!unlockP)+'</div></div></article>'
+ }).join("");
+ return '<section class="panel lr-promo"><span class="tag">'+esc(seasonLabel())+'</span><h2>Two reward tracks. Real challenges.</h2><p>Complete accepted quests to earn <b>Free Season XP</b>. Premium XP comes only from claiming harder quests <b>after</b> activating Premium. Ordinary job and activity rewards do not level either track.</p><div class="columns"><div><b>Free · Tier '+freeTier+'/18</b><div class="progress"><span style="width:'+Math.min(100,s.passXp/11700*100)+'%"></span></div><p>'+s.passXp+' / 11,700 XP</p></div><div><b>Premium · Tier '+premiumTier+'/18</b><div class="progress"><span style="width:'+Math.min(100,e.premiumXp/21600*100)+'%"></span></div><p>'+e.premiumXp+' / 21,600 XP</p></div></div>'+
+ (s.premium?'<span class="tag gold">PREMIUM UNLOCKED FOR THIS SEASON</span>':'<div class="lr-banner"><b>Premium unlock challenge</b><p>Requires Specialist rank, 6 claimed quests, 9 completed shifts, 1 property, 1 business and '+currency(12000)+' virtual cash.</p><div class="lr-small">'+(hardGate?"Progress requirements complete!":"Keep working on your ranks, quests and businesses to qualify.")+'</div>'+btn("Unlock Premium · "+currency(12000),"premiumseason",null,"gold",!hardGate||s.cash<12000)+'</div>')+
+ '<div class="selectrow" style="margin-top:14px"><button class="btn primary" data-action="tab" data-id="quests">Open Quest Board →</button><span class="lr-chip">'+ready+' rewards ready</span></div></section>'+
+ kicker("Reward Road","Showing "+(shown.length?"tiers "+(passScreen*6+1)+"–"+Math.min(shown.length,(passScreen+1)*6):"no matching rewards"))+
+ '<div class="selectrow" style="margin:12px 0">'+["all","claimable","locked"].map(function(f){return btn(f==="all"?"All tiers":f==="claimable"?"Ready to claim":"Locked","passfilter",f,passFilter===f?"primary":"soft")}).join("")+'</div>'+
+ '<div class="grid">'+(road||'<section class="panel"><p>No tiers in this filter yet. Keep completing quests.</p></section>')+'</div>'+
+ '<div class="selectrow" style="justify-content:center;margin-top:20px">'+btn("← Previous","passpage","prev","soft",passScreen===0)+'<span class="lr-chip">Page '+(passScreen+1)+' of '+pages+'</span>'+btn("Next →","passpage","next","soft",passScreen>=pages-1)+'</div>';
 }
 function rankReq(r,s,e){var conditions=[
 [s.totalXp>=r.xp,"Resident XP: "+s.totalXp+"/"+r.xp],
@@ -207,7 +224,7 @@ function businessesPage(){
  var ownedBiz=e.businesses[b.id],open=e.rank>=b.rank&&s.properties.length>=b.properties&&canMember(b.member,e);
  var stars=ownedBiz?ownedBiz.level:1,stock=ownedBiz?ownedBiz.stock:0,served=ownedBiz?ownedBiz.served:0,rep=Math.min(5,1+Math.floor(served/3));
  return '<article class="card"><div class="feature-kicker"><span class="icon-tile">'+b.icon+'</span><span class="tag">'+(ownedBiz?"YOUR BUSINESS":"FOR SALE")+'</span></div><h3>'+esc(b.name)+'</h3><p>'+esc(b.desc)+'</p><div class="stats"><span><b>'+currency(b.price)+'</b> purchase</span><span>Rank '+esc(ranks[b.rank].name)+'</span></div>'+
- (ownedBiz?'<div class="lr-banner"><b>Level '+stars+' · '+served+' orders served · Reputation '+rep+'/5</b><p>Supplies '+stock+' · Revenue '+currency(Math.round(b.revenue*(1+(stars-1)*.25)))+'/order</p></div><div class="actions">'+btn("Serve customer","serve",b.id,"primary",stock<1)+btn("Restock "+currency(b.stock),"restock",b.id,"soft",s.cash<b.stock||stock>=5)+btn("Upgrade "+currency(b.price*stars),"upgradebiz",b.id,"gold",s.cash<b.price*stars||stars>=4)+'</div>':
+ (ownedBiz?'<div class="lr-banner"><b>Level '+stars+' · '+served+' orders served · Reputation '+rep+'/5</b><p>Supplies '+stock+' · Revenue '+currency(Math.round(b.revenue*(1+(stars-1)*.25)))+'/order</p></div><div class="actions">'+btn(cooldownSeconds("business",b.id,e)?cooldownText("business",b.id,e):"Serve customer","serve",b.id,"primary",stock<1||cooldownSeconds("business",b.id,e)>0)+btn("Restock "+currency(b.stock),"restock",b.id,"soft",s.cash<b.stock||stock>=5)+btn("Upgrade "+currency(b.price*stars),"upgradebiz",b.id,"gold",s.cash<b.price*stars||stars>=4)+'</div>':
  '<div class="lr-small">'+(open?"Available to buy":b.member&&!canMember(b.member,e)?"Requires Lolite "+b.member.toUpperCase():"Requires "+ranks[b.rank].name+" and "+b.properties+" owned properties")+'</div>'+btn("Buy for "+currency(b.price),"buybiz",b.id,"primary",!open||s.cash<b.price))+'</article>'
  }).join("")+'</div>';
 }
@@ -217,7 +234,7 @@ function jobPage(){
  kicker("Job Board",jobs.length+" careers · new questions each shift")+
  '<div class="grid">'+jobs.map(function(j){var gate=(j.id==="pilot"||j.id==="scientist")?2:(["paramedic","firefighter","nurse","police"].includes(j.id)?1:0),unlocked=e.rank>=gate,chosen=s.job===j.id;
  return '<article class="card"><div class="feature-kicker"><span class="icon-tile">'+j.icon+'</span><span class="tag">'+esc(j.field)+'</span></div><h3>'+esc(j.name)+'</h3><p>Three changing job scenarios and a hands-on skill minigame.</p><div class="stats"><b>'+currency(j.pay)+' base pay</b><span>'+(s.completedJobs[j.id]||0)+' shifts</span></div><div class="actions">'+(chosen?'<span class="tag green">Selected</span>':btn("Select job","selectjob",j.id,"soft",!unlocked))+
- btn(unlocked?"Start shift":"Requires "+ranks[gate].name,"beginjob",j.id,"primary",!unlocked)+'</div></article>'}).join("")+'</div>';
+ btn(!unlocked?"Requires "+ranks[gate].name:cooldownSeconds("job",j.id,e)?cooldownText("job",j.id,e):"Start shift","beginjob",j.id,"primary",!unlocked||cooldownSeconds("job",j.id,e)>0)+'</div></article>'}).join("")+'</div>';
 }
 var modes={fishing:"precision",cooking:"recipe",photo:"target",recycle:"pattern",garden:"memory",music:"rhythm",sports:"target",pets:"memory",museum:"pattern",arcade:"target",volunteer:"recipe",hiking:"precision"};
 var specialtyActivities=[
@@ -229,9 +246,9 @@ var specialtyActivities=[
 function activityPage(){
  var x=state(),s=x.s,e=x.e;var all=activities.map(function(a){return Object.assign({},a,{mode:modes[a.id]||"pattern"})}).concat(specialtyActivities);
  return '<section class="panel lr-promo"><h2>Play actual minigames.</h2><p>Catch the right moment while fishing, remember the cards, hit moving challenges with a target, create recipes, repeat rhythm patterns and solve visual sequences. Complete the full activity to receive a reward.</p></section>'+
- kicker("Activities & Challenges",all.length+" interactive experiences")+'<div class="grid">'+all.map(function(a){var gate=!canMember(a.member,e);
+ kicker("Activities & Challenges",all.length+" interactive experiences")+'<div class="grid">'+all.map(function(a){var gate=!canMember(a.member,e),cool=cooldownSeconds("activity",a.id,e);
  return '<article class="card"><div class="feature-kicker"><span class="icon-tile">'+a.icon+'</span><span class="tag">'+esc(a.mode.toUpperCase())+'</span></div><h3>'+esc(a.name)+'</h3><p>'+esc(a.desc)+'</p><div class="stats"><b>'+currency(a.pay)+' base pay</b><span>'+a.xp+' XP</span>'+(a.member?'<span>Requires '+a.member.toUpperCase()+'</span>':"")+'</div>'+
- btn(gate?"Membership required":"Play minigame →","beginact",a.id,"primary",gate)+'</article>'}).join("")+'</div>';
+ btn(gate?"Membership required":cool?cooldownText("activity",a.id,e):"Play minigame →","beginact",a.id,"primary",gate||cool>0)+'</article>'}).join("")+'</div>';
 }
 function profilePage(){
  var x=state(),s=x.s,e=x.e,stuff=items.filter(function(i){return owned(i.id,e)});
@@ -264,6 +281,7 @@ function launch(kind,id){
  if(challenge)return;
  var x=state(),s=x.s,e=x.e,source=kind==="job"?find(jobs,id):kind==="activity"?(find(activities,id)||find(specialtyActivities,id)):find(businessTypes,id);
  if(!source)return;
+ var left=cooldownSeconds(kind,id,e);if(left)return toast("On cooldown: "+Math.ceil(left/60)+" minute(s) remaining.");
  if(kind==="activity"&&source.member&&!canMember(source.member,e))return toast("Membership required.");
  if(kind==="business"&&(!e.businesses[id]||e.businesses[id].stock<1))return toast("Restock supplies before serving customers.");
  var gate=(id==="pilot"||id==="scientist")?2:(["paramedic","firefighter","nurse","police"].includes(id)?1:0);
@@ -277,7 +295,7 @@ function launch(kind,id){
  bridge.refresh();
 }
 function finishChallenge(){
- var c=challenge;if(!c)return;challenge=null;
+ var c=challenge;if(!c||!c.mini?.success)return;challenge=null;
  var all=(c.questions.length+(c.mini?.total||0)),points=c.correct+(c.mini?.wins||0),perfect=points>=all&&(!c.mini||c.mini.misses===0),percent=all?points/all:0;
  var base=c.kind==="job"?c.source.pay:c.kind==="activity"?c.source.pay:Math.round(c.source.revenue*(1+((state().e.businesses[c.id]?.level||1)-1)*.25));
  var gain=Math.round(base*(.6+.65*percent)),xp=Math.round(70+points*16+(c.kind==="business"?40:0));
@@ -287,19 +305,29 @@ function finishChallenge(){
   if(c.kind==="activity"){s.activities++;s.completedActivities[c.id]=(s.completedActivities[c.id]||0)+1;eventUpdate(s,e,"activity")}
   if(c.kind==="business"){e.businesses[c.id].stock--;e.businesses[c.id].served++;eventUpdate(s,e,"business")}
   if(perfect){e.perfectGames++;eventUpdate(s,e,"perfect")}
+  var minutes=Math.min(15,Math.max(1,1+Math.ceil(gain/160)));e.cooldowns[c.kind+":"+c.id]=Date.now()+minutes*60000;
   e.lastMini=c.name;
  });
  toast("Completed "+c.name+"! "+currency(gain)+" earned · "+xp+" XP"+(perfect?" · PERFECT!":""));
 }
-function startMini(){var c=challenge;c.stage="minigame";c.mini=initMini(c.gameType,c.source.member==="pro");bridge.refresh()}
-function advanceMini(){
- var c=challenge,m=c.mini;if(!m)return;
- if(m.kind==="memory"){if(m.matches>=m.total)return finishChallenge();return}
- if(m.kind==="rhythm"){if(m.answer>=m.total)return finishChallenge();return}
- if(m.round>=m.total){finishChallenge();return}
- if(m.kind==="precision"){m.target=25+Math.floor(Math.random()*51);m.value=50;m.moved=false}
- bridge.refresh();
+function startMini(){
+ if(!challenge)return;challenge.stage="skill";challenge.mini={total:1,wins:0,misses:0,success:false};challenge.skillStarted=false;bridge.refresh();
 }
+function startSkillOnRender(){
+ var c=challenge;if(!c||c.stage!=="skill"||c.skillStarted)return;
+ var target=document.getElementById("lr-skillgame");
+ if(!target||!window.LoliteSkillGames)return;
+ c.skillStarted=true;
+ window.LoliteSkillGames.start(target,{mode:c.gameType,advanced:c.source.member==="pro"},function(result){
+  if(challenge!==c)return;
+  c.mini={total:result.total,wins:result.score,misses:result.misses,success:result.success};
+  if(result.success){finishChallenge()}
+  else{c.stage="failed";bridge.refresh()}
+ });
+}
+function cooldownLeft(kind,id,e){return Math.max(0,Math.ceil(((e.cooldowns||{})[kind+":"+id]||0-Date.now())/60000))}
+function cooldownSeconds(kind,id,e){return Math.max(0,Math.ceil((((e.cooldowns||{})[kind+":"+id])||0)-Date.now())/1000)}
+function cooldownText(kind,id,e){var n=cooldownSeconds(kind,id,e);return n?Math.ceil(n/60)+" min cooldown":"Ready"}
 function handleMini(act,id){
  var c=challenge,m=c?.mini;if(!m)return;
  if(act==="minipick"){
@@ -340,6 +368,8 @@ function challengeHTML(){
  var c=challenge,m=c.mini;
  var head='<section class="panel lr-promo" style="margin-bottom:15px"><span class="tag">INTERACTIVE '+esc(c.kind.toUpperCase())+'</span><h2>'+esc(c.name)+'</h2><p>Complete each task to receive payment and progress. You can leave, but unfinished challenges give no rewards.</p>'+btn("Leave challenge","leavechallenge",null,"ghost")+'</section>';
  if(c.stage==="intro")return head+'<section class="panel challenge"><span class="tag">BRIEFING</span><h2>Ready to get started?</h2><p>'+(c.kind==="job"?"First, answer three varied work scenarios. Then complete the practical task.":c.kind==="business"?"You'll take care of a customer's order in a minigame. Supplies are spent only when you finish.":"This activity is a complete hands-on minigame. Your accuracy changes your payout.")+'</p><div class="lr-banner">Minigame type: <b>'+esc(c.gameType.toUpperCase())+'</b></div>'+btn("Start challenge →","startchallenge",null,"primary")+'</section>';
+ if(c.stage==="skill")return head+'<section class="panel challenge"><h2>Skill Challenge: '+esc(c.gameType.toUpperCase())+'</h2><p>Move, time, remember or react correctly. Failing earns nothing and does not start a cooldown.</p><div id="lr-skillgame" class="lr-skill-shell"></div></section>';
+ if(c.stage==="failed")return head+'<section class="panel challenge"><h2>Challenge not completed</h2><p>You can retry at any time. No rewards were awarded.</p>'+btn("Retry minigame","retrygame",null,"primary")+'</section>';
  if(c.stage==="questions"){
   var q=c.questions[c.step];
   return head+'<section class="panel challenge"><div class="eyebrow">WORK SHIFT · SITUATION '+(c.step+1)+' / '+c.questions.length+'</div><h2>'+esc(q.prompt)+'</h2><p>Choose the most suitable answer. Each shift randomly selects a new set of questions.</p><div class="answers">'+q.options.map(function(o,i){return '<button type="button" class="answer" data-lr="question" data-arg="'+i+'">'+esc(o)+'</button>'}).join("")+'</div><p class="hint">Correct so far: '+c.correct+' / '+c.step+'</p></section>';
@@ -368,7 +398,10 @@ function act(name,id){
  if(name==="beginjob")return launch("job",id);
  if(name==="beginact")return launch("activity",id);
  if(name==="serve")return launch("business",id);
- if(name==="leavechallenge"){challenge=null;return bridge.refresh()}
+ if(name==="leavechallenge"){window.LoliteSkillGames?.stop();challenge=null;return bridge.refresh()}
+ if(name==="retrygame"){if(challenge){window.LoliteSkillGames?.stop();startMini()}return}
+ if(name==="passfilter"){passFilter=id;passScreen=0;bridge.refresh();return}
+ if(name==="passpage"){passScreen=Math.max(0,Math.min(2,passScreen+(id==="next"?1:-1)));bridge.refresh();return}
  if(name==="startchallenge"){if(!challenge)return;return challenge.questions.length?(challenge.stage="questions",bridge.refresh()):startMini()}
  if(name==="question"){
   if(!challenge||challenge.stage!=="questions")return;
@@ -387,7 +420,7 @@ function act(name,id){
  if(name==="questclaim"){
   var q=questByKey(id);if(!q||!questsActive().some(function(a){return a.key===id}))return;
   if(e.quests[id]?.status!=="ready")return;
-  update(function(s,e){e.quests[id].status="claimed";e.claimedQuests++;reward(s,"Quest: "+q.title,q.cash,q.xp,q.pass);if(e.membership!=="free"&&e.lastMemberBonusDay!==day()){reward(s,"Membership daily quest bonus",e.membership==="pro"?240:120,30,0);e.lastMemberBonusDay=day()}});
+  update(function(s,e){e.quests[id].status="claimed";e.claimedQuests++;reward(s,"Quest: "+q.title,q.cash,q.xp,q.pass);if(s.premium&&(q.goal>=4||!id.includes("@")&&["career","operator","versatile","social","challenge"].includes(q.id)||id.includes("@week"))){e.premiumXp+=Math.round(q.pass*.65)}if(e.membership!=="free"&&e.lastMemberBonusDay!==day()){reward(s,"Membership daily quest bonus",e.membership==="pro"?240:120,30,0);e.lastMemberBonusDay=day()}});
   return toast("Quest rewards claimed! Season XP +"+q.pass);
  }
  if(name==="member"){
@@ -438,13 +471,14 @@ function act(name,id){
   post("game",it.game);return toast("Opening the Lolite game launcher…");
  }
  if(name==="premiumseason"){
-  if(s.premium||s.cash<2800)return;
-  update(function(s){if(!buy(s,"Season Premium Pass",2800))return;s.premium=true});
+  var eligible=e.rank>=2&&e.claimedQuests>=6&&s.shifts>=9&&s.properties.length>=1&&Object.keys(e.businesses).length>=1;
+  if(s.premium||s.cash<12000||!eligible)return toast("Finish the Premium unlock challenges before buying.");
+  update(function(s,e){if(!buy(s,"Season Premium Pass",12000))return;s.premium=true;e.premiumXp=0});
   return toast("Premium season reward track unlocked!");
  }
  if(name==="passclaim"){
   var bits=String(id).split(":"),mode=bits[0],tier=Number(bits[1]),premium=mode==="premium";
-  if(!["free","premium"].includes(mode)||!Number.isInteger(tier)||tier<1||tier>18||s.passXp<tier*400||premium&&!s.premium)return;
+  if(!["free","premium"].includes(mode)||!Number.isInteger(tier)||tier<1||tier>18||(premium?e.premiumXp<tier*1200:s.passXp<tier*650)||premium&&!s.premium)return;
   if((premium?s.premiumRewards:s.freeRewards).includes(tier))return;
   update(function(s,e){
    (premium?s.premiumRewards:s.freeRewards).push(tier);
@@ -469,10 +503,10 @@ document.addEventListener("click",function(ev){var b=ev.target.closest("[data-lr
 document.addEventListener("input",function(ev){if(ev.target.matches("[data-lr-range]")&&challenge?.mini?.kind==="precision"){challenge.mini.value=Number(ev.target.value);challenge.mini.moved=true;var n=document.getElementById("lr-readout");if(n)n.textContent=String(challenge.mini.value)}});
 document.addEventListener("submit",function(ev){if(ev.target.id==="lr-name-form"){ev.preventDefault();var n=ev.target.elements.name.value.trim().slice(0,24);if(!n)return;update(function(s){s.name=n});toast("Profile name updated.")}});
 window.LoliteLifeRPExpansion=Object.freeze({
- intercept:function(action,id){if(action==="shift"||action==="activity"){launch(action==="shift"?"job":"activity",id);return true}if(action==="tab"&&challenge){challenge=null}return false},
+ intercept:function(action,id){if(action==="shift"||action==="activity"){launch(action==="shift"?"job":"activity",id);return true}if(action==="tab"&&challenge){window.LoliteSkillGames?.stop();challenge=null}return false},
  challengeHTML:challengeHTML,
  page:function(tab){if(tab==="home")return upgradedHome();if(tab==="quests")return questPage();if(tab==="businesses")return businessesPage();if(tab==="shop")return shopPage();if(tab==="ranks")return rankPage();if(tab==="jobs")return jobPage();if(tab==="activities")return activityPage();if(tab==="profile")return profilePage();if(tab==="pass")return seasonPass();return null},
- onRendered:function(){var e=state().e;document.body.dataset.lifeTheme=e.equipped.theme||"default"}
+ onRendered:function(){var e=state().e;document.body.dataset.lifeTheme=e.equipped.theme||"default";startSkillOnRender()}
 });
 bridge.refresh();
 })();
