@@ -3,6 +3,7 @@
 'use strict';
 const URL='README.md',GH='https://github.com/darby9123-arch/Lolite-OS#update-log';
 const fallback=[
+ ['Lolite Life RP City Update — Hands-on Jobs, Shops, Ranks, Businesses & Minigames — 2026-10-20','Playable job shifts, 16 minigame activities, quests, actual customer work, in-game Plus and Pro memberships, and customisation shop.'],
  ['Lolite Life RP Online Mode — Private Rooms & Cloud Saves — 2026-10-20','Private live multiplayer rooms, co-op community challenges and optional cloud saves using Lolite Chat accounts.'],
  ['Lolite Life RP — Jobs, Properties & Season Pass — 2026-10-20','Twenty careers, twelve activities, ten properties and a virtual-money season pass are now playable.'],
  ['Lolite Academy — Interactive Guide & Courses — 2026-10-20','New Lolite Academy app with 7 courses, 21 guided lessons, quizzes and saved progress.'],
