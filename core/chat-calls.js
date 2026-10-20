@@ -24,10 +24,13 @@ function conversationName(convId){
  return c?.type==='group'?(c.name||'Group chat'):name(members(convId).find(id=>id!==uid()));
 }
 async function openConversation(id){
- const c=s()?.conversations.find(x=>x.id===id);
- if(!c)throw Error('This conversation is not available. Reopen Lolite Chat and retry.');
- s().view='conversation';s().conversationId=id;s().replyTo=null;s().search='';s().showPins=false;
  if(!root())chat()?.open();
+ // Populate membership and conversation state first, even when answering a call
+ // from the Windows notification while Lolite Chat was closed.
+ if(!s()?.user||!s()?.conversations?.length)await chat().refresh();
+ const c=s()?.conversations.find(x=>x.id===id);
+ if(!c)throw Error('This conversation is not available. Open Lolite Chat and try again.');
+ s().view='conversation';s().conversationId=id;s().replyTo=null;s().search='';s().showPins=false;
  await chat().refresh();
 }
 async function createFriendChat(id){
@@ -170,6 +173,7 @@ async function startCall(convId){
  if(!targets.length)return say('This chat has nobody else to call.');
  sending=true;
  try{
+  extra()?.closeProfile?.();
   await openConversation(c.id);
   const ready=await extra()?.joinVoice?.();
   if(!ready)throw Error('Microphone/voice chat unavailable. Allow microphone access, then retry.');
@@ -245,5 +249,5 @@ const boot=async()=>{
  db.auth.onAuthStateChange((_event,session)=>setTimeout(()=>setAuth(session?.user?.id||null),0));
 };
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-window.LoliteChatCalls={renderCallsHtml,afterRender,showCalls,callFriend,startCall,hangup};
+window.LoliteChatCalls={renderCallsHtml,afterRender,showCalls,callFriend,startCall,hangup,voiceStopped:()=>{if(currentCall)hangup().catch(console.error)}};
 })();
