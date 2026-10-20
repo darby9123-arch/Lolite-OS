@@ -103,7 +103,7 @@
 
  `;
  if(!document.getElementById('lolite-game-store-style')){const s=document.createElement('style');s.id='lolite-game-store-style';document.head.appendChild(s)}document.getElementById('lolite-game-store-style').textContent=CSS;
- function lolitePosterArt(title,seed='Lolite'){const safe=String(title||'Game').replace(/[&<>]/g,' ').slice(0,42);let h=0;for(const c of String(seed+title))h=(Math.imul(h,31)+c.charCodeAt(0))>>>0;const hue=h%360,hue2=(hue+70+(h%90))%360;const svg="<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='675' viewBox='0 0 1200 675'><defs><linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'><stop stop-color='hsl("+hue+",65%,32%)'/><stop offset='1' stop-color='hsl("+hue2+",58%,10%)'/></linearGradient><radialGradient id='glow'><stop stop-color='white' stop-opacity='.34'/><stop offset='1' stop-color='white' stop-opacity='0'/></radialGradient></defs><rect width='1200' height='675' fill='url(%23bg)'/><circle cx='900' cy='180' r='330' fill='url(%23glow)'/><g fill='none' stroke='white' stroke-opacity='.18' stroke-width='3'><circle cx='930' cy='330' r='205'/><circle cx='930' cy='330' r='150'/><path d='M620 500 L850 70 L1120 510 Z'/><path d='M700 0 L1200 500 M800 0 L1200 400'/></g><rect x='62' y='70' width='11' height='535' rx='5' fill='white' fill-opacity='.8'/><text x='105' y='125' font-family='Arial,sans-serif' font-size='24' font-weight='700' letter-spacing='8' fill='white' fill-opacity='.76'>LOLITE GAME LIBRARY</text><text x='100' y='475' font-family='Arial,sans-serif' font-size='68' font-weight='800' fill='white'>"+safe.replace(/['"]/g,'')+"</text><text x='105' y='530' font-family='Arial,sans-serif' font-size='22' letter-spacing='5' fill='white' fill-opacity='.7'>READY TO PLAY</text><path d='M1030 500 l45 -26 v52 z' fill='white' fill-opacity='.88'/></svg>";return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg)}
+ function lolitePosterArt(title,seed='Lolite'){const safe=String(title||'Game').replace(/[&<>]/g,' ').slice(0,42);let h=0;for(const c of String(seed+title))h=(Math.imul(h,31)+c.charCodeAt(0))>>>0;const hue=h%360,hue2=(hue+70+(h%90))%360;const svg="<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='675' viewBox='0 0 1200 675'><defs><linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'><stop stop-color='hsl("+hue+",65%,32%)'/><stop offset='1' stop-color='hsl("+hue2+",58%,10%)'/></linearGradient><radialGradient id='glow'><stop stop-color='white' stop-opacity='.34'/><stop offset='1' stop-color='white' stop-opacity='0'/></radialGradient></defs><rect width='1200' height='675' fill='url(#bg)'/><circle cx='900' cy='180' r='330' fill='url(#glow)'/><g fill='none' stroke='white' stroke-opacity='.18' stroke-width='3'><circle cx='930' cy='330' r='205'/><circle cx='930' cy='330' r='150'/><path d='M620 500 L850 70 L1120 510 Z'/><path d='M700 0 L1200 500 M800 0 L1200 400'/></g><rect x='62' y='70' width='11' height='535' rx='5' fill='white' fill-opacity='.8'/><text x='105' y='125' font-family='Arial,sans-serif' font-size='24' font-weight='700' letter-spacing='8' fill='white' fill-opacity='.76'>LOLITE GAME LIBRARY</text><text x='100' y='475' font-family='Arial,sans-serif' font-size='68' font-weight='800' fill='white'>"+safe.replace(/['"]/g,'')+"</text><text x='105' y='530' font-family='Arial,sans-serif' font-size='22' letter-spacing='5' fill='white' fill-opacity='.7'>READY TO PLAY</text><path d='M1030 500 l45 -26 v52 z' fill='white' fill-opacity='.88'/></svg>";return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg)}
  const manifest=['clangrybirds2.html','clbadmondaysimulator.html','clbaldicaseoh.html','clbaldisbasics.html','clbaldisbasicsremaster.html','clbitlife.html','clblockblast.html','clcookieclicker.html','clcookieclickermodmenu.html','clcrazycars.html','clcuttherope.html','cldemolitionderbycrashracing.html','cldungeonsanddegenerategambler.html','clescaperoad.html','clescaperoad-2.html','clescaperoad3.html','clfallguys.html','clfireboyandwatergirl2.html','clfireboyandwatergirl3.html','clFNAF.html','clFNAF2.html','clFNAF3.html','clFNAF4.html','clgdbreeze.html','clgorillatag.html','clgranny2.html','clgranny22.html','clgranny3.html','clgrannycreepy.html','clgrannynightmare.html','clgrannyy.html','clgrowagarden.html','clgta3.html','clhalflife.html','clholeio.html','clinfinitecraft.html','clLobotemyDash.html','lolite-2048.html','lolite-pong.html','lolite-sokoban.html','clmario64webgl.html','clmelonplayground.html','clminecraftpocketedition.html','clmotox3m2.html','clmotox3m3.html','clmotox3mm.html','clmotox3mpoolparty.html','clmotox3mspookyland.html','clmotox3mwinter.html','closu.html','clovo2.html','clovodimensions.html','clovofixed.html','clpaperio.html','clpaperio3d.html','clpaperiomania.html','clparkingfury.html','clparkingfury2.html','clparkingfury3.html','clpixelbattlegroundsio.html','clpvz2gardenless.html','PVZM.html','clragollhit.html','clRedBall4.html','clrocketleague.html','clshiftatmidnight.html','slope.html','slope-2-player.html','clslopeplus.html','clsmbremastered.html','clsnowrider.html','clspacewarsbattleground.html','clstickmanhook.html','clsubwaysurfersmiami.html','clsupermariobros.html','clsurvivorio.html','cltemplerun2.html','cltinyfishing.html','clvex3.html','wheely.html','wrestle-bros.html','zombie-rush.html'];
  const pretty=raw=>{const key=raw.replace(/^cl/i,'').replace(/^lolite[-_]/i,'').replace(/\.html?$/i,'').toLowerCase();const known={'angrybirds2':'Angry Birds 2','baldisbasics':'Baldi’s Basics','baldisbasicsremaster':'Baldi’s Basics Remastered','baldicaseoh':'Baldi’s Basics: CaseOh','badmondaysimulator':'Bad Monday Simulator','bitlife':'BitLife','blockblast':'Block Blast','cookieclicker':'Cookie Clicker','cookieclickermodmenu':'Cookie Clicker Mod Menu','crazycars':'Crazy Cars','cuttherope':'Cut the Rope','demolitionderbycrashracing':'Demolition Derby Crash Racing','dungeonsanddegenerategambler':'Dungeons and Degenerate Gamblers','escaperoad':'Escape Road','escaperoad-2':'Escape Road 2','escaperoad3':'Escape Road 3','fallguys':'Fall Guys','fireboyandwatergirl2':'Fireboy and Watergirl 2','fireboyandwatergirl3':'Fireboy and Watergirl 3','fnaf':'Five Nights at Freddy’s','fnaf2':'Five Nights at Freddy’s 2','fnaf3':'Five Nights at Freddy’s 3','fnaf4':'Five Nights at Freddy’s 4','gdbreeze':'Geometry Dash Breeze','gorillatag':'Gorilla Tag','granny2':'Granny 2','granny22':'Granny 2.2','granny3':'Granny 3','grannycreepy':'Granny: Creepy Mod','grannynightmare':'Granny: Nightmare','grannyy':'Granny','growagarden':'Grow a Garden','gta3':'Grand Theft Auto III','halflife':'Half-Life','holeio':'Hole.io','infinitecraft':'Infinite Craft','lobotemydash':'Lobotomy Dash','minecraftpocketedition':'Minecraft: Pocket Edition','melonplayground':'Melon Playground','motox3m':'Moto X3M','motox3m2':'Moto X3M 2','motox3m3':'Moto X3M 3','motox3mpoolparty':'Moto X3M Pool Party','motox3mspookyland':'Moto X3M Spooky Land','motox3mwinter':'Moto X3M Winter','ovo2':'OvO 2','ovodimensions':'OvO Dimensions','ovofixed':'OvO','paperio':'Paper.io','paperio3d':'Paper.io 3D','paperiomania':'Paper.io Mania','parkingfury':'Parking Fury','parkingfury2':'Parking Fury 2','parkingfury3':'Parking Fury 3','pixelbattlegroundsio':'Pixel Battlegrounds.io','pvz2gardenless':'Plants vs. Zombies 2: Gardenless','ragollhit':'Ragdoll Hit','redball4':'Red Ball 4','rocketleague':'Rocket League','shiftatmidnight':'Shift at Midnight','slope-2-player':'Slope 2 Player','slopeplus':'Slope Plus','smbremastered':'Super Mario Bros. Remastered','snowrider':'Snow Rider','spacewarsbattleground':'Space Wars Battleground','stickmanhook':'Stickman Hook','subwaysurfersmiami':'Subway Surfers: Miami','supermariobros':'Super Mario Bros.','survivorio':'Survivor.io','templerun2':'Temple Run 2','tinyfishing':'Tiny Fishing','wrestle-bros':'Wrestle Bros'};if(known[key])return known[key];let s=raw.replace(/^cl/i,'').replace(/^lolite[-_]/i,'').replace(/\.html?$/i,'').replace(/[_-]+/g,' ');s=s.replace(/([a-z])([A-Z])/g,'$1 $2').replace(/([A-Za-z])([0-9])/g,'$1 $2').replace(/\s+/g,' ').trim().replace(/\b\w/g,m=>m.toUpperCase());return s.replace(/\bPvz\b/gi,'PVZ').replace(/\bFnaf\b/gi,'FNAF').replace(/\bGta\b/gi,'GTA').replace(/\bIo\b/gi,'IO')};
  const categorize=g=>{const f=g.file.toLowerCase();if(/baldi/.test(f))return 'Baldi’s Basics';if(/fnaf|granny|nightmare|zombie|shiftatmidnight|badmondaysimulator/.test(f))return 'Horror';if(/crazycars|racing|moto|slope|escaperoad|parking|rocketleague|derby|wheely|snowrider/.test(f))return 'Racing';if(/2048|sokoban|blockblast|cookie|cuttherope|fireboy|infinitecraft|ovo|paperio|stickmanhook|tinyfishing/.test(f))return 'Puzzle';if(/growagarden|holeio|pixelbattlegrounds|survivorio|paperio|bitlife|fallguys/.test(f))return 'IO & Casual';if(/minecraft|melonplayground|bitlife|infinitecraft|dungeonsanddegenerategambler|halflife|gta3/.test(f))return 'Simulation & Sandbox';if(/fishing|wrestle|gorilla|football|basketball|sports/.test(f))return 'Sports';if(/mario|angrybirds|pvz|subway|templerun|vex|redball|fireboy|stickman|lobotemy|gd|supermario/.test(f))return 'Platformers & Arcade';return 'Classics'};
@@ -128,47 +128,74 @@
  /* Game artwork: individually curated image URLs keyed to the actual game file.
     No Wikipedia fuzzy searches, no stale localStorage art cache, no cross-title borrowing. */
  const coverFor=file=>window.loliteGameArt?.[file]?.src||null;
+ // Never bulk preload ~80 remote game covers: visible artwork takes priority.
  const artCache=new Map();
- const warmArt=()=>{
-   const urls=[...new Set(games.map(g=>coverFor(g.file)).filter(Boolean))];
-   let next=0,activeLoads=0;
-   const pump=()=>{while(activeLoads<4&&next<urls.length){
-     const url=urls[next++];if(artCache.has(url))continue;activeLoads++;
-     const img=new Image();img.decoding='async';
-     img.onload=()=>{artCache.set(url,true);activeLoads--;pump()};
-     img.onerror=()=>{artCache.set(url,false);activeLoads--;pump()};
-     img.src=url;
-   }};
-   pump();
- };
- let artWarmStarted=false;
  window.loliteStorePreview=(el,file,title)=>{
-   if(!el||el.dataset.artLoaded==='1'||el.dataset.artLoading==='1')return;
-   const target=el.querySelector('.store-cover-art');if(!target)return;
-   const url=coverFor(file);
-   if(!url){el.dataset.artLoaded='1';return}
-   el.dataset.artLoading='1';
-   const image=new Image();image.decoding='async';
-   image.onload=()=>{
-     if(el.isConnected){
-       const square=image.naturalWidth/image.naturalHeight<1.25;
-       target.style.backgroundImage='url('+JSON.stringify(url)+')';
-       target.style.backgroundSize=square?'contain':'cover';
-       target.style.backgroundRepeat='no-repeat';
-       target.style.backgroundColor=square?'transparent':'#111720';
-       if(square){
-         let backdrop=el.querySelector('.store-cover-art-backdrop');
-         if(!backdrop){backdrop=document.createElement('div');backdrop.className='store-cover-art-backdrop';target.before(backdrop)}
-         backdrop.style.backgroundImage='url('+JSON.stringify(url)+')';
-       }
-       el.classList.add('has-game-art');
-     }
-     el.dataset.artLoaded='1';delete el.dataset.artLoading;
-   };
-   image.onerror=()=>{el.dataset.artLoaded='1';delete el.dataset.artLoading};
-   image.src=url;
- };
- const featuredGames=[{file:'clminecraftpocketedition.html',title:'Minecraft 1.8',description:'EaglercraftX browser edition, hosted by Eaglercraft Extras. Build, explore and play right inside Lolite OS.'},{file:'clbaldisbasics.html',title:'Baldi’s Basics',description:'A weird school trip turns into a frantic arcade-style escape.'},{file:'clangrybirds2.html',title:'Angry Birds 2',description:'Take aim, test your timing, and topple the towers in this colourful classic.'},{file:'clsubwaysurfersmiami.html',title:'Subway Surfers: Miami',description:'Dash through the city, dodge obstacles, and chase your next high score.'},{file:'clmotox3mm.html',title:'Moto X3M',description:'Race through wild obstacle courses and nail the timing to reach the finish.'}];
+    if(!el || el.dataset.artLoading==='1' || el.dataset.artLoaded==='1')return;
+    const target=el.querySelector('.store-cover-art');
+    if(!target)return;
+    const url=coverFor(file);
+    if(!url){el.dataset.artLoaded='1';return}
+    // Keep the per-game SVG poster visible if a remote image cannot load.
+    const previous=artCache.get(url);
+    if(previous?.failed && Date.now()-previous.time<60000){
+      el.dataset.artLoaded='fallback';
+      return;
+    }
+    if(el.dataset.artLoaded==='fallback' && Date.now()-Number(el.dataset.lastArtAttempt||0)<60000)return;
+    el.dataset.artLoading='1';
+    el.dataset.lastArtAttempt=String(Date.now());
+    const image=new Image();
+    image.decoding='async';
+    let settled=false;
+    const complete=()=>{
+      if(settled)return false;
+      settled=true;
+      clearTimeout(timer);
+      delete el.dataset.artLoading;
+      return true;
+    };
+    const timer=setTimeout(()=>{
+      if(!complete())return;
+      image.onload=null;
+      image.onerror=null;
+      artCache.set(url,{failed:true,time:Date.now()});
+      el.dataset.artLoaded='fallback';
+    },12000);
+    image.onload=()=>{
+      if(!complete())return;
+      if(!image.naturalWidth||!image.naturalHeight){
+        artCache.set(url,{failed:true,time:Date.now()});
+        el.dataset.artLoaded='fallback';
+        return;
+      }
+      artCache.delete(url);
+      if(el.isConnected){
+        const square=image.naturalWidth/image.naturalHeight<1.25;
+        target.style.backgroundImage='url('+JSON.stringify(url)+')';
+        target.style.backgroundSize=square?'contain':'cover';
+        target.style.backgroundRepeat='no-repeat';
+        target.style.backgroundColor=square?'transparent':'#111720';
+        if(square){
+          let backdrop=el.querySelector('.store-cover-art-backdrop');
+          if(!backdrop){
+            backdrop=document.createElement('div');
+            backdrop.className='store-cover-art-backdrop';
+            target.before(backdrop);
+          }
+          backdrop.style.backgroundImage='url('+JSON.stringify(url)+')';
+        }
+      }
+      el.dataset.artLoaded='1';
+    };
+    image.onerror=()=>{
+      if(!complete())return;
+      artCache.set(url,{failed:true,time:Date.now()});
+      el.dataset.artLoaded='fallback';
+    };
+    image.src=url;
+  };
+  const featuredGames=[{file:'clminecraftpocketedition.html',title:'Minecraft 1.8',description:'EaglercraftX browser edition, hosted by Eaglercraft Extras. Build, explore and play right inside Lolite OS.'},{file:'clbaldisbasics.html',title:'Baldi’s Basics',description:'A weird school trip turns into a frantic arcade-style escape.'},{file:'clangrybirds2.html',title:'Angry Birds 2',description:'Take aim, test your timing, and topple the towers in this colourful classic.'},{file:'clsubwaysurfersmiami.html',title:'Subway Surfers: Miami',description:'Dash through the city, dodge obstacles, and chase your next high score.'},{file:'clmotox3mm.html',title:'Moto X3M',description:'Race through wild obstacle courses and nail the timing to reach the finish.'}];
  let heroIndex=0;
  function heroMarkup(){const g=featuredGames[heroIndex%featuredGames.length];return '<section class="store-hero store-featured-hero" id="store-featured-hero" data-feature-file="'+g.file+'"><div class="store-hero-art" aria-hidden="true"></div><div class="store-hero-copy"><span class="store-eyebrow">'+'HARDWARE ACCELERATION RECOMMENDED'+'</span><h1>'+g.title+'</h1><p>'+g.description+'</p><button class="store-primary" type="button" onclick=\'window.loliteStorePlay("'+g.file+'")\'>'+'▶ &nbsp; Play now'+'</button><div class="store-hero-dots" role="tablist" aria-label="Featured games">'+featuredGames.map((item,i)=>'<button type="button" class="'+(i===heroIndex?'active':'')+'" aria-label="Show '+item.title.replace(/"/g,'&quot;')+'" aria-selected="'+(i===heroIndex)+'" onclick="window.loliteStoreHeroSelect('+i+')" title="'+item.title.replace(/"/g,'&quot;')+'"></button>').join('')+'</div></div><div class="store-hero-side"><strong>'+String(heroIndex+1).padStart(2,'0')+'</strong><span>FEATURED</span></div></section>'}
  async function loadHeroArt(){const hero=document.getElementById('store-featured-hero');if(!hero)return;const g=featuredGames[heroIndex%featuredGames.length];const poster=lolitePosterArt(g.title,g.file);hero.style.setProperty('--hero-art','url(\"'+poster+'\")');hero.classList.add('has-feature-art');try{const art=coverFor(g.file);if(!art||!hero.isConnected||hero.dataset.featureFile!==g.file)return;const img=new Image();img.onload=()=>{if(hero.isConnected&&hero.dataset.featureFile===g.file){hero.style.setProperty('--hero-art','url("'+art.replace(/"/g,'%22')+'")');hero.classList.add('has-feature-art');hero.classList.toggle('store-featured-square',img.naturalWidth/img.naturalHeight<1.25)}};img.src=art}catch(_){}}
@@ -179,7 +206,7 @@
  const watchArtwork=()=>{const root=document.querySelector('.store-main');if(root&&root.dataset.artworkWatching!=='1'){root.dataset.artworkWatching='1';artworkMutationObserver.observe(root,{childList:true,subtree:true});root.querySelectorAll('.store-cover[data-game-file]').forEach(el=>{if(el.dataset.artObserved==='1')return;el.dataset.artObserved='1';artworkObserver.observe(el)})}};
  const storeFinder=new MutationObserver(watchArtwork);storeFinder.observe(document.documentElement,{childList:true,subtree:true});watchArtwork();
  const section=(title,list)=>list.length?'<section class="store-section"><div class="store-section-head"><div><h2>'+title+'</h2><p>'+list.length+' games to explore</p></div><button type="button" onclick=\'window.loliteStoreCategory("'+title+'")\'>View collection →</button></div><div class="store-grid">'+list.slice(0,8).map(card).join('')+'</div></section>':'';
- function render(){const root=document.querySelector('.store-main');if(!root)return;if(!artWarmStarted){artWarmStarted=true;setTimeout(warmArt,500)}const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" aria-label="Search games" placeholder="Search your library…" value="'+query.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" oninput="window.loliteStoreSearch(this.value)"></div><span class="store-count-pill">'+games.length+' titles</span></div>';
+ function render(){const root=document.querySelector('.store-main');if(!root)return;const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" aria-label="Search games" placeholder="Search your library…" value="'+query.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" oninput="window.loliteStoreSearch(this.value)"></div><span class="store-count-pill">'+games.length+' titles</span></div>';
  if(query||!['Featured','All Games'].includes(active)){const list=filtered();root.innerHTML=top+'<section class="store-section"><div class="store-section-head"><div><h2>'+active+'</h2><p>'+list.length+' matching games</p></div></div>'+(list.length?'<div class="store-grid">'+list.map(card).join('')+'</div>':'<div class="store-empty">No games found. Try another title or category.</div>')+'</section>';return}
  if(active==='All Games'){root.innerHTML=top+'<section class="store-section"><div class="store-section-head"><div><h2>All games</h2><p>Every game in your Lolite library.</p></div></div><div class="store-grid">'+games.map(card).join('')+'</div></section>';return}
  root.innerHTML=top+heroMarkup()+section('Popular Games',games.filter(isPopular))+section('IO & Casual',games.filter(g=>g.category==='IO & Casual'))+section('Horror',games.filter(g=>g.category==='Horror'))+section('Racing',games.filter(g=>g.category==='Racing'))+section('Platformers & Arcade',games.filter(g=>g.category==='Platformers & Arcade'))+section('Puzzle',games.filter(g=>g.category==='Puzzle'));loadHeroArt()}
