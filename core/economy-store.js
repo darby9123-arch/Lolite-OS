@@ -93,4 +93,19 @@ function purchasedApps(){var s=read();return storeState(s).apps.slice()}
 var economy=Object.freeze({balance:balance,money:money,gamePrice:gamePrice,appPrice:appPrice,hasGame:hasGame,hasApp:hasApp,buyGame:g=>buy("game",g),buyApp:id=>buy("app",id),purchasedGames:purchasedGames,purchasedApps:purchasedApps,ownedGameCount:ownedGameCount,freeApps:Array.from(FREE_APPS)});
 window.LoliteEconomy=economy;
 initialize();
+/* Paid optional apps also check their entitlement when launched from the desktop,
+   Start menu, search, Academy, or other app links. Essential apps remain free. */
+var previousOpen=window.openApp;
+if(typeof previousOpen==="function"){
+ window.openApp=function(id,title,w,h){
+  if(typeof id==="string"&&Object.prototype.hasOwnProperty.call(APP_PRICES,id)&&!hasApp(id)){
+   previousOpen("appstore","App Store",980,720);
+   try{window.toast?.("Unlock "+(title||id)+" for "+money(appPrice(id))+" Lolite Dollars in the App Store.");}catch(e){}
+   window.loliteAppStoreFocus?.(id);
+   return;
+  }
+  return previousOpen(id,title,w,h);
+ };
+}
+
 })();
