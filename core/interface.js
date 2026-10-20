@@ -2,7 +2,7 @@
 (()=>{
   'use strict';
   const icon=id=>window.LoliteIcons?.tile(id)||'';
-  const apps=[['home','Home','Your workspace at a glance'],['games','Game Store','Find your next favourite'],['cloud-gaming','Cloud Gaming','Stream through trusted services'],['files','Files','Everything in its place'],['appstore','App Store','Add something useful'],['chatroom','Lolite Chat','Keep the conversation going'],['settings','Settings','Make Lolite feel like you']];
+  const apps=[['home','Home','Your workspace at a glance'],['games','Game Store','Find your next favourite'],['cloud-gaming','Cloud Gaming','Stream through trusted services'],['academy','Lolite Academy','Guided courses and quick lessons'],['files','Files','Everything in its place'],['appstore','App Store','Add something useful'],['chatroom','Lolite Chat','Keep the conversation going'],['settings','Settings','Make Lolite feel like you']];
   const launch=id=>{const app=apps.find(a=>a[0]===id);if(app)window.openApp(id,app[1],id==='settings'?760:960,650)};
   const basePage=window.page;
   window.page=function(id){
