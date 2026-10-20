@@ -15,6 +15,18 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### Lolite Chat — Navigation and Visual Redesign — 2026-10-21
+- Rebuilt the Chat interface into a consistent three-column layout: **clearly labeled Chats / Friends / Calls / Profile navigation**, a searchable conversations sidebar, and a focused message reading/composer area.
+- Replaced miscellaneous symbols and one-off styling with consistent SVG icons, dark slate surfaces, quieter colours, accessible text, keyboard focus states, consistent button sizing and better spacing.
+- Added a practical Chats landing page with recent conversations, **Find Friends**, **Voice Calls** and **New Group** shortcuts.
+- Improved the Friends screen with clearer friend requests, people cards and more obvious actions.
+- Reworked **Create Group** to select accepted friends using checkboxes instead of typing comma-separated usernames; backend friendship checks remain in place.
+- Improved chat headers, search, pinned-message controls, message presentation and Send button; preserved message reactions, reply, edit, delete and read receipts.
+- Added layout responsiveness based on **the width of the Lolite Chat window**, including a bottom navigation bar and a Back to Chats control for narrow/mobile windows.
+- Distinguished **Join room** (enter without ringing) from **Call** (send incoming-call invitations). Existing notification, account, DM, group and calling backends are unchanged.
+- Passed JavaScript syntax validation and UI smoke checks for Chats, Friends, messages and the group picker. Manual device/browser layout testing is still recommended.
+
+
 ### Lolite Chat — Messaging, Groups and Calling Reliability Fix — 2026-10-21
 - Fixed a Supabase row-level-security issue where creating a DM or group and asking for the inserted row immediately could fail. The earlier code could not proceed to add chat members, blocking messages and calls.
 - Added an atomic authenticated conversation-creation RPC (lolite_create_conversation), which validates friendship and membership and saves the chat with all members in one transaction; failed creations do not leave orphan conversations.
