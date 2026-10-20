@@ -19,7 +19,7 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 - Replaced the old placeholder announcements on the Lolite Home screen and welcome screen with **real changes** pulled from this README's Update Log.
 - Added a modern **What's New** section with dated release cards for recent features like Academy, game artwork repairs, Cloud Gaming and desktop improvements.
 - Added an interactive **See all updates** history with full release details and shortcuts to open the feature being described.
-- The latest releases refresh from this README when Lolite loads. If the README is unavailable, a local set of verified release notes appears instead.
+- The latest releases refresh from this README when Lolite loads (or from the public GitHub copy if a static host omits the Markdown file). A local set of verified release notes appears if both sources are unavailable.
 - Removed outdated claims and stale version text from the Home and welcome content.
 
 ### Lolite Academy — Interactive Guide & Courses — 2026-10-20
