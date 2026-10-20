@@ -3,9 +3,10 @@
 (function(){
 "use strict";
 var SAVE="lolite-life-rp-v1",INSTALLED="loliteInstalledApps";
-var FREE_GAMES=new Set(["lolite-pong.html","lolite-2048.html","lolite-sokoban.html"]);
-var FREE_APPS=new Set(["life-rp","lolite-quests","academy","chatroom","notes"]);
-var APP_PRICES=Object.freeze({calculator:180,paint:620,"wallpaper-editor":1450,"lowlight-ai":1800,focus:1200,arcade:2100});
+// A substantial free-to-play catalogue. Full playable HTML titles, not trial versions.
+var FREE_GAMES=new Set(["lolite-pong.html","lolite-2048.html","lolite-sokoban.html","clbitlife.html","clblockblast.html","clcookieclicker.html","clcrazycars.html","clcuttherope.html","clfireboyandwatergirl2.html","clfireboyandwatergirl3.html","clholeio.html","clinfinitecraft.html","clmotox3m2.html","clmotox3m3.html","clmotox3mm.html","clovo2.html","clovodimensions.html","clovofixed.html","clpaperio.html","clpaperio3d.html","clpaperiomania.html","clparkingfury.html","clparkingfury2.html","clRedBall4.html","slope.html","clslopeplus.html","clsnowrider.html","clstickmanhook.html","cltinyfishing.html","clvex3.html","wheely.html","cltemplerun2.html","clsurvivorio.html","clmelonplayground.html","wrestle-bros.html","zombie-rush.html","clmotox3mpoolparty.html","clmotox3mspookyland.html","clmotox3mwinter.html"]);
+var FREE_APPS=new Set(["life-rp","lolite-quests","academy","chatroom","notes","calculator","paint"]);
+var APP_PRICES=Object.freeze({"wallpaper-editor":1450,"lowlight-ai":1800,focus:1200,arcade:2100});
 var PRIOR_GAME=Object.freeze({"lolite-pong.html":"game-pong","lolite-2048.html":"game-2048","lolite-sokoban.html":"game-sokoban","clminecraftpocketedition.html":"game-minecraft"});
 function read(){
  try{var v=JSON.parse(localStorage.getItem(SAVE)||"null");if(v&&typeof v==="object"&&!Array.isArray(v)){
