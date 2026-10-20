@@ -109,11 +109,11 @@ function messageHtml(m){
  (reply?'<div class="lc-replyref">↳ '+esc(label(person(reply.sender_id)))+': '+esc(reply.content.slice(0,75))+'</div>':'')+
  '<div class="lc-msg-content">'+fmt(m.content)+'</div>'+
  (Object.keys(counts).length?'<div class="lc-msg-reactions">'+Object.keys(counts).map(em=>'<button type="button" class="lc-reaction" data-lc-action="react" data-lc-id="'+m.id+'" data-lc-emoji="'+esc(em)+'">'+esc(em)+' '+counts[em].length+'</button>').join('')+'</div>':'')+
- '<div class="lc-msg-actions"><button type="button" data-lc-action="reply" data-lc-id="'+m.id+'">Reply</button><button type="button" data-lc-action="copy" data-lc-id="'+m.id+'">Copy</button>'+
+ '<details class="lc-msg-more"><summary aria-label="More message actions" title="Message actions"><span aria-hidden="true">···</span></summary><div class="lc-msg-actions"><button type="button" data-lc-action="reply" data-lc-id="'+m.id+'">Reply</button><button type="button" data-lc-action="copy" data-lc-id="'+m.id+'">Copy</button>'+
  ['👍','❤️','😂'].map(em=>'<button type="button" aria-label="React '+esc(em)+'" data-lc-action="react" data-lc-id="'+m.id+'" data-lc-emoji="'+esc(em)+'">'+em+'</button>').join('')+
  (own?'<button type="button" data-lc-action="edit" data-lc-id="'+m.id+'">Edit</button><button type="button" data-lc-action="pin" data-lc-id="'+m.id+'">'+(m.is_pinned?'Unpin':'Pin')+'</button><button type="button" data-lc-action="delete" data-lc-id="'+m.id+'">Delete</button>':
  '<button type="button" data-lc-action="report" data-lc-id="'+m.id+'">Report</button>')+
- '</div></div></article>';
+ '</div></details></div></article>';
 }
 
 function chatHtml(){
