@@ -27,6 +27,7 @@
   "capture": "<rect x=\"5\" y=\"12\" width=\"38\" height=\"29\" rx=\"5\" fill=\"#FFF5F0\"/><path d=\"m16 12 3-5h10l3 5\" fill=\"#FFF5F0\"/><circle cx=\"24\" cy=\"26.5\" r=\"9.5\" fill=\"#F3A79A\"/><circle cx=\"24\" cy=\"26.5\" r=\"5.7\" fill=\"#FFF9F4\"/><circle cx=\"36\" cy=\"18\" r=\"2.1\" fill=\"#E17D7D\"/>",
   "utilities": "<path d=\"M12 9v30M24 9v30M36 9v30\" stroke=\"#EDF7FF\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><rect x=\"7\" y=\"16\" width=\"10\" height=\"8\" rx=\"3\" fill=\"#85D7F5\"/><rect x=\"19\" y=\"28\" width=\"10\" height=\"8\" rx=\"3\" fill=\"#85D7F5\"/><rect x=\"31\" y=\"13\" width=\"10\" height=\"8\" rx=\"3\" fill=\"#85D7F5\"/>",
   "autoclick": "<path d=\"M14 7v30l8.6-7 6.1 11 6.2-3.5-6.1-10.8L39 26Z\" fill=\"#F8FBFF\"/><path d=\"M14 7v30l8.6-7 6.1 11 6.2-3.5-6.1-10.8L39 26Z\" fill=\"none\" stroke=\"#E6A46B\" stroke-width=\"1.5\"/><path d=\"m30 9 5-5M36 16h7M28 7V2\" stroke=\"#FFEAD1\" stroke-width=\"3\" stroke-linecap=\"round\"/>",
+  "academy": "<path d=\"M7 12a5 5 0 0 1 5-5h12v33H12a5 5 0 0 0-5 3Z\" fill=\"#E7EFFF\"/><path d=\"M41 12a5 5 0 0 0-5-5H24v33h12a5 5 0 0 1 5 3Z\" fill=\"#B7C8FF\"/><path d=\"M14 15h7M14 21h7M27 15h7M27 21h7\" stroke=\"#5169C0\" stroke-width=\"2.2\" stroke-linecap=\"round\"/><path d=\"m21 29 3-3 3 3\" fill=\"none\" stroke=\"#9870EE\" stroke-width=\"3\" stroke-linecap=\"round\"/>",
   "guide": "<rect x=\"10\" y=\"7\" width=\"28\" height=\"35\" rx=\"5\" fill=\"#FFF4DA\"/><path d=\"M16 14h16M16 20h10\" stroke=\"#E6AD56\" stroke-width=\"2.8\" stroke-linecap=\"round\"/><path d=\"m27 23-8 11h6l-1 6 9-12h-6Z\" fill=\"#F6A42D\"/>",
   "cloud-gaming": "<path d=\"M15 30a9 9 0 0 1 1.6-17.5C18 7.9 22 5 27 5c6.4 0 11.3 4.3 12.4 10 3.7 1.4 6.1 4.9 6.1 9 0 5.2-3.8 8.7-9.5 8.7H16c-.4 0-.7 0-1-.1Z\" fill=\"#E6F5FF\"/><path d=\"M16 25h16a5 5 0 0 1 4.9 4l1.6 7.4c.5 2.5-2.4 4.2-4.3 2.7l-4-3.1H18l-4 3.1c-2 1.5-4.9-.2-4.3-2.7L11.2 29A5 5 0 0 1 16 25Z\" fill=\"#638EF3\"/><path d=\"M19 29v8m-4-4h8\" stroke=\"#FFFFFF\" stroke-width=\"2.8\" stroke-linecap=\"round\"/><circle cx=\"28.5\" cy=\"31\" r=\"2\" fill=\"#B1FFF0\"/><circle cx=\"32.8\" cy=\"35\" r=\"2\" fill=\"#B1FFF0\"/>",
   "default": "<rect x=\"9\" y=\"9\" width=\"30\" height=\"30\" rx=\"7\" fill=\"#EAF3FF\"/><rect x=\"16\" y=\"16\" width=\"16\" height=\"16\" rx=\"4\" fill=\"#9AB7E6\"/><circle cx=\"24\" cy=\"24\" r=\"4\" fill=\"#FFFFFF\"/>"
@@ -125,6 +126,7 @@
     "#F5B45D",
     "#BC742D"
   ],
+  "academy": ["#8098FF","#7862D0"],
   "cloud-gaming": ["#4A97E8", "#2852A8"],
   "default": [
     "#7492C2",
@@ -135,6 +137,9 @@
   "app-home": "home",
   "app-games": "games",
   "app-cloud-gaming": "cloud-gaming",
+  "app-academy": "academy",
+  "lolite-academy": "academy",
+  "course": "academy",
   "cloudgaming": "cloud-gaming",
   "app-files": "files",
   "app-browser": "browser",
