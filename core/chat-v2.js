@@ -22,7 +22,7 @@ const isFriend=id=>friends().some(p=>p.id===id);
 const activeConv=()=>state.view==='channel'?state.conversations.find(c=>c.type==='channel'&&c.name===state.channel):state.conversations.find(c=>c.id===state.conversationId);
 const memberIds=id=>state.members.filter(m=>m.conversation_id===id).map(m=>m.user_id);
 const convLabel=c=>{if(!c)return 'Messages';if(c.type==='channel')return '# '+(c.name||'chat');if(c.type==='group')return c.name||'Group chat';return label(person(memberIds(c.id).find(id=>id!==meId())))};
-const check=r=>{if(r?.error)throw Error(r.error.message||'Something went wrong.');return r?.data};
+const check=r=>{if(r?.error){const err=r.error;throw Error((err.message||'Something went wrong.')+(err.code?' ['+err.code+']':''))}return r?.data};
 const flash=m=>{const r=root();if(!r)return;const d=document.createElement('div');d.className='lc-toast';d.textContent=m;r.appendChild(d);setTimeout(()=>d.remove(),3100)};
 function unreadCount(){return state.requests.filter(r=>r.to_id===meId()&&r.status==='pending').length}
 function authHtml(){
@@ -203,13 +203,15 @@ async function register(username,display,password){
  return login(username,password);
 }
 async function createDM(otherId){
- if(!otherId||otherId===meId())return;
+ if(!otherId||otherId===meId())throw Error('Choose someone else to message.');
  if(blocked(otherId))throw Error('Unblock this person before messaging.');
+ if(!isFriend(otherId))throw Error('Add this person as a friend before sending a private message.');
  const old=state.conversations.filter(c=>c.type==='dm').find(c=>{const ids=memberIds(c.id);return ids.length===2&&ids.includes(meId())&&ids.includes(otherId)});
- if(old){state.view='conversation';state.conversationId=old.id;return refresh(true)}
- const conv=check(await sb.from('conversations').insert({type:'dm',name:null,created_by:meId()}).select('id').single());
- check(await sb.from('conversation_members').insert([{conversation_id:conv.id,user_id:meId()},{conversation_id:conv.id,user_id:otherId}]));
- state.view='conversation';state.conversationId=conv.id;return refresh(true);
+ // Atomic database function creates both conversation and membership together.
+ const id=old?.id||check(await sb.rpc('lolite_create_conversation',{p_type:'dm',p_name:null,p_member_ids:[otherId]}));
+ if(!id)throw Error('Could not create the private chat.');
+ state.view='conversation';state.conversationId=id;state.search='';state.showPins=false;
+ await refresh(true);return id;
 }
 async function requestFriend(username){
  username=username.trim().toLowerCase();
@@ -297,9 +299,9 @@ async function handleForm(form){
   if(!unique.length||unique.length>12)throw Error('Add 1–12 friends.');
   const people=unique.map(n=>state.profiles.find(p=>p.username===n));
   if(people.some(p=>!p||!isFriend(p.id)||blocked(p.id)))throw Error('All group members must be your friends. Check their usernames.');
-  const c=check(await sb.from('conversations').insert({type:'group',name,created_by:meId()}).select('id').single());
-  check(await sb.from('conversation_members').insert([{conversation_id:c.id,user_id:meId()},...people.map(p=>({conversation_id:c.id,user_id:p.id}))]));
-  state.modal=null;state.view='conversation';state.conversationId=c.id;return refresh(true);
+  const id=check(await sb.rpc('lolite_create_conversation',{p_type:'group',p_name:name,p_member_ids:people.map(p=>p.id)}));
+  if(!id)throw Error('Could not create the group. Please retry.');
+  state.modal=null;state.view='conversation';state.conversationId=id;state.search='';state.showPins=false;return refresh(true);
  }
  if(type==='profile'){
   const display=String(fd.get('display')||'').trim().slice(0,32),about=String(fd.get('about')||'').trim().slice(0,160),avatar=String(fd.get('avatar')||'').trim().slice(0,2).toUpperCase(),status=String(fd.get('status')||'online');
