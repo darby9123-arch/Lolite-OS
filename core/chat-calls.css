@@ -1,0 +1,40 @@
+/* Lolite Chat Calls: visible navigation, incoming ring dialog, call roster and taskbar dock */
+.lc-call-header{white-space:nowrap;flex-shrink:0;font-size:11px;min-width:90px}
+.lc-calls-home{height:100%;overflow:auto;padding:26px;display:flex;flex-direction:column;gap:10px;color:#e7edf9}
+.lc-calls-hero{display:flex;align-items:center;gap:19px;background:linear-gradient(115deg,#282d59,#1c293b);border:1px solid #454b79;border-radius:16px;padding:25px;margin-bottom:10px}
+.lc-calls-symbol{width:65px;height:65px;min-width:65px;display:grid;place-items:center;font-size:29px;border-radius:20px;background:#5765b8}
+.lc-calls-hero h2{font-size:25px;margin:0 0 7px;font-weight:800}
+.lc-calls-hero p{font-size:12px;line-height:1.55;max-width:540px;margin:0;color:#c5d2e6}
+.lc-calls-home h3{margin:15px 0 2px;font-size:13px;letter-spacing:.02em}
+.lc-calls-home .lc-muted{font-size:12px;color:#a3b0c4;line-height:1.5}
+.lc-call-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(255px,1fr))}
+.lc-call-card{display:flex;align-items:center;gap:11px;padding:14px;border:1px solid #3d485d;border-radius:12px;background:#222c3c;min-width:0}
+.lc-call-card .lc-avatar{width:39px;height:39px;min-width:39px}
+.lc-call-group-icon{width:39px;height:39px;min-width:39px;display:grid;place-items:center;background:#435987;border-radius:11px;font-size:18px}
+.lc-call-details{display:flex;min-width:0;flex:1;flex-direction:column;gap:3px}
+.lc-call-details strong{white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-size:12px}
+.lc-call-details small{font-size:10px;color:#9cabbd}
+.lc-call-card button{padding:9px 11px;flex-shrink:0;font-size:11px}
+.lc-calls-info{border:1px solid #3d485d;background:#202738;border-radius:10px;color:#aebbd0;font-size:11px;line-height:1.5;padding:13px 15px;margin-top:10px}
+.lc-incoming-wrapper{position:fixed;inset:0;display:grid;place-items:center;z-index:2147483601;background:#060a14b3;backdrop-filter:blur(5px);padding:14px}
+.lc-incoming-call{width:min(370px,100%);border:1px solid #6274c3;border-radius:24px;background:radial-gradient(circle at 50% 0%,#313e85,#20293c 75%);box-shadow:0 30px 120px #000c;color:#f1f5ff;text-align:center;padding:30px 28px;display:flex;flex-direction:column;align-items:center}
+.lc-incoming-ring{width:78px;height:78px;border-radius:50%;display:grid;place-items:center;background:#5079d6;font-size:32px;box-shadow:0 0 0 9px #678bdb29;animation:lc-call-pulse 1.65s ease infinite}
+.lc-incoming-call>small{font-size:10px;letter-spacing:.16em;color:#b0c5ef;margin:24px 0 2px}
+.lc-incoming-call h2{font-size:24px;line-height:1.2;margin:7px 0 0}
+.lc-incoming-call p{color:#b9c6d9;font-size:12px;margin:7px 0 26px}
+.lc-incoming-actions{display:flex;justify-content:center;gap:24px;width:100%}
+.lc-incoming-actions button{border:0;border-radius:12px;min-width:125px;padding:13px 15px;color:#fff;font-size:13px;font-weight:750;cursor:pointer}
+.lc-call-decline,.lc-call-end{background:#bd4054!important;color:#fff!important}
+.lc-call-answer{background:#248863!important}
+@keyframes lc-call-pulse{0%,100%{box-shadow:0 0 0 8px #678bdb22}50%{box-shadow:0 0 0 19px #678bdb08}}
+.lc-call-dock{position:fixed;bottom:73px;right:18px;z-index:2147483501;display:flex;align-items:center;gap:16px;flex-wrap:wrap;width:min(425px,calc(100vw - 30px));padding:13px;background:#1c2535;border:1px solid #607097;border-radius:15px;box-shadow:0 16px 50px #000a;color:#eff5ff;font-family:"Plus Jakarta Sans","Segoe UI",sans-serif}
+.lc-call-dock-title{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
+.lc-call-icon{width:36px;height:36px;min-width:36px;border-radius:12px;display:grid;place-items:center;background:#35547b;color:#b0eccc;font-size:18px}
+.lc-call-dock-title strong,.lc-call-dock-title small{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.lc-call-dock-title strong{font-size:12px}
+.lc-call-dock-title small{color:#a9bacf;font-size:10px;margin-top:3px}
+.lc-call-dock-actions{display:flex;gap:5px}
+.lc-call-dock-actions button{border:0;border-radius:7px;background:#34445e;color:#edf4ff;padding:9px;font-weight:700;font-size:10px;cursor:pointer}
+.lc-call-dock-actions button:hover{filter:brightness(1.22)}
+@media(max-width:620px){.lc-calls-home{padding:14px}.lc-calls-hero{padding:16px;gap:12px}.lc-calls-symbol{width:49px;height:49px;min-width:49px}.lc-calls-hero h2{font-size:18px}.lc-calls-hero p{font-size:11px}.lc-call-header{min-width:68px;padding:7px!important;font-size:10px}.lc-incoming-wrapper{padding:6px}.lc-call-dock{right:8px;bottom:58px;gap:9px}.lc-call-dock-actions{width:100%;justify-content:stretch}.lc-call-dock-actions button{flex:1}}
+@media(prefers-reduced-motion:reduce){.lc-incoming-ring{animation:none}}
