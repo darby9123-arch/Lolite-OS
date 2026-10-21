@@ -137,9 +137,11 @@
     input.addEventListener('input',()=>setQuery(input.value));
     input.addEventListener('keydown',event=>{
       if(event.key==='Escape'){input.value='';setQuery('');input.blur()}
-      if(event.key==='Enter'&&searchQuery){const matches=filteredApps();if(matches.length){event.preventDefault();navigate(matches[0].id)}}
+      if(event.key==='Enter'&&searchQuery){const matches=filteredApps();if(matches.length){event.preventDefault();navigate(matches[0].id)}else{const found=filteredGames();if(found.length){event.preventDefault();openGameSearch(found[0].title)}}}
     });
     shell.addEventListener('click',event=>{
+      const gameButton=event.target.closest('[data-lb-game]');
+      if(gameButton){event.preventDefault();openGameSearch(gameButton.dataset.lbGame);return}
       const button=event.target.closest('[data-lb-open]');
       if(button){event.preventDefault();navigate(button.dataset.lbOpen)}
     });
@@ -160,6 +162,23 @@
     const q=searchQuery.trim().toLowerCase();
     if(!q)return APPS;
     return APPS.filter(app=>(app.name+' '+app.desc+' '+app.id).toLowerCase().includes(q));
+  }
+  function filteredGames(){
+    const q=searchQuery.toLowerCase();
+    if(q.length<2)return [];
+    const catalog=Array.isArray(window.LoliteGenizyCatalog)?window.LoliteGenizyCatalog:[];
+    const found=catalog.filter(entry=>entry.title.toLowerCase().includes(q))
+      .map(entry=>({title:entry.title,id:entry.id}));
+    const extra=['Angry Birds 2','Minecraft 1.8','Lolite Pong','Lolite 2048','World Sandbox'];
+    for(const title of extra)if(title.toLowerCase().includes(q)&&!found.some(game=>game.title.toLowerCase()===title.toLowerCase()))found.push({title,id:0});
+    return found.slice(0,40);
+  }
+  function openGameSearch(title){
+    if(!title)return;
+    navigate('games');
+    window.setTimeout(()=>{
+      if(mode==='browsing'&&typeof window.loliteStoreSearch==='function')window.loliteStoreSearch(title);
+    },80);
   }
   function navigationMarkup(apps){
     return apps.map(app=>'<button type="button" class="lb-nav-item'+(activeId===app.id&&!searchQuery?' active':'')+'" data-lb-open="'+app.id+'" title="'+escapeHTML(app.name)+'">'+icon(app)+'<span class="lb-nav-text">'+escapeHTML(app.name)+'</span></button>').join('');
@@ -189,7 +208,12 @@
     const welcome=shell.querySelector('#lbWelcome');
     if(searchQuery){
       const matches=filteredApps();
-      welcome.innerHTML='<div class="lb-welcome-inner"><div class="lb-section-header"><h2>Search results</h2><span>'+matches.length+' matching apps</span></div>'+(matches.length?'<div class="lb-card-grid">'+matches.map(tile).join('')+'</div>':'<div class="lb-empty">No apps found. Try a different search.</div>')+'</div>';
+      const games=filteredGames();
+      welcome.innerHTML='<div class="lb-welcome-inner"><div class="lb-section-header"><h2>Apps</h2><span>'+matches.length+' matching apps</span></div>'+
+        (matches.length?'<div class="lb-card-grid">'+matches.map(tile).join('')+'</div>':'<p class="lb-empty">No matching apps.</p>')+
+        '<div class="lb-section-header" style="margin-top:29px"><h2>Games</h2><span>'+games.length+(games.length===40?'+':'')+' results</span></div>'+
+        (games.length?'<div class="lb-card-grid">'+games.map(game=>'<button class="lb-tile" data-lb-game="'+escapeHTML(game.title)+'" type="button"><span class="lb-tile-symbol"><span class="lb-icon-fallback">▣</span></span><strong>'+escapeHTML(game.title)+'</strong><small>Find in Game Store →</small></button>').join('')+'</div>':'<p class="lb-empty">No matching games.</p>')+
+      '</div>';
     }else{
       const essentials=APPS.filter(app=>app.group==='main'&&app.id!=='home');
       const more=APPS.filter(app=>app.group==='more').slice(0,8);
