@@ -66,7 +66,7 @@ function renderCallsHtml(){
  '<article class="lc-call-card"><div class="lc-avatar">'+esc((user.avatar||name(user.id).slice(0,2)).toUpperCase())+'</div><div class="lc-call-details"><strong>'+esc(name(user.id))+'</strong><small>@'+esc(user.username)+'</small></div><button type="button" class="lc-primary" data-lc-call="friend" data-lc-id="'+esc(user.id)+'">'+ico('phone',16)+' Call</button></article>').join('')+'</div>':'<p class="lc-muted">No friends added yet. Open Friends to send someone a request, then call them here.</p><button class="lc-secondary" data-lc-action="friends">Find friends</button>')+
  '<h3>Group calls</h3>'+(list.length?'<div class="lc-call-grid">'+list.map(c=>
  '<article class="lc-call-card"><div class="lc-call-group-icon">'+ico('users',20)+'</div><div class="lc-call-details"><strong>'+esc(c.name||'Group chat')+'</strong><small>'+members(c.id).length+' members</small></div><button type="button" class="lc-primary" data-lc-call="group" data-lc-id="'+esc(c.id)+'">'+ico('phone',16)+' Call group</button></article>').join('')+'</div>':'<p class="lc-muted">Start a group chat with your friends to call everyone together.</p><button class="lc-secondary" data-lc-action="group">Create group</button>')+
- '<div class="lc-calls-info">Calls use private-room signalling and WebRTC audio/video. Share screen is optional and your browser will ask what to share. You can stop at any time.</div></div></main>';
+ '<div class="lc-calls-tools"><button type="button" data-lc-call="microphone">'+ico('settings',16)+' Microphone settings</button></div><div class="lc-calls-info">Calls use private-room signalling and WebRTC audio/video. Share screen is optional and your browser will ask what to share. You can stop at any time.</div></div></main>';
 }
 function afterRender(){
  if(!s()?.user)return;
@@ -126,6 +126,18 @@ function elapsed(){
  const seconds=Math.floor((Date.now()-callConnectedAt)/1000);
  return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
 }
+const callSvg=key=>{
+ const paths={
+  mic:'<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/>',
+  mute:'<path d="M9 9v2a3 3 0 0 0 5.2 2.1M15 9V5a3 3 0 0 0-5.9-.7M5 10a7 7 0 0 0 12 4.9M19 10a7 7 0 0 1-.8 3.2M12 17v5m-4 0h8M3 3l18 18"/>',
+  screen:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/>',
+  hangup:'<path d="M3.2 14.2c5.2-4.2 12.4-4.2 17.6 0l-2.4 3.1a1.6 1.6 0 0 1-2 .4l-2.3-1.2a1.6 1.6 0 0 1-.8-1.4v-1.1a15 15 0 0 0-2.6 0v1.1a1.6 1.6 0 0 1-.8 1.4l-2.3 1.2a1.6 1.6 0 0 1-2-.4z"/>',
+  chat:'<path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-4 3v-8A7.5 7.5 0 0 1 9.5 6H12a8 8 0 0 1 8 5.5Z"/>'
+ };
+ return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(paths[key]||paths.settings)+'</svg>';
+};
+
 function renderCallWindow(){
  let el=document.getElementById('lcActiveCall');
  if(!currentCall||callMinimized){el?.remove();return}
@@ -135,16 +147,20 @@ function renderCallWindow(){
  const status=callStatus();
  if(!el){el=document.createElement('section');el.id='lcActiveCall';el.className='lc-active-call';document.body.appendChild(el)}
  el.setAttribute('role','dialog');el.setAttribute('aria-label','Lolite call with '+title);
- el.innerHTML='<div class="lc-active-call-head"><span class="lc-call-live"><span class="lc-call-live-dot"></span> LOLITE CALL</span><button type="button" data-lc-call="minimize" title="Minimize call">—</button></div>'+
+ const muted=extra()?.isMuted?.(),sharing=extra()?.hasScreen?.(),watching=extra()?.hasAnyScreen?.();
+ el.innerHTML='<div class="lc-active-call-head"><span class="lc-call-live"><span class="lc-call-live-dot"></span> '+(status.startsWith('Ringing')?'CALLING':'IN CALL')+'</span><button type="button" data-lc-call="minimize" aria-label="Minimize call" title="Minimize">—</button></div>'+
  '<div class="lc-active-call-body"><div class="lc-active-avatar '+(status.startsWith('Ringing')?'is-ringing':'')+'">'+(group?ico('users',45):avatar(mainId))+'</div>'+
- '<div class="lc-active-call-label">'+(group?'GROUP VOICE CALL':call.role==='caller'?'OUTGOING CALL':'VOICE CALL')+'</div>'+
- '<h2>'+esc(title)+'</h2><div class="lc-active-call-handle">'+esc(group?ids.length+' invited member'+(ids.length===1?'':'s'):username(mainId))+'</div>'+
- '<div class="lc-active-call-status">'+esc(status)+' <span class="lc-call-elapsed">'+elapsed()+'</span></div>'+
+ '<div class="lc-active-call-label">'+(group?'GROUP CALL':call.role==='caller'?'VOICE CALL':'INCOMING CALL')+'</div>'+
+ '<h2>'+esc(title)+'</h2><div class="lc-active-call-handle">'+esc(group?ids.length+' invited participant'+(ids.length===1?'':'s'):username(mainId))+'</div>'+
+ '<div class="lc-active-call-status"><span>'+esc(status)+'</span><span class="lc-call-elapsed">'+elapsed()+'</span></div>'+
  (group?'<div class="lc-active-call-roster">'+ids.slice(0,12).map(id=>callerVisual(id)).join('')+'</div>':'')+
- '<div class="lc-active-call-actions"><button type="button" data-lc-call="toggleMute" class="lc-active-call-control">'+ico('phone',18)+'<span>'+(extra()?.isMuted?.()?'Unmute':'Mute')+'</span></button>'+
- '<button type="button" data-lc-call="screen" class="lc-active-call-control">'+ico('users',18)+'<span>'+(extra()?.hasScreen?.()?'Stop sharing':'Share screen')+'</span></button>'+
- '<button type="button" data-lc-call="hangup" class="lc-active-call-control lc-active-hangup">'+ico('phone',18)+'<span>End call</span></button></div>'+
- '<button type="button" data-lc-call="openActive" class="lc-active-openchat">Open conversation</button></div>';
+ '<div class="lc-active-call-actions">'+
+ '<button type="button" data-lc-call="toggleMute" class="lc-active-call-control '+(muted?'is-selected':'')+'" title="'+(muted?'Unmute microphone':'Mute microphone')+'">'+callSvg(muted?'mute':'mic')+'<span>'+(muted?'Unmute':'Mute')+'</span></button>'+
+ '<button type="button" data-lc-call="screen" class="lc-active-call-control '+(sharing?'is-selected':'')+'" title="'+(sharing?'Stop sharing':'Share screen')+'">'+callSvg('screen')+'<span>'+(sharing?'Stop share':'Share')+'</span></button>'+
+ '<button type="button" data-lc-call="microphone" class="lc-active-call-control" title="Choose microphone">'+callSvg('settings')+'<span>Mic</span></button>'+
+ '<button type="button" data-lc-call="hangup" class="lc-active-call-control lc-active-hangup" title="End call">'+callSvg('hangup')+'<span>Leave</span></button></div>'+
+ '<div class="lc-active-call-secondary">'+(watching?'<button type="button" data-lc-call="viewScreen">'+callSvg('screen')+' View shared screen</button>':'')+
+ '<button type="button" data-lc-call="openActive">'+callSvg('chat')+' Open chat</button></div></div>';
 }
 function startCallTicker(){
  if(callTicker)return;
@@ -164,8 +180,14 @@ function renderDock(){
  const status=callStatus();
  const {conv,ids}=callParticipants(currentCall);
  const target=conv?.type==='group'?(conv.name||'Group call'):name(currentCall.role==='caller'?ids[0]:currentCall.initiated_by);
+ const muted=extra()?.isMuted?.(),sharing=extra()?.hasScreen?.();
  el.innerHTML='<div class="lc-call-dock-title"><div class="lc-call-icon lc-call-dock-avatar">'+(conv?.type==='group'?ico('users',19):avatar(currentCall.role==='caller'?ids[0]:currentCall.initiated_by))+'</div><div><strong>'+esc(target)+'</strong><small>'+esc(status)+' <span class="lc-call-dock-time">'+elapsed()+'</span></small></div></div>'+
- '<div class="lc-call-dock-actions"><button type="button" data-lc-call="restore">View call</button><button type="button" data-lc-call="openActive">Open chat</button><button type="button" data-lc-call="toggleMute">'+(extra()?.isMuted?.()?'Unmute':'Mute')+'</button><button type="button" data-lc-call="screen" class="'+(extra()?.hasScreen?.()?'lc-screen-active':'')+'">'+(extra()?.hasScreen?.()?'Stop sharing':'Share screen')+'</button>'+(extra()?.hasAnyScreen?.()?'<button type="button" data-lc-call="viewScreen">View screen</button>':'')+'<button type="button" data-lc-call="hangup" class="lc-call-end">End call</button></div>';
+ '<div class="lc-call-dock-actions">'+
+ '<button type="button" data-lc-call="restore" title="Open call window">'+callSvg('screen')+'</button>'+
+ '<button type="button" data-lc-call="toggleMute" title="'+(muted?'Unmute':'Mute')+' microphone" class="'+(muted?'is-selected':'')+'">'+callSvg(muted?'mute':'mic')+'</button>'+
+ '<button type="button" data-lc-call="microphone" title="Microphone settings">'+callSvg('settings')+'</button>'+
+ '<button type="button" data-lc-call="screen" title="'+(sharing?'Stop sharing':'Share screen')+'" class="'+(sharing?'is-selected':'')+'">'+callSvg('screen')+'</button>'+
+ '<button type="button" data-lc-call="hangup" title="End call" class="lc-call-end">'+callSvg('hangup')+'</button></div>';
  startCallTicker();renderCallWindow();
 }
 function updateCallDock(){
@@ -337,6 +359,7 @@ document.addEventListener('click',async e=>{
   if(a==='minimize'){callMinimized=true;renderCallWindow();return}
   if(a==='restore'){callMinimized=false;renderCallWindow();return}
   if(a==='toggleMute'){extra()?.toggleMute?.();updateCallDock();return}
+  if(a==='microphone'){extra()?.openMicSettings?.();return}
   if(a==='screen'){if(extra()?.hasScreen?.())await extra()?.stopScreenShare?.();else await extra()?.startScreenShare?.();updateCallDock();return}
   if(a==='viewScreen'){extra()?.viewScreen?.();return}
  }catch(err){say(err.message||'Call action failed')}
