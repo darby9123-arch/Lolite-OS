@@ -161,8 +161,6 @@ function renderDock(){
  let el=document.getElementById('lcCallDock');
  if(!currentCall){el?.remove();renderCallWindow();stopCallTicker();return}
  if(!el){el=document.createElement('div');el.id='lcCallDock';el.className='lc-call-dock';document.body.appendChild(el)}
- const others=(currentCall.invites||[]).filter(r=>r.status==='accepted').length;
- const ringing=(currentCall.invites||[]).filter(r=>r.status==='ringing').length;
  const status=callStatus();
  const {conv,ids}=callParticipants(currentCall);
  const target=conv?.type==='group'?(conv.name||'Group call'):name(currentCall.role==='caller'?ids[0]:currentCall.initiated_by);
@@ -220,8 +218,12 @@ async function checkIncoming(){
   const next=eligible.sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)).find(c=>c.id!==currentCall?.id)||null;
   if(next){
    const changed=activeInvite?.id!==next.id;
-   activeInvite=next;renderIncoming();callNotification(next);
-   if(changed)fetchMissingProfiles([next.initiated_by]).catch(console.debug);
+   activeInvite=next;renderIncoming();
+   if(changed){
+    fetchMissingProfiles([next.initiated_by])
+     .catch(console.debug)
+     .finally(()=>{if(activeInvite?.id===next.id)callNotification(next)});
+   }else callNotification(next);
   }
   else if(activeInvite)cleanIncoming();
   if(currentCall){
