@@ -3,6 +3,25 @@
    No unlicensed streaming embeds, tracking/ad scripts, or unknown third-party players. */
 (()=>{
  'use strict';
+ const GATE_KEY='loliteMoviesAdBlockNoticeV1';
+ let acceptedNotice=false;
+ try{acceptedNotice=sessionStorage.getItem(GATE_KEY)==='accepted'}catch(error){console.info('Movie session preference is not available')}
+ const acceptsNotice=()=>acceptedNotice;
+ function acceptNotice(){
+   acceptedNotice=true;
+   try{sessionStorage.setItem(GATE_KEY,'accepted')}catch(error){console.info('Cannot store movie acknowledgment')}
+   const content=document.querySelector('#windows .window[data-window-id="movies"] .content');
+   if(!content)return;
+   content.innerHTML=createPage();
+   bind();
+ }
+ function bindGate(){
+   const root=document.querySelector('#windows .window[data-window-id="movies"] .lm-movies');
+   if(!root||root.dataset.gateBound==='1')return;
+   root.dataset.gateBound='1';
+   root.querySelector('#lmAdBlockContinue')?.addEventListener('click',acceptNotice);
+   root.querySelector('#lmAdBlockClose')?.addEventListener('click',()=>window.closeWin?.('movies'));
+ }
  const KEY='loliteMoviesLibraryV1';
  const dbName='lolite-movies-offline',store='videos',limit=150*1024*1024;
  let entries=[],objects=new Map(),selected=null,filter='all',query='',dbPromise;
@@ -30,6 +49,14 @@
  .lm-video-actions{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}
  .lm-empty{border:1px dashed #3b465d;border-radius:12px;padding:24px;color:#aebbd0;line-height:1.7}
  .lm-progress{height:3px;background:#30394b;margin:10px 0;border-radius:4px;overflow:hidden}.lm-progress div{height:100%;background:#9e8ff4}
+ .lm-adgate{flex:1;min-height:0;display:grid;place-items:center;overflow:auto;padding:clamp(22px,4vw,42px);background:radial-gradient(circle at 50% 20%,#34305460,transparent 55%),#0d1018}
+ .lm-adgate-card{max-width:570px;border:1px solid #384362;border-radius:16px;background:#171f2e;padding:clamp(20px,4vw,36px);box-shadow:0 18px 70px #0005}
+ .lm-adgate-kicker{font-size:11px;letter-spacing:.14em;color:#ad9cf9;font-weight:800}
+ .lm-adgate h1{margin:12px 0;font-size:clamp(24px,4vw,34px);letter-spacing:-.04em}
+ .lm-adgate p{color:#b7c1d3;line-height:1.65;font-size:14px}
+ .lm-adgate-buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}
+ .lm-adgate-buttons button{font-weight:700;padding:12px 16px}
+ .lm-adgate-caution{margin-top:18px;padding:12px;background:#202637;border-left:3px solid #9e8be7;border-radius:7px;color:#ced7e9;font-size:12px;line-height:1.6}
  @media(max-width:620px){.lm-top{padding:14px}.lm-body{padding:14px}.lm-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.lm-hero h1{font-size:21px}}
  `;
  const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
@@ -43,6 +70,18 @@
  function root(){return movieWindow()?.querySelector('.lm-movies')}
  function notify(text){if(typeof window.toast==='function')window.toast(text);else console.info(text)}
  function createPage(){
+   if(!acceptsNotice())return `<div class="lm-movies">
+     <section class="lm-adgate" aria-labelledby="lmAdGateTitle"><div class="lm-adgate-card">
+       <div class="lm-adgate-kicker">LOLITE MOVIES · BEFORE YOU WATCH</div>
+       <h1 id="lmAdGateTitle">Ad blocker required</h1>
+       <p>Some third-party movie and TV hosts used by CINEXTMA show pop-up, redirect and in-player advertisements. For safer browsing, use a trusted ad blocker before opening these players.</p>
+       <div class="lm-adgate-caution">Lolite cannot detect whether an ad blocker is installed or guarantee that one will block every ad. Clicking Continue is an acknowledgment only. Third-party streams may have different content rights, privacy practices and availability.</div>
+       <div class="lm-adgate-buttons">
+         <button id="lmAdBlockContinue" class="primary" type="button">I have an ad blocker</button>
+         <button id="lmAdBlockClose" type="button">Go back</button>
+       </div>
+       <p class="lm-muted">Lolite Movies remembers your acknowledgment for this browser tab session. Only watch content you have the right to access.</p>
+     </div></section></div>`;
    return `<div class="lm-movies">
      <header class="lm-top"><div><div class="lm-brand">LOLITE <em>MOVIES</em></div><div class="lm-muted">Ad-free personal cinema · Movies and TV</div></div><div class="lm-actions"><button type="button" data-lm="browse">My Library</button><button type="button" data-lm="add" class="primary">+ Add videos</button></div></header>
      <section class="lm-body" id="lmCatalog"><div class="lm-hero"><div class="lm-muted">YOUR ENTERTAINMENT SPACE</div><h1>Enjoy movies and shows, your way.</h1><p>Add videos you own or have permission to use, keep a watchlist, resume where you stopped and watch without tracking or injected ads. Video files remain local unless you choose Save offline.</p><div class="lm-actions"><button class="primary" data-lm="add">Import movie or episode</button><button data-lm="discover">Discover film information ↗</button></div></div>
@@ -128,6 +167,6 @@
    r.addEventListener('drop',async e=>{e.preventDefault();await importFiles(Array.from(e.dataTransfer?.files||[]),'')});
    paint();
  }
- const oldPage=window.page;window.page=function(id){if(id==='movies'){setTimeout(bind,0);return createPage()}return oldPage(id)};
+ const oldPage=window.page;window.page=function(id){if(id==='movies'){setTimeout(()=>acceptsNotice()?bind():bindGate(),0);return createPage()}return oldPage(id)};
  window.LoliteMovies={open:()=>window.openApp?.('movies','Lolite Movies',1120,740)};
 })();
