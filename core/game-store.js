@@ -150,7 +150,7 @@ games.push(...mntSourceFiles.map(name=>({
      if(!response.ok)throw new Error('Catalog returned HTTP '+response.status);
      const catalog=await response.json();
      if(!Array.isArray(catalog))throw new Error('Invalid catalog data');
-     const current=new Map(games.map((game,index)=>[genizyKey(game.title),index]));
+     const current=new Map();games.forEach((game,index)=>{const key=genizyKey(game.title);if(!current.has(key))current.set(key,index)});
      let added=0,replaced=0;
      for(const item of catalog){
        if(!Number.isInteger(item.id)||item.id<0||typeof item.title!=='string'||typeof item.path!=='string'||!/^iframe\/[a-zA-Z0-9_.-]+\.html$/.test(item.path))continue;
