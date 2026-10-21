@@ -42,7 +42,7 @@
  function blobUrl(record){
    if(!record||typeof record.html!=="string")throw new Error("Saved HTML not found");
    let html=record.html;
-   if(!/<base\s/i.test(html)){
+   if(record.sourceUrl&&/^https:\/\//.test(record.sourceUrl)&&!/<base\s/i.test(html)){
      let base="https://genizymath.github.io/iframe/";
      try { if(/^https:\/\//.test(record.sourceUrl))base=new URL(".",record.sourceUrl).href; }catch(_){}
      const tag="<base href=\""+base.replace(/&/g,"&amp;").replace(/"/g,"&quot;")+"\">";
