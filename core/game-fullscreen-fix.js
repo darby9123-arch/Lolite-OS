@@ -95,7 +95,8 @@
       const button=document.createElement('button');button.type='button';button.className='lolite-game-fullscreen-toggle';
       button.textContent='Fullscreen';button.setAttribute('aria-label','Toggle game fullscreen (Escape to exit)');
       button.addEventListener('click',()=>toggle(pane));
-      bar.appendChild(button);pane.insertBefore(bar,frame);
+      bar.appendChild(button);if(pane.classList.contains('uploaded-game'))pane.insertBefore(bar,pane.firstChild);
+      else pane.insertBefore(bar,frame);
       sync();
     });
   }
