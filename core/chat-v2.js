@@ -236,15 +236,38 @@ function modalHtml(){
  else if(m.type==='report'){title='Report message';body='<p>Help keep Lolite safe. Reports can be reviewed by moderators when moderation tools are available.</p><form data-lc-form="report"><label>Why are you reporting this?</label><textarea name="reason" required minlength="3" maxlength="500" placeholder="Describe the problem"></textarea><div class="lc-dialog-actions"><button class="lc-secondary" type="button" data-lc-action="closeModal">Cancel</button><button class="lc-primary" type="submit">Submit report</button></div></form>'}
  return '<div class="lc-modal-layer"><div class="lc-dialog" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><h2>'+title+'</h2>'+body+'</div></div>';
 }
-function render(){
+function render(quiet=false){
  const r=root();if(!r)return;
  const snapshot=snapshotInputs();
  if(!sb){r.innerHTML='<div class="lc-placeholder"><div><h2>Chat library unavailable</h2><p>Check the network connection, then reopen Lolite Chat.</p></div></div>';return}
  if(state.loading){r.innerHTML='<div class="lc-loader">Connecting to Lolite Chat…</div>';return}
  if(state.error){r.innerHTML='<div class="lc-placeholder"><div><h2>Could not connect</h2><p>'+esc(state.error)+'</p><button class="lc-primary" data-lc-action="retry">Retry</button></div></div>';return}
  if(!state.user){r.innerHTML=authHtml();return}
+ // Refresh chat messages in place when possible, so an active textarea never
+ // gets destroyed while the user types (including IME composition).
+ const shell=r.querySelector('.lc-shell');
+ const c=activeConv(),oldScroll=r.querySelector('.lc-message-scroll');
+ if(quiet&&shell&&c&&oldScroll&&
+    shell.dataset.lcView===state.view&&
+    shell.dataset.lcConversation===String(c.id)&&
+    !state.modal&&!r.querySelector('.lc-modal-layer')&&
+    !!r.querySelector('.lc-reply-bar')===!!state.replyTo){
+  const next=document.createElement('div');
+  next.innerHTML=chatHtml();
+  const newScroll=next.querySelector('.lc-message-scroll');
+  if(newScroll){
+   const atBottom=oldScroll.scrollHeight-oldScroll.scrollTop-oldScroll.clientHeight<90;
+   const previousTop=oldScroll.scrollTop;
+   oldScroll.innerHTML=newScroll.innerHTML;
+   oldScroll.scrollTop=atBottom?oldScroll.scrollHeight:previousTop;
+   const sidebar=r.querySelector('[data-lc-sidebar-content]');
+   if(sidebar)sidebar.innerHTML=sideContents();
+   window.LoliteChatExtra?.afterRender?.();window.LoliteChatCalls?.afterRender?.();
+   return;
+  }
+ }
  const main=state.view==='calls'?(window.LoliteChatCalls?.renderCallsHtml?.()||'<main class="lc-main"><div class="lc-placeholder">Loading voice calls…</div></main>'):state.view==='friends'?friendsHtml():state.view==='browse'?browseHtml():state.view==='profile'?profileHtml():chatHtml();
- r.innerHTML='<div class="lc-shell" data-lc-view="'+esc(state.view)+'">'+railHtml()+sideHtml()+main+'</div>'+modalHtml();
+ r.innerHTML='<div class="lc-shell" data-lc-view="'+esc(state.view)+'" data-lc-conversation="'+esc(c?.id||'')+'">'+railHtml()+sideHtml()+main+'</div>'+modalHtml();
  restoreInputs(snapshot);
   window.LoliteChatExtra?.afterRender?.();window.LoliteChatCalls?.afterRender?.();
 }
@@ -293,7 +316,7 @@ async function refresh(quiet=false){
    state.profiles=[];state.conversations=[];state.members=[];state.requests=[];state.blocks=[];state.messages=[];state.reactions=[];state.me=null;
   }
  }catch(e){state.error=String(e.message||e);console.error('Lolite Chat:',e)}
- finally{state.busy=false;state.loading=false;render();if(state.user&&!state.error){subscribe().catch(console.error)}if(state.again){state.again=false;queueMicrotask(()=>refresh(true))}}
+ finally{state.busy=false;state.loading=false;render(quiet);if(state.user&&!state.error){subscribe().catch(console.error)}if(state.again){state.again=false;queueMicrotask(()=>refresh(true))}}
 }
 async function login(username,password){
  return check(await sb.auth.signInWithPassword({email:username.toLowerCase()+'@accounts.lolite.chat',password}));
