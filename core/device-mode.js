@@ -166,9 +166,16 @@
   function filteredGames(){
     const q=searchQuery.toLowerCase();
     if(q.length<2)return [];
-    const catalog=Array.isArray(window.LoliteGenizyCatalog)?window.LoliteGenizyCatalog:[];
-    const found=catalog.filter(entry=>entry.title.toLowerCase().includes(q))
-      .map(entry=>({title:entry.title,id:entry.id}));
+    const genizy=Array.isArray(window.LoliteGenizyCatalog)?window.LoliteGenizyCatalog:[];
+    const additional=Array.isArray(window.LoliteAdditionalGameServers)?window.LoliteAdditionalGameServers:[];
+    const catalog=[...genizy,...additional];
+    const seen=new Set();
+    const found=catalog.filter(entry=>{
+      if(!entry?.title||!entry.title.toLowerCase().includes(q))return false;
+      const key=entry.title.toLowerCase().replace(/[^a-z0-9]/g,'');
+      if(seen.has(key))return false;
+      seen.add(key);return true;
+    }).map(entry=>({title:entry.title,id:entry.id||0}));
     const extra=['Angry Birds 2','Minecraft 1.8','Lolite Pong','Lolite 2048','World Sandbox'];
     for(const title of extra)if(title.toLowerCase().includes(q)&&!found.some(game=>game.title.toLowerCase()===title.toLowerCase()))found.push({title,id:0});
     return found.slice(0,40);
