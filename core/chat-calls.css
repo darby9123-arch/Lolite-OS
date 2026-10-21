@@ -49,3 +49,51 @@
 .lc-call-dock-actions{flex-wrap:wrap;justify-content:flex-end}
 .lc-call-dock-actions button{white-space:nowrap}
 @media(max-width:620px){.lc-screen-viewer{top:8px;right:8px;width:calc(100vw - 16px);max-height:66vh}.lc-screen-viewer video{max-height:calc(66vh - 55px)}.lc-call-dock-actions{justify-content:stretch}.lc-call-dock-actions button{flex:1 1 auto}}
+
+/* Call experience: clearly identify caller, callee and group participants. */
+.lc-incoming-wrapper{background:rgba(5,10,21,.78);backdrop-filter:blur(14px)}
+.lc-incoming-call{width:min(410px,calc(100vw - 24px));padding:0 27px 27px;overflow:hidden;border-radius:23px;border:1px solid #47617e;background:radial-gradient(ellipse at 50% -10%,#305675 0%,#18293d 55%,#121e2e 100%);box-shadow:0 32px 100px #000b;color:#f4f8ff;display:flex;align-items:center;flex-direction:column;text-align:center}
+.lc-incoming-top{display:flex;align-items:center;justify-content:space-between;gap:10px;width:calc(100% + 54px);padding:15px 20px;margin:0 0 30px;border-bottom:1px solid #ffffff19;font-size:9px;font-weight:800;letter-spacing:.1em;color:#a9c1da}
+.lc-call-live{display:inline-flex;align-items:center;gap:7px;font-size:10px;font-weight:850;letter-spacing:.12em;color:#cce8ff}
+.lc-call-live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#68dfaa;box-shadow:0 0 0 5px #68dfaa20;animation:lc-call-pulse 1.65s infinite}
+.lc-incoming-avatar,.lc-active-avatar{width:108px;height:108px;display:grid;place-items:center;border-radius:34px;border:1px solid #a3c8f654;background:linear-gradient(145deg,#6e9bd4,#375c8d);color:#fff;font-size:39px;font-weight:850;box-shadow:0 0 0 11px #789dd519,0 16px 45px #040b1d65}
+.lc-incoming-avatar{margin:0 auto 25px;animation:lc-avatar-ring 2.3s ease-in-out infinite}
+@keyframes lc-avatar-ring{0%,100%{box-shadow:0 0 0 10px #789dd519,0 16px 45px #040b1d65}50%{box-shadow:0 0 0 20px #789dd50b,0 16px 45px #040b1d65}}
+.lc-incoming-kicker,.lc-active-call-label{font-size:10px;letter-spacing:.19em;font-weight:800;color:#8bc0ef}
+.lc-incoming-call h2{font-size:27px;font-weight:850;line-height:1.15;margin:10px 0 4px;overflow-wrap:anywhere;max-width:100%}
+.lc-incoming-username,.lc-active-call-handle{font-size:12px;color:#a6bdd7;overflow-wrap:anywhere}
+.lc-incoming-call p{font-size:13px;color:#d5e4f7;margin:23px 0 25px}
+.lc-incoming-actions{display:flex;justify-content:center;gap:14px;width:100%}
+.lc-incoming-actions button{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;border:0;border-radius:12px;padding:15px 12px;min-width:0;font-size:13px;font-weight:800;cursor:pointer;transition:filter .15s,transform .15s}
+.lc-incoming-actions button:hover{filter:brightness(1.14);transform:translateY(-2px)}
+.lc-incoming-actions .lc-call-decline{background:#a9344a!important}
+.lc-incoming-actions .lc-call-answer{background:#208864!important}
+.lc-incoming-actions svg{width:19px;height:19px}
+.lc-incoming-foot{font-size:10px;color:#93a9c3;margin-top:21px;line-height:1.45}
+.lc-active-call{position:fixed;z-index:2147483503;top:50%;left:50%;transform:translate(-50%,-50%);width:min(425px,calc(100vw - 24px));max-height:min(92vh,720px);overflow-y:auto;border-radius:23px;border:1px solid #486a8b;background:radial-gradient(ellipse at 50% 0%,#294d6d 0%,#182c40 48%,#111c2c 100%);box-shadow:0 25px 95px #000c;color:#f0f6ff;font-family:"Plus Jakarta Sans","Segoe UI",sans-serif}
+.lc-active-call-head{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid #ffffff16}
+.lc-active-call-head button{width:32px;height:28px;border:1px solid #6684a357;background:#ffffff0c;border-radius:8px;color:#e3f1ff;font-size:19px;cursor:pointer}
+.lc-active-call-body{display:flex;flex-direction:column;align-items:center;text-align:center;padding:32px 22px 26px}
+.lc-active-avatar{width:102px;height:102px;margin-bottom:26px}
+.lc-active-avatar.is-ringing{animation:lc-avatar-ring 2.3s ease-in-out infinite}
+.lc-active-avatar svg{width:44px;height:44px}
+.lc-active-call-label{font-size:10px}
+.lc-active-call-body h2{font-size:26px;line-height:1.2;font-weight:850;margin:10px 0 5px;overflow-wrap:anywhere;max-width:100%}
+.lc-active-call-handle{margin-bottom:24px}
+.lc-active-call-status{display:flex;align-items:center;justify-content:center;gap:11px;color:#a9dfc7;font-size:12px;font-weight:750;margin-bottom:29px}
+.lc-call-elapsed{display:inline-block;padding:4px 7px;border:1px solid #4c6a79;border-radius:6px;color:#b7cde0;font-variant-numeric:tabular-nums;font-size:11px}
+.lc-active-call-roster{display:flex;flex-direction:column;gap:7px;width:100%;max-height:148px;overflow:auto;margin:-10px 0 22px;padding:8px;background:#09192965;border-radius:10px}
+.lc-call-person{display:flex;align-items:center;gap:10px;text-align:left;padding:5px}
+.lc-call-person-avatar,.lc-call-dock-avatar{display:grid;place-items:center;flex:none;width:33px;height:33px;border-radius:10px;background:#466b9b;color:#fff;font-size:12px;font-weight:800}
+.lc-call-person-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lc-call-person-text strong{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc-call-person-text small{font-size:10px;color:#91adc7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc-active-call-actions{display:flex;justify-content:center;gap:11px;width:100%}
+.lc-active-call-control{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:75px;flex:1;border:1px solid #56708a;border-radius:13px;background:#2a415b;color:#e8f3ff;font:750 10px "Plus Jakarta Sans","Segoe UI",sans-serif;cursor:pointer}
+.lc-active-call-control:hover{background:#365575}
+.lc-active-call-control svg{width:20px;height:20px}
+.lc-active-hangup{background:#aa3c51!important;border-color:#bf4a60!important}
+.lc-active-openchat{border:0;background:none;color:#a6d0f3;font:700 11px "Plus Jakarta Sans","Segoe UI",sans-serif;margin-top:20px;cursor:pointer}
+.lc-call-dock-avatar{width:36px;height:36px;border-radius:11px}
+@media(max-width:620px){.lc-incoming-top{margin-bottom:20px}.lc-incoming-call{padding-bottom:20px}.lc-incoming-avatar{width:84px;height:84px;font-size:30px;border-radius:25px;margin-bottom:18px}.lc-active-call-body{padding:22px 16px 20px}.lc-active-avatar{width:82px;height:82px;margin-bottom:18px}.lc-active-call-body h2{font-size:22px}.lc-active-call-control{min-height:66px}.lc-active-call{max-height:85vh}}
+@media(prefers-reduced-motion:reduce){.lc-incoming-avatar,.lc-active-avatar.is-ringing,.lc-call-live-dot{animation:none}}
