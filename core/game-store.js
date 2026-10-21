@@ -144,12 +144,10 @@ games.push(...mntSourceFiles.map(name=>({
  // The source HTML runs from the original game site. Open separately if a game disallows embeds.
  const genizyCovers=new Map();
  const genizyKey=name=>String(name||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
- async function loadGenizyCatalog(){
+ function loadGenizyCatalog(){
    try {
-     const response=await fetch('assets/genizymath-catalog.json',{cache:'no-cache'});
-     if(!response.ok)throw new Error('Catalog returned HTTP '+response.status);
-     const catalog=await response.json();
-     if(!Array.isArray(catalog))throw new Error('Invalid catalog data');
+     const catalog=window.LoliteGenizyCatalog;
+     if(!Array.isArray(catalog))throw new Error('Bundled game catalog did not load');
      const current=new Map();games.forEach((game,index)=>{const key=genizyKey(game.title);if(!current.has(key))current.set(key,index)});
      let added=0,replaced=0;
      for(const item of catalog){
