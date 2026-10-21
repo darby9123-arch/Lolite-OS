@@ -15,7 +15,15 @@
   let typeFilter='all';
   try {
     const stored=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
-    if(Array.isArray(stored))sources=stored.filter(s=>s&&typeof s.url==='string'&&typeof s.title==='string').slice(0,250);
+    // Stored URLs must be validated again, not merely trusted because they came
+    // from localStorage. Never load arbitrary iframe hosts or executable URLs.
+    if(Array.isArray(stored))sources=stored.slice(0,250).flatMap(s=>{
+      if(!s||typeof s.url!=='string'||typeof s.title!=='string')return [];
+      const valid=classify(s.url);
+      if(!valid)return [];
+      const id=typeof s.id==='string'&&/^source-[a-z0-9-]{1,70}$/i.test(s.id)?s.id:'source-'+Math.random().toString(36).slice(2,12);
+      return [{id,title:s.title.slice(0,110),type:s.type==='tv'?'tv':'movie',kind:valid.kind,provider:valid.provider,url:valid.url}];
+    });
   }catch(error){console.warn('Movies sources storage unavailable',error)}
   const save=()=>{
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(sources))}
