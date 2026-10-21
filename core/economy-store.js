@@ -41,18 +41,8 @@ function write(s){
 function initialize(){var s=read(),p=storeState(s);if(p.installedMigrated)write(s)}
 function balance(){return read().cash}
 function money(n){return "$"+Math.max(0,Math.floor(n||0)).toLocaleString("en-AU")}
-function gamePrice(g){
- if(!g||typeof g.file!=="string")return 0;
- if(FREE_GAMES.has(g.file))return 0;
- if(g.file==="clminecraftpocketedition.html")return 3500;
- var name=(g.file+" "+(g.title||"")).toLowerCase();
- if(/gta|grand theft|half.life|rocket.league|fnaf|five.nights|geometry.dash|super.mario|mario.64/.test(name))return 1950;
- if(/baldi|pvz|plants.vs|angry.birds|granny|grow.a.garden|slope|subway|roblox|pixel.battle/.test(name))return 1200;
- var categories={"Horror":950,"Racing":760,"Simulation & Sandbox":850,"Platformers & Arcade":630,"Sports":570,"Puzzle":420,"IO & Casual":350,"Classics":300,"Baldi’s Basics":1100};
- var base=categories[g.category]||500,hash=0;
- for(var i=0;i<g.file.length;i++)hash=(Math.imul(hash,33)+g.file.charCodeAt(i))>>>0;
- return Math.round((base+(hash%7)*65)/10)*10;
-}
+// All games in Lolite OS are free. The app/subscription economy is unchanged.
+function gamePrice(g){return 0;}
 function appPrice(app){
  var id=typeof app==="string"?app:app?.id;
  if(!id||FREE_APPS.has(id))return 0;
