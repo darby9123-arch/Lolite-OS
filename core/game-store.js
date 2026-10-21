@@ -135,7 +135,7 @@
    if(has(/pac.?man|donkey kong|\btetris\b|\bsnake\b|breakout|space invaders|\bpong\b|atari|\bnes\b|classic arcade|retro|old school|198[0-9]|199[0-9]|emulator|asteroids|arkanoid|frogger|galaga|pinball|\bsimon\b/))return 'Retro & Classics';
    return 'Arcade & Action';
  };
- const categoryNames=["Built-in Games","Hosted in Lolite","All Games","My Library","Featured","Popular Games","GenizyMath","Chicken King’s Vault","DAKNUX","Free to Play","Baldi’s Basics","Sandbox & Building","Adventure & RPG","Platformers","Puzzle & Brain","Racing & Driving","Arcade & Action","Horror & Survival","Sports","Strategy","Simulation & Life","Multiplayer & .io","Music & Rhythm","Casual & Idle","Retro & Classics"];
+ const categoryNames=["All Games","Featured","My Library","Built-in Games","Hosted in Lolite","Popular Games","GenizyMath","Chicken King’s Vault","DAKNUX","Free to Play","Baldi’s Basics","Sandbox & Building","Adventure & RPG","Platformers","Puzzle & Brain","Racing & Driving","Arcade & Action","Horror & Survival","Sports","Strategy","Simulation & Life","Multiplayer & .io","Music & Rhythm","Casual & Idle","Retro & Classics"];
  const navMarks={"Built-in Games":"LOCAL","Hosted in Lolite":"HTML","All Games":"ALL","My Library":"OWN","Featured":"★","Popular Games":"TOP","GenizyMath":"GN","Chicken King’s Vault":"CK","DAKNUX":"DK","Free to Play":"FREE","Baldi’s Basics":"BB","Sandbox & Building":"BUILD","Adventure & RPG":"RPG","Platformers":"JUMP","Puzzle & Brain":"PUZ","Racing & Driving":"RACE","Arcade & Action":"PLAY","Horror & Survival":"HR","Sports":"SPORT","Strategy":"STRAT","Simulation & Life":"SIM","Multiplayer & .io":"IO","Music & Rhythm":"BEAT","Casual & Idle":"IDLE","Retro & Classics":"RETRO"};
  // External browser port: preserve original game-data checks; no proprietary files are bundled.
  // The original HTML game stays in the repository, but the Minecraft shortcut now opens the requested 1.8 client.
@@ -289,6 +289,41 @@ games.push(...mntSourceFiles.map(name=>({
    const chosen=Number(serverSelections.get(g.file)||0);
    return '<label class="store-server-picker" style="display:flex;align-items:center;gap:7px;padding:8px 0;color:#a9bad3;font-size:11px"><span>Server ('+servers.length+')</span><select class="store-server-select" data-source-game="'+g.file+'" aria-label="Server for '+encodeLabel(g.title)+'" onchange=\'window.loliteStorePickServer("'+g.file+'",this.value)\' style="flex:1;min-width:0;max-width:230px;background:#192b3c;border:1px solid #496079;color:#e6f0ff;padding:7px;border-radius:7px">'+servers.map((v,i)=>'<option value="'+i+'"'+(chosen===i?' selected':'')+'>'+encodeLabel(v.name)+'</option>').join('')+'</select></label>';
  };
+ const sourceDescription=g=>{
+   const source=selectedSource(g);
+   if(!source)return 'No game source is configured.';
+   let isLocal=false;
+   try{isLocal=new URL(source.url,location.href).origin===location.origin}catch(error){}
+   return (isLocal?'Lolite-hosted page':'External server: '+source.name)+
+     (g.offlineReady&&isLocal?' · Works without loading an external game host.':
+       ' · This game may rely on externally hosted files or a site restricted by your network.');
+ };
+ const updatePlayerStatus=file=>{
+   const game=games.find(g=>g.file===file);if(!game)return;
+   for(const root of document.querySelectorAll('.store-player[data-game-file="'+file+'"]')){
+     const label=root.querySelector('.store-game-source-status');
+     if(label)label.textContent=sourceDescription(game);
+   }
+ };
+ window.loliteStoreRetry=file=>{
+   const game=games.find(g=>g.file===file);
+   if(!game)return;
+   const source=selectedSource(game);
+   document.querySelectorAll('.store-player[data-game-file="'+file+'"] iframe.store-frame').forEach(frame=>{
+     frame.src='about:blank';
+     requestAnimationFrame(()=>{frame.src=source.url});
+   });
+   updatePlayerStatus(file);
+   toast('Retrying '+game.title+'. If a network filter blocks the host, a retry cannot remove that restriction.');
+ };
+ window.loliteStoreNextServer=file=>{
+   const game=games.find(g=>g.file===file);if(!game)return;
+   const choices=availableServers(game);
+   if(choices.length<2){toast('No other server is listed for this game.');return}
+   const n=(Number(serverSelections.get(file)||0)+1)%choices.length;
+   window.loliteStorePickServer(file,n);
+   toast('Selected '+choices[n].name+' for '+game.title);
+ };
  window.loliteStorePickServer=(file,index)=>{
    const g=games.find(x=>x.file===file);if(!g)return;
    const sources=availableServers(g);
@@ -296,13 +331,14 @@ games.push(...mntSourceFiles.map(name=>({
    serverSelections.set(file,n);
    document.querySelectorAll('.store-server-select[data-source-game="'+file+'"]').forEach(el=>el.value=String(n));
    document.querySelectorAll('.store-player[data-game-file="'+file+'"] .store-frame').forEach(el=>el.src=sources[n].url);
+   updatePlayerStatus(file);
  };
  window.loliteStoreOpenSelected=file=>{
    const g=games.find(x=>x.file===file);
    const source=g&&selectedSource(g);
    if(source)window.open(source.url,'_blank','noopener,noreferrer');
  };
- let active='Built-in Games',query='',visibleCount=60;
+ let active='All Games',query='',visibleCount=60;
  const economy=()=>window.LoliteEconomy;
  const gamePrice=g=>economy()?.gamePrice?.(g)??0;
  const hasGame=g=>!!economy()?.hasGame?.(g);
@@ -388,7 +424,7 @@ games.push(...mntSourceFiles.map(name=>({
  function render(){const root=document.querySelector('.store-main');if(!root)return;const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" aria-label="Search games" placeholder="Search your library…" value="'+query.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" oninput="window.loliteStoreSearch(this.value)"></div><span class="store-count-pill">'+games.length+' games · '+games.filter(g=>g.offlineReady).length+' built-in</span><button class="store-wallet" type="button" onclick="window.LoliteQuests?.open?.()" title="Earn Lolite Dollars in Quests">◈ '+storeWallet()+' LOLITE DOLLARS</button></div>';
  const guidance='<div class="store-external-note" role="note" style="margin:10px 4px 14px;padding:12px 15px;border:1px solid #3c5470;background:#111f30;color:#b7cfeb;border-radius:9px;line-height:1.5;font-size:12px">For the most reliable games, select <a href="#" onclick=\'window.loliteStoreCategory("Built-in Games");return false\' style="color:#addaff">Built-in Games</a>. External game hosts may be blocked by network filters; Lolite cannot override those restrictions. Some Lolite-hosted HTML launchers also require outside assets.</div>';
  if(query||!['Featured','All Games'].includes(active)){const list=filtered();root.innerHTML=top+guidance+'<section class="store-section"><div class="store-section-head"><div><h2>'+active+'</h2><p>'+list.length+' matching games</p></div></div>'+(list.length?listCards(list):'<div class="store-empty">No games found. Try another title or category.</div>')+'</section>';return}
- if(active==='All Games'){root.innerHTML=top+guidance+'<section class="store-section"><div class="store-section-head"><div><h2>All games</h2><p>Every game in your Lolite library.</p></div></div>'+listCards(games)+'</section>';return}
+ if(active==='All Games'){const all=games.slice().sort((a,b)=>Number(!!b.offlineReady)-Number(!!a.offlineReady)||Number(b.url.startsWith('html games/')||b.url.startsWith('games/'))-Number(a.url.startsWith('html games/')||a.url.startsWith('games/'))||a.title.localeCompare(b.title));root.innerHTML=top+guidance+'<section class="store-section"><div class="store-section-head"><div><h2>All games</h2><p>The complete library, with locally hosted games listed first. External games remain available as separate choices.</p></div></div>'+listCards(all)+'</section>';return}
  root.innerHTML=top+guidance+heroMarkup()+section('Built-in Games',games.filter(g=>g.offlineReady))+section('Featured',featuredGames.map(f=>games.find(g=>g.file===f.file)).filter(Boolean))+section('Popular Games',games.filter(isPopular))+categoryNames.filter(c=>!['All Games','My Library','Featured','Popular Games','GenizyMath','Chicken King’s Vault','DAKNUX','Free to Play','Built-in Games','Hosted in Lolite'].includes(c)).map(c=>section(c,games.filter(g=>g.category===c))).join('');loadHeroArt()}
  function shell(){return '<div class="store"><aside class="store-side"><div class="store-brand">lolite<span>GAME LIBRARY</span></div><div><div class="store-nav-label">Browse library</div><nav class="store-nav">'+categoryNames.map(c=>'<button type="button" class="'+(active===c?'active':'')+'" data-category="'+c+'" aria-pressed="'+(active===c)+'" onclick=\'window.loliteStoreCategory("'+c+'")\'><span class="nav-mark" aria-hidden="true">'+navMarks[c]+'</span><span>'+c+'</span></button>').join('')+'</nav></div><div class="store-side-footer">LOLITE OS · GAME LIBRARY<br>Every game is free to play. Some titles run on external sites and require an internet connection.</div></aside><main class="store-main"><div class="store-empty">Loading your library…</div></main></div>'}
  window.loliteStoreCategory=c=>{if(!categoryNames.includes(c)&&!['IO Games','Arcade','IO & Casual'].includes(c))return;active=c;query='';visibleCount=60;document.querySelectorAll('.store-nav button').forEach(b=>{const on=b.dataset.category===c;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on))});render()};
@@ -402,7 +438,7 @@ games.push(...mntSourceFiles.map(name=>({
   toast('Purchased '+g.title+'. Play it from My Library.');render();
  };
  window.loliteStorePlay=file=>{const game=games.find(g=>g.file===file);if(!game)return;const selected=selectedSource(game);if(!selected)return;
-  if(!hasGame(game)){toast('Buy '+game.title+' for '+priceLabel(game)+' Lolite Dollars first.');render();return}const id='store-game-'+file.replace(/[^a-z0-9]/gi,'').slice(0,24);openApp(id,game.title,1000,720);let tries=0;const fill=()=>{const c=state.windows[id]?.el.querySelector('.content');if(!c){if(++tries<40)setTimeout(fill,25);return}c.innerHTML='<div class="store-player" data-game-file="'+game.file+'"><div class="store-player-head"><strong>'+game.title+'</strong><div class="store-player-actions"><button type="button" class="store-fullscreen-icon" aria-label="Toggle fullscreen; press Escape to exit" title="Fullscreen · press Esc to exit" onclick=\'window.loliteStoreFullscreen("'+id+'")\'>⛶</button><button type="button" onclick=\'window.loliteStoreOpenSelected("'+game.file+'")\'>Open separately ↗</button></div></div>'+serverPickerMarkup(game)+'<iframe class="store-frame" title="'+game.title+'" src="'+selected.url+'" allow="fullscreen; gamepad; autoplay; pointer-lock; keyboard-map" allowfullscreen loading="eager" tabindex="0"></iframe></div>';const frame=c.querySelector('.store-frame');if(frame){frame.addEventListener('load',()=>{if(game.hosted){frame.focus();toast('Minecraft: click inside the game, then click the world to lock your mouse. Press Esc to release it.')}});frame.addEventListener('pointerdown',()=>frame.focus())}};fill()};
+  if(!hasGame(game)){toast('Buy '+game.title+' for '+priceLabel(game)+' Lolite Dollars first.');render();return}const id='store-game-'+file.replace(/[^a-z0-9]/gi,'').slice(0,24);openApp(id,game.title,1000,720);let tries=0;const fill=()=>{const c=state.windows[id]?.el.querySelector('.content');if(!c){if(++tries<40)setTimeout(fill,25);return}c.innerHTML='<div class="store-player" data-game-file="'+game.file+'"><div class="store-player-head"><strong>'+game.title+'</strong><div class="store-player-actions"><button type="button" class="store-fullscreen-icon" aria-label="Toggle fullscreen; press Escape to exit" title="Fullscreen · press Esc to exit" onclick=\'window.loliteStoreFullscreen("'+id+'")\'>⛶</button><button type="button" onclick=\'window.loliteStoreOpenSelected("'+game.file+'")\'>Open separately ↗</button></div></div>'+serverPickerMarkup(game)+'<div class="store-game-help" style="margin:8px 0;padding:10px;border:1px solid #314760;border-radius:7px;background:#122033;color:#b9cde6;font-size:12px;line-height:1.45"><div class="store-game-source-status" role="status">'+encodeLabel(sourceDescription(game))+'</div><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px"><button type="button" class="store-play" style="width:auto;flex:1" onclick=\'window.loliteStoreRetry("'+game.file+'")\'>Retry game</button><button type="button" class="store-play" style="width:auto;flex:1" onclick=\'window.loliteStoreNextServer("'+game.file+'")\'>Try next server</button></div><small style="display:block;margin-top:8px;color:#9cafc7">If you see a network or category block inside the game, only the network administrator can change that policy. Try a game available from an approved source.</small></div><iframe class="store-frame" title="'+game.title+'" src="'+selected.url+'" allow="fullscreen; gamepad; autoplay; pointer-lock; keyboard-map" allowfullscreen loading="eager" tabindex="0"></iframe></div>';const frame=c.querySelector('.store-frame');if(frame){frame.addEventListener('load',()=>{if(game.hosted){frame.focus();toast('Minecraft: click inside the game, then click the world to lock your mouse. Press Esc to release it.')}});frame.addEventListener('pointerdown',()=>frame.focus())}};fill()};
 
  window.loliteOpenAccelerationGuide=()=>{const id='browser-acceleration-guide';openApp(id,'Hardware Acceleration Guide',760,650);let tries=0;const fill=()=>{const c=state.windows[id]?.el.querySelector('.content');if(!c){if(++tries<40)setTimeout(fill,25);return}c.innerHTML='<div style="height:100%;overflow:auto;padding:24px;background:#0c1018;color:#eef2f8;font:14px/1.6 Segoe UI,Arial,sans-serif;border-radius:10px"><div style="color:#a9a3ff;font-size:11px;font-weight:700;letter-spacing:2px">LOLITE HELP</div><h1 style="margin:8px 0;font-size:27px">Hardware acceleration</h1><p style="color:#b5c0d0;margin:0 0 18px">Choose the browser you use to see the right steps. Hardware acceleration lets the browser use your graphics hardware for supported tasks and may improve game performance.</p><div id="accel-browser-list" style="display:flex;flex-wrap:wrap;gap:8px;margin:18px 0">'+['Brave','Opera GX','Firefox','Chrome','Safari'].map(b=>'<button type="button" data-browser="'+b+'" onclick=\'window.loliteShowAccelerationSteps("'+b+'")\' style="padding:10px 14px;border:1px solid #38445a;border-radius:8px;background:#171f2d;color:#eef2f8;cursor:pointer">'+b+'</button>').join('')+'</div><section id="accel-steps" style="padding:18px;border:1px solid #2c3749;border-radius:10px;background:#111823"><h2 style="margin:0 0 8px;font-size:18px">Select your browser</h2><p style="margin:0;color:#9daabd">The instructions will appear here.</p></section><p style="margin-top:18px;color:#8c99ac;font-size:12px">Tip: restart the browser after changing a setting. The exact wording can vary by version. Hardware acceleration may not be available on managed devices.</p></div>'};fill()};
  window.loliteShowAccelerationSteps=browser=>{const section=document.getElementById('accel-steps');if(!section)return;const steps={
