@@ -47,7 +47,7 @@
   function detachBrowser(){
     if(observer){observer.disconnect();observer=null}
     const windows=$('#windows');
-    if(originalAnchor?.parentNode&&windows)originalAnchor.parentNode.insertBefore(windows,originalAnchor);
+    if(originalAnchor?.parentNode&&windows){originalAnchor.parentNode.insertBefore(windows,originalAnchor);windows.style.removeProperty('display')}
     originalAnchor?.remove();originalAnchor=null;
     shell?.remove();shell=null;
     document.documentElement.classList.remove('browsing-mode','mobile-mode','tablet-mode','phone-mode');
@@ -263,7 +263,7 @@
     renderNav();
   }
   function startBrowsing(){
-    if(mode==='browsing'){chooser()?.remove?.();$('#loliteModeChooser')?.remove();return}
+    if(mode==='browsing'){$('#loliteModeChooser')?.remove();return}
     startBase();
     if(mode==='desktop'&&shell)detachBrowser();
     mode='browsing';userSelected=true;
@@ -293,7 +293,7 @@
       openApp:navigate
     };
     window.LoliteUIStyle=window.LoliteDeviceMode;
-    window.addEventListener('lolite:splashdone',chooser,{once:true});
+    window.addEventListener('lolite:splashdone',()=>{if(!userSelected)chooser()},{once:true});
     if(!$('#lolite-splash'))setTimeout(chooser,200);
     setTimeout(()=>{if(!userSelected&&!$('#loliteModeChooser'))chooser()},4600);
     // If a legacy Mobile Style choice was saved, it is retired; retain all other settings.
