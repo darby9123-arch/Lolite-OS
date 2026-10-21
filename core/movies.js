@@ -69,7 +69,7 @@
      const row=document.createElement('div');row.className='lm-actions';
      const play=document.createElement('button');play.textContent='Play';play.className='primary';play.addEventListener('click',()=>watch(entry.id));
      const fav=document.createElement('button');fav.textContent=entry.favorite?'★':'☆';fav.title=entry.favorite?'Remove favourite':'Add favourite';fav.addEventListener('click',()=>{entry.favorite=!entry.favorite;save();paint()});
-     row.append(play,fav);body.append(row);card.append(poster,body);grid.append(card);
+     const edit=document.createElement('button');edit.textContent='Edit';edit.addEventListener('click',()=>{const newName=prompt('Video title',entry.title);if(newName===null)return;entry.title=newName.trim().slice(0,110)||entry.title;const newType=prompt('Type: movie or tv',entry.type);if(newType!==null&&['movie','tv'].includes(newType.trim().toLowerCase()))entry.type=newType.trim().toLowerCase();const newYear=prompt('Release year (optional)',entry.year||'');if(newYear!==null)entry.year=newYear.replace(/[^0-9]/g,'').slice(0,4);save();paint()});row.append(play,fav,edit);body.append(row);card.append(poster,body);grid.append(card);
    }
  }
  function showLibrary(){
