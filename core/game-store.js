@@ -114,8 +114,8 @@
  const manifest=['Drift-Hunters.html','clangrybirds2.html','clbadmondaysimulator.html','clbaldicaseoh.html','clbaldisbasics.html','clbaldisbasicsremaster.html','clbitlife.html','clblockblast.html','clcookieclicker.html','clcookieclickermodmenu.html','clcrazycars.html','clcuttherope.html','cldemolitionderbycrashracing.html','cldungeonsanddegenerategambler.html','clescaperoad.html','clescaperoad-2.html','clescaperoad3.html','clfallguys.html','clfireboyandwatergirl2.html','clfireboyandwatergirl3.html','clFNAF.html','clFNAF2.html','clFNAF3.html','clFNAF4.html','clgdbreeze.html','clgorillatag.html','clgranny2.html','clgranny22.html','clgranny3.html','clgrannycreepy.html','clgrannynightmare.html','clgrannyy.html','clgrowagarden.html','clgta3.html','clhalflife.html','clholeio.html','clinfinitecraft.html','clLobotemyDash.html','lolite-2048.html','lolite-pong.html','lolite-sokoban.html','clmario64webgl.html','clmelonplayground.html','clminecraftpocketedition.html','clmotox3m2.html','clmotox3m3.html','clmotox3mm.html','clmotox3mpoolparty.html','clmotox3mspookyland.html','clmotox3mwinter.html','closu.html','clovo2.html','clovodimensions.html','clovofixed.html','clpaperio.html','clpaperio3d.html','clpaperiomania.html','clparkingfury.html','clparkingfury2.html','clparkingfury3.html','clpixelbattlegroundsio.html','clpvz2gardenless.html','PVZM.html','clragollhit.html','clRedBall4.html','clrocketleague.html','clshiftatmidnight.html','slope.html','slope-2-player.html','clslopeplus.html','clsmbremastered.html','clsnowrider.html','clspacewarsbattleground.html','clstickmanhook.html','clsubwaysurfersmiami.html','clsupermariobros.html','clsurvivorio.html','cltemplerun2.html','cltinyfishing.html','clvex3.html','wheely.html','wrestle-bros.html','zombie-rush.html'];
  const pretty=raw=>{const key=raw.replace(/^cl/i,'').replace(/^lolite[-_]/i,'').replace(/\.html?$/i,'').toLowerCase();const known={'angrybirds2':'Angry Birds 2','baldisbasics':'Baldi’s Basics','baldisbasicsremaster':'Baldi’s Basics Remastered','baldicaseoh':'Baldi’s Basics: CaseOh','badmondaysimulator':'Bad Monday Simulator','bitlife':'BitLife','blockblast':'Block Blast','cookieclicker':'Cookie Clicker','cookieclickermodmenu':'Cookie Clicker Mod Menu','crazycars':'Crazy Cars','cuttherope':'Cut the Rope','demolitionderbycrashracing':'Demolition Derby Crash Racing','dungeonsanddegenerategambler':'Dungeons and Degenerate Gamblers','escaperoad':'Escape Road','escaperoad-2':'Escape Road 2','escaperoad3':'Escape Road 3','fallguys':'Fall Guys','fireboyandwatergirl2':'Fireboy and Watergirl 2','fireboyandwatergirl3':'Fireboy and Watergirl 3','fnaf':'Five Nights at Freddy’s','fnaf2':'Five Nights at Freddy’s 2','fnaf3':'Five Nights at Freddy’s 3','fnaf4':'Five Nights at Freddy’s 4','gdbreeze':'Geometry Dash Breeze','gorillatag':'Gorilla Tag','granny2':'Granny 2','granny22':'Granny 2.2','granny3':'Granny 3','grannycreepy':'Granny: Creepy Mod','grannynightmare':'Granny: Nightmare','grannyy':'Granny','growagarden':'Grow a Garden','gta3':'Grand Theft Auto III','halflife':'Half-Life','holeio':'Hole.io','infinitecraft':'Infinite Craft','lobotemydash':'Lobotomy Dash','minecraftpocketedition':'Minecraft: Pocket Edition','melonplayground':'Melon Playground','motox3m':'Moto X3M','motox3m2':'Moto X3M 2','motox3m3':'Moto X3M 3','motox3mpoolparty':'Moto X3M Pool Party','motox3mspookyland':'Moto X3M Spooky Land','motox3mwinter':'Moto X3M Winter','ovo2':'OvO 2','ovodimensions':'OvO Dimensions','ovofixed':'OvO','paperio':'Paper.io','paperio3d':'Paper.io 3D','paperiomania':'Paper.io Mania','parkingfury':'Parking Fury','parkingfury2':'Parking Fury 2','parkingfury3':'Parking Fury 3','pixelbattlegroundsio':'Pixel Battlegrounds.io','pvz2gardenless':'Plants vs. Zombies 2: Gardenless','ragollhit':'Ragdoll Hit','redball4':'Red Ball 4','rocketleague':'Rocket League','shiftatmidnight':'Shift at Midnight','slope-2-player':'Slope 2 Player','slopeplus':'Slope Plus','smbremastered':'Super Mario Bros. Remastered','snowrider':'Snow Rider','spacewarsbattleground':'Space Wars Battleground','stickmanhook':'Stickman Hook','subwaysurfersmiami':'Subway Surfers: Miami','supermariobros':'Super Mario Bros.','survivorio':'Survivor.io','templerun2':'Temple Run 2','tinyfishing':'Tiny Fishing','wrestle-bros':'Wrestle Bros'};if(known[key])return known[key];let s=raw.replace(/^cl/i,'').replace(/^lolite[-_]/i,'').replace(/\.html?$/i,'').replace(/[_-]+/g,' ');s=s.replace(/([a-z])([A-Z])/g,'$1 $2').replace(/([A-Za-z])([0-9])/g,'$1 $2').replace(/\s+/g,' ').trim().replace(/\b\w/g,m=>m.toUpperCase());return s.replace(/\bPvz\b/gi,'PVZ').replace(/\bFnaf\b/gi,'FNAF').replace(/\bGta\b/gi,'GTA').replace(/\bIo\b/gi,'IO')};
  const categorize=g=>{const f=g.file.toLowerCase();if(/baldi/.test(f))return 'Baldi’s Basics';if(/fnaf|granny|nightmare|zombie|shiftatmidnight|badmondaysimulator/.test(f))return 'Horror';if(/drift|stunt|drivemad|crazycars|racing|moto|slope|escaperoad|parking|rocketleague|derby|wheely|snowrider/.test(f))return 'Racing';if(/2048|sokoban|blockblast|cookie|cuttherope|fireboy|infinitecraft|ovo|paperio|stickmanhook|tinyfishing/.test(f))return 'Puzzle';if(/growagarden|holeio|pixelbattlegrounds|survivorio|paperio|bitlife|fallguys/.test(f))return 'IO & Casual';if(/minecraft|melonplayground|bitlife|infinitecraft|dungeonsanddegenerategambler|halflife|gta3/.test(f))return 'Simulation & Sandbox';if(/fishing|wrestle|gorilla|football|basket.?ball|soccer|hockey|pingpong|volley|sports/.test(f))return 'Sports';if(/mario|angrybirds|pvz|subway|templerun|vex|redball|fireboy|stickman|lobotemy|gd|supermario/.test(f))return 'Platformers & Arcade';return 'Classics'};
- const categoryNames=['All Games','My Library','Free to Play','Featured','Popular Games','IO & Casual','Baldi’s Basics','Horror','Racing','Puzzle','Platformers & Arcade','Simulation & Sandbox','Sports','Classics'];
- const navMarks={'All Games':'ALL','My Library':'OWN','Free to Play':'FREE','Featured':'★','Popular Games':'TOP','IO & Casual':'IO','Baldi’s Basics':'BB','Horror':'HR','Racing':'RACE','Puzzle':'PUZ','Platformers & Arcade':'PLAY','Simulation & Sandbox':'SIM','Sports':'SPRT','Classics':'CL'};
+ const categoryNames=['All Games','My Library','GenizyMath','Free to Play','Featured','Popular Games','IO & Casual','Baldi’s Basics','Horror','Racing','Puzzle','Platformers & Arcade','Simulation & Sandbox','Sports','Classics'];
+ const navMarks={'All Games':'ALL','My Library':'OWN','GenizyMath':'GN','Free to Play':'FREE','Featured':'★','Popular Games':'TOP','IO & Casual':'IO','Baldi’s Basics':'BB','Horror':'HR','Racing':'RACE','Puzzle':'PUZ','Platformers & Arcade':'PLAY','Simulation & Sandbox':'SIM','Sports':'SPRT','Classics':'CL'};
  // External browser port: preserve original game-data checks; no proprietary files are bundled.
  // The original HTML game stays in the repository, but the Minecraft shortcut now opens the requested 1.8 client.
  const minecraft18='https://eaglercraftextras.github.io/clients/1.8/eaglercraftx.html';
@@ -139,20 +139,61 @@ games.push(...mntSourceFiles.map(name=>({
  category:categorize({file:name}),
  external:true
 })));
- let active='Featured',query='';
+
+ // External game catalog: store only names and links, never copy third-party game bundles.
+ // The source HTML runs from the original game site. Open separately if a game disallows embeds.
+ const genizyCovers=new Map();
+ const genizyKey=name=>String(name||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
+ async function loadGenizyCatalog(){
+   try {
+     const response=await fetch('assets/genizymath-catalog.json',{cache:'no-cache'});
+     if(!response.ok)throw new Error('Catalog returned HTTP '+response.status);
+     const catalog=await response.json();
+     if(!Array.isArray(catalog))throw new Error('Invalid catalog data');
+     const current=new Map(games.map((game,index)=>[genizyKey(game.title),index]));
+     let added=0,replaced=0;
+     for(const item of catalog){
+       if(!Number.isInteger(item.id)||item.id<0||typeof item.title!=='string'||typeof item.path!=='string'||!/^iframe\/[a-zA-Z0-9_.-]+\.html$/.test(item.path))continue;
+       const title=item.title.replace(/[<>&"'\x60]/g,'').slice(0,90).trim(),key=genizyKey(title);
+       if(!key)continue;
+       const url='https://genizymath.github.io/'+item.path;
+       const cover='https://cdn.jsdelivr.net/gh/freebuisness/covers@main/'+item.id+'.png';
+       const existingIndex=current.get(key);
+       if(existingIndex!==undefined){
+         const game=games[existingIndex];
+         games[existingIndex]={...game,url,external:true,genizy:true,source:'GenizyMath'};
+         genizyCovers.set(game.file,cover);
+         replaced++;
+       }else{
+         const file='genizy-'+item.id+'.html';
+         games.push({file,title,url,category:categorize({file:genizyKey(title)}),external:true,genizy:true,source:'GenizyMath'});
+         genizyCovers.set(file,cover);
+         current.set(key,games.length-1);
+         added++;
+       }
+     }
+     const seen=new Set();
+     games=games.filter(g=>{const k=genizyKey(g.title);if(seen.has(k))return false;seen.add(k);return true});
+     window.loliteGenizyImport={added,replaced,total:added+replaced};
+     if(document.querySelector('.store-main'))render();
+   }catch(err){
+     console.warn('GenizyMath catalog unavailable; Lolite existing games are still accessible.',err);
+   }
+ }
+ let active='Featured',query='',visibleCount=60;
  const economy=()=>window.LoliteEconomy;
  const gamePrice=g=>economy()?.gamePrice?.(g)??0;
  const hasGame=g=>!!economy()?.hasGame?.(g);
  const priceLabel=g=>gamePrice(g)===0?'FREE':economy()?.money?.(gamePrice(g))||'$'+gamePrice(g);
  const storeWallet=()=>economy()?.money?.(economy().balance())||'—';
- const isPopular=g=>/baldi|fnaf|granny|mario|angrybirds|pvz|minecraft|growagarden|slope|escaperoad|gta|cookieclicker/i.test(g.file);
- const matchesCategory=g=>active==='All Games'||active==='Featured'||active==='Popular Games'?true:active==='My Library'?hasGame(g):active==='Free to Play'?gamePrice(g)===0:g.category===active;
+ const isPopular=g=>/baldi|fnaf|granny|mario|angrybirds|pvz|minecraft|growagarden|slope|escaperoad|gta|cookieclicker/i.test(g.file+' '+g.title);
+ const matchesCategory=g=>active==='All Games'||active==='Featured'||active==='Popular Games'?true:active==='My Library'?hasGame(g):active==='GenizyMath'?!!g.genizy:active==='Free to Play'?gamePrice(g)===0:g.category===active;
  const filtered=()=>games.filter(g=>matchesCategory(g)&&(!query||g.title.toLowerCase().includes(query.toLowerCase())||g.category.toLowerCase().includes(query.toLowerCase()))&&(active!=='Popular Games'||isPopular(g)));
  const coverPalette=g=>{let hash=0;for(const ch of g.file)hash=(Math.imul(hash,31)+ch.charCodeAt(0))>>>0;const hue=hash%360,hue2=(hue+48+(hash%73))%360;return [`hsl(${hue} 62% 28%)`,`hsl(${hue2} 48% 13%)`,`${12+(hash%13)}s`,String(hash%6),`-${hash%17000}ms`]};
  const card=g=>{const colors=coverPalette(g);const poster=lolitePosterArt(g.title,g.file);return '<article class="store-card"><div class="store-cover has-game-art" data-game-file="'+g.file+'" data-skin="'+colors[3]+'" style="--cover-a:'+colors[0]+';--cover-b:'+colors[1]+';--cover-speed:'+colors[2]+';--cover-delay:'+colors[4]+'" onmouseenter=\'window.loliteStorePreview(this,"'+g.file+'","'+g.title.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\' onfocus=\'window.loliteStorePreview(this,"'+g.file+'","'+g.title.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'><div class="store-cover-art" aria-hidden="true"><img class="store-cover-picture" src="'+poster+'" alt="" loading="lazy" decoding="async"></div><span class="store-cover-label">'+g.category+'</span><strong class="store-cover-title">'+g.title+'</strong></div><div class="store-card-body"><h3 title="'+g.title+'">'+g.title+'</h3><div class="store-card-meta"><span class="store-tag">'+g.category+'</span><span>'+(gamePrice(g)===0?'FREE · READY':hasGame(g)?'OWNED · READY':'BUY · '+priceLabel(g))+'</span></div><button class="store-play" type="button" title="'+(g.hosted?'Launch Minecraft 1.8 inside Lolite OS':'Launch inside Lolite OS')+'" onclick=\'window.loliteStoreAction("'+g.file+'")\'>'+(gamePrice(g)===0?'Play':hasGame(g)?'Play game':'Buy for '+priceLabel(g))+' <span aria-hidden="true">'+(hasGame(g)?'↗':'◆')+'</span></button>'+(g.hosted?'<p class="store-external-note">EaglercraftX 1.8 from <a href="https://github.com/x8rr/Eaglercraft-Extras" target="_blank" rel="noopener noreferrer">Eaglercraft Extras ↗</a>. Playable in Lolite without bundling game files.</p>':'')+(g.recommended?'<div style="margin-top:10px;padding:9px;border:1px solid #4a4773;border-radius:7px;background:#211f38;color:#d9d5ff;font-size:11px;line-height:1.5"><strong>Recommended:</strong> turn on hardware acceleration for smoother performance.<button type="button" class="store-play" style="margin-top:8px" onclick="window.loliteOpenAccelerationGuide()">Learn more</button></div>':'')+'</div></article>'};
  /* Game artwork: individually curated image URLs keyed to the actual game file.
     No Wikipedia fuzzy searches, no stale localStorage art cache, no cross-title borrowing. */
- const coverFor=file=>window.loliteGameArt?.[file]?.src||null;
+ const coverFor=file=>genizyCovers.get(file)||window.loliteGameArt?.[file]?.src||null;
  // Local, title-specific artwork is always present; remote images only enhance it.
  const artCache=new Map();
  window.loliteStorePreview=(el,file,title)=>{
@@ -220,14 +261,16 @@ games.push(...mntSourceFiles.map(name=>({
  const artworkMutationObserver=new MutationObserver(()=>{const root=document.querySelector('.store-main');if(!root)return;root.querySelectorAll('.store-cover[data-game-file]').forEach(el=>{if(el.dataset.artObserved==='1')return;el.dataset.artObserved='1';artworkObserver.observe(el)})});
  const watchArtwork=()=>{const root=document.querySelector('.store-main');if(root&&root.dataset.artworkWatching!=='1'){root.dataset.artworkWatching='1';artworkMutationObserver.observe(root,{childList:true,subtree:true});root.querySelectorAll('.store-cover[data-game-file]').forEach(el=>{if(el.dataset.artObserved==='1')return;el.dataset.artObserved='1';artworkObserver.observe(el)})}};
  const storeFinder=new MutationObserver(watchArtwork);storeFinder.observe(document.documentElement,{childList:true,subtree:true});watchArtwork();
+ const listCards=list=>{const showing=list.slice(0,visibleCount);return '<div class="store-grid">'+showing.map(card).join('')+'</div>'+(showing.length<list.length?'<div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:28px 6px;color:#a9b6cb;font-size:12px">Showing '+showing.length+' of '+list.length+' <button class="store-play" type="button" style="max-width:170px" onclick="window.loliteStoreMore()">Load more games ↓</button></div>':'')};
  const section=(title,list)=>list.length?'<section class="store-section"><div class="store-section-head"><div><h2>'+title+'</h2><p>'+list.length+' games to explore</p></div><button type="button" onclick=\'window.loliteStoreCategory("'+title+'")\'>View collection →</button></div><div class="store-grid">'+list.slice(0,8).map(card).join('')+'</div></section>':'';
  function render(){const root=document.querySelector('.store-main');if(!root)return;const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" aria-label="Search games" placeholder="Search your library…" value="'+query.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" oninput="window.loliteStoreSearch(this.value)"></div><span class="store-count-pill">'+games.length+' games · '+games.filter(g=>gamePrice(g)===0).length+' FREE</span><button class="store-wallet" type="button" onclick="window.LoliteQuests?.open?.()" title="Earn Lolite Dollars in Quests">◈ '+storeWallet()+' LOLITE DOLLARS</button></div>';
- if(query||!['Featured','All Games'].includes(active)){const list=filtered();root.innerHTML=top+'<section class="store-section"><div class="store-section-head"><div><h2>'+active+'</h2><p>'+list.length+' matching games</p></div></div>'+(list.length?'<div class="store-grid">'+list.map(card).join('')+'</div>':'<div class="store-empty">No games found. Try another title or category.</div>')+'</section>';return}
- if(active==='All Games'){root.innerHTML=top+'<section class="store-section"><div class="store-section-head"><div><h2>All games</h2><p>Every game in your Lolite library.</p></div></div><div class="store-grid">'+games.map(card).join('')+'</div></section>';return}
+ if(query||!['Featured','All Games'].includes(active)){const list=filtered();root.innerHTML=top+'<section class="store-section"><div class="store-section-head"><div><h2>'+active+'</h2><p>'+list.length+' matching games</p></div></div>'+(list.length?listCards(list):'<div class="store-empty">No games found. Try another title or category.</div>')+'</section>';return}
+ if(active==='All Games'){root.innerHTML=top+'<section class="store-section"><div class="store-section-head"><div><h2>All games</h2><p>Every game in your Lolite library.</p></div></div>'+listCards(games)+'</section>';return}
  root.innerHTML=top+heroMarkup()+section('Free to Play',games.filter(g=>gamePrice(g)===0))+section('Popular Games',games.filter(isPopular))+section('IO & Casual',games.filter(g=>g.category==='IO & Casual'))+section('Horror',games.filter(g=>g.category==='Horror'))+section('Racing',games.filter(g=>g.category==='Racing'))+section('Platformers & Arcade',games.filter(g=>g.category==='Platformers & Arcade'))+section('Puzzle',games.filter(g=>g.category==='Puzzle'));loadHeroArt()}
  function shell(){return '<div class="store"><aside class="store-side"><div class="store-brand">lolite<span>GAME LIBRARY</span></div><div><div class="store-nav-label">Browse library</div><nav class="store-nav">'+categoryNames.map(c=>'<button type="button" class="'+(active===c?'active':'')+'" data-category="'+c+'" aria-pressed="'+(active===c)+'" onclick=\'window.loliteStoreCategory("'+c+'")\'><span class="nav-mark" aria-hidden="true">'+navMarks[c]+'</span><span>'+c+'</span></button>').join('')+'</nav></div><div class="store-side-footer">LOLITE OS · GAME LIBRARY<br>Every game is free to play. Some titles run on external sites and require an internet connection.</div></aside><main class="store-main"><div class="store-empty">Loading your library…</div></main></div>'}
- window.loliteStoreCategory=c=>{if(!categoryNames.includes(c)&&!['IO Games','Arcade','IO & Casual'].includes(c))return;active=c;query='';document.querySelectorAll('.store-nav button').forEach(b=>{const on=b.dataset.category===c;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on))});render()};
- window.loliteStoreSearch=q=>{const el=document.activeElement;const start=el?.selectionStart,end=el?.selectionEnd;query=q;render();const next=document.querySelector('.store-search');if(next){next.focus({preventScroll:true});if(Number.isInteger(start)&&Number.isInteger(end))next.setSelectionRange(start,end)}};
+ window.loliteStoreCategory=c=>{if(!categoryNames.includes(c)&&!['IO Games','Arcade','IO & Casual'].includes(c))return;active=c;query='';visibleCount=60;document.querySelectorAll('.store-nav button').forEach(b=>{const on=b.dataset.category===c;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on))});render()};
+ window.loliteStoreSearch=q=>{const el=document.activeElement;const start=el?.selectionStart,end=el?.selectionEnd;if(query!==q)visibleCount=60;query=q;render();const next=document.querySelector('.store-search');if(next){next.focus({preventScroll:true});if(Number.isInteger(start)&&Number.isInteger(end))next.setSelectionRange(start,end)}};
+ window.loliteStoreMore=()=>{const root=document.querySelector('.store-main'),scroll=root?.scrollTop||0;visibleCount+=60;render();if(root)root.scrollTop=scroll};
  window.loliteStoreAction=file=>{
   const g=games.find(g=>g.file===file);if(!g)return;
   if(hasGame(g)){window.loliteStorePlay(file);return}
@@ -272,4 +315,5 @@ games.push(...mntSourceFiles.map(name=>({
  window.addEventListener('lolite-store-purchase',()=>render());
  window.addEventListener('lolite-wallet-updated',()=>render());
  const oldPage=window.page;window.page=function(id){if(id==='games'){setTimeout(render,0);return shell()}return oldPage(id)};
+ loadGenizyCatalog();
 })();
