@@ -110,7 +110,10 @@ const styles=[
 '.lmcatalog-tabs button[aria-pressed=true]{background:#6556b2;border-color:#a799ee}',
 '.lmcatalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(157px,1fr));gap:12px}',
 '.lmcatalog-card{display:flex;flex-direction:column;background:#1a2336;border:1px solid #394560;border-radius:10px;overflow:hidden}',
-'.lmcatalog-art{display:flex;flex-direction:column;justify-content:space-between;padding:12px;aspect-ratio:5/6;min-height:174px;background:radial-gradient(circle at 90% 10%,#ffffff35,transparent 45%),linear-gradient(150deg,var(--poster-a),var(--poster-b));color:#fff}',
+'.lmcatalog-art{display:flex;flex-direction:column;justify-content:space-between;padding:12px;position:relative;isolation:isolate;aspect-ratio:2/3;min-height:208px;background:radial-gradient(circle at 90% 10%,#ffffff35,transparent 45%),linear-gradient(150deg,var(--poster-a),var(--poster-b));color:#fff;overflow:hidden}',
+'.lmcatalog-art:after{content:"";position:absolute;inset:20% 0 0;background:linear-gradient(transparent 0%,#000b 100%);z-index:-1;pointer-events:none}',
+'.lmcatalog-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;display:block;opacity:0;transition:opacity .25s}',
+'.lmcatalog-poster.is-loaded{opacity:1}',
 '.lmcatalog-pill{width:max-content;font-size:10px;letter-spacing:.05em;padding:5px 7px;background:#090e1eab;border-radius:5px}',
 '.lmcatalog-art-title{font-size:17px;font-weight:850;line-height:1.2;overflow-wrap:anywhere;text-shadow:0 3px 10px #0008}',
 '.lmcatalog-details{flex:1;display:flex;flex-direction:column;gap:7px;padding:11px}',
@@ -128,6 +131,137 @@ const el=(tag,cls,value)=>{
  if(value!==undefined)e.textContent=value;
  return e;
 };
+
+/* Pull genuine artwork from Cinemeta's public metadata catalogue.
+   Search results are matched by TMDB ID or by title+year, so a film does not
+   accidentally display a poster from a different movie with a similar name.
+   Only visible cards are queried; successful URLs are cached for 45 days.
+*/
+const POSTER_KEY='loliteMoviesPosterCacheV2';
+const POSTER_AGE=45*24*60*60*1000;
+const FAILURE_AGE=2*60*60*1000;
+const cachedPosters=Object.create(null);
+try{
+ const stored=JSON.parse(localStorage.getItem(POSTER_KEY)||'{}');
+ if(stored&&typeof stored==='object'&&!Array.isArray(stored)){
+   for(const [id,value] of Object.entries(stored)){
+     if(value&&typeof value==='object'&&Number.isFinite(value.time)&&
+       Date.now()-value.time<(value.url?POSTER_AGE:FAILURE_AGE)&&
+       Object.keys(cachedPosters).length<300){
+       cachedPosters[id]=value;
+     }
+   }
+ }
+}catch(e){console.warn('Could not restore poster cache',e)}
+let writeScheduled=false;
+function savePosters(){
+ if(writeScheduled)return;
+ writeScheduled=true;
+ setTimeout(()=>{
+   writeScheduled=false;
+   try{localStorage.setItem(POSTER_KEY,JSON.stringify(cachedPosters))}
+   catch(e){console.warn('Could not save poster cache',e)}
+ },700);
+}
+const posterId=item=>item.type+':'+item.tmdb;
+function usablePoster(raw){
+ if(typeof raw!=='string'||raw.length>500)return '';
+ try{
+   const url=new URL(raw);
+   if(url.protocol!=='https:')return '';
+   const allowed=['images.metahub.space','image.tmdb.org','m.media-amazon.com','images-na.ssl-images-amazon.com'];
+   if(!allowed.includes(url.hostname.toLowerCase()))return '';
+   if(url.hostname==='images.metahub.space')url.pathname=url.pathname.replace('/poster/small/','/poster/medium/');
+   return url.href;
+ }catch(e){return ''}
+}
+const cleanTitle=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^\p{L}\p{N}]+/gu,' ').trim().toLowerCase().replace(/^the /,'');
+function matchMovie(meta,item){
+ if(!meta||typeof meta.name!=='string')return false;
+ if(meta.moviedb_id&&String(meta.moviedb_id)===item.tmdb)return true;
+ const year=Number(meta.year||String(meta.releaseInfo||'').slice(0,4));
+ return cleanTitle(meta.name)===cleanTitle(item.title)&&(!year||Math.abs(year-item.year)<=1);
+}
+const posterQueue=[];
+let posterActive=0;
+const POSTER_CONCURRENCY=3;
+const posterPending=new Map();
+async function findPoster(item){
+ const kind=item.type==='tv'?'series':'movie';
+ const url='https://v3-cinemeta.strem.io/catalog/'+kind+'/top/search='+encodeURIComponent(item.title)+'.json';
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),10500);
+ try{
+   const response=await fetch(url,{method:'GET',mode:'cors',credentials:'omit',redirect:'follow',
+     signal:controller.signal,cache:'default'});
+   if(!response.ok)throw Error('Poster catalogue status '+response.status);
+   const result=await response.json();
+   if(!Array.isArray(result?.metas))return '';
+   const match=result.metas.find(meta=>meta&&String(meta.moviedb_id)===item.tmdb)||
+     result.metas.find(meta=>matchMovie(meta,item));
+   return match?usablePoster(match.poster):'';
+ }catch(error){
+   console.info('Poster metadata unavailable for '+item.title, error?.message||error);
+   return '';
+ }finally{clearTimeout(timer)}
+}
+function pumpPosters(){
+ while(posterActive<POSTER_CONCURRENCY&&posterQueue.length){
+   const next=posterQueue.shift();posterActive++;
+   findPoster(next.item).then(poster=>{
+     const key=posterId(next.item);
+     // A failed network lookup is only cached briefly so a recovered
+     // metadata service will start working again automatically.
+     cachedPosters[key]={url:poster,time:Date.now()};
+     savePosters();next.resolve(poster);
+   }).catch(()=>next.resolve('')).finally(()=>{
+     posterActive--;posterPending.delete(posterId(next.item));pumpPosters();
+   });
+ }
+}
+function getPoster(item){
+ const key=posterId(item);
+ const cached=cachedPosters[key];
+ if(cached&&Date.now()-cached.time<(cached.url?POSTER_AGE:FAILURE_AGE)){
+   return Promise.resolve(cached.url||'');
+ }
+ if(posterPending.has(key))return posterPending.get(key);
+ const request=new Promise(resolve=>posterQueue.push({item,resolve}));
+ posterPending.set(key,request);
+ pumpPosters();
+ return request;
+}
+async function loadArt(art,item){
+ if(art.dataset.posterAttempt==='1')return;
+ art.dataset.posterAttempt='1';
+ const src=await getPoster(item);
+ if(!src||!art.isConnected)return;
+ const img=el('img','lmcatalog-poster');
+ img.alt=item.title+' poster';img.decoding='async';img.loading='lazy';
+ img.referrerPolicy='no-referrer';
+ img.addEventListener('load',()=>img.classList.add('is-loaded'),{once:true});
+ img.addEventListener('error',()=>{
+   img.remove();
+   // Retain the title-based fallback and retry metadata at a later visit.
+   delete cachedPosters[posterId(item)];savePosters();
+ },{once:true});
+ art.prepend(img);
+ img.src=src;
+}
+const posterObserver=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
+ for(const entry of entries){
+   if(!entry.isIntersecting)continue;
+   posterObserver.unobserve(entry.target);
+   const item=entry.target.__lolitePosterItem;
+   if(item)loadArt(entry.target,item);
+ }
+},{root:null,rootMargin:'350px 0px',threshold:0.01}):null;
+function queueArt(art,item){
+ art.__lolitePosterItem=item;
+ if(posterObserver)posterObserver.observe(art);
+ else loadArt(art,item);
+}
+
 function makeCard(item,index){
  const card=el('article','lmcatalog-card');
  const art=el('div','lmcatalog-art');
@@ -135,6 +269,7 @@ function makeCard(item,index){
  const clr=colours[(index+item.title.length)%colours.length];
  art.style.setProperty('--poster-a',clr[0]);art.style.setProperty('--poster-b',clr[1]);
  art.append(el('span','lmcatalog-pill',item.type==='tv'?'TV SHOW':'MOVIE'),el('strong','lmcatalog-art-title',item.title));
+ queueArt(art,item);
  const body=el('div','lmcatalog-details');
  body.append(el('div','lmcatalog-title',item.title),el('div','lmcatalog-meta',item.year+' · '+item.genre));
  const actions=el('div','lmcatalog-actions');
