@@ -209,7 +209,7 @@ function inject(){
  const panel=node('section','lmc-hosts');panel.id='lmcSourcePanel';
  const before=pane.querySelector('.lms-panel');
  if(before)pane.insertBefore(panel,before);else pane.append(panel);
- viewing=null;activeHost=null;render(panel);
+ if(!viewing)activeHost=null;render(panel);
 }
 let scheduled=false;
 const watcher=new MutationObserver(()=>{
@@ -219,5 +219,33 @@ const watcher=new MutationObserver(()=>{
 watcher.observe(document.documentElement,{childList:true,subtree:true});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',inject,{once:true});
 else inject();
-window.LoliteCinextma=Object.freeze({providerNames:()=>hosts.map(h=>h[0]),count:hosts.length});
+function openCatalogItem(item){
+ if(!item||typeof item.title!=='string'||!['movie','tv'].includes(item.type)||!valid(item.tmdb,999999999999))return false;
+ const name=item.title.trim().slice(0,110);
+ if(!name)return false;
+ let entry=titles.find(t=>t.tmdb===String(item.tmdb)&&t.type===item.type);
+ if(!entry){
+   entry={id:'cin-'+Date.now()+'-'+Math.random().toString(36).slice(2,9),
+     title:name,tmdb:String(item.tmdb),type:item.type,season:1,episode:1};
+   titles.unshift(entry);titles=titles.slice(0,80);save();
+ }
+ viewing=entry.id;activeHost=null;
+ const root=document.querySelector('#windows .window[data-window-id="movies"] .lm-movies');
+ if(!root)return false;
+ const go=()=>{
+   const open=root.querySelector('.lms-open');
+   if(!open)return false;
+   open.click();
+   const pane=root.querySelector('#lmcSourcePanel');
+   if(pane)render(pane);
+   return true;
+ };
+ if(!go()){
+   let attempts=0;
+   const retry=()=>{if(go()||++attempts>22)return;requestAnimationFrame(retry)};
+   requestAnimationFrame(retry);
+ }
+ return true;
+}
+window.LoliteCinextma=Object.freeze({providerNames:()=>hosts.map(h=>h[0]),count:hosts.length,openCatalogItem});
 })();
