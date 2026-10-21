@@ -1,0 +1,103 @@
+/* Lolite OS -- browsing-style workspace and two-style startup picker. */
+#loliteModeChooser{position:fixed;inset:0;z-index:2147483500;overflow:auto;display:flex;align-items:center;justify-content:center;padding:clamp(20px,5vw,56px);background:radial-gradient(ellipse at 52% 4%,#1b3461 0,#0b1426 45%,#070b13 100%);color:#f1f5ff;font-family:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif}
+#loliteModeChooser *{box-sizing:border-box}
+.lm-wrap{width:min(940px,100%);margin:auto}
+.lm-brand{display:flex;align-items:center;justify-content:center;gap:12px;font-size:20px;font-weight:750;letter-spacing:-.5px}
+.lm-brand img{width:44px;height:44px;object-fit:contain}
+.lm-kicker{text-align:center;color:#80b7ff;letter-spacing:.23em;font-size:10px;font-weight:800;margin-top:26px;text-transform:uppercase}
+.lm-title{margin:12px 0 8px;text-align:center;font-size:clamp(27px,4vw,43px);letter-spacing:-.045em;font-weight:750}
+.lm-sub{color:#aab7ce;font-size:14px;line-height:1.65;text-align:center;max-width:640px;margin:0 auto 28px}
+.lm-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.lm-choice{display:flex;flex-direction:column;text-align:left;gap:0;padding:12px;border:1px solid #34435c;border-radius:18px;background:#111b2bd9;color:#edf4ff;cursor:pointer;transition:transform .17s,border-color .17s,background .17s,box-shadow .17s}
+.lm-choice:hover,.lm-choice:focus-visible{transform:translateY(-2px);border-color:#64adff;background:#15263c;box-shadow:0 15px 50px #0004;outline:none}
+.lm-preview{height:170px;background:#0b111e;border:1px solid #26344a;border-radius:12px;overflow:hidden;position:relative}
+.lm-preview-desktop{background:linear-gradient(135deg,#152944,#080e1b)}
+.lm-preview-desktop .lm-win{position:absolute;top:27px;left:13%;width:66%;height:110px;border-radius:7px;background:#1c2840;border:1px solid #50617b;box-shadow:20px 17px 45px #0008;overflow:hidden}
+.lm-preview-desktop .lm-win:before{content:"";display:block;height:20px;border-bottom:1px solid #44506a;background:linear-gradient(90deg,#273957,#1b2941)}
+.lm-preview-desktop .lm-win:after{content:"";position:absolute;inset:35px 13px 15px;background:repeating-linear-gradient(#506484 0 8px,transparent 8px 22px);opacity:.35}
+.lm-preview-desktop .lm-dock{position:absolute;bottom:9px;left:15%;right:15%;height:22px;border-radius:5px;background:#53648270;display:flex;gap:7px;padding:5px}
+.lm-preview-desktop .lm-dock i{display:block;width:12px;background:#b8c9ea99;border-radius:3px}
+.lm-preview-browser{display:grid;grid-template-rows:27px 1fr;background:#10192a}
+.lm-preview-browser .lm-bar{background:#182740;display:flex;gap:8px;align-items:center;padding:7px 12px}
+.lm-preview-browser .lm-bar i{height:10px;width:52px;background:#769ed1;border-radius:4px;opacity:.6}
+.lm-preview-browser .lm-bar i+ i{width:64%;background:#344966}
+.lm-preview-browser .lm-columns{display:flex;min-height:0}
+.lm-preview-browser .lm-nav{width:26%;border-right:1px solid #364e70;background:#131f34;padding:10px 7px}
+.lm-preview-browser .lm-nav i{display:block;width:90%;height:9px;background:#3c597a;border-radius:3px;margin-bottom:12px}
+.lm-preview-browser .lm-nav i:first-child{background:#66a8ef}
+.lm-preview-browser .lm-items{flex:1;padding:17px 13px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-content:start;gap:10px}
+.lm-preview-browser .lm-items i{height:58px;background:linear-gradient(135deg,#344d75,#1b2b49);border:1px solid #47658b;border-radius:8px}
+.lm-choice-body{padding:18px 14px 13px}
+.lm-choice-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.lm-choice-head strong{font-size:20px;letter-spacing:-.035em}
+.lm-choice-head span{padding:6px 10px;border-radius:6px;font-size:11px;font-weight:700;color:#97caff;background:#18304b;border:1px solid #2a4a70}
+.lm-choice p{font-size:13px;line-height:1.6;color:#aebbd1;margin:9px 0 0}
+.lm-foot{text-align:center;font-size:12px;color:#7d8da8;margin-top:23px}
+#loliteBrowseShell{position:absolute;inset:0;z-index:90;display:flex;flex-direction:column;background:#0c121d;color:#eaf0fb;font-family:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif}
+#loliteBrowseShell *{box-sizing:border-box}
+.lb-header{height:72px;min-height:72px;display:flex;align-items:center;gap:22px;padding:0 25px;background:#101a2a;border-bottom:1px solid #25344a}
+.lb-brand{display:flex;align-items:center;gap:10px;min-width:207px;border:0;background:none;color:#edf4ff;text-align:left;cursor:pointer}
+.lb-brand img{width:36px;height:36px;object-fit:contain}
+.lb-brand strong{font-size:19px;letter-spacing:-.04em;font-weight:800;white-space:nowrap}
+.lb-brand em{font-style:normal;font-size:9px;color:#87bafd;letter-spacing:.16em;display:block;margin-top:2px;font-weight:800}
+.lb-search-wrap{position:relative;max-width:760px;width:100%;flex:1}
+.lb-search-wrap input{width:100%;height:42px;padding:0 48px;border-radius:10px;background:#19263a;border:1px solid #35455e;color:#eaf1fb;outline:none;font-size:13px}
+.lb-search-wrap input::placeholder{color:#9eaec4}
+.lb-search-wrap input:focus{border-color:#74b7fa;box-shadow:0 0 0 3px #298dff28}
+.lb-search-symbol{position:absolute;top:11px;left:16px;color:#a4b8d0;font-size:20px;pointer-events:none}
+.lb-search-wrap input{padding-left:45px}
+.lb-search-clear{position:absolute;right:9px;top:7px;width:30px;height:28px;border-radius:6px;background:transparent;color:#a8bed6;font-size:16px}
+.lb-search-clear:hover{background:#314158}
+.lb-style-switch{height:38px;padding:0 13px;border:1px solid #344a63;background:#17273c;color:#bcd9ff;font-size:12px;font-weight:650;border-radius:8px;white-space:nowrap}
+.lb-style-switch:hover{background:#244164}
+.lb-body{display:flex;min-height:0;flex:1}
+.lb-sidebar{display:flex;flex-direction:column;width:252px;min-width:252px;border-right:1px solid #243248;background:#101827}
+.lb-sidebar-scroll{padding:22px 12px;overflow-y:auto;flex:1;scrollbar-width:thin}
+.lb-section-label{padding:0 13px;margin:7px 0 10px;color:#7890af;font-size:10px;letter-spacing:.15em;font-weight:800;text-transform:uppercase}
+.lb-nav-item{width:100%;display:flex;align-items:center;gap:12px;padding:10px 12px;margin:2px 0;border-radius:9px;background:none;border:1px solid transparent;color:#b8c5d8;text-align:left;font-size:13px;font-weight:580}
+.lb-nav-item:hover{background:#21324a;color:#fff}
+.lb-nav-item.active{background:linear-gradient(90deg,#244771,#1a314e);border-color:#345981;color:#eef6ff}
+.lb-nav-item .lolite-icon,.lb-tile .lolite-icon{width:22px!important;height:22px!important;min-width:22px}
+.lb-icon-fallback{display:inline-grid;place-items:center;width:23px;height:23px;color:#7db5f2;background:#29425e;border:1px solid #425b78;border-radius:6px;font-size:11px;font-weight:800}
+.lb-more{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px;border:1px solid #34475e;background:#19263a;padding:11px 13px;border-radius:9px;font-size:13px;color:#d4e4f6;font-weight:680}
+.lb-more:hover{background:#263f5c}
+.lb-more-arrow{transition:transform .2s;color:#8fb8e8}
+.lb-more[aria-expanded="true"] .lb-more-arrow{transform:rotate(180deg)}
+.lb-more-list{padding-top:7px}
+.lb-sidebar-foot{border-top:1px solid #243248;padding:15px 20px;color:#8195b1;font-size:11px;line-height:1.6}
+.lb-main{position:relative;flex:1;min-width:0;overflow:hidden;background:radial-gradient(circle at 70% 5%,#182f50,#0e1727 43%,#0d131f 90%)}
+.lb-stage{position:relative;width:100%;height:100%;overflow:hidden}
+.lb-welcome{height:100%;overflow:auto;padding:clamp(18px,4vw,44px);scrollbar-width:thin}
+.lb-welcome-inner{max-width:1120px;margin:0 auto}
+.lb-kicker{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#81b9fd;font-weight:800}
+.lb-welcome-hero{position:relative;padding:clamp(23px,4vw,45px);border-radius:18px;border:1px solid #395171;background:radial-gradient(circle at 90% 5%,#225691 0,transparent 54%),linear-gradient(115deg,#172a43,#101d33);overflow:hidden;margin-bottom:31px}
+.lb-welcome-hero:after{content:"";position:absolute;right:-95px;bottom:-160px;width:400px;height:400px;border:1px solid #8ec4ff30;border-radius:50%;box-shadow:0 0 0 55px #8ec4ff08,0 0 0 120px #8ec4ff07;pointer-events:none}
+.lb-welcome-hero h1{margin:10px 0 12px;font-size:clamp(30px,4.4vw,52px);letter-spacing:-.055em;line-height:1.08;font-weight:790}
+.lb-welcome-hero p{max-width:580px;color:#b0c1da;font-size:14px;line-height:1.8;margin:0 0 23px}
+.lb-primary{background:#4b96ef;border-radius:9px;padding:11px 17px;color:#fff;font-weight:730;font-size:13px}
+.lb-primary:hover{background:#70b0fb}
+.lb-section-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 14px}
+.lb-section-header h2{margin:0;font-size:20px;letter-spacing:-.035em;font-weight:750}
+.lb-section-header span{font-size:12px;color:#8fa5c2}
+.lb-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:13px}
+.lb-tile{display:flex;flex-direction:column;align-items:flex-start;gap:9px;min-height:140px;text-align:left;padding:18px;border-radius:12px;border:1px solid #304157;background:linear-gradient(150deg,#1a2a40,#152135);color:#e6eefb}
+.lb-tile:hover,.lb-tile:focus-visible{border-color:#62a4ef;background:#213854;transform:translateY(-2px);outline:none}
+.lb-tile-symbol{width:42px;height:42px;border:1px solid #3b5b83;background:#203b5a;border-radius:10px;display:grid;place-items:center}
+.lb-tile-symbol .lolite-icon{width:24px!important;height:24px!important}
+.lb-tile strong{font-size:14px;font-weight:690}
+.lb-tile small{color:#8fa7c4;font-size:11px;line-height:1.5}
+.lb-empty{padding:26px;border:1px dashed #364960;border-radius:12px;color:#9cb0cd}
+.lb-footer-message{margin-top:30px;color:#778ba7;font-size:12px}
+html.browsing-mode #desktop #icons,html.browsing-mode #desktop #taskbar,html.browsing-mode #desktop #wallpaper,html.browsing-mode #desktop #start,html.browsing-mode #desktop #searchPanel{display:none!important}
+html.browsing-mode #windows{position:relative!important;inset:auto!important;z-index:1!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;pointer-events:auto!important}
+html.browsing-mode #windows .window{position:absolute!important;left:0!important;top:0!important;right:0!important;bottom:0!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;border:0!important;box-shadow:none!important;border-radius:0!important;resize:none!important;animation:none!important;transform:none!important}
+html.browsing-mode #windows .window:not(.lb-current){display:none!important}
+html.browsing-mode #windows .window>.titlebar{height:0!important;min-height:0!important;padding:0!important;border:0!important;overflow:hidden!important}
+html.browsing-mode #windows .window>.content{height:100%!important;max-height:none!important;min-height:0!important;overflow:auto!important}
+html.browsing-mode #windows .window .controls{display:none!important}
+html.browsing-mode #loliteBrowseShell #windows{display:block}
+.lb-app-heading{display:flex;align-items:center;gap:10px;position:absolute;right:20px;bottom:15px;z-index:5;pointer-events:none}
+.lb-app-heading span{padding:6px 10px;border:1px solid #3d5873;background:#13233ae0;border-radius:7px;font-size:10px;color:#9dc9fc}
+@media(max-width:940px){.lb-sidebar{width:205px;min-width:205px}.lb-header{padding:0 14px;gap:12px}.lb-brand{min-width:auto}.lb-style-switch{font-size:11px;padding:0 9px}}
+@media(max-width:620px){#loliteModeChooser{align-items:flex-start}.lm-options{grid-template-columns:1fr}.lm-preview{height:118px}.lm-title{font-size:30px}.lb-header{height:63px;min-height:63px;flex-wrap:nowrap}.lb-brand strong{display:none}.lb-brand img{width:31px;height:31px}.lb-brand{min-width:auto}.lb-search-wrap input{height:38px;font-size:12px}.lb-search-clear{top:5px}.lb-style-switch{padding:0 8px;font-size:0;min-width:34px}.lb-style-switch:after{content:"⇄";font-size:18px}.lb-sidebar{width:62px;min-width:62px}.lb-sidebar-scroll{padding:12px 5px}.lb-sidebar .lb-section-label,.lb-sidebar .lb-nav-item .lb-nav-text,.lb-sidebar .lb-more .lb-more-text,.lb-sidebar .lb-more-arrow,.lb-sidebar-foot{display:none}.lb-nav-item{justify-content:center;padding:10px 5px}.lb-more{padding:10px 4px;justify-content:center}.lb-more:before{content:"+";font-size:20px}.lb-nav-item .lolite-icon{width:24px!important;height:24px!important}.lb-welcome{padding:16px}.lb-welcome-hero{padding:20px}.lb-welcome-hero h1{font-size:28px}.lb-card-grid{grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:9px}.lb-tile{padding:12px;min-height:132px}}
+@media(prefers-reduced-motion:reduce){#loliteModeChooser *,.lb-tile{animation:none!important;transition:none!important}}
