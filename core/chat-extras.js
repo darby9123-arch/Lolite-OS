@@ -194,6 +194,71 @@ document.addEventListener('click',async e=>{
 
 /* Private, members-only voice rooms. Audio goes directly over WebRTC, never into messages. */
 let voice=null;
+
+let selectedMic='';
+try{selectedMic=localStorage.getItem('lolite-chat-microphone')||''}catch{}
+let micBusy=false;
+const micConstraints=id=>({echoCancellation:true,noiseSuppression:true,autoGainControl:true,...(id?{deviceId:{exact:id}}:{})});
+function micName(){return voice?.stream.getAudioTracks()[0]?.label||'System default microphone'}
+function saveMic(id){selectedMic=id;try{if(id)localStorage.setItem('lolite-chat-microphone',id);else localStorage.removeItem('lolite-chat-microphone')}catch{}}
+function closeMicSettings(){document.getElementById('lcMicSettings')?.remove()}
+async function populateMicSettings(){
+ const dialog=document.getElementById('lcMicSettings'),select=dialog?.querySelector('select');if(!select)return;
+ const previous=select.value||selectedMic;
+ select.replaceChildren();
+ const def=document.createElement('option');def.value='';def.textContent='System default microphone';select.appendChild(def);
+ try{
+  const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='audioinput'&&d.deviceId!=='default');
+  if(!dialog.isConnected)return;
+  devices.forEach((d,i)=>{const o=document.createElement('option');o.value=d.deviceId;o.textContent=d.label||'Microphone '+(i+1);select.appendChild(o)});
+  if(previous&&![...select.options].some(o=>o.value===previous)){const o=document.createElement('option');o.value=previous;o.textContent='Previously selected device (unavailable)';select.appendChild(o)}
+  select.value=previous;
+  dialog.querySelector('.lc-mic-hint').textContent=devices.some(d=>d.label)?'Switching microphones does not end your call.':'Device names may be hidden until you grant microphone permission.';
+ }catch(e){dialog.querySelector('.lc-mic-hint').textContent='Cannot list microphones. Check browser permissions.'}
+}
+function openMicSettings(){
+ if(!navigator.mediaDevices?.getUserMedia)return notice('Microphone selection needs a secure browser.');
+ if(document.getElementById('lcMicSettings'))return;
+ const box=document.createElement('div');box.id='lcMicSettings';box.className='lc-mic-overlay';
+ box.innerHTML='<section class="lc-mic-dialog" role="dialog" aria-modal="true" aria-label="Microphone settings"><header><div><small>AUDIO SETTINGS</small><h2>Choose microphone</h2></div><button type="button" data-lc-mic="close" aria-label="Close">×</button></header><p>Select which microphone Lolite Chat uses during calls.</p><label for="lcMicSelect">Input device</label><select id="lcMicSelect"><option value="">System default microphone</option></select><div class="lc-mic-current">Current input: <strong></strong></div><p class="lc-mic-hint">Looking for microphones…</p><footer><button type="button" data-lc-mic="refresh">Refresh</button><button type="button" data-lc-mic="apply" class="lc-mic-primary">Use microphone</button></footer></section>';
+ document.body.appendChild(box);box.querySelector('.lc-mic-current strong').textContent=voice?micName():'Not in a call';box.querySelector('select').focus();populateMicSettings();
+}
+async function switchMicrophone(id){
+ if(micBusy)return false;
+ if(!voice){saveMic(id);notice('Microphone saved for your next call.');closeMicSettings();return true}
+ micBusy=true;
+ const v=voice,apply=document.querySelector('#lcMicSettings [data-lc-mic="apply"]');
+ if(apply){apply.disabled=true;apply.textContent='Switching…'}
+ let stream;
+ try{
+  stream=await navigator.mediaDevices.getUserMedia({audio:micConstraints(id),video:false});
+  if(voice!==v)throw Error('The call has ended.');
+  const track=stream.getAudioTracks()[0];if(!track)throw Error('No audio from this device.');
+  track.enabled=!v.muted;
+  const old=v.stream,oldTrack=old.getAudioTracks()[0],done=[];
+  const senders=[...v.peers.values()].flatMap(p=>p.pc.getSenders().filter(x=>x.track?.kind==='audio'));
+  try{
+   for(const sender of senders){await sender.replaceTrack(track);done.push(sender)}
+   if(voice!==v)throw Error('The call has ended.');
+  }catch(e){await Promise.allSettled(done.map(sender=>sender.replaceTrack(oldTrack)));throw e}
+  v.stream=stream;old.getTracks().forEach(t=>t.stop());saveMic(id);
+  refreshVoiceUI();window.LoliteChatCalls?.refreshDock?.();closeMicSettings();
+  notice('Now using '+(track.label||'your selected microphone'));return true;
+ }catch(e){stream?.getTracks().forEach(t=>t.stop());notice('Could not change microphone: '+(e.message||'Device unavailable'));return false}
+ finally{micBusy=false;if(apply){apply.disabled=false;apply.textContent='Use microphone'}}
+}
+document.addEventListener('click',async e=>{
+ const btn=e.target.closest('[data-lc-mic]');if(!btn)return;
+ e.preventDefault();e.stopPropagation();
+ if(btn.dataset.lcMic==='open')openMicSettings();
+ else if(btn.dataset.lcMic==='close')closeMicSettings();
+ else if(btn.dataset.lcMic==='refresh')await populateMicSettings();
+ else if(btn.dataset.lcMic==='apply')await switchMicrophone(document.getElementById('lcMicSelect')?.value||'');
+});
+document.addEventListener('click',e=>{if(e.target.id==='lcMicSettings')closeMicSettings()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('lcMicSettings')){e.stopPropagation();closeMicSettings()}});
+navigator.mediaDevices?.addEventListener?.('devicechange',()=>{if(document.getElementById('lcMicSettings'))populateMicSettings()});
+
 const rtcConfig={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
 
 /* Screen sharing is opt-in and only works while connected to a private voice room. */
@@ -270,7 +335,7 @@ function showVoiceUI(){
  const toolbar=document.createElement('section');toolbar.className='lc-voice-bar';
  const people=voiceUsers().map(id=>name(id)).slice(0,20);
  toolbar.innerHTML='<span class="lc-voice-status">Voice connected · '+esc(String(people.length+1))+' in room'+(c?.id===voice.id?'':' · another chat')+'</span><span class="lc-voice-people">'+esc(people.length?people.join(', '):'Waiting for someone to join')+'</span>'+
- '<button type="button" data-lc-voice="mute">'+(voice.muted?'Unmute mic':'Mute mic')+'</button><button type="button" data-lc-voice="deafen">'+(voice.deafened?'Undeafen':'Deafen')+'</button><button type="button" data-lc-voice="screen">'+(voice.screenStream?'Stop sharing':'Share screen')+'</button>'+(voice.screens.size?'<button type="button" data-lc-voice="viewScreen">View screen</button>':'')+'<button type="button" data-lc-voice="leave">Leave</button>';
+ '<button type="button" data-lc-voice="mute">'+(voice.muted?'Unmute mic':'Mute mic')+'</button><button type="button" data-lc-voice="deafen">'+(voice.deafened?'Undeafen':'Deafen')+'</button><button type="button" data-lc-mic="open">Microphone</button><button type="button" data-lc-voice="screen">'+(voice.screenStream?'Stop sharing':'Share screen')+'</button>'+(voice.screens.size?'<button type="button" data-lc-voice="viewScreen">View screen</button>':'')+'<button type="button" data-lc-voice="leave">Leave</button>';
  const main=r.querySelector('.lc-main');if(main)main.insertBefore(toolbar,main.querySelector('.lc-message-scroll')||main.firstChild);
 }
 function refreshVoiceUI(){if(!root())return;root().querySelector('.lc-voice-join')?.remove();root().querySelector('.lc-voice-bar')?.remove();showVoiceUI()}
@@ -352,8 +417,14 @@ async function joinVoice(){
  if(!navigator.mediaDevices?.getUserMedia||!window.RTCPeerConnection){notice('Voice chat needs a secure browser with WebRTC and microphone support.');return false;}
  stopVoice();
  let stream;
- try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false})}
- catch(e){notice('Microphone access is required to join voice chat.');return false;}
+ try{stream=await navigator.mediaDevices.getUserMedia({audio:micConstraints(selectedMic),video:false})}
+ catch(e){
+  if(selectedMic&&['OverconstrainedError','NotFoundError'].includes(e.name)){
+   saveMic('');
+   try{stream=await navigator.mediaDevices.getUserMedia({audio:micConstraints(''),video:false});notice('Selected microphone unavailable; using system default.')}
+   catch{notice('Microphone access is required to join voice chat.');return false}
+  }else{notice('Microphone access is required to join voice chat.');return false}
+ }
  const id=c.id;
  const channel=sb.channel('lc-voice-'+id,{config:{private:true,presence:{key:myId()}}});
  const v={id,stream,channel,peers:new Map(),muted:false,deafened:false,screens:new Map(),screenStream:null,selectedScreen:null,hiddenScreen:false};
@@ -378,7 +449,7 @@ async function joinVoice(){
 }
 function stopVoice(){
  if(!voice)return;
- const v=voice;voice=null;
+ const v=voice;voice=null;closeMicSettings();
  for(const p of v.peers.values()){try{p.pc.close()}catch{}p.audio.remove()}
  for(const t of v.screenStream?.getTracks()||[]){t.onended=null;t.stop()}
  for(const t of v.stream.getTracks())t.stop();
@@ -410,5 +481,5 @@ function afterRender(){
  if(conversation()){showReadReceipts().catch(console.error)}
  poll().catch(console.error);
 }
-window.LoliteChatExtra={afterRender,stopVoice,joinVoice,startScreenShare,stopScreenShare,hasScreen:()=>!!voice?.screenStream,hasAnyScreen:()=>!!voice?.screens.size,viewScreen:()=>{if(voice){voice.hiddenScreen=false;renderScreen()}},isMuted:()=>!!voice?.muted,toggleMute:()=>{if(voice){voice.muted=!voice.muted;voice.stream.getAudioTracks().forEach(t=>t.enabled=!voice.muted);refreshVoiceUI()}},closeProfile:()=>{focusedProfile=null;root()?.querySelector('.lc-user-modal')?.remove()}};
+window.LoliteChatExtra={afterRender,stopVoice,joinVoice,openMicSettings,micName,startScreenShare,stopScreenShare,hasScreen:()=>!!voice?.screenStream,hasAnyScreen:()=>!!voice?.screens.size,viewScreen:()=>{if(voice){voice.hiddenScreen=false;renderScreen()}},isMuted:()=>!!voice?.muted,toggleMute:()=>{if(voice){voice.muted=!voice.muted;voice.stream.getAudioTracks().forEach(t=>t.enabled=!voice.muted);refreshVoiceUI()}},closeProfile:()=>{focusedProfile=null;root()?.querySelector('.lc-user-modal')?.remove()}};
 })();
