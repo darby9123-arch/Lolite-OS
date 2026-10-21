@@ -97,3 +97,126 @@
 .lc-call-dock-avatar{width:36px;height:36px;border-radius:11px}
 @media(max-width:620px){.lc-incoming-top{margin-bottom:20px}.lc-incoming-call{padding-bottom:20px}.lc-incoming-avatar{width:84px;height:84px;font-size:30px;border-radius:25px;margin-bottom:18px}.lc-active-call-body{padding:22px 16px 20px}.lc-active-avatar{width:82px;height:82px;margin-bottom:18px}.lc-active-call-body h2{font-size:22px}.lc-active-call-control{min-height:66px}.lc-active-call{max-height:85vh}}
 @media(prefers-reduced-motion:reduce){.lc-incoming-avatar,.lc-active-avatar.is-ringing,.lc-call-live-dot{animation:none}}
+
+/* Unified, compact calling UI — visually consistent with the screen-share viewer. */
+.lc-active-call{
+ top:auto;left:22px;bottom:86px;right:auto;transform:none;
+ width:min(360px,calc(100vw - 24px));max-height:min(75vh,650px);
+ border:1px solid #40536a;border-radius:16px;background:#131f2e;
+ box-shadow:0 18px 60px #000b;
+}
+.lc-active-call-head,.lc-screen-viewer header{
+ background:#1d2e42;border-bottom:1px solid #35475e;padding:11px 15px;
+}
+.lc-active-call-head button{
+ width:28px;height:27px;border:1px solid #405875;background:#2a3d54;border-radius:7px;
+}
+.lc-active-call-body{padding:22px 17px 16px}
+.lc-active-avatar{
+ width:78px;height:78px;border-radius:22px;margin-bottom:18px;
+ background:#36577b;border:1px solid #54779a;box-shadow:none;font-size:28px;
+}
+.lc-active-avatar.is-ringing{animation:lc-avatar-ring 2.4s ease-in-out infinite}
+.lc-active-call-label{color:#92abc7;font-size:9px;letter-spacing:.13em}
+.lc-active-call-body h2{font-size:20px;font-weight:800;margin:7px 0 4px}
+.lc-active-call-handle{font-size:11px;margin-bottom:16px;color:#9bb1c9}
+.lc-active-call-status{gap:8px;margin-bottom:17px;color:#b9e4cf;font-size:11px}
+.lc-call-elapsed{background:#20354b;border:1px solid #3a526c;color:#c8d8e8}
+.lc-active-call-roster{max-height:115px;margin:0 0 15px;background:#0b1724;border:1px solid #2b4056}
+.lc-active-call-actions{gap:8px}
+.lc-active-call-control{
+ min-width:0;min-height:66px;border-radius:11px;border:1px solid #39536c;
+ background:#24374c;display:flex;flex-direction:column;gap:7px;
+ color:#dceaf9;font-size:10px;transition:background .15s,border-color .15s;
+}
+.lc-active-call-control:hover{background:#304962;border-color:#54718d}
+.lc-active-call-control.is-selected,.lc-call-dock-actions button.is-selected{background:#345d81;border-color:#6a96bd;color:#fff}
+.lc-active-hangup{background:#993c4c!important;border-color:#b65768!important}
+.lc-active-call-secondary{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:14px}
+.lc-active-call-secondary button{
+ display:inline-flex;align-items:center;gap:6px;padding:6px 8px;
+ background:transparent;border:0;border-radius:7px;color:#b0cae4;
+ font:700 10px "Plus Jakarta Sans","Segoe UI",sans-serif;cursor:pointer;
+}
+.lc-active-call-secondary button:hover{background:#24394e;color:#fff}
+.lc-active-call-secondary svg{width:14px;height:14px}
+.lc-call-dock{
+ width:auto;max-width:calc(100vw - 26px);min-width:min(360px,calc(100vw - 26px));
+ gap:13px;flex-wrap:nowrap;padding:9px 11px;border:1px solid #425b74;
+ background:#18283a;border-radius:13px;
+}
+.lc-call-dock-title{min-width:100px}
+.lc-call-dock-title strong{font-size:11px}
+.lc-call-dock-title small{font-size:10px}
+.lc-call-dock-actions{gap:5px;flex-wrap:nowrap;justify-content:flex-end}
+.lc-call-dock-actions button{
+ width:32px;height:32px;min-width:32px;display:grid;place-items:center;
+ padding:0;border:1px solid #405772;border-radius:8px;background:#283e55;color:#e5f1ff;
+}
+.lc-call-dock-actions button svg{width:16px;height:16px}
+.lc-call-dock-actions .lc-call-end{background:#a34253!important;border-color:#b65c69!important}
+.lc-calls-tools{display:flex;justify-content:flex-end;margin:0 0 8px}
+.lc-calls-tools button{
+ display:flex;align-items:center;gap:7px;border:1px solid #415c79;border-radius:9px;
+ background:#24394e;color:#d8eaff;padding:9px 12px;
+ font:750 11px "Plus Jakarta Sans","Segoe UI",sans-serif;cursor:pointer;
+}
+.lc-calls-tools button:hover{background:#30516d}
+.lc-screen-viewer{border:1px solid #40536a;background:#131f2e;border-radius:16px}
+.lc-screen-viewer header button,.lc-screen-viewer header select{
+ border:1px solid #415b77;background:#293f55;border-radius:8px;
+}
+.lc-incoming-wrapper{background:#060d18bc;backdrop-filter:blur(9px)}
+.lc-incoming-call{
+ width:min(370px,calc(100vw - 24px));border:1px solid #405b75;
+ background:#152437;border-radius:17px;box-shadow:0 25px 75px #000b;
+}
+.lc-incoming-top{background:#1c3046}
+.lc-incoming-avatar{width:88px;height:88px;border-radius:24px;background:#3d648a;box-shadow:none;font-size:31px}
+.lc-incoming-call h2{font-size:24px}
+.lc-incoming-actions button{border-radius:10px}
+.lc-mic-overlay{
+ position:fixed;inset:0;z-index:2147483603;display:grid;place-items:center;
+ padding:16px;background:#050a14b9;backdrop-filter:blur(8px);
+}
+.lc-mic-dialog{
+ width:min(410px,100%);padding:0 20px 20px;border:1px solid #46617d;
+ border-radius:17px;background:#172638;color:#edf5ff;
+ box-shadow:0 26px 90px #000c;font:12px "Plus Jakarta Sans","Segoe UI",sans-serif;
+}
+.lc-mic-dialog header{
+ display:flex;justify-content:space-between;align-items:center;gap:12px;
+ padding:18px 0 13px;border-bottom:1px solid #32495f;
+}
+.lc-mic-dialog header small{display:block;font-size:9px;letter-spacing:.14em;font-weight:800;color:#89abc9}
+.lc-mic-dialog header h2{margin:5px 0 0;font-size:18px;font-weight:800;color:#f2f7ff}
+.lc-mic-dialog header button{
+ width:30px;height:30px;display:grid;place-items:center;background:#2c4057;
+ border:1px solid #4a637d;border-radius:8px;color:#fff;font-size:21px;cursor:pointer;
+}
+.lc-mic-dialog p{color:#aebed0;line-height:1.55;margin:16px 0}
+.lc-mic-dialog label{display:block;font-size:11px;font-weight:750;margin-bottom:8px;color:#dbe8f5}
+.lc-mic-dialog select{
+ display:block;width:100%;min-width:0;padding:12px;border-radius:9px;
+ border:1px solid #4c6680;background:#22364b;color:#fff;font:inherit;outline-offset:2px;
+}
+.lc-mic-current{margin-top:12px;color:#91abc4;font-size:10px}
+.lc-mic-current strong{color:#e5f2ff}
+.lc-mic-dialog .lc-mic-hint{font-size:10px;margin:11px 0 20px}
+.lc-mic-dialog footer{display:flex;justify-content:flex-end;gap:8px}
+.lc-mic-dialog footer button{
+ border:1px solid #4b657f;border-radius:9px;padding:10px 13px;
+ background:#2b4056;color:#f0f7ff;font:750 11px "Plus Jakarta Sans","Segoe UI",sans-serif;cursor:pointer;
+}
+.lc-mic-dialog footer .lc-mic-primary{background:#3e729c;border-color:#5c91bd}
+.lc-mic-dialog footer button:disabled{opacity:.55;cursor:wait}
+@media(max-width:620px){
+ .lc-active-call{left:50%;bottom:68px;transform:translateX(-50%);max-height:calc(100vh - 86px)}
+ .lc-active-call-body{padding:18px 14px 14px}
+ .lc-call-dock{right:8px;bottom:55px;min-width:0;width:calc(100vw - 16px);gap:6px}
+ .lc-call-dock-title{min-width:0}
+ .lc-call-dock-actions{width:auto;flex:none}
+ .lc-call-dock-actions button{width:29px;height:29px;min-width:29px}
+ .lc-active-call-control{min-height:61px}
+}
+@media(prefers-reduced-motion:reduce){.lc-active-avatar.is-ringing{animation:none}}
