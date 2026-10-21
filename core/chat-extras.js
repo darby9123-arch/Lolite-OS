@@ -195,6 +195,70 @@ document.addEventListener('click',async e=>{
 /* Private, members-only voice rooms. Audio goes directly over WebRTC, never into messages. */
 let voice=null;
 const rtcConfig={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
+
+/* Screen sharing is opt-in and only works while connected to a private voice room. */
+function renderScreen(){
+ let box=document.getElementById('lcScreenViewer');
+ const entries=voice?[...voice.screens.entries()]:[];
+ if(!entries.length||voice.hiddenScreen){box?.remove();return}
+ const [owner,stream]=entries.find(([id])=>id===voice.selectedScreen)||entries.find(([id])=>id!==myId())||entries[0];
+ if(!box){box=document.createElement('aside');box.id='lcScreenViewer';box.className='lc-screen-viewer';document.body.appendChild(box)}
+ if(box.dataset.owner===owner&&box.querySelector('video')?.srcObject===stream)return;
+ box.replaceChildren();box.dataset.owner=owner;
+ const head=document.createElement('header'),label=document.createElement('strong');
+ label.textContent=owner===myId()?'You are sharing your screen':name(owner)+' is sharing';
+ head.appendChild(label);
+ if(entries.length>1){
+  const picker=document.createElement('select');picker.setAttribute('aria-label','Choose screen to view');
+  for(const [id] of entries){const opt=document.createElement('option');opt.value=id;opt.textContent=id===myId()?'Your screen':name(id);picker.appendChild(opt)}
+  picker.value=owner;picker.onchange=()=>{if(voice){voice.selectedScreen=picker.value;renderScreen()}};head.appendChild(picker);
+ }
+ const hide=document.createElement('button');hide.type='button';hide.textContent='Hide';hide.dataset.lcScreen='hide';head.appendChild(hide);
+ if(owner===myId()){const stop=document.createElement('button');stop.type='button';stop.textContent='Stop sharing';stop.className='lc-screen-stop';stop.dataset.lcScreen='stop';head.appendChild(stop)}
+ const video=document.createElement('video');video.autoplay=true;video.playsInline=true;video.muted=true;video.srcObject=stream;video.setAttribute('aria-label','Shared screen');
+ box.append(head,video);video.play().catch(()=>{});
+}
+function screenChanged(){renderScreen();refreshVoiceUI();window.LoliteChatCalls?.refreshDock?.()}
+function remoteScreen(id,track){
+ if(!voice||!voice.peers.has(id))return;
+ voice.screens.set(id,new MediaStream([track]));voice.selectedScreen=id;voice.hiddenScreen=false;screenChanged();
+}
+function removeRemoteScreen(id){
+ if(!voice?.screens.has(id))return;
+ voice.screens.delete(id);if(voice.selectedScreen===id)voice.selectedScreen=null;screenChanged();
+}
+async function stopScreenShare(){
+ const v=voice;if(!v?.screenStream)return;
+ const stream=v.screenStream;v.screenStream=null;v.screens.delete(myId());
+ if(v.selectedScreen===myId())v.selectedScreen=null;
+ for(const track of stream.getTracks()){track.onended=null;track.stop()}
+ for(const peer of v.peers.values()){
+  try{await peer.videoSender.replaceTrack(null);peer.videoTransceiver.direction='recvonly';offer(peer.id)}
+  catch(e){console.debug('Screen share stop:',e)}
+ }
+ v.channel.send({type:'broadcast',event:'screen',payload:{from:myId(),active:false}}).catch(()=>{});
+ screenChanged();
+}
+async function startScreenShare(){
+ const v=voice;if(!v)return notice('Join a voice call or voice room first.');
+ if(v.screenStream){v.selectedScreen=myId();v.hiddenScreen=false;screenChanged();return}
+ if(!navigator.mediaDevices?.getDisplayMedia)return notice('Screen sharing needs a supported desktop browser.');
+ let stream;
+ try{stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:24},audio:false})}
+ catch(e){if(!['NotAllowedError','AbortError'].includes(e.name))notice('Could not share screen: '+e.message);return}
+ if(voice!==v){stream.getTracks().forEach(t=>t.stop());return}
+ const track=stream.getVideoTracks()[0];
+ if(!track){stream.getTracks().forEach(t=>t.stop());return notice('No screen was selected.')}
+ v.screenStream=stream;v.screens.set(myId(),stream);v.selectedScreen=myId();v.hiddenScreen=false;
+ track.onended=()=>{if(voice===v)stopScreenShare()};
+ for(const peer of v.peers.values()){
+  try{await peer.videoSender.replaceTrack(track);peer.videoTransceiver.direction='sendrecv';offer(peer.id)}
+  catch(e){console.debug('Screen share peer:',e)}
+ }
+ v.channel.send({type:'broadcast',event:'screen',payload:{from:myId(),active:true}}).catch(()=>{});
+ screenChanged();notice('Screen sharing started. Use Stop sharing to end it.');
+}
+
 function voiceUsers(){return voice?Object.keys(voice.channel.presenceState()).filter(id=>id!==myId()):[]}
 function showVoiceUI(){
  const r=root(),s=state(),c=conversation();if(!r||!s)return;
@@ -206,7 +270,7 @@ function showVoiceUI(){
  const toolbar=document.createElement('section');toolbar.className='lc-voice-bar';
  const people=voiceUsers().map(id=>name(id)).slice(0,20);
  toolbar.innerHTML='<span class="lc-voice-status">Voice connected · '+esc(String(people.length+1))+' in room'+(c?.id===voice.id?'':' · another chat')+'</span><span class="lc-voice-people">'+esc(people.length?people.join(', '):'Waiting for someone to join')+'</span>'+
- '<button type="button" data-lc-voice="mute">'+(voice.muted?'Unmute mic':'Mute mic')+'</button><button type="button" data-lc-voice="deafen">'+(voice.deafened?'Undeafen':'Deafen')+'</button><button type="button" data-lc-voice="leave">Leave</button>';
+ '<button type="button" data-lc-voice="mute">'+(voice.muted?'Unmute mic':'Mute mic')+'</button><button type="button" data-lc-voice="deafen">'+(voice.deafened?'Undeafen':'Deafen')+'</button><button type="button" data-lc-voice="screen">'+(voice.screenStream?'Stop sharing':'Share screen')+'</button>'+(voice.screens.size?'<button type="button" data-lc-voice="viewScreen">View screen</button>':'')+'<button type="button" data-lc-voice="leave">Leave</button>';
  const main=r.querySelector('.lc-main');if(main)main.insertBefore(toolbar,main.querySelector('.lc-message-scroll')||main.firstChild);
 }
 function refreshVoiceUI(){if(!root())return;root().querySelector('.lc-voice-join')?.remove();root().querySelector('.lc-voice-bar')?.remove();showVoiceUI()}
@@ -219,21 +283,33 @@ async function sendSignal(target,kind,data){
 function closePeer(id){
  const peer=voice?.peers.get(id);if(!peer)return;
  try{peer.pc.close()}catch{}
- peer.audio.remove();voice.peers.delete(id);
+ peer.audio.remove();voice.peers.delete(id);removeRemoteScreen(id);
 }
 function getPeer(id){
  if(!voice||!id||id===myId())return null;
  if(voice.peers.has(id))return voice.peers.get(id);
  const pc=new RTCPeerConnection(rtcConfig),audio=document.createElement('audio');audio.autoplay=true;audio.playsInline=true;audio.dataset.loliteVoice=id;audio.style.display='none';document.body.appendChild(audio);
- const peer={pc,audio,candidates:[],makingOffer:false};voice.peers.set(id,peer);
+ const peer={id,pc,audio,candidates:[],makingOffer:false,renegotiate:false,ignoreOffer:false};voice.peers.set(id,peer);
  for(const track of voice.stream.getTracks())pc.addTrack(track,voice.stream);
- pc.ontrack=e=>{audio.srcObject=e.streams[0]||new MediaStream([e.track]);audio.muted=voice.deafened;audio.play().catch(()=>{})};
+ peer.videoTransceiver=pc.addTransceiver('video',{direction:voice.screenStream?'sendrecv':'recvonly'});
+ peer.videoSender=peer.videoTransceiver.sender;
+ if(voice.screenStream)peer.videoSender.replaceTrack(voice.screenStream.getVideoTracks()[0]).catch(console.debug);
+ pc.onsignalingstatechange=()=>{if(pc.signalingState==='stable'&&peer.renegotiate){peer.renegotiate=false;offer(id)}};
+ pc.ontrack=e=>{
+  if(e.track.kind==='audio'){audio.srcObject=e.streams[0]||new MediaStream([e.track]);audio.muted=voice?.deafened||false;audio.play().catch(()=>{});return}
+  if(e.track.kind==='video'){
+   const show=()=>{if(voice?.peers.get(id)===peer)remoteScreen(id,e.track)};
+   e.track.onunmute=show;e.track.onmute=()=>removeRemoteScreen(id);e.track.onended=()=>removeRemoteScreen(id);
+   if(!e.track.muted)show();
+  }
+ };
  pc.onicecandidate=e=>{if(e.candidate)sendSignal(id,'candidate',e.candidate.toJSON())};
  pc.onconnectionstatechange=()=>{if(pc.connectionState==='failed'){notice('Voice connection failed. A TURN relay may be needed on this network.')}};
  return peer;
 }
 async function offer(id){
- const peer=getPeer(id);if(!peer||peer.makingOffer||peer.pc.signalingState!=='stable')return;
+ const peer=getPeer(id);if(!peer)return;
+ if(peer.makingOffer||peer.pc.signalingState!=='stable'){peer.renegotiate=true;return}
  peer.makingOffer=true;
  try{await peer.pc.setLocalDescription(await peer.pc.createOffer());await sendSignal(id,'offer',peer.pc.localDescription)}
  catch(e){console.warn('Voice offer error',e)}
@@ -246,12 +322,17 @@ async function signal(payload){
  const peer=getPeer(payload.from);if(!peer)return;
  try{
   if(payload.kind==='offer'){
+   const collision=peer.makingOffer||peer.pc.signalingState!=='stable';
+   peer.ignoreOffer=collision&&myId()<payload.from;
+   if(peer.ignoreOffer)return;
+   if(collision)await peer.pc.setLocalDescription({type:'rollback'});
    await peer.pc.setRemoteDescription(payload.data);
    await peer.pc.setLocalDescription(await peer.pc.createAnswer());
    await sendSignal(payload.from,'answer',peer.pc.localDescription);
   }else if(payload.kind==='answer'&&peer.pc.signalingState==='have-local-offer'){
    await peer.pc.setRemoteDescription(payload.data);
   }else if(payload.kind==='candidate'){
+   if(peer.ignoreOffer)return;
    if(peer.pc.remoteDescription)await peer.pc.addIceCandidate(payload.data);
    else peer.candidates.push(payload.data);
   }
@@ -275,9 +356,10 @@ async function joinVoice(){
  catch(e){notice('Microphone access is required to join voice chat.');return false;}
  const id=c.id;
  const channel=sb.channel('lc-voice-'+id,{config:{private:true,presence:{key:myId()}}});
- const v={id,stream,channel,peers:new Map(),muted:false,deafened:false};
+ const v={id,stream,channel,peers:new Map(),muted:false,deafened:false,screens:new Map(),screenStream:null,selectedScreen:null,hiddenScreen:false};
  voice=v;
  channel.on('broadcast',{event:'rtc'},({payload})=>signal(payload));
+ channel.on('broadcast',{event:'screen'},({payload})=>{if(voice===v&&payload?.from!==myId()&&voiceUsers().includes(payload.from)&&payload.active===false)removeRemoteScreen(payload.from)});
  channel.on('presence',{event:'sync'},()=>synchronizePeers());
  const connected=await new Promise(resolve=>{
   let resolved=false;
@@ -298,7 +380,9 @@ function stopVoice(){
  if(!voice)return;
  const v=voice;voice=null;
  for(const p of v.peers.values()){try{p.pc.close()}catch{}p.audio.remove()}
+ for(const t of v.screenStream?.getTracks()||[]){t.onended=null;t.stop()}
  for(const t of v.stream.getTracks())t.stop();
+ document.getElementById('lcScreenViewer')?.remove();window.LoliteChatCalls?.refreshDock?.();
  client()?.removeChannel(v.channel)?.catch?.(()=>{});
  refreshVoiceUI();window.LoliteChatCalls?.voiceStopped?.();
 }
@@ -310,7 +394,15 @@ document.addEventListener('click',async e=>{
   case 'leave':stopVoice();break;
   case 'mute':if(voice){voice.muted=!voice.muted;voice.stream.getAudioTracks().forEach(t=>t.enabled=!voice.muted);refreshVoiceUI()}break;
   case 'deafen':if(voice){voice.deafened=!voice.deafened;for(const p of voice.peers.values())p.audio.muted=voice.deafened;refreshVoiceUI()}break;
+  case 'screen':if(voice?.screenStream)await stopScreenShare();else await startScreenShare();break;
+  case 'viewScreen':if(voice){voice.hiddenScreen=false;renderScreen()}break;
  }
+});
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-lc-screen]');if(!b)return;
+ e.preventDefault();e.stopPropagation();
+ if(b.dataset.lcScreen==='hide'){if(voice){voice.hiddenScreen=true;renderScreen()}}
+ else if(b.dataset.lcScreen==='stop')stopScreenShare();
 });
 function afterRender(){
  if(!state()?.user){focusedProfile=null;stopVoice();return}
@@ -318,5 +410,5 @@ function afterRender(){
  if(conversation()){showReadReceipts().catch(console.error)}
  poll().catch(console.error);
 }
-window.LoliteChatExtra={afterRender,stopVoice,joinVoice,isMuted:()=>!!voice?.muted,toggleMute:()=>{if(voice){voice.muted=!voice.muted;voice.stream.getAudioTracks().forEach(t=>t.enabled=!voice.muted);refreshVoiceUI()}},closeProfile:()=>{focusedProfile=null;root()?.querySelector('.lc-user-modal')?.remove()}};
+window.LoliteChatExtra={afterRender,stopVoice,joinVoice,startScreenShare,stopScreenShare,hasScreen:()=>!!voice?.screenStream,hasAnyScreen:()=>!!voice?.screens.size,viewScreen:()=>{if(voice){voice.hiddenScreen=false;renderScreen()}},isMuted:()=>!!voice?.muted,toggleMute:()=>{if(voice){voice.muted=!voice.muted;voice.stream.getAudioTracks().forEach(t=>t.enabled=!voice.muted);refreshVoiceUI()}},closeProfile:()=>{focusedProfile=null;root()?.querySelector('.lc-user-modal')?.remove()}};
 })();
