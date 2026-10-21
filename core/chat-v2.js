@@ -28,6 +28,52 @@ const lcPaths={
 };
 const lcIcon=(key,size=18)=>'<svg xmlns="http://www.w3.org/2000/svg" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(lcPaths[key]||lcPaths.chat)+'</svg>';
 
+// Keep unsent messages in memory per conversation. Background refreshes must never erase typing.
+const messageDrafts=new Map();
+const draftKey=()=>activeConv()?.id||null;
+function captureDraft(){
+ const input=root()?.querySelector('[data-lc-message-input]');
+ if(input?.dataset.lcDraftConv)messageDrafts.set(input.dataset.lcDraftConv,input.value);
+}
+function snapshotInputs(){
+ const r=root(),active=document.activeElement;
+ const input=r?.querySelector('[data-lc-message-input]');
+ if(input?.dataset.lcDraftConv)messageDrafts.set(input.dataset.lcDraftConv,input.value);
+ const scroll=r?.querySelector('.lc-message-scroll');
+ const sameInput=r?.contains(active)?active:null;
+ return {
+  focused:sameInput?.matches('input,textarea,select')?{
+   selector:sameInput.matches('[data-lc-message-input]')?'[data-lc-message-input]':
+    sameInput.matches('[data-lc-sidebar-search]')?'[data-lc-sidebar-search]':
+    sameInput.matches('[data-lc-search]')?'[data-lc-search]':null,
+   start:typeof sameInput.selectionStart==='number'?sameInput.selectionStart:null,
+   end:typeof sameInput.selectionEnd==='number'?sameInput.selectionEnd:null,
+   direction:sameInput.selectionDirection||'none'
+  }:null,
+  conversation:input?.dataset.lcDraftConv||null,
+  scroll:scroll?{top:scroll.scrollTop,bottom:scroll.scrollHeight-scroll.scrollTop-scroll.clientHeight<90}:null
+ };
+}
+function restoreInputs(snapshot){
+ const r=root();if(!r)return;
+ const input=r.querySelector('[data-lc-message-input]');
+ if(input?.dataset.lcDraftConv&&messageDrafts.has(input.dataset.lcDraftConv))
+  input.value=messageDrafts.get(input.dataset.lcDraftConv);
+ const scroll=r.querySelector('.lc-message-scroll');
+ if(scroll){
+  if(snapshot.conversation===input?.dataset.lcDraftConv&&snapshot.scroll&&!snapshot.scroll.bottom)
+   scroll.scrollTop=snapshot.scroll.top;
+  else scroll.scrollTop=scroll.scrollHeight;
+ }
+ const target=snapshot.focused?.selector&&r.querySelector(snapshot.focused.selector);
+ if(target){
+  try{
+   target.focus({preventScroll:true});
+   if(snapshot.focused.start!==null&&typeof target.setSelectionRange==='function')
+    target.setSelectionRange(snapshot.focused.start,snapshot.focused.end,snapshot.focused.direction);
+  }catch(e){console.debug('Could not restore chat caret',e)}
+ }
+}
 const state={user:null,me:null,profiles:[],conversations:[],members:[],requests:[],blocks:[],messages:[],reactions:[],view:'browse',channel:'general',conversationId:null,replyTo:null,authTab:'login',authError:'',search:'',sidebarQuery:'',modal:null,showPins:false,error:'',busy:false,again:false,loading:true};
 const meId=()=>state.user?.id;
 const person=id=>state.profiles.find(p=>p.id===id);
@@ -133,7 +179,7 @@ function chatHtml(){
  (list.length?list.map(messageHtml).join(''):'<div class="lc-placeholder lc-message-empty"><div class="lc-empty-symbol">'+lcIcon('chat',27)+'</div><h2>'+ (state.search?'No matching messages':state.showPins?'No pinned messages':'No messages yet')+'</h2><p>'+ (state.search?'Try a different search.':state.showPins?'Pin a message to keep it handy.':'Say hello to start the conversation.')+'</p></div>')+
  '</section><form class="lc-composer" data-lc-form="send">'+
  (reply?'<div class="lc-reply-bar"><span>Replying to '+esc(label(person(reply.sender_id)))+'</span><button type="button" class="lc-iconbtn" data-lc-action="cancelReply" aria-label="Cancel reply">×</button></div>':'')+
- '<div class="lc-compose-wrap"><textarea rows="1" maxlength="4000" name="message" data-lc-message-input placeholder="Write a message…" aria-label="Message text" required></textarea>'+
+ '<div class="lc-compose-wrap"><textarea rows="1" maxlength="4000" name="message" data-lc-message-input data-lc-draft-conv="'+esc(c.id)+'" placeholder="Write a message…" aria-label="Message text" required></textarea>'+
  '<button class="lc-send" type="submit" title="Send message" aria-label="Send message">'+lcIcon('send',19)+'<span>Send</span></button></div>'+
  '<div class="lc-compose-help">Enter to send · Shift + Enter for a new line</div></form></main>';
 }
@@ -192,13 +238,14 @@ function modalHtml(){
 }
 function render(){
  const r=root();if(!r)return;
+ const snapshot=snapshotInputs();
  if(!sb){r.innerHTML='<div class="lc-placeholder"><div><h2>Chat library unavailable</h2><p>Check the network connection, then reopen Lolite Chat.</p></div></div>';return}
  if(state.loading){r.innerHTML='<div class="lc-loader">Connecting to Lolite Chat…</div>';return}
  if(state.error){r.innerHTML='<div class="lc-placeholder"><div><h2>Could not connect</h2><p>'+esc(state.error)+'</p><button class="lc-primary" data-lc-action="retry">Retry</button></div></div>';return}
  if(!state.user){r.innerHTML=authHtml();return}
  const main=state.view==='calls'?(window.LoliteChatCalls?.renderCallsHtml?.()||'<main class="lc-main"><div class="lc-placeholder">Loading voice calls…</div></main>'):state.view==='friends'?friendsHtml():state.view==='browse'?browseHtml():state.view==='profile'?profileHtml():chatHtml();
  r.innerHTML='<div class="lc-shell" data-lc-view="'+esc(state.view)+'">'+railHtml()+sideHtml()+main+'</div>'+modalHtml();
- $('.lc-message-scroll')?.scrollTo(0,999999);
+ restoreInputs(snapshot);
   window.LoliteChatExtra?.afterRender?.();window.LoliteChatCalls?.afterRender?.();
 }
 async function loadMessages(){
@@ -313,7 +360,7 @@ async function dispatch(action,id,button){
  case 'delete':{const m=state.messages.find(m=>m.id===Number(id));if(!m||m.sender_id!==meId()||!confirm('Delete your message?'))return;check(await sb.from('messages').delete().eq('id',m.id));return refresh(true)}
  case 'pin':{const m=state.messages.find(m=>m.id===Number(id));if(!m||m.sender_id!==meId())return;check(await sb.from('messages').update({is_pinned:!m.is_pinned}).eq('id',m.id));return refresh(true)}
  case 'report':state.modal={type:'report',messageId:Number(id)};return render();
- case 'logout':{await sb.auth.signOut();state.view='browse';state.channel='general';state.conversationId=null;state.modal=null;return refresh(true)}
+ case 'logout':{messageDrafts.clear();await sb.auth.signOut();state.view='browse';state.channel='general';state.conversationId=null;state.modal=null;return refresh(true)}
  case 'accept':case 'decline':check(await sb.from('friend_requests').update({status:action==='accept'?'accepted':'declined'}).eq('id',id).eq('to_id',meId()));return refresh(true);
  case 'cancelRequest':check(await sb.from('friend_requests').delete().eq('id',id));return refresh(true);
  case 'unfriend':{if(!confirm('Remove this friend?'))return;const requests=state.requests.filter(r=>r.status==='accepted'&&((r.from_id===id&&r.to_id===meId())||(r.to_id===id&&r.from_id===meId())));for(const item of requests)check(await sb.from('friend_requests').delete().eq('id',item.id));return refresh(true)}
@@ -343,6 +390,15 @@ async function handleForm(form){
   if(!c||!text)return;
   if(text.length>4000)throw Error('Messages must be 4,000 characters or less.');
   check(await sb.from('messages').insert({conversation_id:c.id,sender_id:meId(),content:text,reply_to:state.replyTo||null}));
+  // Clear only the message that was actually sent. Keep any newer typing.
+  const current=root()?.querySelector('[data-lc-message-input]');
+  if(current?.dataset.lcDraftConv===c.id&&current.value.trim()===text){
+   current.value='';messageDrafts.delete(c.id);
+  }else if(current?.dataset.lcDraftConv===c.id){
+   messageDrafts.set(c.id,current.value);
+  }else if(messageDrafts.get(c.id)?.trim()===text){
+   messageDrafts.delete(c.id);
+  }
   state.replyTo=null;state.search='';return refresh(true);
  }
  if(type==='addFriend'){await requestFriend(String(fd.get('username')||''));state.modal=null;await refresh(true);return flash('Friend request sent!')}
@@ -391,6 +447,8 @@ document.addEventListener('keydown',e=>{
  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&root()&&state.user){e.preventDefault();state.search=' ';render();$('[data-lc-search]')?.focus()}
 });
 document.addEventListener('input',e=>{
+ if(e.target.matches('[data-lc-message-input]')&&e.target.dataset.lcDraftConv)
+  messageDrafts.set(e.target.dataset.lcDraftConv,e.target.value);
  if(e.target.matches('[data-lc-sidebar-search]')){state.sidebarQuery=e.target.value;const list=$('[data-lc-sidebar-content]');if(list)list.innerHTML=sideContents()}
  if(e.target.matches('[data-lc-search]')){
   state.search=e.target.value;
