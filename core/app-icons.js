@@ -6,6 +6,7 @@
   const glyphs={
   "home": "<path fill=\"#F6FAFF\" d=\"M7 23.2 24 9l17 14.2v16.3a2.5 2.5 0 0 1-2.5 2.5h-29A2.5 2.5 0 0 1 7 39.5Z\"/><path fill=\"#AFDAFF\" d=\"M5.6 23.8 22.4 9.6a2.5 2.5 0 0 1 3.2 0l16.8 14.2-3.2 3.6L24 14.9 8.8 27.4Z\"/><rect x=\"20\" y=\"27\" width=\"8\" height=\"15\" rx=\"2\" fill=\"#3A81CF\"/>",
   "minecraft18": "<path d=\"M24 5 44 15v23L24 46 4 37V15Z\" fill=\"#5B9238\"/><path d=\"M4 15 24 5 44 15 24 25Z\" fill=\"#8BDD61\"/><path d=\"M4 15 24 25v21L4 37Z\" fill=\"#966139\"/><path d=\"M24 25 44 15v23L24 46Z\" fill=\"#6E492E\"/><path d=\"m7 20 5 2v6l-5-2Zm10 5 5 2v7l-5-2Zm11 1 5-2v6l-5 2Zm8-4 5-2v6l-5 2Z\" fill=\"#B87B49\"/><path d=\"m15 12 8-4 5 2-8 5Zm16 2 5 2-6 3-5-2Z\" fill=\"#B6F58E\"/>",
+  "movies": "<rect x=\"4\" y=\"11\" width=\"40\" height=\"29\" rx=\"5\" fill=\"#D9E1FF\"/><path d=\"M4 19h40\" stroke=\"#5264B7\" stroke-width=\"4\"/><path d=\"m12 11 8 8m5-8 8 8\" stroke=\"#5264B7\" stroke-width=\"3\"/><path d=\"m20 25 0 10 10-5Z\" fill=\"#5C6ACA\"/>",
   "games": "<path d=\"M13 17h22a8 8 0 0 1 7.8 6.4l2.2 11.3c.9 4.7-4.4 8-8.1 5.1l-5.4-4H16.5l-5.4 4c-3.7 2.9-9 0-8.1-5.1l2.2-11.3A8 8 0 0 1 13 17Z\" fill=\"#F7F3FF\"/><rect x=\"12\" y=\"23\" width=\"4\" height=\"13\" rx=\"2\" fill=\"#6961C9\"/><rect x=\"7.5\" y=\"27.5\" width=\"13\" height=\"4\" rx=\"2\" fill=\"#6961C9\"/><circle cx=\"32\" cy=\"26\" r=\"3\" fill=\"#56B9F3\"/><circle cx=\"38\" cy=\"32\" r=\"3\" fill=\"#B094FC\"/><path d=\"M19 18h10\" stroke=\"#D5C8FF\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>",
   "files": "<path d=\"M5 15a4 4 0 0 1 4-4h11l4.2 5H39a4 4 0 0 1 4 4v18a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z\" fill=\"#FFB92D\"/><path d=\"M5 23a4 4 0 0 1 4-4h30a4 4 0 0 1 4 4v15a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z\" fill=\"#FFE38B\"/><path d=\"M10 25h28\" stroke=\"#FFF4C2\" stroke-width=\"2\" stroke-linecap=\"round\"/>",
   "browser": "<circle cx=\"24\" cy=\"24\" r=\"18\" fill=\"#E9FAFF\"/><circle cx=\"24\" cy=\"24\" r=\"14.5\" fill=\"#80D8F8\"/><path d=\"M24 9.5c-5 4.1-7.6 9-7.6 14.5S19 34.4 24 38.5c5-4.1 7.6-9 7.6-14.5S29 13.6 24 9.5Z\" fill=\"none\" stroke=\"#087CC0\" stroke-width=\"2.4\"/><path d=\"M10 24h28M13.3 17h21.4M13.3 31h21.4\" stroke=\"#E6FAFF\" stroke-width=\"2.2\" stroke-linecap=\"round\"/>",
@@ -39,6 +40,7 @@
     "#175CC1"
   ],
   "minecraft18": ["#6BC76C","#32683D"],
+  "movies": ["#A597F5","#3B4B99"],
   "games": [
     "#9378F2",
     "#4D3CA6"
