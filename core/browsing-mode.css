@@ -40,6 +40,9 @@
 .lb-brand img{width:36px;height:36px;object-fit:contain}
 .lb-brand strong{font-size:19px;letter-spacing:-.04em;font-weight:800;white-space:nowrap}
 .lb-brand em{font-style:normal;font-size:9px;color:#87bafd;letter-spacing:.16em;display:block;margin-top:2px;font-weight:800}
+#loliteBrowseShell [hidden]{display:none!important}
+.lb-back{display:flex;align-items:center;justify-content:center;flex:0 0 37px;width:37px;height:37px;background:#1b2e46;border:1px solid #354c68;border-radius:9px;color:#b5d9fb;font-size:21px}
+.lb-back:hover{background:#284464;color:#fff}
 .lb-search-wrap{position:relative;max-width:760px;width:100%;flex:1}
 .lb-search-wrap input{width:100%;height:42px;padding:0 48px;border-radius:10px;background:#19263a;border:1px solid #35455e;color:#eaf1fb;outline:none;font-size:13px}
 .lb-search-wrap input::placeholder{color:#9eaec4}
