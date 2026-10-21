@@ -45,12 +45,12 @@ function renderCallsHtml(){
  const list=(s()?.conversations||[]).filter(c=>c.type==='group'&&members(c.id).includes(uid()));
  const fs=friends().map(id=>p(id)).filter(Boolean);
  return '<main class="lc-main"><div class="lc-calls-home">'+
- '<div class="lc-calls-hero"><div class="lc-calls-symbol">'+ico('phone',29)+'</div><div><h2>Voice calls</h2><p>Call a friend or start a group voice call. Your microphone is only used when you join or answer.</p></div></div>'+
+ '<div class="lc-calls-hero"><div class="lc-calls-symbol">'+ico('phone',29)+'</div><div><h2>Voice & screen sharing</h2><p>Call friends or groups, then share a screen, window, or tab. Screen sharing only starts when you choose it.</p></div></div>'+
  '<h3>Call friends</h3>'+(fs.length?'<div class="lc-call-grid">'+fs.map(user=>
  '<article class="lc-call-card"><div class="lc-avatar">'+esc((user.avatar||name(user.id).slice(0,2)).toUpperCase())+'</div><div class="lc-call-details"><strong>'+esc(name(user.id))+'</strong><small>@'+esc(user.username)+'</small></div><button type="button" class="lc-primary" data-lc-call="friend" data-lc-id="'+esc(user.id)+'">'+ico('phone',16)+' Call</button></article>').join('')+'</div>':'<p class="lc-muted">No friends added yet. Open Friends to send someone a request, then call them here.</p><button class="lc-secondary" data-lc-action="friends">Find friends</button>')+
  '<h3>Group calls</h3>'+(list.length?'<div class="lc-call-grid">'+list.map(c=>
  '<article class="lc-call-card"><div class="lc-call-group-icon">'+ico('users',20)+'</div><div class="lc-call-details"><strong>'+esc(c.name||'Group chat')+'</strong><small>'+members(c.id).length+' members</small></div><button type="button" class="lc-primary" data-lc-call="group" data-lc-id="'+esc(c.id)+'">'+ico('phone',16)+' Call group</button></article>').join('')+'</div>':'<p class="lc-muted">Start a group chat with your friends to call everyone together.</p><button class="lc-secondary" data-lc-action="group">Create group</button>')+
- '<div class="lc-calls-info">Calls use secure private-room signalling and WebRTC audio. You can mute or leave at any time. Everyone chooses whether to answer.</div></div></main>';
+ '<div class="lc-calls-info">Calls use private-room signalling and WebRTC audio/video. Share screen is optional and your browser will ask what to share. You can stop at any time.</div></div></main>';
 }
 function afterRender(){
  if(!s()?.user)return;
@@ -91,7 +91,7 @@ function renderDock(){
   (ringing?'Ringing '+ringing+' member'+(ringing===1?'':'s')+'…':others?'Connected with '+others+' member'+(others===1?'':'s'):'In voice room'):
   'In call with '+esc(conversationName(currentCall.conversation_id));
  el.innerHTML='<div class="lc-call-dock-title"><div class="lc-call-icon">'+ico('phone',20)+'</div><div><strong>'+esc(conversationName(currentCall.conversation_id))+'</strong><small>'+esc(status)+'</small></div></div>'+
- '<div class="lc-call-dock-actions"><button type="button" data-lc-call="openActive">Open chat</button><button type="button" data-lc-call="toggleMute">'+(extra()?.isMuted?.()?'Unmute':'Mute')+'</button><button type="button" data-lc-call="hangup" class="lc-call-end">End call</button></div>';
+ '<div class="lc-call-dock-actions"><button type="button" data-lc-call="openActive">Open chat</button><button type="button" data-lc-call="toggleMute">'+(extra()?.isMuted?.()?'Unmute':'Mute')+'</button><button type="button" data-lc-call="screen" class="'+(extra()?.hasScreen?.()?'lc-screen-active':'')+'">'+(extra()?.hasScreen?.()?'Stop sharing':'Share screen')+'</button>'+(extra()?.hasAnyScreen?.()?'<button type="button" data-lc-call="viewScreen">View screen</button>':'')+'<button type="button" data-lc-call="hangup" class="lc-call-end">End call</button></div>';
 }
 function updateCallDock(){
  renderDock();
@@ -240,6 +240,8 @@ document.addEventListener('click',async e=>{
   if(a==='hangup'){await hangup();return}
   if(a==='openActive'){if(currentCall)await openConversation(currentCall.conversation_id);return}
   if(a==='toggleMute'){extra()?.toggleMute?.();updateCallDock();return}
+  if(a==='screen'){if(extra()?.hasScreen?.())await extra()?.stopScreenShare?.();else await extra()?.startScreenShare?.();updateCallDock();return}
+  if(a==='viewScreen'){extra()?.viewScreen?.();return}
  }catch(err){say(err.message||'Call action failed')}
 });
 const boot=async()=>{
@@ -249,5 +251,5 @@ const boot=async()=>{
  db.auth.onAuthStateChange((_event,session)=>setTimeout(()=>setAuth(session?.user?.id||null),0));
 };
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-window.LoliteChatCalls={renderCallsHtml,afterRender,showCalls,callFriend,startCall,hangup,voiceStopped:()=>{if(currentCall)hangup().catch(console.error)}};
+window.LoliteChatCalls={renderCallsHtml,afterRender,showCalls,callFriend,startCall,hangup,refreshDock:updateCallDock,voiceStopped:()=>{if(currentCall)hangup().catch(console.error)}};
 })();
