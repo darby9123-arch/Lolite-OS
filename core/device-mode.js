@@ -1,26 +1,304 @@
-/* Lolite OS device experience picker and touch-first mobile shell. */
-(()=> {
- const css=`
- #loliteModeChooser{position:fixed;inset:0;z-index:100000;background:radial-gradient(ellipse at top,#0c3971,#050c1b 72%);display:grid;place-items:center;padding:20px;color:#f5f6ff;font-family:var(--lolite-font,"Plus Jakarta Sans",system-ui,sans-serif)}
- .lm-wrap{width:min(900px,100%)}.lm-brand{text-align:center;font-size:28px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:12px}.lm-brand img{width:58px;height:58px;object-fit:contain;filter:drop-shadow(0 0 14px #009dff88)}.lm-title{text-align:center;font-size:clamp(25px,4vw,40px);margin:8px 0}.lm-sub{text-align:center;color:#aeb6cf;line-height:1.5;margin:0 auto 24px;max-width:620px}.lm-options,.lm-device-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.lm-choice,.lm-device{color:#f5f6ff;background:#191e30;border:1px solid #39415f;border-radius:18px;padding:22px;text-align:left;cursor:pointer}.lm-choice{appearance:none;-webkit-appearance:none;box-shadow:none!important;background:#191e30!important}.lm-choice:focus-visible{outline:2px solid #49bfff;outline-offset:3px}.lm-choice:hover,.lm-device:hover{border-color:#49bfff;background:#183254}.lm-choice h2{margin:10px 0}.lm-choice p,.lm-device small{color:#adb6ce;line-height:1.5}.lm-art{font-size:46px}.lm-device-options{display:none}.lm-device-options.visible{display:grid}.lm-back{display:none;background:none;color:#d4d8eb;margin:0 0 12px;cursor:pointer}.lm-back.visible{display:block}
- #loliteMobileShell{position:absolute;inset:0;z-index:99999;display:flex;flex-direction:column;color:#fff;background:radial-gradient(ellipse at top left,#29214f,#0b1020 65%);font-family:var(--lolite-font,"Plus Jakarta Sans",system-ui,sans-serif);overflow:hidden}.lm-statusbar{height:38px;flex:0 0 38px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#080b19aa;font-size:13px}.lm-statusbar button{background:none;color:white;cursor:pointer}.lm-mobile-head{padding:18px 20px 10px}.lm-mobile-head h1{margin:0;font-size:28px}.lm-mobile-head p{color:#b8c0d8;margin:4px 0}.lm-mobile-search{display:flex;gap:8px;margin:8px 18px 16px;padding:12px;border:1px solid #ffffff25;border-radius:14px;background:#ffffff12}.lm-mobile-search input{width:100%;border:0;outline:0;background:transparent;color:white;font:inherit}.lm-app-scroll{flex:1;overflow:auto;padding:0 18px 20px}.lm-section-label{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:#aab4d0;margin:12px 2px}.lm-app-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px 8px}.lm-app-icon{display:flex;flex-direction:column;align-items:center;gap:7px;background:none;color:white;cursor:pointer;min-width:0;padding:0 2px}.lm-icon-tile{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;font-size:25px;background:linear-gradient(145deg,#6258bc,#253d63);border:1px solid #ffffff30}.lm-app-icon span:last-child{font-size:11px;text-align:center;overflow-wrap:anywhere}.lm-dock-wrap{padding:8px 14px}.lm-dock{display:flex;justify-content:center;gap:12px;padding:10px;border:1px solid #ffffff25;background:#111529d9;border-radius:22px}.lm-dock .lm-icon-tile{width:46px;height:46px}.lm-bottom-nav{height:26px;flex:0 0 26px;display:flex;align-items:center;justify-content:center;gap:45px;background:#080b19aa}.lm-nav-btn{background:none;color:#fff;font-size:20px;cursor:pointer}.lm-home-indicator{width:75px;height:4px;border-radius:9px;background:#fff}.lm-quick{position:absolute;z-index:100000;top:42px;right:12px;background:#171c2cf5;border:1px solid #ffffff30;border-radius:16px;padding:14px;width:min(320px,calc(100% - 24px));box-shadow:0 18px 50px #0008}.lm-quick button{padding:12px;margin:4px;border-radius:10px;background:#303651;color:white;cursor:pointer}
- .mobile-mode #wallpaper:after{opacity:.18}.mobile-mode #icons,.mobile-mode #taskbar{display:none!important}.mobile-mode #windows{position:absolute;inset:0;z-index:100001;pointer-events:none}.mobile-mode .window{pointer-events:auto;position:fixed!important;left:0!important;top:38px!important;right:0!important;bottom:26px!important;width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;resize:none!important;border-radius:0!important;z-index:100002!important;animation:none}.mobile-mode .window .titlebar{height:45px;cursor:default}.mobile-mode .window .content{height:calc(100% - 45px);overflow:auto}.mobile-mode .window .controls .min,.mobile-mode .window .controls .max{display:none}
- .tablet-mode #loliteMobileShell .lm-app-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:24px 12px}.tablet-mode #loliteMobileShell .lm-icon-tile{width:68px;height:68px}.tablet-mode #loliteMobileShell .lm-app-scroll{padding-left:35px;padding-right:35px}
- @media(max-width:520px){#loliteModeChooser{align-items:start;overflow:auto}.lm-options{grid-template-columns:1fr}.lm-choice{padding:15px}.lm-device-options{grid-template-columns:1fr}.lm-title{font-size:27px}.lm-sub{font-size:13px}.lm-app-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
- `;
- const style=document.createElement('style');style.textContent=css;document.head.appendChild(style);
- const APPS=[['home','Home','⌂'],['games','Game Store','🎮'],['minecraft18','Minecraft 1.8','▣'],['files','Files','📁'],['settings','Settings','⚙'],['appstore','App Store','▦'],['lowlight-ai','Lolite AI','✦'],['chatroom','Lolite Chat','◉'],['calculator','Calculator','＋'],['notes','Quick Notes','▤'],['paint','Lolite Paint','🎨'],['wallpaper-editor','Wallpaper Editor','▧'],['world','World Sandbox','🌎'],['browser','Ultraviolet Browser','🌐'],['scramjet','Scramjet Browser','◈']];
- let shell=null,quick=null,mode='desktop',device='phone';
- const appName=id=>APPS.find(a=>a[0]===id)?.[1]||id;
- function chooser(){if(document.getElementById('loliteModeChooser'))return;const el=document.createElement('div');el.id='loliteModeChooser';el.innerHTML='<div class="lm-wrap"><div class="lm-brand"><img src="assets/lolite-glass-logo.svg" alt="">Lolite OS</div><h2 class="lm-title">How would you like to start?</h2><p class="lm-sub">Choose your Lolite experience. Desktop, phone, or tablet — all free.</p><div class="lm-options"><button class="lm-choice" id="lmDesktop"><div class="lm-art">🖥️</div><h2>Normal Lolite</h2><p>Use the classic desktop with windows, shortcuts and taskbar.</p></button><button class="lm-choice" id="lmMobile"><div class="lm-art">📱　▰</div><h2>Mobile Lolite</h2><p>Use a touch-first home screen with a mobile app launcher.</p></button></div><button class="lm-back" id="lmBack">← Back to experiences</button><div class="lm-device-options" id="lmDevices"><button class="lm-device" id="lmPhone">📱 <strong>Phone</strong><br><small>Compact four-column launcher.</small></button><button class="lm-device" id="lmTablet">▰ <strong>Tablet</strong><br><small>Roomier six-column launcher.</small></button></div></div>';document.body.appendChild(el);
- el.querySelector('#lmDesktop').onclick=startDesktop;el.querySelector('#lmMobile').onclick=()=>{el.querySelector('.lm-options').style.display='none';el.querySelector('#lmDevices').classList.add('visible');el.querySelector('#lmBack').classList.add('visible')};el.querySelector('#lmBack').onclick=()=>{el.querySelector('.lm-options').style.display='grid';el.querySelector('#lmDevices').classList.remove('visible');el.querySelector('#lmBack').classList.remove('visible')};el.querySelector('#lmPhone').onclick=()=>startMobile('phone');el.querySelector('#lmTablet').onclick=()=>startMobile('tablet');}
- function startBase(){document.getElementById('loliteModeChooser')?.remove();document.getElementById('boot')?.remove();const d=document.getElementById('desktop');if(d){d.classList.remove('hidden');d.style.display='block'}try{window.loadPrefs?.()}catch(e){console.warn(e)}try{window.renderIcons?.()}catch(e){console.warn(e)}}
- function startDesktop(){mode='desktop';document.documentElement.classList.remove('mobile-mode','phone-mode','tablet-mode');document.getElementById('loliteMobileShell')?.remove();document.getElementById('icons')?.classList.remove('hidden');document.getElementById('taskbar')?.classList.remove('hidden');startBase();window.openApp?.('home','Home',760,600);window.dispatchEvent(new CustomEvent('lolite:modechange',{detail:{mode,device:'desktop'}}))}
- function startMobile(which){try{mode='mobile';device=which==='tablet'?'tablet':'phone';startBase();document.documentElement.classList.remove('phone-mode','tablet-mode');document.documentElement.classList.add('mobile-mode',device+'-mode');document.getElementById('icons')?.classList.add('hidden');document.getElementById('taskbar')?.classList.add('hidden');document.getElementById('loliteMobileShell')?.remove();buildShell();window.dispatchEvent(new CustomEvent('lolite:modechange',{detail:{mode,device}}))}catch(e){console.error(e);alert('Mobile Lolite could not start: '+(e?.message||e))}}
- function openApp(id){if(id==='minecraft18'){window.lolitePlayMinecraft?.();return}if(id==='home'){document.querySelectorAll('#windows .window').forEach(w=>window.closeWin?.(w.dataset.windowId));shell?.classList.remove('app-open');return}const title=appName(id);window.openApp?.(id,title,850,650);const win=document.querySelector('.window[data-window-id="'+CSS.escape(id)+'"]');if(win){win.style.zIndex='100002';const h=win.querySelector('.titlebar strong');if(h)h.textContent=title}}
- function buildShell(){shell=document.createElement('div');shell.id='loliteMobileShell';shell.innerHTML='<div class="lm-statusbar"><span id="lmTime"></span><span>◉ ▰ <button id="lmQuick">☰</button></span></div><div class="lm-mobile-head"><h1>Good day.</h1><p>Your Lolite, anywhere.</p></div><label class="lm-mobile-search">⌕ <input id="lmSearch" placeholder="Search apps…" autocomplete="off"></label><div class="lm-app-scroll"><div class="lm-section-label">Your apps</div><div class="lm-app-grid" id="lmGrid"></div></div><div class="lm-dock-wrap"><div class="lm-dock" id="lmDock"></div></div><div class="lm-bottom-nav"><button class="lm-nav-btn" id="lmBackBtn">‹</button><div class="lm-home-indicator"></div><button class="lm-nav-btn" id="lmHomeBtn">○</button></div>';const d=document.getElementById('desktop');if(!d)throw Error('Desktop container is missing');d.appendChild(shell);shell.style.display='flex';shell.style.zIndex='99999';
- const render=q=>{const grid=shell.querySelector('#lmGrid');const list=APPS.filter(a=>!q||a[1].toLowerCase().includes(q.toLowerCase()));grid.innerHTML=list.map(a=>'<button class="lm-app-icon" data-app="'+a[0]+'">'+window.LoliteIcons.tile(a[0])+'<span>'+a[1]+'</span></button>').join('');grid.querySelectorAll('[data-app]').forEach(b=>b.onclick=()=>openApp(b.dataset.app))};shell.querySelector('#lmSearch').oninput=e=>render(e.target.value.trim());shell.querySelector('#lmSearch').onkeydown=e=>{if(e.key==='Enter')shell.querySelector('#lmGrid [data-app]')?.click()};shell.querySelector('#lmHomeBtn').onclick=()=>{document.querySelectorAll('#windows .window').forEach(w=>window.closeWin?.(w.dataset.windowId));shell.style.display='flex'};shell.querySelector('#lmBackBtn').onclick=()=>{if(quick){quick.remove();quick=null}else{document.querySelectorAll('#windows .window').forEach(w=>window.closeWin?.(w.dataset.windowId));shell.style.display='flex'}};shell.querySelector('#lmQuick').onclick=()=>{if(quick){quick.remove();quick=null;return}quick=document.createElement('div');quick.className='lm-quick';quick.innerHTML='<h3>Quick settings</h3><button data-action="settings">⚙ All settings</button><button data-action="motion">◌ Toggle reduced motion</button><button data-action="home">⌂ Home</button><p>Wi-Fi and sound indicators are visual only.</p>';shell.appendChild(quick);quick.querySelectorAll('button').forEach(b=>b.onclick=()=>{const action=b.dataset.action;if(action==='settings')openApp('settings');else if(action==='motion'){const on=!document.documentElement.classList.contains('reduce');document.documentElement.classList.toggle('reduce',on);localStorage.reduce=on?'true':'false'}else{quick.remove();quick=null;shell.style.display='flex'}})};
- const dock=['home','games','files','appstore','settings'];shell.querySelector('#lmDock').innerHTML=dock.map(id=>{const a=APPS.find(x=>x[0]===id);return '<button class="lm-app-icon" data-app="'+id+'" aria-label="'+a[1]+'">'+window.LoliteIcons.tile(a[0])+'</button>'}).join('');shell.querySelectorAll('#lmDock [data-app]').forEach(b=>b.onclick=()=>openApp(b.dataset.app));render('');const tick=()=>{const e=shell?.querySelector('#lmTime');if(e)e.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};tick();setInterval(tick,15000)}
- function init(){window.LoliteDeviceMode={showChooser:chooser,startMobile,startDesktop,mode:()=>({mode,device})};window.addEventListener('lolite:splashdone',chooser,{once:true});if(!document.getElementById('lolite-splash'))setTimeout(chooser,200)}
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+/* Lolite OS startup and workspace styles.
+ * Desktop keeps existing windows and taskbar; Browsing reuses the same apps in a one-pane interface.
+ */
+(()=>{
+  'use strict';
+  const APPS=[
+    {id:'home',name:'Home',group:'main',desc:'Your Lolite starting point',glyph:'⌂'},
+    {id:'games',name:'Game Store',group:'main',desc:'Find and play HTML games',glyph:'▣'},
+    {id:'appstore',name:'App Store',group:'main',desc:'Explore Lolite apps',glyph:'▦'},
+    {id:'files',name:'Files',group:'main',desc:'Your folders and documents',glyph:'▤'},
+    {id:'chatroom',name:'Lolite Chat',group:'main',desc:'Messages, calls and conversations',glyph:'◉',optional:true},
+    {id:'academy',name:'Lolite Academy',group:'main',desc:'Guides, courses and lessons',glyph:'◇',optional:true},
+    {id:'lolite-quests',name:'Lolite Quests',group:'main',desc:'Activities, quests and rewards',glyph:'✧',optional:true},
+    {id:'life-rp',name:'Lolite Life RP',group:'main',desc:'Roleplay, jobs and minigames',glyph:'◈',optional:true},
+    {id:'minecraft18',name:'Minecraft 1.8',group:'more',desc:'Play Minecraft in Lolite',glyph:'▥'},
+    {id:'cloud-gaming',name:'Cloud Gaming',group:'more',desc:'Stream games through supported services',glyph:'☁'},
+    {id:'browser',name:'Ultraviolet Browser',group:'more',desc:'Browse the web',glyph:'◎'},
+    {id:'scramjet',name:'Scramjet Browser',group:'more',desc:'Another browser option',glyph:'◌'},
+    {id:'notes',name:'Quick Notes',group:'more',desc:'Jot down ideas',glyph:'≡',optional:true},
+    {id:'calculator',name:'Calculator',group:'more',desc:'Work with numbers',glyph:'＋',optional:true},
+    {id:'paint',name:'Lolite Paint',group:'more',desc:'Draw, colour and edit',glyph:'✎',optional:true},
+    {id:'wallpaper-editor',name:'Wallpaper Editor',group:'more',desc:'Design your wallpaper',glyph:'◧',optional:true},
+    {id:'world',name:'World Sandbox',group:'more',desc:'Build a tiny simulated world',glyph:'◈'},
+    {id:'settings',name:'Settings',group:'more',desc:'Personalise your workspace',glyph:'⚙'}
+  ];
+  const $=selector=>document.querySelector(selector);
+  let mode='chooser',shell=null,originalAnchor=null,observer=null,activeId='home';
+  let searchQuery='',moreExpanded=false,backStack=[],userSelected=false;
+  const appFor=id=>APPS.find(app=>app.id===id);
+  const escapeHTML=value=>String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  function icon(app){
+    const output=window.LoliteIcons?.tile?.(app.id);
+    return typeof output==='string'&&output?output:'<span class="lb-icon-fallback" aria-hidden="true">'+escapeHTML(app.glyph)+'</span>';
+  }
+  function dispatch(){
+    window.dispatchEvent(new CustomEvent('lolite:modechange',{detail:{mode,style:mode,device:'desktop'}}));
+  }
+  function startBase(){
+    $('#loliteModeChooser')?.remove();
+    $('#boot')?.remove();
+    const desktop=$('#desktop');
+    if(desktop){desktop.classList.remove('hidden');desktop.style.display='block';desktop.style.visibility='visible'}
+    try{window.loadPrefs?.()}catch(error){console.warn('Lolite preferences',error)}
+    try{window.renderIcons?.()}catch(error){console.warn('Lolite icons',error)}
+  }
+  function allWindows(){return Array.from(document.querySelectorAll('#windows .window'))}
+  function detachBrowser(){
+    if(observer){observer.disconnect();observer=null}
+    const windows=$('#windows');
+    if(originalAnchor?.parentNode&&windows)originalAnchor.parentNode.insertBefore(windows,originalAnchor);
+    originalAnchor?.remove();originalAnchor=null;
+    shell?.remove();shell=null;
+    document.documentElement.classList.remove('browsing-mode','mobile-mode','tablet-mode','phone-mode');
+    $('#icons')?.classList.remove('hidden');
+    $('#taskbar')?.classList.remove('hidden');
+    for(const w of allWindows())w.classList.remove('lb-current');
+  }
+  function startDesktop(){
+    if(mode==='browsing')detachBrowser();
+    mode='desktop';userSelected=true;
+    startBase();
+    document.documentElement.classList.remove('browsing-mode','mobile-mode','tablet-mode','phone-mode');
+    try{localStorage.setItem('loliteUiStyle','desktop')}catch(_){}
+    if(!allWindows().length)window.openApp?.('home','Home',760,600);
+    dispatch();
+  }
+  function chooser(){
+    if($('#loliteModeChooser'))return;
+    const el=document.createElement('div');
+    el.id='loliteModeChooser';
+    el.setAttribute('role','dialog');
+    el.setAttribute('aria-modal','true');
+    el.setAttribute('aria-label','Choose Lolite OS style');
+    el.innerHTML=[
+      '<div class="lm-wrap">',
+       '<div class="lm-brand"><img src="assets/lolite-glass-logo.svg" alt="">Lolite OS</div>',
+       '<div class="lm-kicker">Choose your experience</div>',
+       '<h1 class="lm-title">How do you want to use Lolite?</h1>',
+       '<p class="lm-sub">Two ways to use the same apps, games and tools. Pick a classic desktop or an easy-to-browse workspace.</p>',
+       '<div class="lm-options">',
+        '<button id="lmDesktop" class="lm-choice" type="button">',
+         '<div class="lm-preview lm-preview-desktop" aria-hidden="true"><div class="lm-win"></div><div class="lm-dock"><i></i><i></i><i></i><i></i><i></i></div></div>',
+         '<div class="lm-choice-body"><div class="lm-choice-head"><strong>Desktop Style</strong><span>Classic</span></div>',
+         '<p>Desktop shortcuts, draggable app windows, wallpaper and the taskbar.</p></div>',
+        '</button>',
+        '<button id="lmBrowsing" class="lm-choice" type="button">',
+         '<div class="lm-preview lm-preview-browser" aria-hidden="true"><div class="lm-bar"><i></i><i></i></div><div class="lm-columns"><div class="lm-nav"><i></i><i></i><i></i><i></i></div><div class="lm-items"><i></i><i></i><i></i></div></div></div>',
+         '<div class="lm-choice-body"><div class="lm-choice-head"><strong>Browsing Style</strong><span>New</span></div>',
+         '<p>Lolite OS, a quick search bar, a tidy app sidebar and more apps in one click.</p></div>',
+        '</button>',
+       '</div><p class="lm-foot">Your existing files, games and settings stay in Lolite.</p>',
+      '</div>'
+    ].join('');
+    document.body.appendChild(el);
+    el.querySelector('#lmDesktop').addEventListener('click',startDesktop);
+    el.querySelector('#lmBrowsing').addEventListener('click',startBrowsing);
+    el.querySelector('#lmDesktop')?.focus({preventScroll:true});
+  }
+  function createBrowseShell(){
+    const desktop=$('#desktop'),windows=$('#windows');
+    if(!desktop||!windows)throw new Error('Lolite desktop container is unavailable');
+    shell=document.createElement('div');
+    shell.id='loliteBrowseShell';
+    shell.innerHTML=[
+     '<header class="lb-header">',
+      '<button type="button" class="lb-brand" id="lbBrand" title="Lolite Home"><img src="assets/lolite-glass-logo.svg" alt=""><span><strong>Lolite OS</strong><em>BROWSING STYLE</em></span></button>',
+      '<button type="button" class="lb-back" id="lbBack" title="Go back" aria-label="Go to previous app" hidden>←</button>',
+      '<div class="lb-search-wrap">',
+       '<span class="lb-search-symbol" aria-hidden="true">⌕</span>',
+       '<input type="search" id="lbSearch" autocomplete="off" spellcheck="false" aria-label="Search apps" placeholder="Search apps, games, tools…">',
+       '<button class="lb-search-clear" id="lbClear" aria-label="Clear search" title="Clear search" type="button" hidden>×</button>',
+      '</div>',
+      '<button type="button" class="lb-style-switch" id="lbSwitch" title="Switch between Desktop and Browsing Style">Change style</button>',
+     '</header>',
+     '<div class="lb-body"><aside class="lb-sidebar" aria-label="Lolite apps">',
+      '<div class="lb-sidebar-scroll">',
+       '<div class="lb-section-label">Apps</div><nav id="lbMainNav" aria-label="Main apps"></nav>',
+       '<button id="lbMore" class="lb-more" type="button" aria-expanded="false" aria-controls="lbMoreList"><span class="lb-more-text">More Apps</span><span class="lb-more-arrow" aria-hidden="true">⌄</span></button>',
+       '<nav id="lbMoreList" class="lb-more-list" aria-label="More apps" hidden></nav>',
+      '</div>',
+      '<div class="lb-sidebar-foot">LOLITE OS<br>All your apps. One place.</div>',
+     '</aside>',
+     '<main class="lb-main" id="lbMain"><div id="lbStage" class="lb-stage">',
+       '<div id="lbWelcome" class="lb-welcome"></div>',
+     '</div></main></div>'
+    ].join('');
+    desktop.appendChild(shell);
+    originalAnchor=document.createComment('Lolite desktop window restoration anchor');
+    windows.parentNode.insertBefore(originalAnchor,windows);
+    shell.querySelector('#lbStage').appendChild(windows);
+    shell.querySelector('#lbBrand').addEventListener('click',()=>navigate('home'));
+    shell.querySelector('#lbSwitch').addEventListener('click',chooser);
+    shell.querySelector('#lbBack').addEventListener('click',goBack);
+    shell.querySelector('#lbMore').addEventListener('click',()=>{moreExpanded=!moreExpanded;renderNav()});
+    shell.querySelector('#lbClear').addEventListener('click',()=>{const input=shell.querySelector('#lbSearch');input.value='';setQuery('');input.focus()});
+    const input=shell.querySelector('#lbSearch');
+    input.addEventListener('input',()=>setQuery(input.value));
+    input.addEventListener('keydown',event=>{
+      if(event.key==='Escape'){input.value='';setQuery('');input.blur()}
+      if(event.key==='Enter'&&searchQuery){const matches=filteredApps();if(matches.length){event.preventDefault();navigate(matches[0].id)}}
+    });
+    shell.addEventListener('click',event=>{
+      const button=event.target.closest('[data-lb-open]');
+      if(button){event.preventDefault();navigate(button.dataset.lbOpen)}
+    });
+    observer=new MutationObserver(mutations=>{
+      if(mode!=='browsing')return;
+      const newWindows=[];
+      for(const mutation of mutations){
+        for(const node of mutation.addedNodes){
+          if(node.nodeType===1&&node.matches?.('.window'))newWindows.push(node);
+        }
+      }
+      if(newWindows.length)activate(newWindows[newWindows.length-1].dataset.windowId||activeId);
+    });
+    observer.observe(windows,{childList:true});
+    renderNav();renderWelcome();
+  }
+  function filteredApps(){
+    const q=searchQuery.trim().toLowerCase();
+    if(!q)return APPS;
+    return APPS.filter(app=>(app.name+' '+app.desc+' '+app.id).toLowerCase().includes(q));
+  }
+  function navigationMarkup(apps){
+    return apps.map(app=>'<button type="button" class="lb-nav-item'+(activeId===app.id&&!searchQuery?' active':'')+'" data-lb-open="'+app.id+'" title="'+escapeHTML(app.name)+'">'+icon(app)+'<span class="lb-nav-text">'+escapeHTML(app.name)+'</span></button>').join('');
+  }
+  function renderNav(){
+    if(!shell)return;
+    const matches=filteredApps();
+    const main=matches.filter(app=>app.group==='main');
+    const other=matches.filter(app=>app.group==='more');
+    shell.querySelector('#lbMainNav').innerHTML=navigationMarkup(main);
+    const more=shell.querySelector('#lbMore');
+    const expanded=moreExpanded||!!searchQuery;
+    more.setAttribute('aria-expanded',String(expanded));
+    const list=shell.querySelector('#lbMoreList');
+    list.hidden=!expanded;
+    list.innerHTML=navigationMarkup(other);
+    if(!main.length&&!other.length)shell.querySelector('#lbMainNav').innerHTML='<div class="lb-section-label">No matching apps</div>';
+    more.hidden=!!searchQuery&&!other.length;
+    const back=shell.querySelector('#lbBack');
+    back.hidden=backStack.length===0;
+  }
+  function tile(app){
+    return '<button type="button" class="lb-tile" data-lb-open="'+app.id+'"><span class="lb-tile-symbol">'+icon(app)+'</span><strong>'+escapeHTML(app.name)+'</strong><small>'+escapeHTML(app.desc)+'</small></button>';
+  }
+  function renderWelcome(){
+    if(!shell)return;
+    const welcome=shell.querySelector('#lbWelcome');
+    if(searchQuery){
+      const matches=filteredApps();
+      welcome.innerHTML='<div class="lb-welcome-inner"><div class="lb-section-header"><h2>Search results</h2><span>'+matches.length+' matching apps</span></div>'+(matches.length?'<div class="lb-card-grid">'+matches.map(tile).join('')+'</div>':'<div class="lb-empty">No apps found. Try a different search.</div>')+'</div>';
+    }else{
+      const essentials=APPS.filter(app=>app.group==='main'&&app.id!=='home');
+      const more=APPS.filter(app=>app.group==='more').slice(0,8);
+      welcome.innerHTML=[
+       '<div class="lb-welcome-inner">',
+        '<section class="lb-welcome-hero"><span class="lb-kicker">Your space, made simpler</span>',
+         '<h1>Welcome to<br>Lolite OS.</h1>',
+         '<p>Your games, apps, files and creative tools are all here. Pick an app from the sidebar or use the search bar to find it instantly.</p>',
+         '<button type="button" class="lb-primary" data-lb-open="games">Explore Game Store →</button>',
+        '</section>',
+        '<div class="lb-section-header"><h2>Your apps</h2><span>One click to open</span></div>',
+        '<div class="lb-card-grid">'+essentials.map(tile).join('')+'</div>',
+        '<div class="lb-section-header" style="margin-top:32px"><h2>More to explore</h2><span>Tools, games and extras</span></div>',
+        '<div class="lb-card-grid">'+more.map(tile).join('')+'</div>',
+        '<p class="lb-footer-message">Switch to Desktop Style anytime using Change style above.</p>',
+       '</div>'
+      ].join('');
+    }
+  }
+  function showStage(){
+    if(!shell)return;
+    const showingHome=activeId==='home'||!!searchQuery;
+    shell.querySelector('#lbWelcome').hidden=!showingHome;
+    const windows=shell.querySelector('#windows');
+    if(windows)windows.style.display=showingHome?'none':'block';
+    for(const win of allWindows()){
+      const current=win.dataset.windowId===activeId;
+      win.classList.toggle('lb-current',current);
+      if(current&&win.style.display==='none')win.style.display='';
+    }
+  }
+  function activate(id){
+    if(mode!=='browsing')return;
+    const next=id||'home';
+    if(next!==activeId){
+      if(activeId)backStack.push(activeId);
+      if(backStack.length>30)backStack.shift();
+    }
+    activeId=next;
+    showStage();renderNav();
+  }
+  function goBack(){
+    if(!backStack.length){navigate('home');return}
+    const last=backStack.pop();
+    activeId=last;
+    if(activeId!=='home'&&!allWindows().some(w=>w.dataset.windowId===activeId)){activeId='home'}
+    showStage();renderNav();
+  }
+  function setQuery(q){
+    searchQuery=String(q||'').trim();
+    const clear=shell?.querySelector('#lbClear');if(clear)clear.hidden=!searchQuery;
+    renderNav();renderWelcome();showStage();
+  }
+  function navigate(id){
+    const app=appFor(id);
+    if(!app)return;
+    if(searchQuery){searchQuery='';const input=shell.querySelector('#lbSearch');input.value='';renderWelcome()}
+    if(id==='home'){activate('home');return}
+    const existing=allWindows().find(w=>w.dataset.windowId===id);
+    if(existing){window.restoreWin?.(id);activate(id);return}
+    if(id==='minecraft18'){
+      if(typeof window.lolitePlayMinecraft==='function')window.lolitePlayMinecraft();
+      else window.openApp?.('minecraft18',app.name,960,680);
+    }else if(app.optional&&typeof window.loliteOpenApp==='function'){
+      window.loliteOpenApp(id);
+    }else{
+      window.openApp?.(id,app.name,1100,740);
+    }
+    const created=allWindows().find(w=>w.dataset.windowId===id);
+    if(created)activate(id);
+    renderNav();
+  }
+  function startBrowsing(){
+    if(mode==='browsing'){chooser()?.remove?.();$('#loliteModeChooser')?.remove();return}
+    startBase();
+    if(mode==='desktop'&&shell)detachBrowser();
+    mode='browsing';userSelected=true;
+    document.documentElement.classList.remove('mobile-mode','phone-mode','tablet-mode');
+    document.documentElement.classList.add('browsing-mode');
+    $('#icons')?.classList.add('hidden');
+    $('#taskbar')?.classList.add('hidden');
+    try{
+      createBrowseShell();
+      activeId='home';backStack=[];searchQuery='';moreExpanded=false;
+      renderNav();renderWelcome();showStage();
+      try{localStorage.setItem('loliteUiStyle','browsing')}catch(_){}
+      dispatch();
+    }catch(error){
+      console.error('Lolite Browsing Style could not start',error);
+      mode='desktop';detachBrowser();startBase();
+      window.openApp?.('home','Home',760,600);
+      window.alert('Browsing Style could not load. Desktop Style has been restored.');
+    }
+  }
+  function init(){
+    window.LoliteDeviceMode={
+      showChooser:chooser,
+      startDesktop,
+      startBrowsing,
+      mode:()=>({mode,device:'desktop',style:mode}),
+      openApp:navigate
+    };
+    window.LoliteUIStyle=window.LoliteDeviceMode;
+    window.addEventListener('lolite:splashdone',chooser,{once:true});
+    if(!$('#lolite-splash'))setTimeout(chooser,200);
+    setTimeout(()=>{if(!userSelected&&!$('#loliteModeChooser'))chooser()},4600);
+    // If a legacy Mobile Style choice was saved, it is retired; retain all other settings.
+    try{const old=localStorage.getItem('loliteUiStyle');if(old==='mobile'||old==='phone'||old==='tablet')localStorage.removeItem('loliteUiStyle')}catch(_){}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
+  else init();
 })();
