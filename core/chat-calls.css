@@ -38,3 +38,14 @@
 .lc-call-dock-actions button:hover{filter:brightness(1.22)}
 @media(max-width:620px){.lc-calls-home{padding:14px}.lc-calls-hero{padding:16px;gap:12px}.lc-calls-symbol{width:49px;height:49px;min-width:49px}.lc-calls-hero h2{font-size:18px}.lc-calls-hero p{font-size:11px}.lc-call-header{min-width:68px;padding:7px!important;font-size:10px}.lc-incoming-wrapper{padding:6px}.lc-call-dock{right:8px;bottom:58px;gap:9px}.lc-call-dock-actions{width:100%;justify-content:stretch}.lc-call-dock-actions button{flex:1}}
 @media(prefers-reduced-motion:reduce){.lc-incoming-ring{animation:none}}
+
+/* WebRTC screen share: visible local/remote preview with explicit stop control. */
+.lc-screen-viewer{position:fixed;z-index:2147483502;top:clamp(12px,4vh,44px);right:clamp(10px,3vw,36px);width:min(700px,calc(100vw - 20px));max-height:min(76vh,760px);display:flex;flex-direction:column;overflow:hidden;border:1px solid #4f6d92;border-radius:15px;background:#101923;color:#edf6ff;box-shadow:0 22px 85px #000c;font:12px "Plus Jakarta Sans","Segoe UI",sans-serif}
+.lc-screen-viewer header{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:11px 12px;background:#203348;border-bottom:1px solid #36506d}
+.lc-screen-viewer header strong{flex:1;min-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.lc-screen-viewer header button,.lc-screen-viewer header select{border:1px solid #5b718d;border-radius:7px;padding:7px 10px;background:#304760;color:#fff;font:inherit;cursor:pointer}
+.lc-screen-viewer header .lc-screen-stop,.lc-call-dock-actions .lc-screen-active{background:#b84457;color:#fff;border-color:#cb5d70}
+.lc-screen-viewer video{display:block;width:100%;max-height:calc(76vh - 52px);min-height:150px;object-fit:contain;background:#070b12}
+.lc-call-dock-actions{flex-wrap:wrap;justify-content:flex-end}
+.lc-call-dock-actions button{white-space:nowrap}
+@media(max-width:620px){.lc-screen-viewer{top:8px;right:8px;width:calc(100vw - 16px);max-height:66vh}.lc-screen-viewer video{max-height:calc(66vh - 55px)}.lc-call-dock-actions{justify-content:stretch}.lc-call-dock-actions button{flex:1 1 auto}}
