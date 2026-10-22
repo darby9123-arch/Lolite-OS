@@ -99,7 +99,13 @@
         window.LoliteDesktopThemes.open({onSelect:startDesktop,onBack:chooser});
       }else startDesktop();
     });
-    el.querySelector('#lmBrowsing').addEventListener('click',startBrowsing);
+    el.querySelector('#lmBrowsing').addEventListener('click',()=>{
+      // Two-step Browser startup: choose the workspace, then its visual theme.
+      $('#loliteModeChooser')?.remove();
+      if(window.LoliteBrowserThemes?.open){
+        window.LoliteBrowserThemes.open({onSelect:startBrowsing,onBack:chooser});
+      }else startBrowsing();
+    });
     el.querySelector('#lmDesktop')?.focus({preventScroll:true});
   }
   function createBrowseShell(){
@@ -212,6 +218,7 @@
     more.hidden=!!searchQuery&&!other.length;
     const back=shell.querySelector('#lbBack');
     back.hidden=backStack.length===0;
+    window.dispatchEvent(new CustomEvent('lolite:browsingnavigate',{detail:{appId:activeId}}));
   }
   function tile(app){
     return '<button type="button" class="lb-tile" data-lb-open="'+app.id+'"><span class="lb-tile-symbol">'+icon(app)+'</span><strong>'+escapeHTML(app.name)+'</strong><small>'+escapeHTML(app.desc)+'</small></button>';
