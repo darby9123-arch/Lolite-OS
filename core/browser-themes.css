@@ -1,0 +1,368 @@
+/* Browser Lolite five-theme visual system.
+   All workspace rules are scoped to html.browsing-mode; the actual app windows,
+   accounts, files, game frames, and Desktop Lolite are not reimplemented here. */
+
+/* Theme selection overlay */
+#loliteBrowserThemePicker{position:fixed;inset:0;z-index:2147483506;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:26px 18px;background:radial-gradient(ellipse at 50% -20%,#22426d 0,#0d192d 44%,#050b15 100%);color:#f3f7ff;font-family:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif}
+#loliteBrowserThemePicker *{box-sizing:border-box}
+#loliteBrowserThemePicker .lbt-container{width:min(1120px,100%);margin:auto}
+#loliteBrowserThemePicker .lbt-heading-row{display:flex;align-items:center;justify-content:space-between;gap:20px}
+#loliteBrowserThemePicker .lbt-identity{display:flex;align-items:center;gap:12px;font-size:15px;font-weight:800;letter-spacing:-.015em}
+#loliteBrowserThemePicker .lbt-identity img{width:40px;height:40px;object-fit:contain}
+#loliteBrowserThemePicker .lbt-identity small{font-size:10px;letter-spacing:.08em;color:#99b8da}
+#loliteBrowserThemePicker .lbt-back{color:#d4e6ff;background:#ffffff0b;border:1px solid #7798be55;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:650;cursor:pointer}
+#loliteBrowserThemePicker .lbt-back:hover{background:#ffffff1a}
+#loliteBrowserThemePicker .lbt-overline{margin:25px 0 8px;color:#7eb5fd;font-size:10px;font-weight:800;letter-spacing:.18em}
+#loliteBrowserThemePicker h1{font-size:clamp(29px,4.5vw,43px);font-weight:800;letter-spacing:-.05em;line-height:1.12;margin:0 0 9px}
+#loliteBrowserThemePicker .lbt-subtitle{font-size:13px;line-height:1.65;color:#abbed6;margin:0 0 24px}
+#loliteBrowserThemePicker .lbt-theme-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+#loliteBrowserThemePicker .lbt-choice{position:relative;display:flex;flex-direction:column;text-align:left;padding:10px 10px 15px;border:2px solid #33465e;background:#111d2f;border-radius:17px;min-width:0;cursor:pointer;transition:transform .16s,border-color .16s,box-shadow .16s,background .16s}
+#loliteBrowserThemePicker .lbt-choice:hover{transform:translateY(-3px);border-color:#739fc7;box-shadow:0 12px 26px #0004}
+#loliteBrowserThemePicker .lbt-choice.is-selected{border-color:#81c8ff;background:#182d45;box-shadow:0 0 0 2px #72bcff1f}
+#loliteBrowserThemePicker .lbt-choice:focus-within{outline:3px solid #92d3ff;outline-offset:3px}
+#loliteBrowserThemePicker .lbt-choice>input{position:absolute;width:1px;height:1px;opacity:0;top:14px;left:14px}
+#loliteBrowserThemePicker .lbt-choice-row{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:15px;margin:13px 5px 0}
+#loliteBrowserThemePicker .lbt-choice-row strong{font-weight:780}
+#loliteBrowserThemePicker .lbt-picked{display:grid;place-items:center;flex:0 0 21px;width:21px;height:21px;color:#051a32;background:#7dcfff;border-radius:50%;font-size:12px;opacity:0}
+#loliteBrowserThemePicker .is-selected .lbt-picked{opacity:1}
+#loliteBrowserThemePicker .lbt-choice-tag{color:#98ccff;font-size:10px;text-transform:uppercase;letter-spacing:.09em;font-weight:800;margin:7px 5px}
+#loliteBrowserThemePicker .lbt-choice-desc{font-size:12px;line-height:1.5;color:#b2c3d8;margin:0 5px;min-height:36px}
+#loliteBrowserThemePicker .lbt-actions{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-top:22px}
+#loliteBrowserThemePicker .lbt-actions p{font-size:12px;line-height:1.65;color:#91a6c1;max-width:630px;margin:0}
+#loliteBrowserThemePicker .lbt-launch{flex:0 0 auto;background:linear-gradient(125deg,#246feb,#49b4fb);border:0;border-radius:11px;padding:13px 19px;color:#fff;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 9px 25px #103f9266}
+#loliteBrowserThemePicker .lbt-launch:hover{filter:brightness(1.12)}
+#loliteBrowserThemePicker :is(.lbt-launch,.lbt-back):focus-visible{outline:3px solid #a3ddff;outline-offset:3px}
+/* Pure-CSS, small previews. No external images or fake controls. */
+#loliteBrowserThemePicker .lbt-preview{position:relative;display:block;height:146px;overflow:hidden;border:1px solid #ffffff30;border-radius:11px;background:linear-gradient(135deg,#242b45,#0e1727)}
+#loliteBrowserThemePicker .lbt-preview span{position:absolute;display:block}
+#loliteBrowserThemePicker .lbt-preview i,#loliteBrowserThemePicker .lbt-preview b{display:block}
+#loliteBrowserThemePicker .lbt-preview-top{top:0;left:0;right:0;height:22px;background:#333b56;display:flex!important;gap:6px;align-items:center;padding:0 9px}
+#loliteBrowserThemePicker .lbt-preview-top i{width:26px;height:9px;border-radius:8px;background:#70809b}
+#loliteBrowserThemePicker .lbt-preview-top i:nth-child(2){width:37px;background:#556687}
+#loliteBrowserThemePicker .lbt-preview-side{top:22px;left:0;bottom:0;width:27%;background:#222b43;padding:12px 7px}
+#loliteBrowserThemePicker .lbt-preview-side i{height:8px;border-radius:4px;background:#536382;margin-bottom:12px}
+#loliteBrowserThemePicker .lbt-preview-side i:nth-child(1){background:#7a9cea}
+#loliteBrowserThemePicker .lbt-preview-page{left:27%;right:0;top:22px;bottom:0;padding:19px 13px;background:linear-gradient(135deg,#283f68,#14243c)}
+#loliteBrowserThemePicker .lbt-preview-page b{width:74%;height:25px;border-radius:6px;background:#8cbbf788;margin-bottom:14px}
+#loliteBrowserThemePicker .lbt-preview-page i{display:inline-block;width:26%;height:35px;margin-right:6px;border-radius:5px;background:#507da98a}
+#loliteBrowserThemePicker .lbt-preview-tabs{left:28%;right:6%;bottom:8px;height:17px;display:flex!important;gap:6px}
+#loliteBrowserThemePicker .lbt-preview-tabs i{width:30%;border-radius:4px;background:#8ba9d55c}
+#loliteBrowserThemePicker .lbt-preview-firefox{background:#e9e8fa}
+#loliteBrowserThemePicker .lbt-preview-firefox .lbt-preview-top{background:#e3dff2}
+#loliteBrowserThemePicker .lbt-preview-firefox .lbt-preview-top i{background:#b99bdc}
+#loliteBrowserThemePicker .lbt-preview-firefox .lbt-preview-side{background:#f7f5fc}
+#loliteBrowserThemePicker .lbt-preview-firefox .lbt-preview-side i{background:#c2b7d5}
+#loliteBrowserThemePicker .lbt-preview-firefox .lbt-preview-page{background:#fff}
+#loliteBrowserThemePicker .lbt-preview-firefox .lbt-preview-page b{background:linear-gradient(90deg,#ed833d,#9255d2)}
+#loliteBrowserThemePicker .lbt-preview-firefox .lbt-preview-page i{background:#ede7f7}
+#loliteBrowserThemePicker .lbt-preview-opera{background:#110d14}
+#loliteBrowserThemePicker .lbt-preview-opera .lbt-preview-top{background:#20111c;border-bottom:2px solid #ee3566}
+#loliteBrowserThemePicker .lbt-preview-opera .lbt-preview-top i{background:#a92b53}
+#loliteBrowserThemePicker .lbt-preview-opera .lbt-preview-side{width:17%;background:#141219;border-right:2px solid #e32a5e}
+#loliteBrowserThemePicker .lbt-preview-opera .lbt-preview-side i{background:#9d2449}
+#loliteBrowserThemePicker .lbt-preview-opera .lbt-preview-page{left:17%;background:radial-gradient(circle at 80% 10%,#6c153e,#18111c 75%)}
+#loliteBrowserThemePicker .lbt-preview-opera .lbt-preview-page b{background:#ed285c77}
+#loliteBrowserThemePicker .lbt-preview-opera .lbt-preview-page i{background:#542235}
+#loliteBrowserThemePicker .lbt-preview-arc{background:#392c58}
+#loliteBrowserThemePicker .lbt-preview-arc .lbt-preview-top{left:30%;top:9px;right:8px;border-radius:7px;background:#eee4f0;height:17px}
+#loliteBrowserThemePicker .lbt-preview-arc .lbt-preview-top i{height:6px;background:#bba8c5}
+#loliteBrowserThemePicker .lbt-preview-arc .lbt-preview-side{top:0;width:28%;background:#68577c}
+#loliteBrowserThemePicker .lbt-preview-arc .lbt-preview-side i{background:#ad9cc8}
+#loliteBrowserThemePicker .lbt-preview-arc .lbt-preview-page{top:31px;left:30%;right:8px;bottom:8px;background:#eee7f0;border-radius:8px}
+#loliteBrowserThemePicker .lbt-preview-arc .lbt-preview-page b{background:#c5acdf}
+#loliteBrowserThemePicker .lbt-preview-arc .lbt-preview-page i{background:#d4c6da}
+#loliteBrowserThemePicker .lbt-preview-zen{background:#151923}
+#loliteBrowserThemePicker .lbt-preview-zen .lbt-preview-top{left:18%;right:7%;top:8px;border-radius:8px;background:#292e3a}
+#loliteBrowserThemePicker .lbt-preview-zen .lbt-preview-top i{background:#708090}
+#loliteBrowserThemePicker .lbt-preview-zen .lbt-preview-side{width:15%;top:0;background:#1b202c}
+#loliteBrowserThemePicker .lbt-preview-zen .lbt-preview-side i{width:10px;height:10px;margin:12px auto;border-radius:5px;background:#749bb2}
+#loliteBrowserThemePicker .lbt-preview-zen .lbt-preview-page{top:37px;left:18%;right:7%;bottom:7px;background:#222a38;border-radius:7px}
+#loliteBrowserThemePicker .lbt-preview-zen .lbt-preview-page b{background:#657e96}
+#loliteBrowserThemePicker .lbt-preview-zen .lbt-preview-page i{background:#384c65}
+#loliteBrowserThemePicker .lbt-preview-brave{background:radial-gradient(circle at 74% 25%,#ffae66,#b44372 45%,#352466 85%)}
+#loliteBrowserThemePicker .lbt-preview-brave .lbt-preview-top{background:#32224bca}
+#loliteBrowserThemePicker .lbt-preview-brave .lbt-preview-top i{background:#d8919b}
+#loliteBrowserThemePicker .lbt-preview-brave .lbt-preview-side{width:17%;background:#281d43ab}
+#loliteBrowserThemePicker .lbt-preview-brave .lbt-preview-side i{background:#bd7faf}
+#loliteBrowserThemePicker .lbt-preview-brave .lbt-preview-page{left:17%;background:transparent}
+#loliteBrowserThemePicker .lbt-preview-brave .lbt-preview-page b{background:#ffffffb0;width:76%;border-radius:19px}
+#loliteBrowserThemePicker .lbt-preview-brave .lbt-preview-page i{background:#ffffff4a}
+@media(max-width:940px){#loliteBrowserThemePicker .lbt-theme-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:580px){#loliteBrowserThemePicker{align-items:flex-start;padding:16px 12px}#loliteBrowserThemePicker .lbt-theme-grid{grid-template-columns:1fr}#loliteBrowserThemePicker .lbt-preview{height:118px}#loliteBrowserThemePicker .lbt-choice-desc{min-height:0}#loliteBrowserThemePicker .lbt-actions{align-items:stretch}#loliteBrowserThemePicker .lbt-launch{width:100%}#loliteBrowserThemePicker .lbt-identity small{display:none}}
+
+/* Existing Browser Lolite shell controls and functioning quick-app tabs */
+html.browsing-mode[data-browser-theme] #loliteBrowseShell{
+  --bt-surface:#131e30;--bt-frame:#111a28;--bt-main:#0d1524;
+  --bt-text:#eaf2ff;--bt-muted:#98abc3;--bt-outline:#324660;
+  --bt-accent:#73b4ff;--bt-hover:#253c56;--bt-active:#274b73;
+  --bt-card:#192b40;
+  color:var(--bt-text)!important;background:var(--bt-frame)!important;
+}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-header{background:var(--bt-surface);border-bottom:1px solid var(--bt-outline)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-brand{color:var(--bt-text)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-brand em{color:var(--bt-accent)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-back,
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-style-switch,
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-theme-switch{color:var(--bt-text);border:1px solid var(--bt-outline);background:var(--bt-hover);border-radius:10px}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-theme-switch{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  height:38px;flex:0 0 auto;padding:0 13px;font-weight:690;font-size:12px;white-space:nowrap;cursor:pointer
+}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-theme-switch-symbol{font-size:18px;line-height:1}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell :is(.lb-back,.lb-style-switch,.lb-theme-switch):hover{background:var(--bt-active)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-search-wrap input{color:var(--bt-text);background:var(--bt-frame);border:1px solid var(--bt-outline)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-search-wrap input::placeholder{color:var(--bt-muted)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-search-wrap input:focus{border-color:var(--bt-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--bt-accent) 22%,transparent)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-search-symbol{color:var(--bt-muted)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-sidebar{background:var(--bt-surface);border-color:var(--bt-outline)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-section-label,
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-sidebar-foot{color:var(--bt-muted)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-sidebar-foot{border-color:var(--bt-outline)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-nav-item{color:var(--bt-muted)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-nav-item:hover{color:var(--bt-text);background:var(--bt-hover)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-nav-item.active{color:var(--bt-text);background:var(--bt-active);border-color:var(--bt-outline)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-more{color:var(--bt-text);border-color:var(--bt-outline);background:var(--bt-hover)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-more:hover{background:var(--bt-active)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-main{background:var(--bt-main)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-tile{color:var(--bt-text);background:var(--bt-card);border:1px solid var(--bt-outline)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-tile:hover{background:var(--bt-hover);border-color:var(--bt-accent)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-tile small,
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-section-header span,
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-footer-message,
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-empty{color:var(--bt-muted)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-kicker{color:var(--bt-accent)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-primary{background:var(--bt-accent);color:#0b1422}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-primary:hover{filter:brightness(1.13)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-theme-tabs{display:none;flex:0 0 auto;gap:5px;align-items:end;height:41px;min-height:41px;padding:5px 19px 0;border-bottom:1px solid var(--bt-outline);background:var(--bt-surface);overflow-x:auto;scrollbar-width:none}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-theme-tabs::-webkit-scrollbar{display:none}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lbt-shortcut{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:7px 16px;min-width:88px;white-space:nowrap;border:1px solid transparent;border-radius:9px 9px 0 0;background:transparent;color:var(--bt-muted);font-size:12px;cursor:pointer}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lbt-shortcut:hover{background:var(--bt-hover);color:var(--bt-text)}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lbt-shortcut.active{background:var(--bt-active);color:var(--bt-text);border-color:var(--bt-outline);border-bottom-color:transparent}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell :is(.lbt-shortcut,.lb-theme-switch):focus-visible{outline:2px solid var(--bt-accent);outline-offset:2px}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-welcome-hero{isolation:isolate}
+html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-welcome-hero::after{z-index:-1}
+
+/* 2 — Firefox Flow. Familiar light chrome, lavender tabs, clean browsing dashboard. */
+html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell{
+ --bt-surface:#f7f6fc;--bt-frame:#efeff6;--bt-main:#fdfdff;--bt-text:#232235;
+ --bt-muted:#6d687b;--bt-outline:#d8d5e6;--bt-accent:#8e42d4;--bt-hover:#ece7f7;
+ --bt-active:#e1d5f5;--bt-card:#fff;
+}
+html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell .lb-header{height:65px;min-height:65px;background:#faf9fd}
+html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell .lb-search-wrap{max-width:720px}
+html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell .lb-search-wrap input{background:#fff;border-radius:23px;height:40px;box-shadow:0 2px 8px #39335b10}
+html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell .lb-theme-tabs{display:flex;background:#ede9f8;padding-left:24px}
+html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell .lbt-shortcut{border-radius:11px 11px 0 0}
+html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell .lbt-shortcut.active{background:#fff}
+html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell .lb-sidebar{width:217px;min-width:217px;background:#f4f2fa}
+html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell .lb-nav-item.active{border-left:3px solid #974fe5}
+html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell .lb-welcome-hero{background:radial-gradient(circle at 85% 20%,#fae7fc,transparent 58%),linear-gradient(115deg,#f3edff,#fff4eb);border-color:#e4d6ec}
+html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell .lb-welcome-hero h1{color:#272036}
+html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell .lb-welcome-hero p{color:#655b77}
+html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell .lb-card-grid .lb-tile{box-shadow:0 5px 15px #3830520b}
+html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell .lb-tile-symbol{background:#f0e9ff;border-color:#dfd1fa}
+html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell .lb-icon-fallback{background:#f0e6fc;color:#8840c7;border-color:#d8c5ec}
+
+/* 3 — Opera GX Gaming. High contrast, red neon, top quick tab strip and dark gaming dock. */
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell{
+ --bt-surface:#151218;--bt-frame:#100e13;--bt-main:#121017;--bt-text:#f6edf2;
+ --bt-muted:#ba9da9;--bt-outline:#4d2b3b;--bt-accent:#ff3d72;--bt-hover:#2c1b28;
+ --bt-active:#492038;--bt-card:#1f1722;
+}
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-header{height:67px;min-height:67px;border-bottom:1px solid #a92755}
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-brand em{letter-spacing:.21em}
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-theme-tabs{display:flex;background:#170f19;border-bottom:2px solid #8f224c}
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lbt-shortcut.active{background:#462036;border-color:#a63357;box-shadow:inset 0 2px 0 #ff4d7c}
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-sidebar{width:216px;min-width:216px;border-left:4px solid #ed2d67;border-right:1px solid #4d2b3b}
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-sidebar:before{content:"GX WORKSPACE";font-weight:900;letter-spacing:.17em;font-size:10px;color:#f94578;margin:17px 15px 0}
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-sidebar-scroll{padding-top:8px}
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-nav-item.active{border-left:3px solid #ff3d72}
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-main{background:radial-gradient(ellipse at 85% 8%,#5d163448,#151018 61%)}
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-welcome-hero{border:1px solid #81304c;background:radial-gradient(circle at 83% 34%,#851d47,transparent 55%),linear-gradient(115deg,#271522,#131017);box-shadow:0 12px 40px #0006}
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-welcome-hero h1{color:#fff}
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-welcome-hero p{color:#d7afb9}
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-welcome-hero:after{box-shadow:0 0 0 55px #fc427219,0 0 0 120px #eb3c6410;border-color:#fa4a793b}
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-tile{box-shadow:inset 0 0 0 1px #d43c6222}
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-tile-symbol{border-color:#863451;background:#502237}
+html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-primary{color:#fff;background:linear-gradient(120deg,#e72d64,#a92665)}
+
+/* 4 — Arc Workspace. The sidebar runs top-to-bottom while search floats above content. */
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell{
+ --bt-surface:#554b68;--bt-frame:#3a3150;--bt-main:#ede7f0;--bt-text:#f9f4ff;
+ --bt-muted:#dfd0e8;--bt-outline:#8c789d;--bt-accent:#d7b9ff;--bt-hover:#746487;
+ --bt-active:#877299;--bt-card:#fff;
+}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-header{
+ position:absolute;z-index:3;top:13px;left:268px;right:18px;width:auto;
+ height:58px;min-height:58px;border-radius:14px;padding:0 15px;gap:12px;
+ background:#fff9;backdrop-filter:blur(22px);border:1px solid #ffffffd1;box-shadow:0 9px 24px #46395b20
+}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-header .lb-brand{color:#352b48;min-width:162px}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-brand em{color:#80619d}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-back,
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-theme-switch,
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-style-switch{color:#403449;background:#fff9;border-color:#bdb0cd}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-search-wrap input{background:#fff;color:#352b48;border-color:#c9bcda;border-radius:11px}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-search-wrap input::placeholder{color:#756882}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-body{height:100%;min-height:0}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-sidebar{
+ width:248px;min-width:248px;margin:12px 0 12px 12px;border:1px solid #a490bd;
+ border-radius:18px;background:linear-gradient(180deg,#77668f,#4d415f)
+}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-sidebar-scroll{padding-top:24px}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-main{
+ margin:12px 12px 12px 0;border-radius:18px;border:1px solid #bcaacb;
+ background:linear-gradient(140deg,#f2ecf4,#e6dcea);padding-top:73px;box-shadow:0 8px 30px #170d2729
+}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-nav-item.active{box-shadow:inset 3px 0 #e2bdff}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-welcome-hero{
+ background:linear-gradient(118deg,#8e75b2,#c2a3c7);border-color:#af99bc
+}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-welcome-hero p{color:#fcf0ff}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-section-header{color:#3b2d4e}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-section-header span{color:#756781}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-tile{color:#342641;border-color:#dacfe3;box-shadow:0 5px 24px #37244b0e}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-tile strong{color:#342641}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-tile small{color:#786787}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-tile:hover{background:#f8f4fa}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-tile-symbol{background:#efe7f5;border-color:#d6c4e2}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-primary{background:#6f4e94;color:#fff}
+html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-footer-message{color:#796c85}
+
+/* 7 — Zen Minimal. Narrow icon rail, near-absence of visual chrome, expand on hover/focus. */
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell{
+ --bt-surface:#171b23;--bt-frame:#10141b;--bt-main:#131924;--bt-text:#e7ebf4;
+ --bt-muted:#a1aabc;--bt-outline:#2e3645;--bt-accent:#9dbbc9;--bt-hover:#252d3a;
+ --bt-active:#303f50;--bt-card:#1b2531;
+}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-header{
+ height:56px;min-height:56px;background:#141923;border-bottom:1px solid #252d3a;
+ padding:0 18px;gap:12px
+}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-brand{min-width:140px}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-brand strong{font-size:16px}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-search-wrap input{height:36px;background:#242d39;border:1px solid #384253;border-radius:11px}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar{width:75px;min-width:75px;transition:width .23s ease,min-width .23s ease;overflow:hidden}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:hover,
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:focus-within{width:234px;min-width:234px}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar-scroll{padding:16px 8px}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-section-label{font-size:0;height:10px}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-nav-item{justify-content:flex-start;min-height:44px;padding:9px 16px}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-nav-item .lb-nav-text{opacity:0;width:0;white-space:nowrap;overflow:hidden;transition:opacity .18s,width .18s}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:hover .lb-nav-text,
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:focus-within .lb-nav-text{opacity:1;width:auto}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-more{justify-content:center;min-height:41px;padding:6px}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-more:before{content:"+";font-size:19px}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-more-text,
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-more-arrow{display:none}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:hover .lb-more:before,
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:focus-within .lb-more:before{display:none}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:hover .lb-more-text,
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:focus-within .lb-more-text{display:inline}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:hover .lb-more-arrow,
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:focus-within .lb-more-arrow{display:inline}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:hover .lb-more,
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:focus-within .lb-more{justify-content:space-between;padding:10px 12px}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar-foot{display:none}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-welcome-inner{max-width:1000px}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-welcome-hero{background:linear-gradient(125deg,#1e2936,#17202a);border-color:#3d4959}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-welcome-hero h1{font-weight:650;font-size:clamp(29px,4vw,44px)}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-welcome-hero p{color:#bcc8d7}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-tile{background:#1c2734}
+html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-tile-symbol{background:#2b3e50;border-color:#43566b}
+
+/* 8 — Brave Dashboard. Atmospheric wallpaper, transparent nav, launch tiles. */
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell{
+ --bt-surface:#221a3adf;--bt-frame:#1d1737;--bt-main:#301c53;
+ --bt-text:#fff4fc;--bt-muted:#d9c1d6;--bt-outline:#ba87b350;
+ --bt-accent:#ffb483;--bt-hover:#7d4e7a72;--bt-active:#9c62855c;--bt-card:#ffffff15;
+}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-header{height:67px;min-height:67px;backdrop-filter:blur(23px);border-bottom:1px solid #f3bfdc3b}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-theme-tabs{display:flex;background:#261b40c9;backdrop-filter:blur(19px);border-color:#e8bce63b}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lbt-shortcut.active{background:#ffffff29;border-color:#ffffff39}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-search-wrap input{border-radius:25px;background:#ffffff24;border-color:#ffffff55;color:#fff}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-search-wrap input::placeholder{color:#f2d8ec}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-sidebar{width:206px;min-width:206px;background:#241b40d9;backdrop-filter:blur(17px)}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-main{
+ background:radial-gradient(circle at 79% 15%,#ffd3949f,transparent 19%),
+ radial-gradient(ellipse at 68% 46%,#d1679599,transparent 48%),
+ linear-gradient(150deg,#4e2d82 0%,#8d3975 47%,#2d2760 100%)
+}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-welcome-hero{
+ min-height:275px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+ border:1px solid #ffffff55;background:radial-gradient(ellipse at 73% 10%,#ffcf967c,transparent 40%),
+ linear-gradient(145deg,#a9558288,#42275bc9);backdrop-filter:blur(16px);box-shadow:0 18px 55px #25103155
+}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-welcome-hero:after{
+ right:-15%;bottom:-31%;width:85%;height:94%;border:0;border-radius:0;box-shadow:none;
+ background:linear-gradient(115deg,#ffffff13,#ffcd9c30);
+ clip-path:polygon(0 100%,27% 40%,43% 72%,66% 19%,100% 73%,100% 100%)
+}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-welcome-hero h1{font-weight:790;color:#fff;text-shadow:0 4px 22px #40254a}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-welcome-hero p{color:#ffeff7;text-shadow:0 2px 8px #312044}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-section-header h2{color:#fff}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-section-header span{color:#ffe1e5}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-tile{backdrop-filter:blur(19px);border-color:#ffffff3f;box-shadow:0 11px 25px #25142c25}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-tile:hover{background:#ffffff30}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-tile small{color:#ffe4ee}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-tile-symbol{background:#ffffff35;border-color:#fff5}
+html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-primary{background:#fff0df;color:#592c54;border-radius:20px}
+
+/* Responsiveness, including narrow mobile Browser Lolite. */
+@media(max-width:1120px){
+ html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-header{gap:10px;padding-left:13px;padding-right:13px}
+ html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-brand{min-width:133px}
+ html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-brand strong{font-size:15px}
+ html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-header{left:265px}
+}
+@media(max-width:870px){
+ html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-theme-switch{padding:0 9px}
+ html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-theme-switch-label{display:none}
+ html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell .lb-sidebar,
+ html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-sidebar,
+ html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-sidebar{width:180px;min-width:180px}
+ html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-sidebar{width:205px;min-width:205px}
+ html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-header{left:220px}
+}
+@media(max-width:620px){
+ html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-theme-tabs{height:37px;min-height:37px;padding:2px 6px 0}
+ html.browsing-mode[data-browser-theme] #loliteBrowseShell .lbt-shortcut{min-width:57px;padding:7px;font-size:11px;gap:4px}
+ html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-theme-switch{width:34px;min-width:34px;padding:0}
+ html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-header .lb-brand{min-width:auto}
+ html.browsing-mode[data-browser-theme="firefox"] #loliteBrowseShell .lb-sidebar,
+ html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-sidebar,
+ html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-sidebar{width:61px;min-width:61px}
+ html.browsing-mode[data-browser-theme="opera"] #loliteBrowseShell .lb-sidebar:before{display:none}
+ html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-header{
+   left:76px;right:7px;top:7px;height:48px;min-height:48px;padding:0 6px;gap:5px
+ }
+ html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-sidebar{
+   margin:6px 0 6px 6px;width:65px;min-width:65px;border-radius:12px
+ }
+ html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-main{
+   margin:6px 6px 6px 0;padding-top:57px;border-radius:12px
+ }
+ html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-back,
+ html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-theme-switch,
+ html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-style-switch{min-width:29px;width:29px;height:30px;padding:0}
+ html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-brand img{width:26px;height:26px}
+ html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar,
+ html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:hover,
+ html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:focus-within{
+   width:61px;min-width:61px
+ }
+ html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:hover .lb-nav-text,
+ html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:focus-within .lb-nav-text{opacity:0;width:0}
+ html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:hover .lb-more-text,
+ html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:focus-within .lb-more-text,
+ html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:hover .lb-more-arrow,
+ html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:focus-within .lb-more-arrow{display:none}
+ html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:hover .lb-more:before,
+ html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar:focus-within .lb-more:before{display:block}
+ html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-sidebar-scroll{padding:12px 4px}
+ html.browsing-mode[data-browser-theme="zen"] #loliteBrowseShell .lb-nav-item{padding:10px 5px;justify-content:center}
+ html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-welcome-hero{min-height:240px}
+}
+@media(prefers-reduced-motion:reduce){
+ #loliteBrowserThemePicker *,html.browsing-mode[data-browser-theme] #loliteBrowseShell :is(.lb-sidebar,.lb-nav-text,.lb-tile){transition:none!important;animation:none!important}
+}
