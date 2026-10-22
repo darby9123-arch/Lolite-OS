@@ -325,6 +325,7 @@ html.browsing-mode[data-browser-theme="brave"] #loliteBrowseShell .lb-primary{ba
  html.browsing-mode[data-browser-theme="arc"] #loliteBrowseShell .lb-header{left:220px}
 }
 @media(max-width:620px){
+ html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-brand em{display:none}
  html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-theme-tabs{height:37px;min-height:37px;padding:2px 6px 0}
  html.browsing-mode[data-browser-theme] #loliteBrowseShell .lbt-shortcut{min-width:57px;padding:7px;font-size:11px;gap:4px}
  html.browsing-mode[data-browser-theme] #loliteBrowseShell .lb-theme-switch{width:34px;min-width:34px;padding:0}
