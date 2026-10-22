@@ -1,0 +1,123 @@
+/* Desktop themes for Lolite OS — all rules scoped to Desktop Style.
+   The existing apps, windows, icons, wallpaper choice and browser workspace are shared. */
+
+/* Desktop theme picker */
+#loliteDesktopThemePicker{position:fixed;inset:0;z-index:2147483505;display:flex;align-items:center;justify-content:center;overflow:auto;padding:28px 16px;background:radial-gradient(ellipse at 50% 0%,#17365f 0%,#0a1324 52%,#050914 100%);color:#f4f7ff;font-family:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif}
+#loliteDesktopThemePicker *{box-sizing:border-box}
+#loliteDesktopThemePicker .ldt-wrap{width:min(1120px,100%);margin:auto}
+#loliteDesktopThemePicker .ldt-header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:12px}
+#loliteDesktopThemePicker .ldt-back{border:1px solid #60779d66;background:#ffffff0b;border-radius:10px;padding:10px 16px;color:#e6eeff;cursor:pointer}
+#loliteDesktopThemePicker .ldt-eyebrow{letter-spacing:.18em;text-transform:uppercase;color:#86bbff;font-size:11px;font-weight:800}
+#loliteDesktopThemePicker h1{font-size:clamp(26px,4vw,40px);line-height:1.15;margin:10px 0;letter-spacing:-.04em}
+#loliteDesktopThemePicker .ldt-intro{font-size:14px;line-height:1.55;color:#aabbd3;margin:0 0 24px}
+#loliteDesktopThemePicker .ldt-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+#loliteDesktopThemePicker .ldt-card{display:block;width:100%;text-align:left;padding:9px 9px 14px;color:inherit;border:2px solid #34435b;border-radius:17px;background:#111c2d;cursor:pointer;transition:border-color .17s,transform .17s,box-shadow .17s}
+#loliteDesktopThemePicker .ldt-card:hover{transform:translateY(-3px);border-color:#7298c9}
+#loliteDesktopThemePicker .ldt-card[aria-checked="true"]{border-color:#7fc3ff;background:#192d47;box-shadow:0 0 0 2px #7fc3ff22}
+#loliteDesktopThemePicker .ldt-name{display:block;font-weight:750;font-size:15px;margin:13px 7px 5px}
+#loliteDesktopThemePicker .ldt-desc{display:block;font-size:12px;color:#adc0d9;line-height:1.5;margin:0 7px;min-height:36px}
+#loliteDesktopThemePicker .ldt-check{float:right;color:#a8d8ff}
+#loliteDesktopThemePicker .ldt-actions{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;margin-top:22px}
+#loliteDesktopThemePicker .ldt-note{font-size:12px;color:#aabbd3;max-width:600px}
+#loliteDesktopThemePicker .ldt-launch{border:0;background:linear-gradient(120deg,#2285f9,#52baff);color:#fff;font-weight:750;font-size:14px;padding:13px 23px;border-radius:12px;cursor:pointer}
+#loliteDesktopThemePicker :is(button):focus-visible{outline:3px solid #b6dfff;outline-offset:3px}
+/* Previews are self-contained miniature desktops, not screenshots or external images. */
+#loliteDesktopThemePicker .ldt-scene{position:relative;height:148px;overflow:hidden;border:1px solid #ffffff22;border-radius:11px;background:linear-gradient(140deg,#16459c,#2f82df 48%,#141e59)}
+#loliteDesktopThemePicker .ldt-scene::before{content:"";position:absolute;width:125%;height:110%;left:-50%;top:-50%;border-radius:50%;border:26px solid #75ccff4a;transform:rotate(-27deg)}
+#loliteDesktopThemePicker .ldt-window{position:absolute;top:20px;left:18%;width:67%;height:100px;background:#e5f3ffdf;border:1px solid #cbdff4;border-radius:7px;box-shadow:0 12px 26px #0005}
+#loliteDesktopThemePicker .ldt-window:before{content:"";position:absolute;left:0;right:0;top:0;height:20px;border-radius:inherit;background:#f9fcff}
+#loliteDesktopThemePicker .ldt-window:after{content:"";position:absolute;left:13px;right:13px;top:35px;bottom:12px;background:repeating-linear-gradient(to bottom,#5499ce77 0 5px,transparent 5px 15px)}
+#loliteDesktopThemePicker .ldt-dock{position:absolute;bottom:0;left:0;right:0;height:23px;background:#f1f8ffd9;display:flex;align-items:center;justify-content:center;gap:7px}
+#loliteDesktopThemePicker .ldt-dock i{width:13px;height:13px;border-radius:3px;background:#358fe2}
+#loliteDesktopThemePicker .ldt-dock i:nth-child(even){background:#647fc0}
+#loliteDesktopThemePicker .ldt-scene.aero{background:linear-gradient(145deg,#2b9cdd,#0c4d9a 55%,#0a5b7c)}
+#loliteDesktopThemePicker .ldt-scene.aero .ldt-window{background:#dff4ffba;border:3px solid #a6e0ff9c;box-shadow:0 0 14px #bcf3ffcc,0 12px 27px #0006}
+#loliteDesktopThemePicker .ldt-scene.aero .ldt-dock{justify-content:flex-start;background:#c0e8ff7a;backdrop-filter:blur(8px);border-top:1px solid #e8f8ff8a}
+#loliteDesktopThemePicker .ldt-scene.aero .ldt-dock i:first-child{border-radius:50%;background:conic-gradient(#2eb15f,#e6b520,#2a7ceb,#e84c5b,#2eb15f)}
+#loliteDesktopThemePicker .ldt-scene.plasma{background:linear-gradient(135deg,#1b1140,#3b317a 48%,#0790a6)}
+#loliteDesktopThemePicker .ldt-scene.plasma .ldt-window{background:#1d1d35d9;border:1px solid #7e87d7}
+#loliteDesktopThemePicker .ldt-scene.plasma .ldt-window:before{background:#29294c}
+#loliteDesktopThemePicker .ldt-scene.plasma .ldt-dock{left:13%;right:13%;bottom:9px;border:1px solid #c1bfff55;background:#20233cba;border-radius:12px}
+#loliteDesktopThemePicker .ldt-scene.plasma .ldt-dock i{background:#cfaeff}
+#loliteDesktopThemePicker .ldt-scene.gnome{background:linear-gradient(140deg,#21155f,#7e448e 55%,#ff9164)}
+#loliteDesktopThemePicker .ldt-scene.gnome .ldt-window{background:#27273b;border:1px solid #5f628a}
+#loliteDesktopThemePicker .ldt-scene.gnome .ldt-window:before{background:#35344c}
+#loliteDesktopThemePicker .ldt-scene.gnome .ldt-dock{top:0;bottom:auto;background:#181826;justify-content:flex-start;height:20px}
+#loliteDesktopThemePicker .ldt-scene.gnome .ldt-dock i{width:7px;height:7px;border-radius:50%;background:#eae5fa}
+#loliteDesktopThemePicker .ldt-scene.deepin{background:linear-gradient(140deg,#14354d,#116f7c 55%,#49c0be)}
+#loliteDesktopThemePicker .ldt-scene.deepin .ldt-window{background:#effbffed;border:1px solid #ffffffb2;border-radius:12px}
+#loliteDesktopThemePicker .ldt-scene.deepin .ldt-dock{left:20%;right:20%;bottom:8px;border-radius:13px;height:28px;background:#ffffffb3;backdrop-filter:blur(12px)}
+#loliteDesktopThemePicker .ldt-scene.deepin .ldt-dock i{height:17px;width:17px;border-radius:6px;background:#1a99ad}
+@media(max-width:850px){#loliteDesktopThemePicker .ldt-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){#loliteDesktopThemePicker{align-items:flex-start;padding:18px 12px}#loliteDesktopThemePicker .ldt-grid{grid-template-columns:1fr}#loliteDesktopThemePicker .ldt-scene{height:125px}#loliteDesktopThemePicker .ldt-desc{min-height:0}#loliteDesktopThemePicker .ldt-actions{align-items:stretch}#loliteDesktopThemePicker .ldt-launch{width:100%}}
+/* Theme change affordance in desktop taskbar */
+html:not(.browsing-mode) #loliteDesktopThemeButton{min-width:auto!important;width:auto!important;padding:0 12px!important;font-size:12px;white-space:nowrap}
+html:not(.browsing-mode) #loliteDesktopThemeButton::before{content:"◈";font-size:17px;margin-right:5px}
+html.browsing-mode #loliteDesktopThemeButton{display:none!important}
+/* Common desktop theme palette; apply only to desktop and never rewrite app HTML. */
+html:not(.browsing-mode)[data-desktop-theme]{--ldt-accent:#4da8ff}
+html:not(.browsing-mode)[data-desktop-theme] #desktop{transition:background .3s}
+html:not(.browsing-mode)[data-desktop-theme] #taskbar{transition:background .25s,border-color .25s,border-radius .25s,box-shadow .25s}
+html:not(.browsing-mode)[data-desktop-theme] #taskbar #startBtn{background:transparent!important;border:0!important}
+html:not(.browsing-mode)[data-desktop-theme] #taskbar #startBtn:hover{background:#ffffff22!important}
+html:not(.browsing-mode)[data-desktop-theme] #taskbar #tasks{min-width:0}
+/* 1. Windows 11 Modern */
+html:not(.browsing-mode)[data-desktop-theme="windows11"]{--ldt-accent:#4aa8ff;--accent:#4aa8ff}
+html:not(.browsing-mode)[data-desktop-theme="windows11"] #taskbar{height:62px!important;background:#172943e8!important;border-top:1px solid #ffffff42!important;box-shadow:0 -6px 45px #0004!important;justify-content:center}
+html:not(.browsing-mode)[data-desktop-theme="windows11"] #taskbar #tasks{flex:0 1 auto;min-width:40px}
+html:not(.browsing-mode)[data-desktop-theme="windows11"] #taskbar .tray{margin-left:auto}
+html:not(.browsing-mode)[data-desktop-theme="windows11"] .window{border-radius:12px!important;border-color:#8ac5ff66!important}
+html:not(.browsing-mode)[data-desktop-theme="windows11"] .window>.titlebar{background:#17283f!important}
+html:not(.browsing-mode)[data-desktop-theme="windows11"] #start{left:50%!important;transform:translateX(-50%)!important;border-radius:18px!important;background:#192c45f5!important}
+html:not(.browsing-mode)[data-desktop-theme="windows11"] #wallpaper::after{background:linear-gradient(130deg,#256cdb24,#6ab9ff15 55%,#111c721f)!important}
+/* 3. Windows 7 Aero */
+html:not(.browsing-mode)[data-desktop-theme="aero7"]{--ldt-accent:#4ec8ff;--accent:#4ec8ff}
+html:not(.browsing-mode)[data-desktop-theme="aero7"] #taskbar{height:55px!important;background:linear-gradient(180deg,#a8e5ff75,#2f6eaeaa 60%,#0e3a70dd)!important;backdrop-filter:blur(20px) saturate(145%)!important;border:1px solid #d0f6ff66!important;border-radius:0!important;box-shadow:inset 0 1px #ffffff88,0 -8px 28px #0c2d6588!important}
+html:not(.browsing-mode)[data-desktop-theme="aero7"] #taskbar #startBtn{border-radius:50%!important;background:radial-gradient(circle at 25% 20%,#b7f8fe,#3198e3 55%,#11629c)!important;box-shadow:0 0 0 2px #ffffffa0,0 0 14px #6ee7ffaa!important}
+html:not(.browsing-mode)[data-desktop-theme="aero7"] #taskbar .task:hover{background:#dcf9ff42!important}
+html:not(.browsing-mode)[data-desktop-theme="aero7"] .window{border-radius:8px!important;border:3px solid #b6f2ff9e!important;box-shadow:0 18px 48px #001833ba,0 0 0 1px #174673aa!important}
+html:not(.browsing-mode)[data-desktop-theme="aero7"] .window>.titlebar{background:linear-gradient(#b7ecff99,#4d96cb70)!important;color:#ecfaff!important}
+html:not(.browsing-mode)[data-desktop-theme="aero7"] #start{left:12px!important;transform:none!important;background:linear-gradient(160deg,#d4f4ffe8,#29669ddf)!important;border:1px solid #caf2ff!important;border-radius:8px!important;backdrop-filter:blur(22px)!important}
+html:not(.browsing-mode)[data-desktop-theme="aero7"] #wallpaper::after{background:radial-gradient(circle at 75% 23%,#83f0fc36,transparent 52%),linear-gradient(145deg,#0088bd22,#00266a35)!important}
+/* 5. KDE Plasma */
+html:not(.browsing-mode)[data-desktop-theme="plasma"]{--ldt-accent:#bb9dff;--accent:#bb9dff}
+html:not(.browsing-mode)[data-desktop-theme="plasma"] #taskbar{left:14px!important;right:14px!important;bottom:12px!important;width:calc(100% - 28px)!important;height:62px!important;background:#171b35df!important;border:1px solid #c4aaff5b!important;border-radius:16px!important;box-shadow:0 8px 34px #0009!important;backdrop-filter:blur(24px)!important;transform:none!important}
+html:not(.browsing-mode)[data-desktop-theme="plasma"] #taskbar .task{border-radius:10px!important}
+html:not(.browsing-mode)[data-desktop-theme="plasma"] #taskbar .taskwin.active{background:#bb9dff22!important}
+html:not(.browsing-mode)[data-desktop-theme="plasma"] .window{border:1px solid #a99be27a!important;border-radius:12px!important;box-shadow:0 20px 50px #06021999,0 0 0 1px #7972e026!important}
+html:not(.browsing-mode)[data-desktop-theme="plasma"] .window>.titlebar{background:#272743!important}
+html:not(.browsing-mode)[data-desktop-theme="plasma"] #start{left:18px!important;transform:none!important;bottom:86px!important;border-radius:16px!important;background:#20253af5!important}
+html:not(.browsing-mode)[data-desktop-theme="plasma"] #wallpaper::after{background:radial-gradient(ellipse at 80% 30%,#b589ff28,transparent 58%),linear-gradient(135deg,#2d176423,#0d7c9a20)!important}
+/* 6. GNOME Minimal: the existing taskbar becomes a top bar; desktop icons remain functional. */
+html:not(.browsing-mode)[data-desktop-theme="gnome"]{--ldt-accent:#f8aa73;--accent:#f8aa73}
+html:not(.browsing-mode)[data-desktop-theme="gnome"] #taskbar{top:0!important;bottom:auto!important;left:0!important;right:0!important;width:100%!important;height:42px!important;transform:none!important;padding:3px 13px!important;background:#15141ff4!important;border-radius:0!important;border:0!important;box-shadow:0 3px 20px #0005!important}
+html:not(.browsing-mode)[data-desktop-theme="gnome"] #taskbar .task{height:34px!important;min-width:34px!important}
+html:not(.browsing-mode)[data-desktop-theme="gnome"] #taskbar .taskwin{height:34px!important}
+html:not(.browsing-mode)[data-desktop-theme="gnome"] #taskbar .tray{margin-left:auto}
+html:not(.browsing-mode)[data-desktop-theme="gnome"] #taskbar #searchBtn{height:32px!important;width:120px!important}
+html:not(.browsing-mode)[data-desktop-theme="gnome"] #icons{top:54px!important;bottom:14px!important}
+html:not(.browsing-mode)[data-desktop-theme="gnome"] .window{border-radius:11px!important;border:1px solid #616175!important}
+html:not(.browsing-mode)[data-desktop-theme="gnome"] .window>.titlebar{background:#302f3e!important;text-align:center}
+html:not(.browsing-mode)[data-desktop-theme="gnome"] #start{left:12px!important;top:51px!important;bottom:auto!important;transform:none!important;background:#282633f5!important;border-radius:14px!important}
+html:not(.browsing-mode)[data-desktop-theme="gnome"] #wallpaper::after{background:radial-gradient(circle at 65% 35%,#b57cb32a,transparent 55%),linear-gradient(130deg,#44307924,#ea896a18)!important}
+/* 8. Deepin Elegant */
+html:not(.browsing-mode)[data-desktop-theme="deepin"]{--ldt-accent:#42d2df;--accent:#42d2df}
+html:not(.browsing-mode)[data-desktop-theme="deepin"] #taskbar{left:50%!important;right:auto!important;bottom:14px!important;transform:translateX(-50%)!important;width:max-content!important;max-width:calc(100% - 24px)!important;height:68px!important;padding:8px 14px!important;background:#d8fcfff0!important;border:1px solid #ffffffea!important;border-radius:20px!important;box-shadow:0 15px 45px #0006!important;backdrop-filter:blur(22px)!important;color:#0c3445!important}
+html:not(.browsing-mode)[data-desktop-theme="deepin"] #taskbar .task{color:#124354!important;border-radius:13px!important}
+html:not(.browsing-mode)[data-desktop-theme="deepin"] #taskbar .task:hover{background:#6abecf33!important}
+html:not(.browsing-mode)[data-desktop-theme="deepin"] #taskbar #tasks{flex:0 1 auto;overflow:auto}
+html:not(.browsing-mode)[data-desktop-theme="deepin"] #taskbar .tray{color:#124354!important}
+html:not(.browsing-mode)[data-desktop-theme="deepin"] #taskbar #searchBtn{width:42px!important;padding:0!important;justify-content:center!important;color:#124354!important}
+html:not(.browsing-mode)[data-desktop-theme="deepin"] #taskbar #searchBtn span{display:none!important}
+html:not(.browsing-mode)[data-desktop-theme="deepin"] .window{border:1px solid #b8e6eab5!important;border-radius:17px!important;box-shadow:0 26px 65px #052b4399!important}
+html:not(.browsing-mode)[data-desktop-theme="deepin"] .window>.titlebar{background:#173c4e!important}
+html:not(.browsing-mode)[data-desktop-theme="deepin"] #start{left:50%!important;transform:translateX(-50%)!important;bottom:95px!important;background:#e5f8fcf5!important;border:1px solid #abe4ec!important;border-radius:20px!important;color:#193c52!important}
+html:not(.browsing-mode)[data-desktop-theme="deepin"] #wallpaper::after{background:radial-gradient(ellipse at 50% 27%,#4be6e033,transparent 60%),linear-gradient(145deg,#1c91951a,#0d2e5630)!important}
+@media(max-width:700px){
+ html:not(.browsing-mode)[data-desktop-theme] #loliteDesktopThemeButton{padding:0 6px!important;font-size:0}
+ html:not(.browsing-mode)[data-desktop-theme] #loliteDesktopThemeButton::before{font-size:17px;margin:0}
+ html:not(.browsing-mode)[data-desktop-theme="deepin"] #taskbar{width:calc(100% - 18px)!important}
+ html:not(.browsing-mode)[data-desktop-theme="windows11"] #taskbar #tasks{flex:1}
+ html:not(.browsing-mode)[data-desktop-theme="gnome"] #taskbar #searchBtn{width:36px!important}
+}
+@media(prefers-reduced-motion:reduce){#loliteDesktopThemePicker .ldt-card{transition:none!important}}
