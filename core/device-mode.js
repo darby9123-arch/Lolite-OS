@@ -92,7 +92,13 @@
       '</div>'
     ].join('');
     document.body.appendChild(el);
-    el.querySelector('#lmDesktop').addEventListener('click',startDesktop);
+    el.querySelector('#lmDesktop').addEventListener('click',()=>{
+      // Desktop is a two-step selection: style first, then the chosen visual theme.
+      $('#loliteModeChooser')?.remove();
+      if(window.LoliteDesktopThemes?.open){
+        window.LoliteDesktopThemes.open({onSelect:startDesktop,onBack:chooser});
+      }else startDesktop();
+    });
     el.querySelector('#lmBrowsing').addEventListener('click',startBrowsing);
     el.querySelector('#lmDesktop')?.focus({preventScroll:true});
   }
