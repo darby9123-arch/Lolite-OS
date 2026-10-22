@@ -65,7 +65,7 @@
     dispatch();
   }
   function chooser(){
-    if($('#loliteModeChooser'))return;
+    if($('#loliteModeChooser')||$('#loliteDesktopThemePicker')||$('#loliteBrowserThemePicker'))return;
     const el=document.createElement('div');
     el.id='loliteModeChooser';
     el.setAttribute('role','dialog');
@@ -339,7 +339,7 @@
     window.LoliteUIStyle=window.LoliteDeviceMode;
     window.addEventListener('lolite:splashdone',()=>{if(!userSelected)chooser()},{once:true});
     if(!$('#lolite-splash'))setTimeout(chooser,200);
-    setTimeout(()=>{if(!userSelected&&!$('#loliteModeChooser'))chooser()},4600);
+    setTimeout(()=>{if(!userSelected&&!$('#loliteModeChooser')&&!$('#loliteDesktopThemePicker')&&!$('#loliteBrowserThemePicker'))chooser()},4600);
     // If a legacy Mobile Style choice was saved, it is retired; retain all other settings.
     try{const old=localStorage.getItem('loliteUiStyle');if(old==='mobile'||old==='phone'||old==='tablet')localStorage.removeItem('loliteUiStyle')}catch(_){}
   }
