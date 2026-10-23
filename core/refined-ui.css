@@ -1,0 +1,221 @@
+/* Lolite OS — Refined UI / 2026-10-23
+   One visual system for existing apps and shells. Presentation only.
+   Intentionally preserves all app IDs, event handlers, storage and selected themes. */
+:root{
+ --accent:#75a9db;
+ --lolite-font:"Manrope","Segoe UI",sans-serif;
+ --lolite-display:"Sora","Manrope",sans-serif;
+ --ui-bg:#10161d;--ui-surface:#1b232d;--ui-raised:#26313e;
+ --ui-border:#ffffff18;--ui-text:#edf3f9;--ui-muted:#abb9c8;
+ --bg:var(--ui-bg);--panel:var(--ui-surface);--panel2:var(--ui-raised);
+ --line:var(--ui-border);--text:var(--ui-text);--muted:var(--ui-muted);
+ --lolite-radius:10px;--lolite-divider:#ffffff15;--lolite-hover:#ffffff0c;
+ --lolite-focus:#a6cfff;--lolite-highlight:#86b9ed;
+ color-scheme:dark;
+}
+html body{font:500 13px/1.52 var(--lolite-font)!important;letter-spacing:0;-webkit-font-smoothing:antialiased}
+html :is(button,input,select,textarea){font-family:var(--lolite-font)!important;letter-spacing:0}
+html :is(h1,h2,h3,h4){font-family:var(--lolite-display)!important;font-weight:650;letter-spacing:-.035em;line-height:1.25}
+html :is(.lm-title,.ldt-wrap h1,.lbt-container h1,.lb-welcome-hero h1,.ui-home-top h1,.ui-home-hero h2,.store-hero h1,.appstore-head h1,.la-top h1,.lu-app-header h1){font-family:var(--lolite-display)!important}
+html :is(button,a,input,textarea,select,[tabindex]):focus-visible{outline:2px solid var(--lolite-focus)!important;outline-offset:2px}
+html button:disabled{cursor:not-allowed;opacity:.55}
+html *{scrollbar-color:#4b5b6c transparent}
+html ::-webkit-scrollbar-thumb{background:#536376;border-radius:8px}
+html :is(button,[role=button]){transition:background-color .15s ease,color .15s ease,border-color .15s ease,box-shadow .15s ease}
+html .window{border-radius:11px!important;border-color:#66738366;background:#111820;box-shadow:0 18px 55px #0009,0 1px 4px #0006!important}
+html .window>.titlebar{background:#202a35!important;border-bottom:1px solid var(--lolite-divider);padding:0 7px 0 16px!important}
+html .window>.titlebar strong{font:650 12px/1.4 var(--lolite-font)!important;color:#e8f0f8}
+html .window .controls{gap:3px}
+html .window .controls button{border-radius:6px!important;width:35px;height:30px}
+html .window .controls button:hover{background:#ffffff11}
+html .window .controls button.close:hover{background:#bb4250!important}
+html .window>.content{color:#e8eff7}
+html:not(.mobile-mode):not(.browsing-mode):not([data-desktop-theme]) #taskbar{
+ background:#151c24f5!important;border-top:1px solid #ffffff1b!important;
+ box-shadow:0 -7px 22px #0004!important;backdrop-filter:blur(18px)!important;
+ -webkit-backdrop-filter:blur(18px)!important;
+}
+html #taskbar .task,html .taskwin{border-radius:8px!important}
+html #taskbar .task:hover,html .taskwin:hover{background:#ffffff10!important}
+html #taskbar #searchBtn{background:#ffffff09!important;border-color:#ffffff1b!important;color:#b3c0ce;gap:8px;font-size:0!important}
+html #taskbar #searchBtn span{font-size:12px}
+html #taskbar #searchBtn::before{content:"";width:17px;height:17px;flex:none;background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b9c9d9' stroke-width='1.9' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7.3'/%3E%3Cpath d='m16.5 16.5 5 5'/%3E%3C/svg%3E")}
+html #taskbar .taskwin.active{border-color:#ffffff14;background:#ffffff10}
+html #taskbar .taskwin.active:before{background:var(--accent);width:18px;height:3px}
+html #taskbar #settingsBtn{font-size:0!important}
+html #taskbar #settingsBtn::before{content:"";width:18px;height:18px;background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8d4e2' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3.1'/%3E%3Cpath d='m10 2 4 0 .7 2.7 1.7 1 2.7-.8 2 3.5-2 1.9v2l2 1.8-2 3.5-2.7-.8-1.7 1L14 22h-4l-.7-2.7-1.7-1-2.7.8-2-3.5 2-1.8v-2l-2-1.9 2-3.5 2.7.8 1.7-1z'/%3E%3C/svg%3E")}
+html #taskbar #fullscreenBtn{font-size:0!important}
+html #taskbar #fullscreenBtn::before{content:"";width:18px;height:18px;background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8d4e2' stroke-width='1.8' stroke-linecap='round'%3E%3Cpath d='M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5'/%3E%3C/svg%3E")}
+html #icons .desktop-icon{border-radius:10px!important}
+html #icons .desktop-icon:hover,html #icons .desktop-icon:focus-visible{background:#ffffff17;border-color:#ffffff24}
+html #icons .desktop-icon>span:last-child:not(.lolite-icon){font-family:var(--lolite-font)!important;font-weight:650!important;text-shadow:0 1px 5px #000b}
+html :is(.panel,.lolite-context){background:#1c2530f8;border:1px solid #ffffff1b;box-shadow:0 18px 55px #000a!important;border-radius:11px!important}
+html .ui-start-search{background:#121c26;border:1px solid #ffffff23;border-radius:8px;color:#b8c7d7;padding:12px 14px}
+html .ui-start-grid button{border-radius:9px;background:transparent}
+html .ui-start-grid button:hover{background:#ffffff10}
+html .ui-start-footer{background:#151d26;border-color:var(--lolite-divider)}
+html :is(.search-result,.lolite-context button){border-radius:8px}
+html :is(.search-result,.lolite-context button):hover{background:#ffffff0e}
+html .toast{background:#263341;border:1px solid #ffffff20;border-radius:9px;color:#ecf4fb;box-shadow:0 12px 36px #0008}
+/* Controls and content rhythm */
+html .content :is(.card,.widget-grid>div,.capture-cards>button){background:#1c2530;border:1px solid #ffffff15;border-radius:10px!important;box-shadow:none}
+html .content :is(.primary,.store-primary,.store-play){border-radius:7px;background:var(--accent);box-shadow:none;font-weight:750}
+html .content :is(.soft,.setting-btn){border-radius:7px;border:1px solid #ffffff20;background:#293542;font-weight:650}
+html .content :is(.soft,.setting-btn):hover{background:#364655}
+html .content :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),select,textarea){border-radius:7px;background:#131c26;border:1px solid #ffffff24}
+html .content :is(input,select,textarea):focus{border-color:#83b4e9;box-shadow:0 0 0 2px #6ca4e532}
+html .settings-extra{gap:13px}html .setting-row{align-items:center;gap:10px}
+html .window[data-window-id=settings] h2{font-size:25px;margin-bottom:20px}
+html .window[data-window-id=settings] h3{font-size:14px}
+html .ui-home-hero{background:#233447;border:1px solid #ffffff20;border-radius:10px;min-height:175px}
+html .ui-home-hero:after{display:none}
+html .ui-home-hero h2{font-size:28px}
+html .ui-home-card{border-radius:9px;background:#1c2631;border:1px solid #ffffff19;box-shadow:none}
+html .ui-home-card:hover{background:#243240;border-color:#ffffff35}
+html .ui-badge{border-radius:5px}
+html .ui-home-grid{gap:11px}
+html .ui-home-card small{line-height:1.6}
+html .lu-card{background:#1d2835;border:1px solid #ffffff1b;border-radius:9px}
+html .lu-card:hover{background:#253342;border-color:#ffffff31}
+html .lu-update-app{background:#111a24;font-family:var(--lolite-font)!important}
+html .lu-release{background:#1b2632;border-color:#ffffff1d;border-radius:9px}
+html .lu-detail{background:#1b2936;border-color:#ffffff23;border-radius:10px}
+html .lu-view-all{background:#2a3744!important;border-color:#ffffff23!important;color:#f1f6fb!important}
+/* Stores: prioritize catalogue/artwork and hierarchy over glowing gradients */
+html .store,html .appstore{font-family:var(--lolite-font)!important;color:#eaf1f8;background:#121922}
+html .store-side{background:#19232d;border-color:var(--lolite-divider)}
+html .store-main{background:#121922}
+html .store-top{background:linear-gradient(#121922 84%,#12192200)}
+html .store-brand{font-family:var(--lolite-display)!important;font-weight:700}
+html .store-card{background:#1c2732;border:1px solid #ffffff1a;border-radius:9px;box-shadow:none}
+html .store-card:hover{transform:none;border-color:#ffffff45}
+html .store-hero{background:#233548;border:1px solid #ffffff27;border-radius:10px}
+html .store-hero:before,html .store-hero:after{display:none}
+html .store-nav button{border-radius:7px}
+html .store-nav button.active{background:#293d50;border-color:#ffffff25}
+html .store-nav .nav-mark{background:#263646}
+html .store-search{background:#17222d!important;border-color:#ffffff22!important}
+html .appstore-head{background:#233548;border:1px solid #ffffff26;border-radius:10px}
+html .appstore{background:#111922}
+html .appstore-card{background:#1c2732;border:1px solid #ffffff1c;border-radius:9px;box-shadow:none}
+html .appstore-card:hover{transform:none;border-color:#ffffff45;box-shadow:none}
+html .appstore-icon{box-shadow:none;border-color:#ffffff17}
+html .appstore-card button:not(.app-uninstall){background:#346f9a;background-image:none;box-shadow:none;border-radius:7px}
+html .appstore-card button:hover{transform:none;filter:brightness(1.1)}
+html .store-tab.active{background:#315b7b!important;border-color:#47789f!important}
+/* File Explorer has its own Windows-like syntax: bring it into Lolite palette */
+html .fe-app{--fe-bg:#111922;--fe-panel:#1b2631;--fe-hover:#ffffff0c;--fe-line:#ffffff18;background:var(--fe-bg);color:#e9f0f7;font-family:var(--lolite-font)!important}
+html .fe-tabbar,html .fe-nav{background:#1b2631}
+html .fe-tabbar>span{background:#253340}
+html .fe-command{background:#1a2530}
+html .fe-sidebar{background:#19232e}
+html .fe-address,html .fe-search{background:#121c26;border-color:#ffffff23;border-radius:7px}
+html .fe-app button{border-radius:7px}
+html .fe-sidebar button.active{background:#2d4256}
+html .fe-sidebar button.active:before{background:#82b7e9}
+html .fe-row:hover{background:#ffffff0a}
+html .fe-row[aria-selected=true]{background:#314c63}
+html .fe-status,html .fe-columns{border-color:var(--lolite-divider)}
+/* Chat and Academy: keep their working multi-panel layouts */
+html .window[data-window-id="chatroom"] #lcRoot{
+ --lc-base:#121a23;--lc-rail-bg:#121b25;--lc-sidebar:#18232e;--lc-page:#121a23;
+ --lc-surface:#1d2a36;--lc-surface-raised:#293846;--lc-border:#ffffff1c;
+ --lc-text:#e9f1f9;--lc-secondary:#aebdcb;--lc-muted:#96a9bb;
+ --lc-accent:#87b9e9;--lc-accent-soft:#2b455b;--lc-focus:#a6cfff;
+ font-family:var(--lolite-font)!important;
+}
+html #lcRoot .lc-brand-glyph{background:#315e7f;box-shadow:none;border-radius:10px}
+html #lcRoot .lc-rail-btn{border-radius:9px}
+html #lcRoot .lc-rail-btn.active{background:#284357;color:#c9e5ff;border-color:#ffffff22}
+html #lcRoot .lc-rail-btn.active::before{background:#87b9e9}
+html #lcRoot .lc-side-row.active{background:#2a3d50}
+html #lcRoot .lc-side-search{background:#121e28;border-color:#ffffff23}
+html #lcRoot .lc-iconbtn{border-radius:7px}
+html .la-app{font-family:var(--lolite-font)!important;background:#121b25}
+html .la-side{background:#18232e;border-color:var(--lolite-divider)}
+html .la-main{background:#121b25}
+html .la-logo{background:#305f81;box-shadow:none}
+html .la-nav button{border-radius:7px}
+html .la-nav button:hover,html .la-nav button[aria-current="page"]{background:#2a4256;border-color:#ffffff20}
+html .la-side-progress{background:#203140;border-color:#ffffff1b;border-radius:9px}
+html .la-hero{background:#253d51;border:1px solid #ffffff25;border-radius:10px}
+html .la-course{background:#1e2d3a;border-color:#ffffff1e;border-radius:9px}
+html .la-course:hover{transform:none;border-color:#ffffff42}
+html .la-primary{background:#3b789d!important;border-color:#5b9bc3!important;border-radius:7px!important}
+html .la-secondary{background:#293d50!important;border-color:#ffffff20!important;border-radius:7px!important}
+/* Quests dynamically inject their app CSS; this file loads first in the document,
+   but these declarations have greater specificity and unify its core surfaces. */
+html body .lq{background:#121b25;color:#eaf1f8;font-family:var(--lolite-font)!important}
+html body .lq-side{background:#192734;border-color:var(--lolite-divider)}
+html body .lq-main{background:#121b25}
+html body .lq-nav.active{background:#2b4860}
+html body .lq :is(.lq-card,.lq-panel,.lq-item){border-radius:9px}
+/* Entry screens: restrained typography and fewer badges/cards */
+html #loliteModeChooser{font-family:var(--lolite-font)!important;background:#111b26}
+html .lm-brand,html .lm-title{font-family:var(--lolite-display)!important}
+html .lm-title{font-size:clamp(29px,3.8vw,43px);font-weight:650}
+html .lm-choice{background:#1b2936;border-color:#ffffff20;border-radius:11px;box-shadow:none}
+html .lm-choice:hover{background:#223445;border-color:#84b7e3;box-shadow:none;transform:none}
+html .lm-choice-head span{background:#293d50;border-color:#ffffff24;border-radius:5px;color:#b6d7f3}
+html .lm-preview{border-radius:7px}
+html #loliteDesktopThemePicker,html #loliteBrowserThemePicker{font-family:var(--lolite-font)!important;background:#111b26}
+html #loliteDesktopThemePicker .ldt-card,html #loliteBrowserThemePicker .lbt-choice{background:#1c2936;border-color:#ffffff22;border-radius:10px;box-shadow:none}
+html #loliteDesktopThemePicker .ldt-card:hover,html #loliteBrowserThemePicker .lbt-choice:hover{transform:none;border-color:#7cadd6;box-shadow:none}
+html #loliteDesktopThemePicker .ldt-card[aria-checked="true"],html #loliteBrowserThemePicker .lbt-choice.is-selected{background:#263d51;border-color:#8cbde8;box-shadow:none}
+html #loliteDesktopThemePicker .ldt-launch,html #loliteBrowserThemePicker .lbt-launch{background:#427ca8;box-shadow:none;border-radius:7px}
+html #loliteDesktopThemePicker .ldt-scene,html #loliteBrowserThemePicker .lbt-preview{border-radius:7px}
+/* Browser Lolite: preserve visual theme selection, harmonize controls */
+html #loliteBrowseShell{font-family:var(--lolite-font)!important}
+html #loliteBrowseShell .lb-brand strong{font-family:var(--lolite-display)!important;font-weight:700;letter-spacing:-.035em}
+html #loliteBrowseShell .lb-search-wrap input{border-radius:8px}
+html #loliteBrowseShell .lb-nav-item,html #loliteBrowseShell .lb-more{border-radius:8px}
+html #loliteBrowseShell .lb-tile{border-radius:9px;box-shadow:none}
+html #loliteBrowseShell .lb-tile:hover{transform:none}
+html #loliteBrowseShell .lb-tile-symbol{border-radius:8px}
+html #loliteBrowseShell .lb-welcome-hero{border-radius:10px}
+html #loliteBrowseShell .lb-welcome-hero:after{display:none}
+html #loliteBrowseShell .lb-primary{border-radius:7px}
+/* Theme identity is preserved: chosen shell backgrounds, frame proportions, and
+   docking/navigation arrangements remain owned by desktop-themes/browser-themes. */
+@media(max-width:700px){
+ html #taskbar #searchBtn{width:42px;min-width:42px;font-size:0}
+ html #taskbar #searchBtn span{display:none}
+ html .ui-home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ html .appstore-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+}
+@media(prefers-reduced-motion:reduce){
+ html *,html *::before,html *::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+}
+
+/* Everyday utilities: the same control density and surfaces throughout Lolite. */
+html .paint-app{background:#121b25;color:#e8f1f8;font-family:var(--lolite-font)!important}
+html .paint-top,html .paint-options,html .paint-bottom,html .paint-tools,html .paint-layers{background:#1c2936;border-color:#ffffff1b;border-radius:8px}
+html .paint-top button,html .paint-options button,html .paint-layers button{background:#2a3b4c;border-color:#ffffff1d;border-radius:6px}
+html .paint-top button:hover,html .paint-options button:hover{background:#354d62}
+html .paint-tools button{font-family:var(--lolite-font)!important;border-radius:6px}
+html .paint-tools button:hover{background:#ffffff10}
+html .paint-center,html .paint-canvas-shell{border-radius:8px}
+html .paint-status{color:#9caec0}
+html .creative{background:#111b25;font-family:var(--lolite-font)!important}
+html .creative-toolbar{background:#1c2936;border-color:#ffffff1a;border-radius:8px}
+html .creative-toolbar :is(button,select,input){background:#27394a;border-color:#ffffff20;border-radius:6px}
+html .creative-toolbar button.active{border-color:#80b8e4;background:#315976}
+html .creative-status{color:#acbdcb;background:#1c2936}
+html .wallpaper-card{border-radius:8px;border-color:#ffffff1d;background:#1e2b39;box-shadow:none}
+html .wallpaper-card:hover{border-color:#ffffff42}
+html .wallpaper-cat{border-radius:7px}
+html .wallpaper-preview{border-radius:7px 7px 0 0}
+html .calc-grid{gap:6px}
+html .calc-grid button{border-radius:7px;background:#243443;border-color:#ffffff1c;min-height:52px}
+html .calc-grid button:hover{background:#344b60}
+html .calc-display{background:#192734;border-color:#ffffff1d;border-radius:8px;font-family:var(--lolite-display)!important}
+html .notepad{background:#131e29;color:#edf2f8;font-family:var(--lolite-font)!important}
+html .terminal-app{background:#111922;border-color:#ffffff1c;border-radius:8px}
+html .terminal-head{background:#1e2d3a;border-color:#ffffff1c;font-family:var(--lolite-font)!important}
+html .terminal-app :is(pre,input){font-family:"Cascadia Code","Consolas",ui-monospace,monospace!important}
+html .clock-app #bigClock{font-family:var(--lolite-display)!important;font-weight:600;letter-spacing:-.055em}
+html :is(.sj-app,.uv-app){font-family:var(--lolite-font)!important}
+html :is(.sj-bar,.uv-toolbar){background:#1d2a36;border-color:#ffffff1c;border-radius:8px}
+html :is(.sj-bar input,.uv-address input){background:#121d27;border-color:#ffffff25;border-radius:7px}
+html :is(.sj-state,.uv-status){background:#1b2a37;border-color:#ffffff20;border-radius:8px;color:#b7c8d8}
+html :is(.sj-stage,.uv-frame-wrap){border-radius:8px}
