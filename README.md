@@ -15,6 +15,15 @@ A Lolite-branded browser desktop with a dark purple/blue interface, apps, games,
 
 ## Update Log
 
+### Lolite UI Refinement — 2026-10-23 (review branch)
+- Introduced **Manrope** for OS body/interface text and **Sora** for headings and product identity. Both load from Google Fonts, with system fallbacks.
+- Added `core/refined-ui.css`, a shared, presentation-only design layer for Desktop and Browser Lolite, launchers, window chrome, Start, search, notifications, Home, Settings, App Store, Game Store, Files, Chat, Academy, Quests, Paint, Notes, Clock, Terminal, Calculator, wallpaper tools, and browser utilities.
+- Removed unnecessary hero decorations, purple-gradient accents, overlapping glass/card effects, excessive corner rounding, and hover movement in common interfaces. Improved type hierarchy, controls, borders, focus visibility, active states, and spacing.
+- Integrated matching `games/life-rp/refined.css` into Life RP's separate iframe.
+- **Preserves** the five Desktop themes and five Browser themes, apps, accounts, currency, games, storage, message/calling logic, and existing event handlers. No migration or data reset.
+- These are code changes in a review branch, not a claim of comprehensive cross-browser/UI testing. Confirm layout and interactions in Firefox/Chromium before merging.
+
+
 ### Lolite Chat — Navigation and Visual Redesign — 2026-10-21
 - Rebuilt the Chat interface into a consistent three-column layout: **clearly labeled Chats / Friends / Calls / Profile navigation**, a searchable conversations sidebar, and a focused message reading/composer area.
 - Replaced miscellaneous symbols and one-off styling with consistent SVG icons, dark slate surfaces, quieter colours, accessible text, keyboard focus states, consistent button sizing and better spacing.
