@@ -186,3 +186,36 @@ html #loliteBrowseShell .lb-primary{border-radius:7px}
 @media(prefers-reduced-motion:reduce){
  html *,html *::before,html *::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
 }
+
+/* Everyday utilities: the same control density and surfaces throughout Lolite. */
+html .paint-app{background:#121b25;color:#e8f1f8;font-family:var(--lolite-font)!important}
+html .paint-top,html .paint-options,html .paint-bottom,html .paint-tools,html .paint-layers{background:#1c2936;border-color:#ffffff1b;border-radius:8px}
+html .paint-top button,html .paint-options button,html .paint-layers button{background:#2a3b4c;border-color:#ffffff1d;border-radius:6px}
+html .paint-top button:hover,html .paint-options button:hover{background:#354d62}
+html .paint-tools button{font-family:var(--lolite-font)!important;border-radius:6px}
+html .paint-tools button:hover{background:#ffffff10}
+html .paint-center,html .paint-canvas-shell{border-radius:8px}
+html .paint-status{color:#9caec0}
+html .creative{background:#111b25;font-family:var(--lolite-font)!important}
+html .creative-toolbar{background:#1c2936;border-color:#ffffff1a;border-radius:8px}
+html .creative-toolbar :is(button,select,input){background:#27394a;border-color:#ffffff20;border-radius:6px}
+html .creative-toolbar button.active{border-color:#80b8e4;background:#315976}
+html .creative-status{color:#acbdcb;background:#1c2936}
+html .wallpaper-card{border-radius:8px;border-color:#ffffff1d;background:#1e2b39;box-shadow:none}
+html .wallpaper-card:hover{border-color:#ffffff42}
+html .wallpaper-cat{border-radius:7px}
+html .wallpaper-preview{border-radius:7px 7px 0 0}
+html .calc-grid{gap:6px}
+html .calc-grid button{border-radius:7px;background:#243443;border-color:#ffffff1c;min-height:52px}
+html .calc-grid button:hover{background:#344b60}
+html .calc-display{background:#192734;border-color:#ffffff1d;border-radius:8px;font-family:var(--lolite-display)!important}
+html .notepad{background:#131e29;color:#edf2f8;font-family:var(--lolite-font)!important}
+html .terminal-app{background:#111922;border-color:#ffffff1c;border-radius:8px}
+html .terminal-head{background:#1e2d3a;border-color:#ffffff1c;font-family:var(--lolite-font)!important}
+html .terminal-app :is(pre,input){font-family:"Cascadia Code","Consolas",ui-monospace,monospace!important}
+html .clock-app #bigClock{font-family:var(--lolite-display)!important;font-weight:600;letter-spacing:-.055em}
+html :is(.sj-app,.uv-app){font-family:var(--lolite-font)!important}
+html :is(.sj-bar,.uv-toolbar){background:#1d2a36;border-color:#ffffff1c;border-radius:8px}
+html :is(.sj-bar input,.uv-address input){background:#121d27;border-color:#ffffff25;border-radius:7px}
+html :is(.sj-state,.uv-status){background:#1b2a37;border-color:#ffffff20;border-radius:8px;color:#b7c8d8}
+html :is(.sj-stage,.uv-frame-wrap){border-radius:8px}
