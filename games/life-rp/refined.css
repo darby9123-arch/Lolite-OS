@@ -1,0 +1,53 @@
+/* Lolite OS — Life RP visual continuity.
+   Only presentation; rewards, tasks, challenge logic and online saves unchanged. */
+:root{font-family:"Manrope","Segoe UI",sans-serif!important;color:#eaf1f8;background:#111b25}
+body{font:500 13px/1.55 "Manrope","Segoe UI",sans-serif;background:#111b25}
+button,input,select{font-family:"Manrope","Segoe UI",sans-serif!important}
+h1,h2,h3,.brand strong{font-family:"Sora","Manrope",sans-serif!important;letter-spacing:-.035em}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #a1cafa;outline-offset:2px}
+.shell{max-width:1480px}
+.sidebar{background:#182532;border-right:1px solid #ffffff18;gap:20px}
+.brand{padding:4px 11px 20px;border-bottom:1px solid #ffffff19}
+.brand-mark{background:#315e7f;box-shadow:none;border-radius:9px}
+.brand strong{font-weight:650;font-size:16px}
+.brand small{letter-spacing:1px;color:#94a9ba}
+.nav{gap:4px}
+.nav button{background:transparent;border:1px solid transparent;border-radius:8px;color:#b2c3d3;padding:11px 13px;font-weight:650}
+.nav button:hover{background:#ffffff0d;color:#f0f6fc}
+.nav button.active{background:#2b4459;box-shadow:none;border-color:#ffffff1d;color:#eaf5ff}
+.sidebar-bottom{background:#223344;border-color:#ffffff1a;border-radius:9px}
+.main{background:#111b25;padding-top:30px}
+.eyebrow,.feature-kicker{color:#8bbce6;letter-spacing:1.1px;font-weight:750}
+.top h1{letter-spacing:-.05em;font-weight:650}
+.top p,.subtle,.meta{color:#aabacb}
+.wallet{gap:8px}
+.pill{border-radius:8px;background:#1c2b38;border-color:#ffffff22;min-width:110px}
+.pill small{color:#9db0c1}
+.pill b{font-family:"Sora",sans-serif;letter-spacing:-.03em}
+.panel{background:#1b2936;border:1px solid #ffffff1b;border-radius:10px;box-shadow:none}
+.panel p{color:#b6c4d1}
+.hero{background:#284157;border:1px solid #ffffff24;border-radius:11px;min-height:205px}
+.hero h2{font-weight:650;letter-spacing:-.05em}
+.hero-art{opacity:.55;filter:none}
+.card{background:#223242;border:1px solid #ffffff19;border-radius:9px;gap:11px}
+.card h3{font-weight:650}
+.icon-tile{border-radius:8px}
+.btn{background:#2b4254;border:1px solid #ffffff20;color:#ecf4fb;border-radius:7px;box-shadow:none;font-weight:700;min-height:38px}
+.btn:hover:not(:disabled){background:#3b556a;filter:none}
+.btn.primary{background:#4d87b1;border-color:#77add3;color:#fff}
+.btn.primary:hover:not(:disabled){background:#5d98c4}
+.btn.soft{background:#243a4c}
+.btn.ghost{background:transparent}
+.btn.gold{background:#d9bc83;border-color:#e5cf9f;color:#1d1a14}
+.section-head{margin-top:26px}
+.section-head h2{font-weight:650}
+.progress{background:#1b2935;border-radius:6px}
+.progress span{background:#72b4e5;border-radius:6px}
+.tag{border-radius:5px}
+.task,.tier,.challenge,.answer,.notice,.log,.log-item{border-radius:8px}
+.answer:hover{border-color:#79b5e4}
+.avatar{border-radius:9px}
+.avatar.chosen{outline-color:#89c3f0}
+.grid,.stack{gap:12px}
+@media(max-width:530px){.hero{min-height:0}.hero-art{opacity:.4}.main{padding:18px 14px 36px}.panel{padding:16px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
