@@ -2,6 +2,7 @@
    One visual system for existing apps and shells. Presentation only.
    Intentionally preserves all app IDs, event handlers, storage and selected themes. */
 :root{
+ --accent:#75a9db;
  --lolite-font:"Manrope","Segoe UI",sans-serif;
  --lolite-display:"Sora","Manrope",sans-serif;
  --ui-bg:#10161d;--ui-surface:#1b232d;--ui-raised:#26313e;
@@ -29,7 +30,7 @@ html .window .controls button{border-radius:6px!important;width:35px;height:30px
 html .window .controls button:hover{background:#ffffff11}
 html .window .controls button.close:hover{background:#bb4250!important}
 html .window>.content{color:#e8eff7}
-html:not(.mobile-mode):not(.browsing-mode) #taskbar{
+html:not(.mobile-mode):not(.browsing-mode):not([data-desktop-theme]) #taskbar{
  background:#151c24f5!important;border-top:1px solid #ffffff1b!important;
  box-shadow:0 -7px 22px #0004!important;backdrop-filter:blur(18px)!important;
  -webkit-backdrop-filter:blur(18px)!important;
