@@ -81,25 +81,9 @@
     document.body.appendChild(picker);
     picker.querySelector('[aria-checked="true"]')?.focus({preventScroll:true});
   }
-  function ensureButton(){
-    const taskbar=$('#taskbar');
-    if(!taskbar||$('#loliteDesktopThemeButton'))return;
-    const button=document.createElement('button');
-    button.id='loliteDesktopThemeButton';
-    button.className='task';
-    button.type='button';
-    button.title='Change Desktop Lolite theme';
-    button.setAttribute('aria-label','Change Desktop Lolite theme');
-    button.textContent='Themes';
-    const tray=taskbar.querySelector('.tray');
-    if(tray)taskbar.insertBefore(button,tray);
-    else taskbar.appendChild(button);
-    button.addEventListener('click',()=>open({onBack:()=>{}}));
-  }
   function init(){
     // Loading a saved theme does not select Desktop Style or start any apps.
     setTheme(saved(),false);
-    ensureButton();
     window.LoliteDesktopThemes={themes:THEMES.map(({id,name,desc})=>({id,name,desc})),
       open,setTheme,getTheme:()=>chosen,restore:()=>setTheme(saved(),false),close};
   }
