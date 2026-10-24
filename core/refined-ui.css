@@ -358,6 +358,34 @@ html[data-lolite-design=crimson] #loliteBrowseShell .lb-tile-symbol{background:#
 .cr-personalise strong,.cr-personalise small{display:block}
 .cr-personalise strong{font-size:11px;font-weight:600}.cr-personalise small{font-size:10px;color:#a99ca7;margin-top:4px}
 .cr-updates{margin-top:16px}.cr-updates summary{font-size:11px;color:#c2b5bf;cursor:pointer;padding:6px 0}.cr-updates summary span{float:right;font-size:10px;color:#9c8c98}
+
+/* Home is the single place to choose Desktop and Browser visual themes. */
+.cr-themes{margin:25px 0 27px}
+.cr-theme-header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:14px}
+.cr-theme-header strong{display:block;font-size:13px;color:#f1e9ed;font-weight:650}
+.cr-theme-header p{font-size:10px;color:#ada0ab;line-height:1.6;margin:5px 0 0}
+.cr-theme-tabs{display:inline-flex;gap:3px;background:#17161a;border:1px solid #ffffff1b;padding:4px;border-radius:8px;flex:none}
+.cr-theme-tabs button{background:transparent!important;border:1px solid transparent!important;color:#ad9ea8!important;padding:7px 12px!important;border-radius:5px!important;font-size:11px!important;font-weight:650!important;cursor:pointer}
+.cr-theme-tabs button[aria-pressed=true]{background:#463037!important;color:#f8e4ea!important;border-color:#b94b5e60!important}
+.cr-theme-tabs button:focus-visible,.cr-theme-choice:focus-visible{outline:2px solid #ed8a98!important;outline-offset:2px}
+.cr-theme-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cr-theme-choice{display:flex!important;flex-direction:column;gap:0;min-width:0;text-align:left!important;padding:10px!important;background:#231f24!important;border:1px solid #ffffff16!important;border-radius:9px!important;color:#eae3e7!important;cursor:pointer;box-shadow:none!important;transition:border-color .12s ease,background .12s ease}
+.cr-theme-choice:hover{background:#30272e!important;border-color:#ffffff4b!important}
+.cr-theme-choice[aria-pressed=true]{background:#30252c!important;border-color:#db6878!important;box-shadow:inset 0 0 0 1px #d15d7029!important}
+.cr-theme-preview{position:relative;display:block;width:100%;height:66px;border-radius:5px;overflow:hidden;border:1px solid #ffffff1a;background:var(--cr-tbg)}
+.cr-theme-preview i{position:absolute;top:9px;left:9px;right:9px;height:7px;border-radius:2px;background:var(--cr-ttext);opacity:.25}
+.cr-theme-preview em{position:absolute;left:9px;top:22px;bottom:8px;width:23%;border-radius:2px;background:var(--cr-ttext);opacity:.12}
+.cr-theme-preview b{position:absolute;left:calc(23% + 17px);right:9px;top:22px;bottom:8px;border-radius:3px;background:var(--cr-taccent);opacity:.9}
+.cr-theme-row{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;margin-top:10px}
+.cr-theme-row strong{font-size:11px;line-height:1.35;font-weight:650;color:#f2e9ef}
+.cr-theme-check{display:grid;place-items:center;flex:none;width:18px;height:18px;border-radius:50%;background:#be4455;color:white;font-size:11px;opacity:0}
+.cr-theme-choice[aria-pressed=true] .cr-theme-check{opacity:1}
+.cr-theme-choice small{display:block;font-size:9px!important;line-height:1.5;color:#aea1ac!important;margin-top:6px;max-width:100%}
+.cr-theme-note{font-size:10px;color:#a899a6;line-height:1.6;margin:12px 0 0}
+@container (max-width:650px){.cr-theme-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cr-theme-header{flex-wrap:wrap}.cr-theme-tabs{width:100%}.cr-theme-tabs button{flex:1}}
+@media (max-width:580px){.cr-theme-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cr-theme-header{flex-wrap:wrap}.cr-theme-tabs{width:100%}.cr-theme-tabs button{flex:1}}
+@media (max-width:370px){.cr-theme-grid{grid-template-columns:1fr}}
+
 /* Settings: navigable sections, real wallpaper previews, dedicated sound controls. */
 html[data-lolite-design=crimson] .window[data-window-id=settings]>.content{padding:0!important;overflow:hidden!important}
 .cr-settings{height:100%;display:flex;min-height:0;background:#171719}
