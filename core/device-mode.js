@@ -93,18 +93,13 @@
     ].join('');
     document.body.appendChild(el);
     el.querySelector('#lmDesktop').addEventListener('click',()=>{
-      // Desktop is a two-step selection: style first, then the chosen visual theme.
+      // Home now owns theme selection; startup only selects the workspace.
       $('#loliteModeChooser')?.remove();
-      if(window.LoliteDesktopThemes?.open){
-        window.LoliteDesktopThemes.open({onSelect:startDesktop,onBack:chooser});
-      }else startDesktop();
+      startDesktop();
     });
     el.querySelector('#lmBrowsing').addEventListener('click',()=>{
-      // Two-step Browser startup: choose the workspace, then its visual theme.
       $('#loliteModeChooser')?.remove();
-      if(window.LoliteBrowserThemes?.open){
-        window.LoliteBrowserThemes.open({onSelect:startBrowsing,onBack:chooser});
-      }else startBrowsing();
+      startBrowsing();
     });
     el.querySelector('#lmDesktop')?.focus({preventScroll:true});
   }
