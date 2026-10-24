@@ -3,6 +3,7 @@
   'use strict';
   const KEY='loliteDesktopTheme';
   const THEMES=[
+    {id:'crimson',name:'Lolite Crimson',desc:'Charcoal surfaces, precise red accents and a quiet, compact desktop.',preview:'crimson'},
     {id:'windows11',name:'Windows 11 Modern',desc:'Centered-feel taskbar, crisp rounded windows and a modern blue interface.',preview:''},
     {id:'aero7',name:'Windows 7 Aero',desc:'Luminous glass edges, translucent blue taskbar and classic Start placement.',preview:'aero'},
     {id:'plasma',name:'KDE Plasma',desc:'Floating panel, violet accents and a flexible desktop workspace.',preview:'plasma'},
@@ -11,11 +12,11 @@
   ];
   const VALID=new Set(THEMES.map(theme=>theme.id));
   const root=document.documentElement;
-  let chosen='windows11';
+  let chosen='crimson';
   const $=selector=>document.querySelector(selector);
   const saved=()=>{
-    try{const value=localStorage.getItem(KEY);return VALID.has(value)?value:'windows11'}
-    catch(_){return 'windows11'}
+    try{const value=localStorage.getItem(KEY);return VALID.has(value)?value:'crimson'}
+    catch(_){return 'crimson'}
   };
   const setTheme=(value,save=true)=>{
     if(!VALID.has(value))return false;
@@ -47,7 +48,7 @@
       '<div class="ldt-wrap">',
        '<div class="ldt-header"><span class="ldt-eyebrow">LOLITE OS / DESKTOP</span><button class="ldt-back" type="button" id="ldtBack">← Back</button></div>',
        '<h1>Choose your desktop theme</h1>',
-       '<p class="ldt-intro">Five desktop experiences. Same games, apps, files and settings. You can change this anytime.</p>',
+       '<p class="ldt-intro">Six desktop experiences. Same games, apps, files and settings. You can change this anytime.</p>',
        '<div class="ldt-grid" role="radiogroup" aria-label="Desktop theme">',cards,'</div>',
        '<div class="ldt-actions"><span class="ldt-note">Your files and installed apps are shared between every theme. Your selection is remembered on this device.</span>',
        '<button type="button" class="ldt-launch" id="ldtLaunch">Launch Desktop →</button></div>',

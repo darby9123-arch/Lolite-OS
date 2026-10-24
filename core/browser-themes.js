@@ -4,6 +4,7 @@
   'use strict';
   const KEY='loliteBrowserTheme';
   const THEMES=Object.freeze([
+    {id:'crimson',number:1,name:'Lolite Crimson',tag:'The new Lolite',description:'Focused navigation, charcoal panels and a distinctive red identity.'},
     {id:'firefox',number:2,name:'Firefox Flow',tag:'Colourful and familiar',description:'Bright tabbed layout, rounded search and smooth purple accents.'},
     {id:'opera',number:3,name:'Opera GX Gaming',tag:'Built for play',description:'Dark red-and-black gaming interface with a bold sidebar and quick tabs.'},
     {id:'arc',number:4,name:'Arc Workspace',tag:'Focus on spaces',description:'Tall organised sidebar, floating controls and a distraction-free workspace.'},
@@ -20,9 +21,9 @@
   ];
   const root=document.documentElement;
   const $=s=>document.querySelector(s);
-  let current='firefox';
+  let current='crimson';
   function storedTheme(){
-    try{const t=localStorage.getItem(KEY);return IDS.has(t)?t:'firefox'}catch(_){return 'firefox'}
+    try{const t=localStorage.getItem(KEY);return IDS.has(t)?t:'crimson'}catch(_){return 'crimson'}
   }
   function getTheme(){return current}
   function syncQuickTabs(id){
@@ -113,9 +114,9 @@
        '<button type="button" class="lbt-back" id="lbtBack">← Back</button>',
       '</div><p class="lbt-overline">PERSONALISE YOUR WORKSPACE</p>',
       '<h1 id="lbtPickerTitle">Choose your browser theme</h1>',
-      '<p class="lbt-subtitle">Five different ways to experience the same Lolite apps, games, chats and files. Your choice is saved.</p>',
+      '<p class="lbt-subtitle">Six different ways to experience the same Lolite apps, games, chats and files. Your choice is saved.</p>',
       '<div class="lbt-theme-grid" role="radiogroup" aria-label="Browser theme">',cards,'</div>',
-      '<div class="lbt-actions"><p>All five themes use your existing Lolite apps, accounts and game library. You can switch themes later without restarting.</p>',
+      '<div class="lbt-actions"><p>All six themes use your existing Lolite apps, accounts and game library. You can switch themes later without restarting.</p>',
       '<button type="button" class="lbt-launch" id="lbtLaunch">Launch Browser Lolite <span aria-hidden="true">→</span></button></div></div>'
     ].join('');
     function mark(){

@@ -74,8 +74,8 @@
     el.innerHTML=[
       '<div class="lm-wrap">',
        '<div class="lm-brand"><img src="assets/lolite-glass-logo.svg" alt="">Lolite OS</div>',
-       '<div class="lm-kicker">Choose your experience</div>',
-       '<h1 class="lm-title">How do you want to use Lolite?</h1>',
+       '<div class="lm-kicker">LOLITE OS / CRIMSON</div>',
+       '<h1 class="lm-title">Make yourself at home.</h1>',
        '<p class="lm-sub">Two ways to use the same apps, games and tools. Pick a classic desktop or an easy-to-browse workspace.</p>',
        '<div class="lm-options">',
         '<button id="lmDesktop" class="lm-choice" type="button">',
@@ -85,7 +85,7 @@
         '</button>',
         '<button id="lmBrowsing" class="lm-choice" type="button">',
          '<div class="lm-preview lm-preview-browser" aria-hidden="true"><div class="lm-bar"><i></i><i></i></div><div class="lm-columns"><div class="lm-nav"><i></i><i></i><i></i><i></i></div><div class="lm-items"><i></i><i></i><i></i></div></div></div>',
-         '<div class="lm-choice-body"><div class="lm-choice-head"><strong>Browsing Style</strong><span>New</span></div>',
+         '<div class="lm-choice-body"><div class="lm-choice-head"><strong>Browsing Style</strong><span>Focused</span></div>',
          '<p>Lolite OS, a quick search bar, a tidy app sidebar and more apps in one click.</p></div>',
         '</button>',
        '</div><p class="lm-foot">Your existing files, games and settings stay in Lolite.</p>',
@@ -235,6 +235,7 @@
         (games.length?'<div class="lb-card-grid">'+games.map(game=>'<button class="lb-tile" data-lb-game="'+escapeHTML(game.title)+'" type="button"><span class="lb-tile-symbol"><span class="lb-icon-fallback">▣</span></span><strong>'+escapeHTML(game.title)+'</strong><small>Find in Game Store →</small></button>').join('')+'</div>':'<p class="lb-empty">No matching games.</p>')+
       '</div>';
     }else{
+      if(window.LoliteCrimson){welcome.innerHTML=window.LoliteCrimson.homeMarkup(true);return}
       const essentials=APPS.filter(app=>app.group==='main'&&app.id!=='home');
       const more=APPS.filter(app=>app.group==='more').slice(0,8);
       welcome.innerHTML=[

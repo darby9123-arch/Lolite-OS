@@ -11,9 +11,19 @@
 
 The Vercel version includes Ultraviolet runtime files and the Bare HTTP endpoint, but its service worker currently fails in browser testing. Scramjet's proxy runtime is unavailable on Vercel. Both browser apps now offer a standard, non-proxy embedded browsing mode for sites that permit framing, with an Open in tab option.
 
-A Lolite-branded browser desktop with a dark purple/blue interface, apps, games, files, wallpapers, AI and a responsive desktop layout.
+A Lolite-branded browser desktop with a red and charcoal interface, apps, games, files, live wallpapers and a responsive desktop or browser workspace.
 
 ## Update Log
+
+### Lolite OS 3.16.0 — Crimson — 2026-10-25
+- A complete red and charcoal interface refresh across Desktop and Browser Lolite, Home, Start, search, window controls, stores, Files, Chat, Academy, Quests and creative tools. Manrope and Sora typography, flatter surfaces, clearer hierarchy and less gradient.
+- New **Lolite Crimson** default in both theme pickers. All five earlier layouts in each mode remain available. The upgrade changes presentation preferences once; accounts, files, installed apps and game data are preserved.
+- Redesigned local vector app icons with a consistent outline style and muted identifying colours.
+- **17 local wallpapers, including 8 live scenes**: embers, city rain, alpine snow, stars, tides, flowing contours, meteors and desert dust. Includes original Crimson Dunes artwork, image uploads, category filters, remembered selections and a motion toggle.
+- Live scenes use a single 24 fps capped canvas loop, capped pixel density, and pause in hidden tabs, Browser mode and reduced motion. Existing wallpaper IDs and purchased wallpaper selections still resolve.
+- Original system tones for startup, app opening/closing, minimise/restore and notifications. Adjustable volume, mute, and six sound previews; audio begins only after interaction.
+- New Settings sections for Appearance, Wallpapers, Sounds, and Motion & cursors. Short app-opening fades replace scaling and bouncy interactions. Removed the duplicate legacy welcome overlay.
+- Validation: 8 automated lifecycle/persistence/syntax checks; Chromium UI checks of startup, both layouts, wallpaper selection, sound controls, reload persistence and search. Details: [Crimson notes](docs/CRIMSON.md).
 
 ### Lolite UI Refinement — 2026-10-23 (review branch)
 - Introduced **Manrope** for OS body/interface text and **Sora** for headings and product identity. Both load from Google Fonts, with system fallbacks.
