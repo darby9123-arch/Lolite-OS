@@ -42,17 +42,6 @@
     if(!shell||!root.classList.contains('browsing-mode'))return;
     const header=shell.querySelector('.lb-header');
     if(!header)return;
-    if(!header.querySelector('#lbThemeSwitch')){
-      const button=document.createElement('button');
-      button.type='button';
-      button.id='lbThemeSwitch';
-      button.className='lb-theme-switch';
-      button.title='Change Browser Lolite theme';
-      button.setAttribute('aria-label','Change Browser Lolite theme');
-      button.innerHTML='<span aria-hidden="true" class="lb-theme-switch-symbol">◈</span><span class="lb-theme-switch-label">Themes</span>';
-      button.addEventListener('click',()=>open());
-      header.insertBefore(button,header.querySelector('#lbSwitch'));
-    }
     if(!shell.querySelector('#lbThemeTabs')){
       const tabs=document.createElement('nav');
       tabs.id='lbThemeTabs';
