@@ -5,7 +5,7 @@
  function fit(rect,area){const width=clamp(rect.width,Math.min(320,area.width),area.width),height=clamp(rect.height,Math.min(220,area.height),area.height);return {left:clamp(rect.left,area.left,area.left+area.width-width),top:clamp(rect.top,area.top,area.top+area.height-height),width,height}}
  function snapRect(kind,area){if(area.width<648)return {...area};const gap=8,half=(area.width-gap)/2,h=(area.height-gap)/2;return {left:area.left+(kind.includes('right')?half+gap:0),top:area.top+(kind.startsWith('bottom')?h+gap:0),width:kind==='max'?area.width:half,height:kind.includes('-')?h:area.height}}
  function bounds(){const width=root.clientWidth||innerWidth,height=root.clientHeight||innerHeight,bar=$('taskbar')?.getBoundingClientRect();let top=8,bottom=height-8;if(bar&&bar.height&&bar.width){if(bar.top<height/2)top=bar.bottom+8;else bottom=bar.top-8}return {left:8,top,width:Math.max(240,width-16),height:Math.max(180,bottom-top)}}
- const rectOf=el=>({left:el.offsetLeft,top:el.offsetTop,width:el.offsetWidth,height:el.offsetHeight});
+ const rectOf=el=>el.style.display==='none'?Object.fromEntries(['left','top','width','height'].map(k=>[k,parseFloat(el.style[k])||0])):({left:el.offsetLeft,top:el.offsetTop,width:el.offsetWidth,height:el.offsetHeight});
  function setRect(el,rect){for(const k of ['left','top','width','height'])el.style[k]=Math.round(rect[k])+'px'}
  function emit(type,id){window.dispatchEvent(new CustomEvent('lolite:windowchange',{detail:{type,id}}))}
  function focus(id){const record=workspace.windows[id];if(!record||record.minimised||record.closing)return;if(workspace.activeId!==id)record.el.style.zIndex=++workspace.z;setActiveTask(id)}
