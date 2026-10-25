@@ -119,7 +119,10 @@
    const file=String(g.file||'').toLowerCase().replace(/^cl/,'').replace(/\.html?$/,'');
    const n=(title+' '+file).replace(/[_-]+/g,' ');
    const has=re=>re.test(n);
-   if(has(/baldi|raldi|epstein.*basics|caseoh.*basics|caseohs basics/))return 'Baldi’s Basics';
+   // Baldi fan games often have titles that never mention Baldi.
+   if(has(/baldi|raldi|epstein.*basics|caseoh.*basics|caseohs basics|antidisestablishmentari|\b69420\b|basic\s*9\s*re\s*take|breakdi(?:s)?\s*school/))return 'Baldi’s Basics';
+   // Lolite's Geometry Dash collection includes every game with "dash" in its name.
+   if(/dash/.test(title))return 'Geometry Dash';
    if(has(/friday night funkin|\bfnf\b|sprunki|incredibox|rhythm|piano|music|melody|geometry dash|\bosu\b|lobotomy dash|gd breeze|dance of fire and ice|rhythm heaven|trombone champion|just shapes|magic tiles/))return 'Music & Rhythm';
    if(has(/five nights|\bfnaf\b|granny|slender|backrooms|nightmare|horror|poppy playtime|creep|haunt|amanda the adventurer|fear assessment|\bscp\b|resident evil|the man from the window|shift at midnight|zombie|lethal company|fears to fathom|do not take this cat home|endoparasitic|slendytubbies|hungry lamu|bendy|miside|look outside|yandere simulator/))return 'Horror & Survival';
    if(has(/minecraft|terraria|sandbox|melon playground|people playground|powder toy|sandspiel|world sandbox|grow a garden|little alchemy|infinite craft|infinitecraft|eaglercraft|worldbox|physics sandbox|block craft|hypper sandbox|spaceflight simulator|line rider|line rider/))return 'Sandbox & Building';
@@ -147,7 +150,7 @@
    {name:'Papa’s Games',mark:'PAPA',re:/\bpapa'?s\b|\bpapas\b/i},
    {name:'Sonic',mark:'SONIC',re:/\bsonic\b|\bsonic\.exe\b/i},
    {name:'Super Mario',mark:'MARIO',re:/\bmario\b|supermario/i},
-   {name:'Geometry Dash',mark:'GD',re:/geometry dash|geometrydash|\bgb?\s?breeze\b|\blobotomy dash\b/i},
+   {name:'Geometry Dash',mark:'GD',re:/dash|\bgdbreeze\b/i},
    {name:'Angry Birds',mark:'BIRDS',re:/angry\s*birds|angrybirds/i},
    {name:'Plants vs. Zombies',mark:'PVZ',re:/plants?\s*(?:vs\.?|versus)\s*zombies|\bpvz(?:m|\d+)?\b/i},
    {name:'Bloons TD',mark:'BLOONS',re:/\bbloons?\b|\bbtd\d+\b/i},
@@ -161,7 +164,10 @@
  ];
  const franchiseNames=new Set();
  const franchiseForGame=g=>{
-   const label=String(g.title||'')+' '+String(g.file||'');
+   const title=String(g.title||'');
+   // Give dash-titled games Geometry Dash precedence over FNF and other series.
+   if(/dash/i.test(title))return 'Geometry Dash';
+   const label=title+' '+String(g.file||'');
    const match=franchiseRules.find(entry=>entry.re.test(label));
    return match?match.name:null;
  };
@@ -405,7 +411,7 @@ games.push(...mntSourceFiles.map(name=>({
    loader.onerror=()=>finish(false);
    loader.src=remote;
  };
-  const featuredGames=[{"file":"remote-daknux-451.html","title":"Neon Tide","description":"Explore a glowing open-world city. Launch the official browser game from its creator."},{"file":"genizy-557.html","title":"Getting Over It","description":"Climb a mountain with a hammer, tackle tricky obstacles and see how far you can get."},{"file":"clminecraftpocketedition.html","title":"Minecraft 1.8","description":"Build, explore and survive in a classic block-filled sandbox."},{"file":"clangrybirds2.html","title":"Angry Birds 2","description":"Launch birds, topple structures and tackle increasingly tricky levels."},{"file":"genizy-758.html","title":"CaseOh’s Basics","description":"A chaotic, food-themed spin on the classic schoolhouse game."},{"file":"genizy-669.html","title":"Terraria","description":"Dig, build, craft and explore a huge side-scrolling world."}];
+  const featuredGames=[{"file":"genizy-868.html","title":"Geometry Dash","description":"Jump, dodge and time your moves through rhythm-based levels in Geometry Dash."},{"file":"genizy-557.html","title":"Getting Over It","description":"Climb a mountain with a hammer, tackle tricky obstacles and see how far you can get."},{"file":"clminecraftpocketedition.html","title":"Minecraft 1.8","description":"Build, explore and survive in a classic block-filled sandbox."},{"file":"clangrybirds2.html","title":"Angry Birds 2","description":"Launch birds, topple structures and tackle increasingly tricky levels."},{"file":"genizy-758.html","title":"CaseOh’s Basics","description":"A chaotic, food-themed spin on the classic schoolhouse game."},{"file":"genizy-669.html","title":"Terraria","description":"Dig, build, craft and explore a huge side-scrolling world."}];
  let heroIndex=0;
  function heroMarkup(){const g=featuredGames[heroIndex%featuredGames.length];return '<section class="store-hero store-featured-hero" id="store-featured-hero" data-feature-file="'+g.file+'"><div class="store-hero-art" aria-hidden="true"></div><div class="store-hero-copy"><span class="store-eyebrow">'+'HARDWARE ACCELERATION RECOMMENDED'+'</span><h1>'+g.title+'</h1><p>'+g.description+'</p><button class="store-primary" type="button" onclick=\'window.loliteStoreAction("'+g.file+'")\'>'+(gamePrice(g)===0?'▶ &nbsp; Play':hasGame(g)?'▶ &nbsp; Play now':'◆ &nbsp; Buy for '+priceLabel(g))+'</button><div class="store-hero-dots" role="tablist" aria-label="Featured games">'+featuredGames.map((item,i)=>'<button type="button" class="'+(i===heroIndex?'active':'')+'" aria-label="Show '+item.title.replace(/"/g,'&quot;')+'" aria-selected="'+(i===heroIndex)+'" onclick="window.loliteStoreHeroSelect('+i+')" title="'+item.title.replace(/"/g,'&quot;')+'"></button>').join('')+'</div></div><div class="store-hero-side"><strong>'+String(heroIndex+1).padStart(2,'0')+'</strong><span>FEATURED</span></div></section>'}
  async function loadHeroArt(){const hero=document.getElementById('store-featured-hero');if(!hero)return;const g=featuredGames[heroIndex%featuredGames.length];const poster=lolitePosterArt(g.title,g.file);hero.style.setProperty('--hero-art','url(\"'+poster+'\")');hero.classList.add('has-feature-art');try{const art=coverFor(g.file);if(!art||!hero.isConnected||hero.dataset.featureFile!==g.file)return;const img=new Image();img.onload=()=>{if(hero.isConnected&&hero.dataset.featureFile===g.file){hero.style.setProperty('--hero-art','url("'+art.replace(/"/g,'%22')+'")');hero.classList.add('has-feature-art');hero.classList.toggle('store-featured-square',img.naturalWidth/img.naturalHeight<1.25)}};img.src=art}catch(_){}}
