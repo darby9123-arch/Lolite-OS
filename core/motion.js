@@ -1,8 +1,14 @@
-/* Quiet motion: short fades only; close/minimise/maximise always act immediately. */
+/* Interruptible desktop motion. Reduced motion always takes priority. */
 (()=>{'use strict';
- const root=document.documentElement;
- const reduced=()=>root.classList.contains('reduce')||root.classList.contains('reduce-motion')||matchMedia('(prefers-reduced-motion: reduce)').matches;
- function animate(el,frames,options={}){if(!el?.isConnected||reduced()||!el.animate)return null;return el.animate([{opacity:.65},{opacity:1}],{duration:100,easing:'ease-out',...options})}
- const oldOpen=window.openApp;window.openApp=function(...args){const existing=document.querySelector('[data-window-id="'+CSS.escape(String(args[0]))+'"]');const result=oldOpen.apply(this,args);if(!existing)animate(document.querySelector('[data-window-id="'+CSS.escape(String(args[0]))+'"]'));return result};
- window.LoliteMotion={reduced,animate};
+ const root=document.documentElement,active=new Map(),media=matchMedia('(prefers-reduced-motion: reduce)');
+ const reduced=()=>media.matches||['reduce','reduce-motion','no-animations'].some(c=>root.classList.contains(c));
+ function cancel(el){const job=active.get(el);if(job){active.delete(el);job.animation.cancel()}}
+ function animate(el,frames,options={},done){
+  cancel(el);if(!el?.isConnected||reduced()||!el.animate){done?.();return null}
+  const animation=el.animate(frames,{duration:200,easing:'cubic-bezier(.2,.8,.2,1)',fill:'both',...options});active.set(el,{animation,done});
+  animation.finished.then(()=>{if(active.get(el)?.animation!==animation)return;active.delete(el);done?.();animation.cancel()},()=>{});return animation;
+ }
+ function settle(){if(!reduced())return;for(const [el,job] of active){active.delete(el);job.done?.();job.animation.cancel()}}
+ media.addEventListener?.('change',settle);new MutationObserver(settle).observe(root,{attributes:true,attributeFilter:['class']});
+ window.LoliteMotion={reduced,animate,cancel};
 })();

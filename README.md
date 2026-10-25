@@ -15,6 +15,15 @@ A Lolite-branded browser desktop with a red and charcoal interface, apps, games,
 
 ## Update Log
 
+### Lolite OS 3.17.0 — Windows-style desktop — 2026-10-25
+- Rebuilt window management: clicking a background app raises it, taskbar buttons minimise and restore, and maximising, dragging, resizing and snapping use the available desktop area correctly.
+- Added a centred Start menu with app search, pinned apps and recent apps; a full-width taskbar; Quick settings for sounds and motion; a month calendar; desktop context menu; and Show desktop.
+- Added interruptible window opening, closing, minimise/restore and snap transitions. Reduce Motion immediately settles active transitions and disables further motion.
+- Startup remembers Desktop or Browser workspace and no longer forces the chooser and Home window on every launch. Home retains the latest theme gallery and uses a compact app dashboard.
+- Restored blank Calculator and Quick Notes windows with working arithmetic, keyboard input, saved notes and access to notes from earlier versions.
+- Kept the red/charcoal default, existing wallpapers, live scenes, sounds, app icons, app data and alternative themes. Desktop icons select on click and open on double-click; Enter/Space and touch remain supported.
+- Validation: 21 automated checks plus Chromium checks of Start/search, taskbar toggling, focus, snapping, both workspace modes, theme switching, notes persistence, calculator results and a 390px layout. See [Desktop refresh checks](docs/DESKTOP-REFRESH.md).
+
 ### Lolite OS 3.16.0 — Crimson — 2026-10-25
 - A complete red and charcoal interface refresh across Desktop and Browser Lolite, Home, Start, search, window controls, stores, Files, Chat, Academy, Quests and creative tools. Manrope and Sora typography, flatter surfaces, clearer hierarchy and less gradient.
 - New **Lolite Crimson** default in both theme pickers. All five earlier layouts in each mode remain available. The upgrade changes presentation preferences once; accounts, files, installed apps and game data are preserved.

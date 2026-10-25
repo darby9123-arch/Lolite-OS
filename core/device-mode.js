@@ -61,7 +61,7 @@
     startBase();
     document.documentElement.classList.remove('browsing-mode','mobile-mode','tablet-mode','phone-mode');
     try{localStorage.setItem('loliteUiStyle','desktop')}catch(_){}
-    if(!allWindows().length)window.openApp?.('home','Home',760,600);
+    if(!allWindows().length&&localStorage.getItem('startHome')==='true')window.openApp?.('home','Home');
     dispatch();
   }
   function chooser(){
@@ -333,9 +333,10 @@
       openApp:navigate
     };
     window.LoliteUIStyle=window.LoliteDeviceMode;
-    window.addEventListener('lolite:splashdone',()=>{if(!userSelected)chooser()},{once:true});
-    if(!$('#lolite-splash'))setTimeout(chooser,200);
-    setTimeout(()=>{if(!userSelected&&!$('#loliteModeChooser')&&!$('#loliteDesktopThemePicker')&&!$('#loliteBrowserThemePicker'))chooser()},4600);
+    function resumeWorkspace(){if(userSelected)return;let saved='desktop';try{saved=localStorage.getItem('loliteUiStyle')||'desktop'}catch(_){}if(saved==='browsing')startBrowsing();else startDesktop()}
+    window.addEventListener('lolite:splashdone',resumeWorkspace,{once:true});
+    if(!$('#lolite-splash'))setTimeout(resumeWorkspace,200);
+    setTimeout(()=>{if(!userSelected&&!$('#loliteModeChooser')&&!$('#loliteDesktopThemePicker')&&!$('#loliteBrowserThemePicker'))resumeWorkspace()},4600);
     // If a legacy Mobile Style choice was saved, it is retired; retain all other settings.
     try{const old=localStorage.getItem('loliteUiStyle');if(old==='mobile'||old==='phone'||old==='tablet')localStorage.removeItem('loliteUiStyle')}catch(_){}
   }

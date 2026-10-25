@@ -198,6 +198,8 @@
      handle.addEventListener('pointerdown',event=>{
        if(event.button!==0||document.documentElement.classList.contains('mobile-mode')||document.documentElement.classList.contains('tablet-mode')||win.dataset.old)return;
        event.preventDefault();event.stopPropagation();
+       window.LoliteWindowManager?.focus(win.dataset.windowId);
+       window.LoliteMotion?.cancel(win);
        document.documentElement.dataset.loliteActiveResize=direction;
        const start={x:event.clientX,y:event.clientY,left:win.offsetLeft,top:win.offsetTop,width:win.offsetWidth,height:win.offsetHeight};
        const oldSelect=document.body.style.userSelect;
@@ -206,8 +208,11 @@
        const move=e=>{
          const dx=e.clientX-start.x,dy=e.clientY-start.y;
          const right=direction.includes('e'),left=direction.includes('w'),bottom=direction.includes('s'),top=direction.includes('n');
-         const width=Math.max(260,start.width+(right?dx:left?-dx:0));
-         const height=Math.max(180,start.height+(bottom?dy:top?-dy:0));
+         const area=window.LoliteWindowManager?.bounds()||{left:0,top:0,width:innerWidth,height:innerHeight-64};
+         const maxWidth=left?start.left+start.width-area.left:area.left+area.width-start.left;
+         const maxHeight=top?start.top+start.height-area.top:area.top+area.height-start.top;
+         const width=Math.max(Math.min(320,maxWidth),Math.min(maxWidth,start.width+(right?dx:left?-dx:0)));
+         const height=Math.max(Math.min(220,maxHeight),Math.min(maxHeight,start.height+(bottom?dy:top?-dy:0)));
          if(left)win.style.left=(start.left+start.width-width)+'px';
          if(top)win.style.top=(start.top+start.height-height)+'px';
          if(left||right)win.style.width=width+'px';

@@ -1,2 +1,2 @@
 /* This bundle is already the current version; keep compatibility metadata accurate. */
-(()=>{const current='3.16.0';function check(){try{localStorage.setItem('lolite-os-version',current)}catch{}}check();window.LoliteVersion={current,check}})();
+(()=>{const current='3.17.0';function check(){try{localStorage.setItem('lolite-os-version',current)}catch{}}check();window.LoliteVersion={current,check}})();
