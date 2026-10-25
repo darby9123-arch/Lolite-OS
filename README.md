@@ -15,6 +15,14 @@ A Lolite-branded browser desktop with a red and charcoal interface, apps, games,
 
 ## Update Log
 
+### Lolite OS 3.18.0 — Live videos & soundscape — 2026-10-25
+- Added **24 MotionBGS live video wallpapers**: GTA IV/V/VI, Minecraft, cars, anime, space, nature and rainy city scenes. The full collection now has 41 wallpapers, including 32 live options.
+- Added wallpaper search, category counts, source links, HD and Data saver quality, playback status and retry. Videos stream from MotionBGS and require internet; the existing 17 local wallpapers remain available offline.
+- Only the selected video is loaded. Switching releases its player, and live motion pauses in hidden tabs, Browser style and reduced motion. Failed HD playback tries the published lightweight video once and retains the poster if unavailable.
+- Expanded to **36 original system sounds** for windows, snapping, menus, buttons, switches, navigation, files, notes, calculator results, notifications, themes, wallpaper changes and fullscreen. Optional typing and hover sounds have separate switches.
+- Added seven sound categories, a complete preview library, saved preferences and master volume/mute. Sound effects are grouped per action, rate limited and capped at 12 voices; game/call audio stays independent.
+- Validation: 30 automated tests; all 24 HD sources played in Chromium inside the desktop. See [Live wallpapers & sounds checks](docs/LIVE-WALLPAPERS-SOUNDS.md).
+
 ### Lolite OS 3.17.0 — Windows-style desktop — 2026-10-25
 - Rebuilt window management: clicking a background app raises it, taskbar buttons minimise and restore, and maximising, dragging, resizing and snapping use the available desktop area correctly.
 - Added a centred Start menu with app search, pinned apps and recent apps; a full-width taskbar; Quick settings for sounds and motion; a month calendar; desktop context menu; and Show desktop.

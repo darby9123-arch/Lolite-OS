@@ -218,12 +218,13 @@
          if(left||right)win.style.width=width+'px';
          if(top||bottom)win.style.height=height+'px';
        };
-       const stop=()=>{
+       const stop=e=>{
          handle.removeEventListener('pointermove',move);
          handle.removeEventListener('pointerup',stop);
          handle.removeEventListener('pointercancel',stop);
          document.body.style.userSelect=oldSelect;
          delete document.documentElement.dataset.loliteActiveResize;
+         if(e.type!=='pointercancel'&&(win.offsetWidth!==start.width||win.offsetHeight!==start.height))window.dispatchEvent(new CustomEvent('lolite:windowchange',{detail:{type:'resize',id:win.dataset.windowId}}));
        };
        handle.addEventListener('pointermove',move);
        handle.addEventListener('pointerup',stop);
