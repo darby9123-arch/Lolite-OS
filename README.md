@@ -15,6 +15,15 @@ A Lolite-branded browser desktop with a red and charcoal interface, apps, games,
 
 ## Update Log
 
+### Local HTML game packages — 2026-11-03
+- Expanded **Import HTML** into a proper local game import tool: **Import game ZIP**, **Import game folder**, and **My local games** on the Game Store toolbar.
+- A user-selected package can include an HTML entrypoint, JavaScript, CSS, images, audio and other relative assets. Files are saved together in **IndexedDB on that device** and loaded through a scoped service worker (only `/core/local-games/` paths).
+- Runs imported HTML in a restrictive iframe sandbox without granting its scripts access to Lolite's origin. No external proxy or game-host mirror is enabled.
+- Game packages are capped at 90 MB compressed, 150 MB unpacked and 650 files, with path traversal and ZIP expansion checks. Users can open and remove saved packages.
+- Removed the per-game automatic external **Save HTML** button: a single remote HTML file does not constitute a complete locally installed game.
+- **No third-party game files from GenizyMath, Chicken King’s Vault or Mountain Games were copied into Lolite.** Their existing original-site catalogue links remain unchanged. Only import game files that you own or have permission to use.
+- ZIP/folder imports support relative paths inside the package. Games relying on remote servers, absolute URLs, special browser permissions or unsupported codecs may not work entirely offline.
+
 ### Chicken King’s Vault and Mountain Games catalogues — 2026-11-03
 - Refreshed Chicken King’s Vault from [WanoCapy/ChickenKingsVault](https://github.com/WanoCapy/ChickenKingsVault): **805 catalogue links** checked against the repository, excluding missing, duplicate and unsuitable entries. The old 118-entry source list was replaced.
 - Refreshed Mountain Games from [mountain658/mountain658.github.io](https://github.com/mountain658/mountain658.github.io): **100 verified homepage entries**, with original game titles and artwork links.
