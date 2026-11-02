@@ -15,6 +15,14 @@ A Lolite-branded browser desktop with a red and charcoal interface, apps, games,
 
 ## Update Log
 
+### Chicken King’s Vault and Mountain Games catalogues — 2026-11-03
+- Refreshed Chicken King’s Vault from [WanoCapy/ChickenKingsVault](https://github.com/WanoCapy/ChickenKingsVault): **805 catalogue links** checked against the repository, excluding missing, duplicate and unsuitable entries. The old 118-entry source list was replaced.
+- Refreshed Mountain Games from [mountain658/mountain658.github.io](https://github.com/mountain658/mountain658.github.io): **100 verified homepage entries**, with original game titles and artwork links.
+- Corrected Mountain Games links that previously used a nonexistent `/mnt/` directory; original pages are hosted at the site root.
+- Added a dedicated **Mountain Games** category and preserved the existing Chicken King’s Vault, GenizyMath and DAKNUX categories.
+- Where a game is shared across providers, Lolite keeps the original sources available through its existing Server selector.
+- **No third-party games were downloaded or copied into Lolite.** Games remain on their original hosts; their licence, availability, and network/device policies still apply. Chicken King’s Vault's README says that site is no longer maintained.
+
 ### GenizyMath catalogue refreshed from upstream — 2026-11-03
 - Updated the GenizyMath category using the 849 game paths in the [GenizyMath GitHub repository](https://github.com/genizymath/genizymath.github.io) and its accompanying published title metadata.
 - Replaced the previous 782-entry listing with up-to-date names and **original-site links**, including new and renamed entries.
