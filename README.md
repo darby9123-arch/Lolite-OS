@@ -15,6 +15,12 @@ A Lolite-branded browser desktop with a red and charcoal interface, apps, games,
 
 ## Update Log
 
+### Game Store loading help — 2026-11-02
+- Added a **Game not loading?** button to the game player, explaining the difference between an organisation's "Application Blocked" policy, website iframe restrictions, broken links and game performance issues.
+- Shows the game’s selected source and host. Users can copy **game title, source, URL and chosen problem type** to share with an authorised administrator or developer; the report excludes account information.
+- Keeps the existing game launch experience and does **not** bypass school, company or network security restrictions. Managed-device blocks still require administrator approval.
+- Fixed the game-store script cache version so the new help control loads on the website.
+
 ### Lolite OS 3.18.0 — Live videos & soundscape — 2026-10-25
 - Added **24 MotionBGS live video wallpapers**: GTA IV/V/VI, Minecraft, cars, anime, space, nature and rainy city scenes. The full collection now has 41 wallpapers, including 32 live options.
 - Added wallpaper search, category counts, source links, HD and Data saver quality, playback status and retry. Videos stream from MotionBGS and require internet; the existing 17 local wallpapers remain available offline.
