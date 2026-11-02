@@ -15,6 +15,12 @@ A Lolite-branded browser desktop with a red and charcoal interface, apps, games,
 
 ## Update Log
 
+### Direct-launch games and taskbar credits — 2026-11-03
+- **External game pages now open in their own browser tab**, not inside an embedded Game Store iframe. This avoids iframe-only focus, pointer-lock, fullscreen and embedding compatibility problems.
+- Added a compact **ⓘ Game credits** button to the right-hand taskbar notification area. The credits panel links to the original GenizyMath, Chicken King’s Vault, Mountain Game Games and DAKNUX repositories.
+- Preserved the existing game categories and alternate-source server selector. Locally bundled Lolite games continue launching inside Lolite; user-installed local packages retain sandbox isolation.
+- This is a direct-page launch improvement, **not** a copy of third-party game code or assets into the repository. Credits acknowledge sources but are not redistribution licences.
+
 ### Local HTML game packages — 2026-11-03
 - Expanded **Import HTML** into a proper local game import tool: **Import game ZIP**, **Import game folder**, and **My local games** on the Game Store toolbar.
 - A user-selected package can include an HTML entrypoint, JavaScript, CSS, images, audio and other relative assets. Files are saved together in **IndexedDB on that device** and loaded through a scoped service worker (only `/core/local-games/` paths).
