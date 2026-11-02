@@ -15,6 +15,14 @@ A Lolite-branded browser desktop with a red and charcoal interface, apps, games,
 
 ## Update Log
 
+### Native Arcade — Play original games without embeds — 2026-11-02
+- Added **Native Games** to the Game Store with three original titles: **Pulse Run**, **Neon Paddle**, and **Circuit Snake**.
+- These games render directly to Lolite's own Canvas game surface. They use **no iframe**, third-party HTML, proxy, remote game host, or game-specific network requests.
+- Added desktop-window controls, mouse/touch and keyboard support, restart, pause and fullscreen, and locally saved personal best scores.
+- Native game cards are marked **NATIVE · OFFLINE** and are free to play; other Game Store titles continue to use their original providers.
+- Third-party copyrighted games are **not downloaded, duplicated, rehosted or disguised** to get around device/network restrictions. Access to restricted sites still requires the organisation's approval.
+- Note: the Lolite OS website itself still needs to be loaded online unless installed/cached separately.
+
 ### Game Store loading help — 2026-11-02
 - Added a **Game not loading?** button to the game player, explaining the difference between an organisation's "Application Blocked" policy, website iframe restrictions, broken links and game performance issues.
 - Shows the game’s selected source and host. Users can copy **game title, source, URL and chosen problem type** to share with an authorised administrator or developer; the report excludes account information.
