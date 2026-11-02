@@ -91,7 +91,7 @@ function pulse(){
   if(state==="ready")overlay(ctx,"PULSE RUN","Press Space, Up or Jump to begin");
   if(state==="over")overlay(ctx,"RUN COMPLETE","Score "+score+"  ·  Press Space or Restart");
  }
- return {restart,update,draw,action:act,key(key){if([" ","ArrowUp","w","W"].includes(key))act()},help:"Press Space or ↑ to jump. Avoid the obstacles!",score:()=>score};
+ return {restart,update,draw,action:act,key(key,isDown){if(isDown&&[" ","ArrowUp","w","W"].includes(key))act()},help:"Press Space or ↑ to jump. Avoid the obstacles!",score:()=>score};
 }
 function paddle(){
  const id="native-neon-paddle";const PY=92,BALL=13;
