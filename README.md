@@ -15,6 +15,12 @@ A Lolite-branded browser desktop with a red and charcoal interface, apps, games,
 
 ## Update Log
 
+### GenizyMath catalogue refreshed from upstream — 2026-11-03
+- Updated the GenizyMath category using the 849 game paths in the [GenizyMath GitHub repository](https://github.com/genizymath/genizymath.github.io) and its accompanying published title metadata.
+- Replaced the previous 782-entry listing with up-to-date names and **original-site links**, including new and renamed entries.
+- Kept existing Lolite game windows, cover fallbacks, and categories; validated all 849 source URL formats and deduplicated repeated game titles.
+- **No third-party HTML, scripts, or game assets were copied into Lolite.** These listings still load from the original provider, and network or device restrictions still apply.
+
 ### Native Arcade — Play original games without embeds — 2026-11-02
 - Added **Native Games** to the Game Store with three original titles: **Pulse Run**, **Neon Paddle**, and **Circuit Snake**.
 - These games render directly to Lolite's own Canvas game surface. They use **no iframe**, third-party HTML, proxy, remote game host, or game-specific network requests.
