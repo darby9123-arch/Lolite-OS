@@ -109,8 +109,21 @@ async function unzip(file){
   if(entry.method===8){
    if(typeof DecompressionStream!=="function")throw new Error("Your browser doesn't support ZIP extraction. Try an uncompressed game folder.");
    try{
-    const stream=new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
-    data=new Uint8Array(await new Response(stream).arrayBuffer());
+    const reader=new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw")).getReader();
+    const chunks=[];let size=0;
+    while(true){
+     const {value,done}=await reader.read();
+     if(done)break;
+     size+=value.byteLength;
+     if(size>entry.uncompressed||size>MAX_ENTRY){
+      await reader.cancel();
+      throw new Error("Unpacked file exceeded its declared size");
+     }
+     chunks.push(value);
+    }
+    data=new Uint8Array(size);
+    let offset=0;
+    for(const part of chunks){data.set(part,offset);offset+=part.byteLength}
    }catch(error){throw new Error("Could not unpack "+entry.path+": "+(error?.message||"invalid data"))}
   }
   if(data.length!==entry.uncompressed)throw new Error("ZIP content size mismatch for "+entry.path);
