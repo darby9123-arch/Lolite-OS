@@ -222,7 +222,7 @@ games.push(...mntSourceFiles.map(name=>({
      const current=new Map();games.forEach((game,index)=>{const key=genizyKey(game.title);if(!current.has(key))current.set(key,index)});
      let added=0,replaced=0;
      for(const item of catalog){
-       if(!Number.isInteger(item.id)||item.id<0||typeof item.title!=='string'||typeof item.path!=='string'||!/^iframe\/[a-zA-Z0-9_.-]+\.html$/.test(item.path))continue;
+       if(!Number.isInteger(item.id)||item.id<0||typeof item.title!=='string'||typeof item.path!=='string'||!/^iframe\/[a-zA-Z0-9_.-]+\.html(?:-a)?$/.test(item.path))continue;
        const title=item.title.replace(/[<>&"'\x60]/g,'').slice(0,90).trim(),key=genizyKey(title);
        if(!key)continue;
        const url='https://genizymath.github.io/'+item.path;
