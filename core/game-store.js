@@ -452,7 +452,19 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   if(!result?.ok){toast(result?.reason||'Lolite Dollars wallet is unavailable.');return}
   toast('Purchased '+g.title+'. Play it from My Library.');render();
  };
- window.loliteStorePlay=file=>{const game=games.find(g=>g.file===file);if(!game)return;const selected=selectedSource(game);if(!selected)return;
+ window.loliteStorePlay=file=>{
+  const game=games.find(g=>g.file===file);if(!game)return;
+  // Prefer a complete, user-installed local HTML game if the matching
+  // GenizyMath title is available. Local packages run in their own tab,
+  // with a CSP sandbox, never an embedded external game iframe.
+  if(game.genizy){
+    const installed=window.LoliteInstalledGameByTitle?.(game.title);
+    if(installed&&typeof window.LoliteOpenInstalledGame==='function'){
+      window.LoliteOpenInstalledGame(installed);
+      return;
+    }
+  }
+  const selected=selectedSource(game);if(!selected)return;
   // External game pages run directly as top-level pages, not inside
   // Lolite's iframe window. This avoids iframe fullscreen, focus and embed bugs.
   // Game files remain hosted by their original providers (no mirroring).
