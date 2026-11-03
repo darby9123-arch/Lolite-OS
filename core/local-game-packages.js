@@ -167,12 +167,12 @@ async function storeEntries(entries,title){
  window.dispatchEvent(new CustomEvent("lolite-local-packages-changed",{detail:{id}}));
  return record;
 }
-async function importZip(file){
+async function importZip(file,displayTitle){
  if(!file||!/\.(zip)$/i.test(file.name||""))throw new Error("Choose a ZIP file");
  const entries=await unzip(file);
- return storeEntries(entries,file.name.replace(/\.zip$/i,"").replace(/[_-]/g," "));
+ return storeEntries(entries,displayTitle||file.name.replace(/\.zip$/i,"").replace(/[_-]/g," "));
 }
-async function importFolder(files){
+async function importFolder(files,displayTitle){
  const chosen=Array.from(files||[]);
  if(!chosen.length)throw new Error("Choose a folder containing your HTML game");
  const entries=chosen.filter(f=>!f.name.startsWith(".")).map(f=>{
@@ -183,7 +183,7 @@ async function importFolder(files){
  if(!entries.length)throw new Error("The selected folder was empty");
  const first=entries[0].path.split("/")[0];
  if(first&&entries.every(e=>e.path.startsWith(first+"/")))for(const e of entries)e.path=e.path.slice(first.length+1);
- return storeEntries(entries,first||"Local Game");
+ return storeEntries(entries,displayTitle||first||"Local Game");
 }
 async function ensureWorker(){
  if(workerPromise)return workerPromise;
