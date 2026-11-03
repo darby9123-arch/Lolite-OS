@@ -15,6 +15,14 @@ A Lolite-branded browser desktop with a red and charcoal interface, apps, games,
 
 ## Update Log
 
+### GenizyMath local game launch integration — 2026-11-03
+- GenizyMath's `games/<slug>/index.html` pages are **game-page wrappers containing iframes**, not standalone game bundles. The `iframe/<id>.html` entrypoints often load JavaScript, styles and other assets from external repositories.
+- Cover images for GenizyMath entries come from the separate `freebuisness/covers` collection; Lolite continues using those PNG cover URLs, while preserving the GenizyMath category.
+- GenizyMath cards now expose an **Install game ZIP** action for complete game packages the user is permitted to install. Imported ZIPs retain the matching catalogue title.
+- When a matching local package is installed, the card's normal **Play** action prioritizes the local package. The **Play installed (no embed)** control also launches the game in its own tab.
+- Locally installed HTML pages are served through the existing service worker with a **Content-Security-Policy sandbox**, preventing the imported game from reading Lolite's account data. Some games that require same-origin storage may not work under this isolation.
+- If a game has no local package installed, its existing direct external game link remains available. No unlicensed third-party game HTML, scripts, or cover assets were copied into the public Lolite repository.
+
 ### Direct-launch games and taskbar credits — 2026-11-03
 - **External game pages now open in their own browser tab**, not inside an embedded Game Store iframe. This avoids iframe-only focus, pointer-lock, fullscreen and embedding compatibility problems.
 - Added a compact **ⓘ Game credits** button to the right-hand taskbar notification area. The credits panel links to the original GenizyMath, Chicken King’s Vault, Mountain Game Games and DAKNUX repositories.
