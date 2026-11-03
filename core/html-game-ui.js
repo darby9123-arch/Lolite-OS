@@ -90,6 +90,13 @@ function openPackage(record){
   notify(error?.message||"Could not start locally installed game");
  });
 }
+// Game Store can prefer a locally installed package when the matching
+// GenizyMath title's normal Play button is pressed.
+window.LoliteInstalledGameByTitle=title=>{
+ const key=titleKey(title);
+ return key&&genizyTitles.has(key)?installed.find(game=>titleKey(game.title)===key)||null:null;
+};
+window.LoliteOpenInstalledGame=openPackage;
 function fileInput(accept,change,folder=false){
  const input=document.createElement("input");input.type="file";input.hidden=true;input.accept=accept;
  if(folder){input.setAttribute("webkitdirectory","");input.setAttribute("directory","");input.multiple=true}
