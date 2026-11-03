@@ -352,7 +352,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  window.loliteStoreOpenSelected=file=>{
    const g=games.find(x=>x.file===file);
    const source=g&&selectedSource(g);
-   if(source)window.open(source.url,'_blank','noopener,noreferrer');
+   if(source)window.location.assign(source.url);
  };
  let active='Featured',query='',visibleCount=60;
  const economy=()=>window.LoliteEconomy;
@@ -454,9 +454,9 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  };
  window.loliteStorePlay=file=>{
   const game=games.find(g=>g.file===file);if(!game)return;
-  // Prefer a complete, user-installed local HTML game if the matching
-  // GenizyMath title is available. Local packages run in their own tab,
-  // with a CSP sandbox, never an embedded external game iframe.
+  // Prefer a complete user-installed HTML game if the matching
+  // GenizyMath title is available. The HTML runs as a top-level document
+  // in this same tab, protected by a CSP sandbox, without an iframe.
   if(game.genizy){
     const installed=window.LoliteInstalledGameByTitle?.(game.title);
     if(installed&&typeof window.LoliteOpenInstalledGame==='function'){
@@ -465,12 +465,11 @@ if(Array.isArray(window.LoliteMountainCatalog)){
     }
   }
   const selected=selectedSource(game);if(!selected)return;
-  // External game pages run directly as top-level pages, not inside
-  // Lolite's iframe window. This avoids iframe fullscreen, focus and embed bugs.
-  // Game files remain hosted by their original providers (no mirroring).
+  // If no installed package exists, external originals still launch without
+  // an iframe or popup. They remain hosted by their providers (no mirroring).
   if(!hasGame(game)){toast('Buy '+game.title+' for '+priceLabel(game)+' Lolite Dollars first.');render();return}
   if(game.external||game.openExternally||game.hosted){
-    window.open(selected.url,'_blank','noopener,noreferrer');
+    window.location.assign(selected.url);
     return;
   }const id='store-game-'+file.replace(/[^a-z0-9]/gi,'').slice(0,24);openApp(id,game.title,1000,720);let tries=0;const fill=()=>{const c=state.windows[id]?.el.querySelector('.content');if(!c){if(++tries<40)setTimeout(fill,25);return}c.innerHTML='<div class="store-player" data-game-file="'+game.file+'"><div class="store-player-head"><strong>'+game.title+'</strong><div class="store-player-actions"><button type="button" class="store-fullscreen-icon" aria-label="Toggle fullscreen; press Escape to exit" title="Fullscreen · press Esc to exit" onclick=\'window.loliteStoreFullscreen("'+id+'")\'>⛶</button><button type="button" onclick=\'window.loliteStoreOpenSelected("'+game.file+'")\'>Open separately ↗</button></div></div>'+serverPickerMarkup(game)+'<iframe class="store-frame" title="'+game.title+'" src="'+selected.url+'" allow="fullscreen; gamepad; autoplay; pointer-lock; keyboard-map" allowfullscreen loading="eager" tabindex="0"></iframe></div>';const frame=c.querySelector('.store-frame');if(frame){frame.addEventListener('load',()=>{if(game.hosted){frame.focus();toast('Minecraft: click inside the game, then click the world to lock your mouse. Press Esc to release it.')}});frame.addEventListener('pointerdown',()=>frame.focus())}};fill()};
 
