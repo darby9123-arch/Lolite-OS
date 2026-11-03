@@ -37,32 +37,6 @@ async function refresh(){
  document.querySelectorAll(".store-card[data-local-source-enhanced]").forEach(el=>delete el.dataset.localSourceEnhanced);
  schedule();
 }
-function playerWindow(id,title,render){
- if(typeof window.openApp!=="function"){notify("Window manager unavailable");return}
- window.openApp(id,title,1000,720);
- let attempts=0;
- function populate(){
-  const root=window.state?.windows?.[id]?.el?.querySelector(".content")||
-    (typeof state!=="undefined"?state.windows[id]?.el?.querySelector(".content"):null);
-  if(!root){if(++attempts<45)setTimeout(populate,40);return}
-  root.textContent="";
-  const pane=document.createElement("div");pane.className="store-player";
-  const head=document.createElement("div");head.className="store-player-head";
-  const name=document.createElement("strong");name.textContent=title;
-  const buttons=document.createElement("div");buttons.className="store-player-actions";
-  buttons.append(button("Fullscreen",()=>pane.requestFullscreen?.()));
-  head.append(name,buttons);
-  const note=document.createElement("div");note.className="store-external-player-note";
-  note.textContent="Game code runs in an isolated sandbox. Some games still require online services or unsupported browser features.";
-  const frame=document.createElement("iframe");frame.className="store-frame";frame.title=title;
-  frame.setAttribute("sandbox","allow-scripts allow-forms allow-pointer-lock allow-downloads");
-  frame.setAttribute("allow","fullscreen; autoplay; gamepad; pointer-lock");
-  frame.allowFullscreen=true;frame.tabIndex=0;
-  render(frame,buttons);
-  pane.append(head,note,frame);root.append(pane);
- }
- populate();
-}
 function openPackage(record){
  if(!packages)return notify("Local package importer is unavailable");
  // Direct, same-tab document navigation. The installed HTML becomes the page,
