@@ -454,9 +454,8 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  };
  window.loliteStorePlay=file=>{
   const game=games.find(g=>g.file===file);if(!game)return;
-  // Prefer a complete user-installed HTML game if the matching
-  // GenizyMath title is available. The HTML runs as a top-level document
-  // in this same tab, protected by a CSP sandbox, without an iframe.
+  // Prefer an installed, complete local HTML package for a GenizyMath title.
+  // No iframe, popup, or proxy: the game document replaces this browser tab.
   if(game.genizy){
     const installed=window.LoliteInstalledGameByTitle?.(game.title);
     if(installed&&typeof window.LoliteOpenInstalledGame==='function'){
@@ -464,14 +463,12 @@ if(Array.isArray(window.LoliteMountainCatalog)){
       return;
     }
   }
-  const selected=selectedSource(game);if(!selected)return;
-  // If no installed package exists, external originals still launch without
-  // an iframe or popup. They remain hosted by their providers (no mirroring).
   if(!hasGame(game)){toast('Buy '+game.title+' for '+priceLabel(game)+' Lolite Dollars first.');render();return}
-  if(game.external||game.openExternally||game.hosted){
-    window.location.assign(selected.url);
-    return;
-  }const id='store-game-'+file.replace(/[^a-z0-9]/gi,'').slice(0,24);openApp(id,game.title,1000,720);let tries=0;const fill=()=>{const c=state.windows[id]?.el.querySelector('.content');if(!c){if(++tries<40)setTimeout(fill,25);return}c.innerHTML='<div class="store-player" data-game-file="'+game.file+'"><div class="store-player-head"><strong>'+game.title+'</strong><div class="store-player-actions"><button type="button" class="store-fullscreen-icon" aria-label="Toggle fullscreen; press Escape to exit" title="Fullscreen · press Esc to exit" onclick=\'window.loliteStoreFullscreen("'+id+'")\'>⛶</button><button type="button" onclick=\'window.loliteStoreOpenSelected("'+game.file+'")\'>Open separately ↗</button></div></div>'+serverPickerMarkup(game)+'<iframe class="store-frame" title="'+game.title+'" src="'+selected.url+'" allow="fullscreen; gamepad; autoplay; pointer-lock; keyboard-map" allowfullscreen loading="eager" tabindex="0"></iframe></div>';const frame=c.querySelector('.store-frame');if(frame){frame.addEventListener('load',()=>{if(game.hosted){frame.focus();toast('Minecraft: click inside the game, then click the world to lock your mouse. Press Esc to release it.')}});frame.addEventListener('pointerdown',()=>frame.focus())}};fill()};
+  const selected=selectedSource(game);if(!selected)return;
+  // Existing web-sourced games likewise launch top-level in this tab.
+  // Their assets are still provided by their respective original hosts.
+  window.location.assign(selected.url);
+ };
 
  window.loliteOpenAccelerationGuide=()=>{const id='browser-acceleration-guide';openApp(id,'Hardware Acceleration Guide',760,650);let tries=0;const fill=()=>{const c=state.windows[id]?.el.querySelector('.content');if(!c){if(++tries<40)setTimeout(fill,25);return}c.innerHTML='<div style="height:100%;overflow:auto;padding:24px;background:#0c1018;color:#eef2f8;font:14px/1.6 Segoe UI,Arial,sans-serif;border-radius:10px"><div style="color:#a9a3ff;font-size:11px;font-weight:700;letter-spacing:2px">LOLITE HELP</div><h1 style="margin:8px 0;font-size:27px">Hardware acceleration</h1><p style="color:#b5c0d0;margin:0 0 18px">Choose the browser you use to see the right steps. Hardware acceleration lets the browser use your graphics hardware for supported tasks and may improve game performance.</p><div id="accel-browser-list" style="display:flex;flex-wrap:wrap;gap:8px;margin:18px 0">'+['Brave','Opera GX','Firefox','Chrome','Safari'].map(b=>'<button type="button" data-browser="'+b+'" onclick=\'window.loliteShowAccelerationSteps("'+b+'")\' style="padding:10px 14px;border:1px solid #38445a;border-radius:8px;background:#171f2d;color:#eef2f8;cursor:pointer">'+b+'</button>').join('')+'</div><section id="accel-steps" style="padding:18px;border:1px solid #2c3749;border-radius:10px;background:#111823"><h2 style="margin:0 0 8px;font-size:18px">Select your browser</h2><p style="margin:0;color:#9daabd">The instructions will appear here.</p></section><p style="margin-top:18px;color:#8c99ac;font-size:12px">Tip: restart the browser after changing a setting. The exact wording can vary by version. Hardware acceleration may not be available on managed devices.</p></div>'};fill()};
  window.loliteShowAccelerationSteps=browser=>{const section=document.getElementById('accel-steps');if(!section)return;const steps={
