@@ -167,6 +167,18 @@ async function storeEntries(entries,title){
  window.dispatchEvent(new CustomEvent("lolite-local-packages-changed",{detail:{id}}));
  return record;
 }
+async function importStandaloneHtml(file,displayTitle){
+ if(!(file instanceof Blob)||!file.name||!/\.html?$/i.test(file.name))throw new Error("Choose a standalone HTML game file");
+ if(file.size>MAX_ENTRY)throw new Error("HTML file exceeds the 40 MB per-file limit");
+ const title=displayTitle||file.name.replace(/\.html?$/i,"").replace(/[_-]/g," ");
+ return storeEntries([{path:"index.html",blob:file,size:file.size,type:"text/html;charset=utf-8"}],title);
+}
+async function importSavedHtml(record){
+ if(!record||typeof record.html!=="string"||!record.html.trim())throw new Error("The saved HTML game was empty");
+ const blob=new Blob([record.html],{type:"text/html;charset=utf-8"});
+ if(blob.size>MAX_ENTRY)throw new Error("HTML file exceeds the 40 MB per-file limit");
+ return storeEntries([{path:"index.html",blob,size:blob.size,type:"text/html;charset=utf-8"}],record.title||"HTML Game");
+}
 async function importZip(file,displayTitle){
  if(!file||!/\.(zip)$/i.test(file.name||""))throw new Error("Choose a ZIP file");
  const entries=await unzip(file);
@@ -210,5 +222,5 @@ async function launchUrl(record){
  const scope=await ensureWorker();
  return new URL("local-games/"+record.id+"/"+record.root.split("/").map(encodeURIComponent).join("/"),scope).href;
 }
-window.LoliteLocalGamePackages=Object.freeze({importZip,importFolder,list:getAll,remove:erase,ensureWorker,launchUrl});
+window.LoliteLocalGamePackages=Object.freeze({importZip,importFolder,importStandaloneHtml,importSavedHtml,list:getAll,remove:erase,ensureWorker,launchUrl});
 })();
