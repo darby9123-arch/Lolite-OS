@@ -51,6 +51,12 @@ async function serve(request){
   "Access-Control-Allow-Origin":"*",
   "Accept-Ranges":"bytes"
  });
+ // Top-level imported HTML runs under an opaque origin. It must not read
+ // Lolite's cookies, localStorage, IndexedDB, or linked account credentials.
+ // Unlike an iframe, CSP sandbox also applies to directly opened documents.
+ if(/text\/html(?:;|$)/i.test(asset.type||data.type||"")){
+  headers.set("Content-Security-Policy","sandbox allow-scripts allow-forms allow-pointer-lock allow-downloads");
+ }
  const range=request.headers.get("range");
  if(range){
   const match=range.match(/^bytes=(\d+)-(\d*)$/);
