@@ -15,6 +15,14 @@ A Lolite-branded browser desktop with a red and charcoal interface, apps, games,
 
 ## Update Log
 
+### Actual HTML games in the same browser tab — 2026-11-03
+- **No new tabs and no game iframes:** Game Store Play navigates the current tab straight to the selected game's HTML page. Browser Back returns to Lolite.
+- When a **GenizyMath** title has a user-installed local package, Play launches the actual stored HTML and its relative JS, image, audio and CSS files via the local game service worker rather than the third-party website.
+- **Import HTML**, **Import game ZIP**, and **Import game folder** now use direct-play local packages. Old standalone HTML imports migrate into this system when opened.
+- Locally installed HTML pages include a small **↩ Lolite OS** link for returning to the OS in the same tab, while a CSP sandbox prevents imported game scripts from reading Lolite's credentials or storage.
+- Games without a local package continue navigating to their original source in the **same tab**, so they are not falsely represented as installed. Nothing from the unlicensed third-party game collections is bulk-copied into the public Lolite repository.
+- A full HTML page replaces the desktop in the same browser tab while playing. Keeping the desktop surrounding a separately executing game document would require a frame, contrary to this no-embed mode.
+
 ### GenizyMath local game launch integration — 2026-11-03
 - GenizyMath's `games/<slug>/index.html` pages are **game-page wrappers containing iframes**, not standalone game bundles. The `iframe/<id>.html` entrypoints often load JavaScript, styles and other assets from external repositories.
 - Cover images for GenizyMath entries come from the separate `freebuisness/covers` collection; Lolite continues using those PNG cover URLs, while preserving the GenizyMath category.
