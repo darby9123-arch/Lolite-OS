@@ -6,6 +6,8 @@
 "use strict";
 const storage=window.LoliteHTMLGameFiles,packages=window.LoliteLocalGamePackages;
 if(!storage)return;
+const titleKey=value=>String(value||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]/g,"");
+const genizyTitles=new Set((Array.isArray(window.LoliteGenizyCatalog)?window.LoliteGenizyCatalog:[]).map(entry=>titleKey(entry.title)));
 let saved=[],installed=[],scheduled=false,loading=false;
 const notify=msg=>typeof window.toast==="function"?window.toast(msg):console.info(msg);
 function button(label,action){
@@ -30,6 +32,9 @@ async function refresh(){
   ]);
   saved=results[0];installed=results[1];
  }finally{loading=false}
+ // Force visible cards to reflect newly installed or removed local game ZIPs.
+ document.querySelectorAll(".lolite-local-source-actions").forEach(el=>el.remove());
+ document.querySelectorAll(".store-card[data-local-source-enhanced]").forEach(el=>delete el.dataset.localSourceEnhanced);
  schedule();
 }
 function playerWindow(id,title,render){
@@ -66,13 +71,24 @@ function openHtml(record){
   if(record.sourceUrl)controls.append(button("Original website",()=>window.open(record.sourceUrl,"_blank","noopener,noreferrer")));
  });
 }
-async function openPackage(record){
+function openPackage(record){
  if(!packages)return notify("Local package importer is unavailable");
- let src;
- try{src=await packages.launchUrl(record)}
- catch(error){return notify(error?.message||"Could not start this local game")}
- const id="lolite-local-package-"+record.id;
- playerWindow(id,record.title||"Local Game",frame=>{frame.src=src});
+ // The browser opens a top-level tab instead of rendering the game in an iframe.
+ // The game service worker sends CSP sandbox headers on imported HTML, so it
+ // cannot read Lolite's local storage or its connected account credentials.
+ const tab=window.open("about:blank","_blank");
+ if(!tab)return notify("Allow popups for Lolite to open this locally saved game.");
+ try{
+  tab.opener=null;
+  tab.document.title="Loading local game";
+  tab.document.body.textContent="Starting your local game…";
+ }catch(_){}
+ packages.launchUrl(record).then(url=>{
+  if(!tab.closed)tab.location.replace(url);
+ }).catch(error=>{
+  try{if(!tab.closed)tab.close()}catch(_){}
+  notify(error?.message||"Could not start locally installed game");
+ });
 }
 function fileInput(accept,change,folder=false){
  const input=document.createElement("input");input.type="file";input.hidden=true;input.accept=accept;
@@ -123,6 +139,31 @@ function ensureTop(root){
  localBtn.style.flex="0 0 auto";
  top.append(zipBtn,zipInput,folderBtn,folderInput,localBtn);
 }
+function enhanceGenizyCards(root){
+ if(!packages||!genizyTitles.size)return;
+ const installedByTitle=new Map();
+ for(const game of installed){
+  const key=titleKey(game.title);
+  if(key&&!installedByTitle.has(key))installedByTitle.set(key,game);
+ }
+ for(const card of root.querySelectorAll(".store-card")){
+  if(card.dataset.localSourceEnhanced==="1"||card.closest("#lolite-local-package-section,#lolite-saved-html-section"))continue;
+  const body=card.querySelector(".store-card-body");
+  const title=body?.querySelector("h3")?.textContent?.trim();
+  if(!title||!genizyTitles.has(titleKey(title)))continue;
+  card.dataset.localSourceEnhanced="1";
+  const controls=actions();controls.classList.add("lolite-local-source-actions");
+  const installedGame=installedByTitle.get(titleKey(title));
+  if(installedGame)controls.append(button("Play installed (no embed)",()=>openPackage(installedGame)));
+  const input=fileInput(".zip,application/zip",async files=>{
+   if(!files.length)return;
+   const record=await packages.importZip(files[0],title);
+   notify(record.title+" installed locally ("+record.files+" files). Use Play installed to run without an iframe.");
+  });
+  const install=button(installedGame?"Replace local ZIP":"Install game ZIP",()=>input.click());
+  controls.append(install,input);body.append(controls);
+ }
+}
 function buildSection(root,id,label,description,records,openFn,removeFn){
  let section=root.querySelector("#"+id);
  if(!records.length){section?.remove();return}
@@ -159,11 +200,12 @@ function enhance(){
  const root=document.querySelector(".store-main");if(!root)return;
  ensureTop(root);
  buildSection(root,"lolite-local-package-section","Installed HTML Game Packages",
-   "These ZIP and folder packages include the game HTML, scripts, images, sounds and other files you imported. Files are stored in this browser; only games you are authorised to use should be imported.",
+   "Complete local HTML game packages, including scripts, images and sounds. Play locally opens in a separate tab without an iframe. Only import games you are authorised to use.",
    installed,openPackage,id=>packages.remove(id));
  buildSection(root,"lolite-saved-html-section","Saved Standalone HTML Games",
    "These are full HTML documents saved in this browser. Games that need additional assets should be imported as a complete ZIP or folder instead.",
    saved,openHtml,id=>storage.remove(id));
+ enhanceGenizyCards(root);
 }
 function schedule(){
  if(scheduled)return;scheduled=true;
