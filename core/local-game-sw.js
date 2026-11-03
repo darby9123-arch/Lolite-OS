@@ -54,8 +54,9 @@ async function serve(request){
  // Top-level imported HTML runs under an opaque origin. It must not read
  // Lolite's cookies, localStorage, IndexedDB, or linked account credentials.
  // Unlike an iframe, CSP sandbox also applies to directly opened documents.
- if(/text\/html(?:;|$)/i.test(asset.type||data.type||"")){
-  headers.set("Content-Security-Policy","sandbox allow-scripts allow-forms allow-pointer-lock allow-downloads");
+ const isHTML=/text\/html(?:;|$)/i.test(asset.type||data.type||"");
+ if(isHTML){
+  headers.set("Content-Security-Policy","sandbox allow-scripts allow-forms allow-pointer-lock allow-downloads allow-top-navigation-by-user-activation");
  }
  const range=request.headers.get("range");
  if(range){
@@ -68,8 +69,19 @@ async function serve(request){
   headers.set("Content-Length",String(last-from+1));
   return new Response(request.method==="HEAD"?null:data.slice(from,last+1),{status:206,headers});
  }
- headers.set("Content-Length",String(data.size));
- return new Response(request.method==="HEAD"?null:data,{status:200,headers});
+ // Show a tiny return link on the actual top-level HTML document. No
+ // iframe, popup, proxy, remote-game download, or other document wrapper.
+ // The link navigates only to Lolite's own root on the same origin.
+ let output=data;
+ if(isHTML&&request.method==="GET"){
+  const loliteUrl=new URL("../",base).href.replace(/&/g,"&amp;").replace(/"/g,"&quot;");
+  const link='<a id="lolite-game-return" href="'+loliteUrl+'" title="Return to Lolite OS" style="all:initial!important;position:fixed!important;right:12px!important;top:12px!important;z-index:2147483647!important;padding:8px 12px!important;border-radius:9px!important;background:#121a24eb!important;border:1px solid #7c8ca9!important;color:white!important;cursor:pointer!important;text-decoration:none!important;font:600 12px/1.3 system-ui,sans-serif!important;box-shadow:0 5px 18px #0008!important">↩ Lolite OS</a>';
+  const html=await data.text();
+  const updated=/<\/body\s*>/i.test(html)?html.replace(/<\/body\s*>/i,link+"</body>"):html+link;
+  output=new Blob([updated],{type:"text/html;charset=utf-8"});
+ }
+ headers.set("Content-Length",String(output.size));
+ return new Response(request.method==="HEAD"?null:output,{status:200,headers});
 }
 self.addEventListener("fetch",event=>{
  const url=new URL(event.request.url);
