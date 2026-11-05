@@ -237,16 +237,19 @@ function buildSection(root,id,label,description,records,openFn,removeFn){
   const card=document.createElement("article");card.className="store-card";
   const body=document.createElement("div");body.className="store-card-body";
   const title=document.createElement("h3");title.textContent=record.title;
-  const subtitle=document.createElement("p");subtitle.style.cssText="font-size:11px;color:#aabbcc;margin:7px 0;";
-  subtitle.textContent=record.files?record.files+" files · "+(record.bytes/1048576).toFixed(1)+" MB · stored on this device":"Single HTML file · stored on this device";
-  const row=actions();
-  row.append(button("Play locally",()=>openFn(record)));
-  row.append(button("Remove",async()=>{
+  const controls=document.createElement("div");controls.className="store-card-actions";
+  const play=button("▶ Play",()=>openFn(record));play.style.width="100%";
+  const server=document.createElement("span");server.className="store-local-server";server.textContent="Server · Installed HTML";
+  controls.append(play,server);
+  const manage=document.createElement("details");manage.className="store-local-manage";
+  const summary=document.createElement("summary");summary.textContent="Manage installation";
+  const remove=button("Remove game",async()=>{
    if(!window.confirm("Remove "+record.title+" from this browser?"))return;
    try{await removeFn(record.id);await refresh();notify("Removed "+record.title)}
    catch(error){notify(error?.message||"Cannot remove game")}
-  }));
-  body.append(title,subtitle,row);card.append(body);grid.append(card);
+  });
+  manage.append(summary,remove);
+  body.append(title,controls,manage);card.append(body);grid.append(card);
  }
  section.append(heading,help,grid);
 }
