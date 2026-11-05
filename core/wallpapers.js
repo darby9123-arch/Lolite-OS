@@ -74,7 +74,7 @@
   const el=document.getElementById('wallpaper');if(!el)return;
   if(!force&&active?.id===w.id&&active?.src===w.src){sync();return}
   release();active=w;time=0;
-  el.classList.remove('wallpaper-animated','wallpaper-pixel');el.dataset.motion='';el.style.background=`#171719 url("${w.src}") center / cover no-repeat`;
+  el.classList.remove('wallpaper-animated','wallpaper-pixel');el.dataset.motion='';el.style.background=`#171719 url("${w.local?(window.LoliteWallpaperImports?.poster(w.id)||w.src):w.src}") center / cover no-repeat`;
   root.dataset.wallpaper=w.id;
   if(w.video){
    video=document.createElement('video');const current=video;
@@ -110,10 +110,11 @@
   if(!items.length)return '<p class="cr-wall-empty">No wallpapers match. Try a different name or collection.</p>';
   return items.map(w=>{
    const installed=!w.local||!!window.LoliteWallpaperImports?.isInstalled(w.id);
+   const preview=w.local?(window.LoliteWallpaperImports?.poster(w.id)||w.src):w.src;
    const title=w.local?(installed?'Installed locally':'Not installed · Select MP4s'):w.category;
    return '<article class="cr-wall-item">'+
     '<button type="button" class="cr-wall-card" data-wall-id="'+w.id+'" aria-pressed="'+(active?.id===w.id)+'" aria-label="'+(installed?'Apply ':'Install files for ')+escape(w.name)+'">'+
-    '<span class="cr-wall-image"><img src="'+w.src+'" alt="" loading="lazy" decoding="async">'+
+    '<span class="cr-wall-image"><img src="'+preview+'" alt="" loading="lazy" decoding="async">'+
     (w.local?'<span class="cr-live-label">'+(installed?'LOCAL VIDEO':'INSTALL MP4')+'</span>':'')+
     '<span class="cr-wall-check">✓</span></span>'+
     '<span class="cr-wall-caption"><strong>'+escape(w.name)+'</strong><small>'+escape(w.category)+' · '+escape(title)+'</small></span></button>'+
