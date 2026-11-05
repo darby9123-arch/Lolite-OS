@@ -18,7 +18,7 @@ async function openGD(record){
  if(!packages)throw new Error("Lolite local game launcher is unavailable");
  notify("Launching Geometry Dash from your installed HTML…");
  const url=await packages.launchUrl(record);
- window.location.assign(url);
+ window.LoliteGamePlayer?.open({title:gdTitle,url,file:"local-"+record.id,source:"Installed GenizyMath ZIP"});
 }
 async function importGDFile(file){
  if(importInProgress||!file)return;
@@ -67,7 +67,7 @@ function patchPlay(){
  const original=window.loliteStorePlay;
  if(typeof original!=="function"||original.gdLocalZipFix)return;
  function patched(file){
-  if(file===gdFile){void playGD();return}
+  if(file===gdFile && !window.loliteStoreSelectedIndex?.(file)){void playGD();return}
   return original.apply(this,arguments);
  }
  patched.gdLocalZipFix=true;
@@ -75,23 +75,10 @@ function patchPlay(){
 }
 function addControls(){
  for(const card of document.querySelectorAll(".store-card")){
-  if(card.querySelector(".gd-use-local-zip"))continue;
   const heading=card.querySelector(".store-card-body h3");
   if(heading?.textContent?.trim()!==gdTitle)continue;
-  const body=card.querySelector(".store-card-body");
-  if(!body)continue;
-  const note=document.createElement("p");
-  note.className="store-external-note";
-  note.textContent="Runs the HTML from your GenizyMath source ZIP on this device. No redirect or embed. Internet may still be needed for game assets.";
-  const select=document.createElement("button");
-  select.type="button";select.className="store-play gd-use-local-zip";
-  select.style.marginTop="8px";
-  select.textContent="Install / replace Geometry Dash from ZIP";
-  select.addEventListener("click",chooseZip);
-  body.append(note,select);
-  // Ensure the default Play button accurately describes the action.
-  const play=body.querySelector(".store-play:not(.gd-use-local-zip)");
-  if(play){play.title="Play your installed local Geometry Dash HTML, or select a source ZIP to install it";play.childNodes[0]&&(play.childNodes[0].textContent="Play local Geometry Dash ")}
+  const play=card.querySelector(".store-card-actions .store-play");
+  if(play)play.title="Play installed Geometry Dash HTML inside Lolite or choose your original ZIP";
  }
 }
 function init(){
