@@ -1,0 +1,36 @@
+name: Verify authorized HTML game imports
+on:
+  push:
+    paths:
+      - 'scripts/import-authorized-games.mjs'
+      - 'tests/import-authorized-games.test.cjs'
+      - 'core/game-store.js'
+      - 'core/html-game-ui.js'
+      - 'core/genizymath-catalog.js'
+      - 'html games/authorized/**'
+      - '.github/workflows/verify-game-imports.yml'
+  pull_request:
+    paths:
+      - 'scripts/import-authorized-games.mjs'
+      - 'tests/import-authorized-games.test.cjs'
+      - 'core/game-store.js'
+      - 'core/html-game-ui.js'
+      - 'html games/authorized/**'
+jobs:
+  import-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check game JavaScript syntax
+        run: |
+          node --check scripts/import-authorized-games.mjs
+          node --check core/game-store.js
+          node --check core/html-game-ui.js
+          node --check core/genizymath-catalog.js
+      - name: Run game importer tests
+        run: node --test tests/import-authorized-games.test.cjs
