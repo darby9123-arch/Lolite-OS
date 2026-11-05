@@ -1,0 +1,44 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.resolve(__dirname, '..');
+const read = file => fs.readFileSync(path.join(root,file),'utf8');
+
+test('Cosmos is an actual loaded desktop, not a static mockup', () => {
+  const html=read('index.html'),js=read('core/cosmos.js');
+  assert.match(html,/core\/cosmos\.css\?v=/);
+  assert.match(html,/core\/cosmos\.js\?v=/);
+  assert.match(js,/LoliteDesktopShell/);
+  assert.match(js,/data-cosmos-open/);
+  assert.match(js,/function renderRecent/);
+});
+
+test('Cosmos is registered in both themes and wallpapers', () => {
+  assert.match(read('core/desktop-themes.js'),/id:'cosmos'/);
+  assert.match(read('core/wallpapers.js'),/entry\('cosmos-orbit'/);
+  assert.match(read('index.html'),/loliteCosmosUpgrade/);
+});
+
+test('Cosmos uses an original local background and favicon', () => {
+  const svg=read('assets/wallpapers/cosmos-orbit.svg');
+  assert.match(svg,/<svg[^>]+viewBox="0 0 1920 1080"/);
+  assert.match(svg,/<radialGradient/);
+  assert.doesNotMatch(svg,/<image[^>]+https?:\/\//);
+  assert.match(read('index.html'),/assets\/lolite-cosmos-logo\.svg/);
+});
+
+test('Status widgets do not display fabricated telemetry', () => {
+  const js=read('core/cosmos.js');
+  assert.match(js,/navigator\.storage\.estimate/);
+  assert.match(js,/navigator\.onLine/);
+  assert.match(js,/navigator\.getBattery/);
+  assert.match(js,/requestAnimationFrame\(fps\)/);
+});
+
+test('Cosmos local terminal does not execute operating-system commands', () => {
+  const js=read('core/cosmos.js');
+  assert.match(js,/function terminalMarkup/);
+  assert.match(js,/cosmos-terminal-form/);
+  assert.doesNotMatch(js,/\bchild_process\b|\bexecSync\b|\beval\(/);
+});
