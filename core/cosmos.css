@@ -382,3 +382,10 @@ html[data-lolite-design="cosmos"] .cosmos-tile .lolite-icon{color:#bfd2de!import
 @media(max-width:510px){
  html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center{max-width:calc(100vw - 12px)!important}
 }
+
+/* Startup appearance: no red-tinted logo or Crimson loading indicator. */
+html[data-lolite-design="cosmos"] #lolite-splash .splash-logo{filter:none!important}
+html[data-lolite-design="cosmos"] #lolite-splash .splash-title b{color:#93bcd2!important}
+html[data-lolite-design="cosmos"] #lolite-splash .splash-progress{background:#668ca5!important;box-shadow:none!important}
+html[data-lolite-design="cosmos"] #lolite-splash .splash-status{color:#a8b8c6}
+html[data-lolite-design="cosmos"] #lolite-splash{background:radial-gradient(circle at 50% 42%,#1d3043 0%,#0c1726 50%,#060c16 100%)!important}
