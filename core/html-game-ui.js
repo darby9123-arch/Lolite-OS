@@ -133,13 +133,23 @@ function enhanceGenizyCards(root){
   const controls=actions();controls.classList.add("lolite-local-source-actions");
   const installedGame=installedByTitle.get(titleKey(title));
   if(installedGame)controls.append(button("Play installed HTML",()=>openPackage(installedGame)));
+  async function replaceWith(importGame){
+   // Keep the old package if the new import fails; remove only after success.
+   const record=await importGame();
+   if(installedGame&&installedGame.id!==record.id)await packages.remove(installedGame.id);
+   notify(record.title+" installed locally ("+record.files+" files). Play now uses the replacement HTML.");
+  }
   const input=fileInput(".zip,application/zip",async files=>{
    if(!files.length)return;
-   const record=await packages.importZip(files[0],title);
-   notify(record.title+" installed locally ("+record.files+" files). Play installed now opens the HTML in this tab.");
+   await replaceWith(()=>packages.importZip(files[0],title));
   });
   const install=button(installedGame?"Replace local ZIP":"Install game ZIP",()=>input.click());
-  controls.append(install,input);body.append(controls);
+  const folderInput=fileInput("",async files=>{
+   if(!files.length)return;
+   await replaceWith(()=>packages.importFolder(files,title));
+  },true);
+  const folderButton=button(installedGame?"Replace with folder":"Install game folder",()=>folderInput.click());
+  controls.append(install,input,folderButton,folderInput);body.append(controls);
  }
 }
 function buildSection(root,id,label,description,records,openFn,removeFn){
