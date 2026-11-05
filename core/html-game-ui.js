@@ -99,6 +99,20 @@ function ensureTop(root){
    notify(game.title+" installed locally ("+game.files+" files).");
   }finally{zipBtn.disabled=false;zipBtn.textContent="Import game ZIP"}
  });
+
+ const genizyInput=fileInput(".zip,application/zip",async files=>{
+  if(!files.length)return;
+  if(typeof packages.importGenizyZip!=="function")throw new Error("GenizyMath ZIP importer is unavailable");
+  genizyBtn.disabled=true;genizyBtn.textContent="Reading ZIP…";
+  try{
+   const result=await packages.importGenizyZip(files[0],status=>{genizyBtn.textContent=status});
+   notify(result.imported+" GenizyMath HTML games installed locally. "+
+     result.skippedEmbeds+" iframe-only games skipped; "+result.alreadyInstalled+" already installed."+
+     " Games requiring external assets still need internet.");
+  }finally{genizyBtn.disabled=false;genizyBtn.textContent="Import GenizyMath ZIP"}
+ });
+ const genizyBtn=button("Import GenizyMath ZIP",()=>genizyInput.click());
+ genizyBtn.style.flex="0 0 auto";
  const folderBtn=button("Import game folder",()=>folderInput.click());
  folderBtn.style.flex="0 0 auto";
  const folderInput=fileInput("",async files=>{
@@ -115,7 +129,7 @@ function ensureTop(root){
   else notify("Import an HTML file, game ZIP or folder first.");
  });
  localBtn.style.flex="0 0 auto";
- top.append(zipBtn,zipInput,folderBtn,folderInput,localBtn);
+ top.append(zipBtn,zipInput,genizyBtn,genizyInput,folderBtn,folderInput,localBtn);
 }
 function enhanceGenizyCards(root){
  if(!packages||!genizyTitles.size)return;
@@ -187,9 +201,19 @@ function buildSection(root,id,label,description,records,openFn,removeFn){
 function enhance(){
  const root=document.querySelector(".store-main");if(!root)return;
  ensureTop(root);
+ const genizyImported=installed.filter(record=>record.source==="genizymath-zip");
+ let summary=root.querySelector("#lolite-genizy-import-summary");
+ if(genizyImported.length){
+  if(!summary){
+   summary=document.createElement("p");summary.id="lolite-genizy-import-summary";summary.className="store-external-note";
+   summary.style.cssText="padding:10px 12px;margin:12px 0;border:1px solid #394559;border-radius:9px;";
+   root.querySelector(".store-top")?.after(summary);
+  }
+  summary.textContent=genizyImported.length+" GenizyMath HTML games installed on this device. Select a GenizyMath game and press Play to open its local HTML directly. Some games need internet for external assets; source-site iframe wrappers are excluded.";
+ }else summary?.remove();
  buildSection(root,"lolite-local-package-section","Installed HTML Game Packages",
-   "Complete local HTML games, including scripts, images and sounds. Play locally opens the actual HTML in this same browser tab, with no iframe or popup. Use your browser's Back button to return to Lolite.",
-   installed,openPackage,id=>packages.remove(id));
+   "Local HTML games, including scripts, images and sounds. Play locally opens the actual HTML in this same browser tab, with no iframe or popup. Use your browser's Back button to return to Lolite.",
+   installed.filter(record=>record.source!=="genizymath-zip"),openPackage,id=>packages.remove(id));
  buildSection(root,"lolite-saved-html-section","Saved Standalone HTML Games",
    "Older HTML imports will be migrated into direct-play local packages when launched. Multi-file games still require their complete ZIP or folder.",
    saved,openHtml,id=>storage.remove(id));
