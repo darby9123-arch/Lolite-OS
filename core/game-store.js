@@ -381,6 +381,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   return '<label class="store-server-picker"><span>Server</span><select class="store-server-select" data-source-game="'+encodeLabel(g.file)+'" aria-label="Server for '+encodeLabel(g.title)+'" onchange=\'window.loliteStorePickServer("'+g.file+'",this.value)\' '+(servers.length<2?'disabled':'')+'>'+servers.map((v,i)=>'<option value="'+i+'"'+(chosen===i?' selected':'')+'>'+encodeLabel(v.name)+'</option>').join('')+'</select></label>';
  };
  window.loliteStoreSelectedIndex=file=>Number(serverSelections.get(file)||0);
+ window.loliteStoreFileForTitle=title=>games.find(game=>game.title===title)?.file||null;
  window.loliteStorePickServer=(file,index)=>{
   const game=games.find(x=>x.file===file);if(!game)return;
   const sources=availableServers(game),n=Math.max(0,Math.min(sources.length-1,Number(index)||0));
