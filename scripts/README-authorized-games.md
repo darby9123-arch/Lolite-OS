@@ -30,3 +30,29 @@ The importer copies the **real game HTML and its assets** into `html games/autho
 For personal, browser-only installs, the Game Store also accepts a game ZIP or entire game folder. It can replace an existing installed package without losing the previous one if importing the replacement fails. Browser-only packages remain in that device's local storage, while the repository importer makes packages available to all Lolite users.
 
 **Note:** GenizyMath's repository includes third-party works and does not supply a repository-wide redistribution licence. Do not treat a source-site credit or public GitHub URL as permission to republish the games.
+
+## Import a GenizyMath source ZIP privately in the browser
+
+The Lolite Game Store includes **Import GenizyMath ZIP**. It accepts the
+`genizymath.github.io-main.zip` source archive from the user. Select the ZIP
+from your own computer; Lolite matches the 850 catalogued titles to their
+`iframe/*.html` launch documents and stores those HTML documents in IndexedDB.
+It does not publish them to this repository.
+
+The original uploaded archive contains 850 selected game HTML documents. Thirteen
+of them contain iframe tags and are intentionally skipped (the goal is direct
+HTML launches, not a nested website embed); up to 837 games can be installed.
+Existing local games are kept rather than duplicated.
+
+Once imported, open **GenizyMath** in the Game Store. For matching titles, **Play**
+opens the installed HTML document as a top-level page (use browser Back to
+return to Lolite). The import also offers a **Play installed HTML** control.
+Because many source documents reference external CDN resources via `<base>` or
+external scripts, importing a file does **not** make its entire game offline.
+Some games might fail if upstream assets disappear or require their original
+origin. Only import third-party HTML whose code and sources you trust.
+
+The archive is not bundled into Lolite, and installing its contents is local to
+that browser profile. To put games into the public repository for every user,
+verify each game's redistribution rights first and use the authorized importer
+above for complete, licensed packages.
