@@ -62,6 +62,53 @@ window.LoliteInstalledGameByTitle=title=>{
  return key&&genizyTitles.has(key)?installed.find(game=>titleKey(game.title)===key)||null:null;
 };
 window.LoliteOpenInstalledGame=openPackage;
+
+/* Launch the real upstream HTML as a locally stored, top-level document.
+ * Fetches only on an explicit Play click and stores nothing in the public
+ * Lolite repository. The local-game service worker enforces an opaque-origin
+ * CSP sandbox to keep third-party game scripts away from Lolite account data.
+ */
+const installingGenizy=new Set();
+window.LolitePlayGenizyHTML=async title=>{
+ if(!packages){notify("Local HTML game support is unavailable");return}
+ const key=titleKey(title);
+ const item=(window.LoliteGenizyCatalog||[]).find(x=>titleKey(x.title)===key);
+ if(!item||typeof item.path!=="string"||!/^iframe\/[A-Za-z0-9_.-]+\.html$/.test(item.path)){
+  notify("This game has no supported HTML launch file");return
+ }
+ if(installingGenizy.has(key))return;
+ installingGenizy.add(key);
+ try{
+  const already=installed.find(record=>titleKey(record.title)===key);
+  if(already){openPackage(already);return}
+  notify("Loading "+item.title+" HTML…");
+  const source="https://raw.githubusercontent.com/genizymath/genizymath.github.io/main/"+item.path;
+  const response=await fetch(source,{cache:"no-store"});
+  if(!response.ok)throw new Error("Could not get this game's source HTML ("+response.status+")");
+  if(Number(response.headers.get("content-length")||0)>40*1024*1024)throw new Error("Game HTML exceeds the 40 MB safety limit");
+  let html=await response.text();
+  if(new Blob([html]).size>40*1024*1024)throw new Error("Game HTML exceeds the 40 MB safety limit");
+  if(!/<(?:html|script|canvas|div|body|head)\b/i.test(html))throw new Error("The source did not return a usable HTML document");
+  if(/<iframe\b/i.test(html))throw new Error("This game is an external iframe wrapper rather than direct playable HTML");
+  // Relative asset paths resolve to the upstream game's iframe directory.
+  // External assets can still need internet; they are not silently mirrored.
+  if(!/<base(?:\s|>)/i.test(html)){
+   const base='<base href="https://genizymath.github.io/iframe/">';
+   if(/<head(?:\s[^>]*)?>/i.test(html))html=html.replace(/<head(?:\s[^>]*)?>/i,match=>match+base);
+   else html=base+html;
+  }
+  // A CSP sandbox applied by the local game service worker makes the game
+  // an opaque-origin page with no access to the Lolite OS account/session.
+  const record=await packages.importSavedHtml({title:item.title,html});
+  installed.unshift(record);
+  openPackage(record);
+ }catch(error){
+  notify((error?.message||"Could not load the direct HTML game")+
+   ". You can use the source selector for its original hosted version.");
+  console.warn("GenizyMath HTML launch failed",item.path,error);
+ }finally{installingGenizy.delete(key)}
+};
+
 function fileInput(accept,change,folder=false){
  const input=document.createElement("input");input.type="file";input.hidden=true;input.accept=accept;
  if(folder){input.setAttribute("webkitdirectory","");input.setAttribute("directory","");input.multiple=true}
