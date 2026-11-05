@@ -41,7 +41,7 @@ function openPackage(record){
  if(!packages)return notify("Local package importer is unavailable");
  notify("Opening "+(record.title||"local game")+" inside Lolite…");
  packages.launchUrl(record).then(url=>{
-  if(!window.LoliteGamePlayer?.open({title:record.title||"Local game",url,file:"local-"+record.id,source:"Installed HTML"}))notify("Could not open this HTML game inside Lolite.");
+  if(!window.LoliteGamePlayer?.open({title:record.title||"Local game",url,file:window.loliteStoreFileForTitle?.(record.title)||"local-"+record.id,source:"Installed HTML"}))notify("Could not open this HTML game inside Lolite.");
  }).catch(error=>notify(error?.message||"Could not start the installed game"));
 }
 async function openHtml(record){
