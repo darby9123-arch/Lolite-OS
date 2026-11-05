@@ -67,7 +67,7 @@ function validEntryName(raw){
  if(!safePath(path))throw new Error("Unsafe path in ZIP: "+raw.slice(0,80));
  return path;
 }
-async function unzip(file){
+async function unzip(file,maxFiles=MAX_FILES,includePath=null){
  if(!(file instanceof Blob)||file.size>MAX_ZIP)throw new Error("ZIP must be under 90 MB");
  const bytes=new Uint8Array(await file.arrayBuffer());
  const dv=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
@@ -77,7 +77,7 @@ async function unzip(file){
  }
  if(eocd<0)throw new Error("This is not a supported ZIP archive");
  const count=dv.getUint16(eocd+10,true),offset=dv.getUint32(eocd+16,true);
- if(!count||count>MAX_FILES)throw new Error("ZIP must contain between 1 and "+MAX_FILES+" files");
+ if(!count||count>maxFiles)throw new Error("ZIP must contain between 1 and "+maxFiles+" files");
  if(offset>bytes.length)throw new Error("Invalid ZIP central directory");
  const entries=[];
  let pos=offset,total=0;
@@ -90,7 +90,7 @@ async function unzip(file){
   if(pos+46+nameLen+extraLen+commentLen>bytes.length)throw new Error("Damaged ZIP filename table");
   const raw=decoder.decode(bytes.subarray(pos+46,pos+46+nameLen));
   pos+=46+nameLen+extraLen+commentLen;
-  const path=validEntryName(raw);if(path===null)continue;
+  const path=validEntryName(raw);if(path===null||(includePath&&!includePath(path)))continue;
   if(flags&1)throw new Error("Encrypted ZIP files are not supported");
   if(method!==0&&method!==8)throw new Error("Unsupported ZIP compression method ("+method+")");
   if(uncompressed>MAX_ENTRY||compressed>MAX_ZIP||uncompressed===0xffffffff||localOffset===0xffffffff)throw new Error("An archive entry exceeds the safety limit");
@@ -179,6 +179,63 @@ async function importSavedHtml(record){
  if(blob.size>MAX_ENTRY)throw new Error("HTML file exceeds the 40 MB per-file limit");
  return storeEntries([{path:"index.html",blob,size:blob.size,type:"text/html;charset=utf-8"}],record.title||"HTML Game");
 }
+
+/* Import only the 850 chosen HTML launch documents from a user-supplied
+ * GenizyMath source ZIP. Nothing is copied into Lolite's public repository.
+ * Ignore the upstream game-list wrappers and any pages that embed another site.
+ */
+async function importGenizyZip(file,onProgress){
+ if(!file||!/\.zip$/i.test(file.name||""))throw new Error("Choose the GenizyMath source ZIP");
+ const catalog=Array.isArray(window.LoliteGenizyCatalog)?window.LoliteGenizyCatalog:[];
+ const wanted=new Set(catalog.filter(x=>x&&typeof x.path==="string"&&/^iframe\/[a-zA-Z0-9_.-]+\.html$/.test(x.path)).map(x=>x.path));
+ if(!wanted.size)throw new Error("The GenizyMath game list is not loaded");
+ const sourcePath=raw=>{
+  const path=raw.replace(/\\/g,"/");
+  const i=path.indexOf("/iframe/");
+  return i>=0?path.slice(i+1):path;
+ };
+ onProgress?.("Reading game files…");
+ const extracted=await unzip(file,5000,raw=>wanted.has(sourcePath(raw)));
+ const byPath=new Map(extracted.map(entry=>[sourcePath(entry.path),entry]));
+ if(!byPath.size)throw new Error("No matching GenizyMath games found. Select genizymath.github.io-main.zip");
+ const existing=await getAll();
+ const normalize=x=>String(x||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]/g,"");
+ const installedTitles=new Set(existing.map(game=>normalize(game.title)));
+ const ready=[];
+ let skippedEmbeds=0,missing=0,alreadyInstalled=0;
+ for(const item of catalog){
+  if(!item||!wanted.has(item.path))continue;
+  const entry=byPath.get(item.path);
+  if(!entry){missing++;continue}
+  const title=String(item.title||"").replace(/[<>]/g,"").trim().slice(0,90);
+  const key=normalize(title);
+  if(!key)continue;
+  if(installedTitles.has(key)){alreadyInstalled++;continue}
+  const html=await entry.blob.text();
+  if(/<iframe\b/i.test(html)){skippedEmbeds++;continue}
+  ready.push({title,entry});
+  installedTitles.add(key);
+ }
+ if(!ready.length)return {imported:0,skippedEmbeds,missing,alreadyInstalled};
+ onProgress?.("Installing "+ready.length+" games…");
+ const db=await database();
+ await new Promise((resolve,reject)=>{
+  const tx=db.transaction([PKGS,ASSETS],"readwrite");
+  const pkgs=tx.objectStore(PKGS),assets=tx.objectStore(ASSETS);
+  const now=Date.now();
+  for(const {title,entry} of ready){
+   const id="pkg-"+(crypto.randomUUID?crypto.randomUUID():Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,"0")).join(""));
+   pkgs.put({id,title,root:"index.html",files:1,bytes:entry.size,savedAt:now,source:"genizymath-zip"});
+   assets.put({key:id+"/index.html",packageId:id,path:"index.html",data:entry.blob,type:"text/html;charset=utf-8"});
+  }
+  tx.oncomplete=resolve;
+  tx.onerror=()=>reject(tx.error||new Error("Not enough browser storage for the game collection"));
+  tx.onabort=()=>reject(tx.error||new Error("Game collection install was cancelled"));
+ });
+ window.dispatchEvent(new CustomEvent("lolite-local-packages-changed"));
+ return {imported:ready.length,skippedEmbeds,missing,alreadyInstalled};
+}
+
 async function importZip(file,displayTitle){
  if(!file||!/\.(zip)$/i.test(file.name||""))throw new Error("Choose a ZIP file");
  const entries=await unzip(file);
@@ -222,5 +279,5 @@ async function launchUrl(record){
  const scope=await ensureWorker();
  return new URL("local-games/"+record.id+"/"+record.root.split("/").map(encodeURIComponent).join("/"),scope).href;
 }
-window.LoliteLocalGamePackages=Object.freeze({importZip,importFolder,importStandaloneHtml,importSavedHtml,list:getAll,remove:erase,ensureWorker,launchUrl});
+window.LoliteLocalGamePackages=Object.freeze({importZip,importGenizyZip,importFolder,importStandaloneHtml,importSavedHtml,list:getAll,remove:erase,ensureWorker,launchUrl});
 })();
