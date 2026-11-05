@@ -61,10 +61,10 @@ window.LoliteInstalledGameByTitle=title=>{
 };
 window.LoliteOpenInstalledGame=openPackage;
 
-/* Launch the real upstream HTML as a locally stored, top-level document.
+/* Launch the real upstream HTML in a sandboxed Lolite game window.
  * Fetches only on an explicit Play click and stores nothing in the public
  * Lolite repository. The local-game service worker enforces an opaque-origin
- * CSP sandbox to keep third-party game scripts away from Lolite account data.
+ * CSP sandbox keeps third-party game scripts away from Lolite account data.
  */
 const installingGenizy=new Set();
 window.LolitePlayGenizyHTML=async title=>{
