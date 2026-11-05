@@ -1,0 +1,36 @@
+name: Verify local video wallpapers
+on:
+  push:
+    paths:
+      - 'core/user-live-wallpapers.js'
+      - 'core/wallpapers.js'
+      - 'core/crimson.js'
+      - 'core/media-personalisation.css'
+      - 'index.html'
+      - 'tests/local-live-wallpapers.test.cjs'
+      - '.github/workflows/verify-local-wallpapers.yml'
+  pull_request:
+    paths:
+      - 'core/user-live-wallpapers.js'
+      - 'core/wallpapers.js'
+      - 'core/crimson.js'
+      - 'core/media-personalisation.css'
+      - 'index.html'
+      - 'tests/local-live-wallpapers.test.cjs'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check core/user-live-wallpapers.js
+          node --check core/wallpapers.js
+          node --check core/crimson.js
+      - name: Run local video wallpaper checks
+        run: node --test tests/local-live-wallpapers.test.cjs
