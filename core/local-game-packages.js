@@ -167,6 +167,42 @@ async function storeEntries(entries,title){
  window.dispatchEvent(new CustomEvent("lolite-local-packages-changed",{detail:{id}}));
  return record;
 }
+
+/* Install one actual HTML document selected from the user's ZIP. The archive
+ * remains on their own device; no game code is mirrored to GitHub. */
+async function importGenizyGameFromZip(file,gamePath,title){
+ if(!file||!/\.zip$/i.test(file.name||""))throw new Error("Select the GenizyMath ZIP file");
+ const catalog=Array.isArray(window.LoliteGenizyCatalog)?window.LoliteGenizyCatalog:[];
+ const match=catalog.find(entry=>entry.path===gamePath&&entry.title===title);
+ if(!match||!/^[a-z0-9_./-]+\.html$/i.test(gamePath))throw new Error("Unrecognised game in GenizyMath collection");
+ const getPath=raw=>{
+  const normalized=raw.replace(/\\/g,"/");
+  const segment=normalized.indexOf("/iframe/");
+  return segment>=0?normalized.slice(segment+1):normalized;
+ };
+ const entries=await unzip(file,5000,path=>getPath(path)===gamePath);
+ if(entries.length!==1)throw new Error("The selected ZIP does not contain "+gamePath);
+ const html=await entries[0].blob.text();
+ if(/<iframe\b/i.test(html))throw new Error("This game is a website iframe, not a standalone HTML game");
+ const entry={path:"index.html",blob:new Blob([html],{type:"text/html;charset=utf-8"}),size:entries[0].size,type:"text/html;charset=utf-8"};
+ const record=await storeEntries([entry],title);
+ record.source="genizymath-user-zip";
+ // Update source information for local library and selective cache clearance.
+ const db=await database();
+ await new Promise((resolve,reject)=>{
+  const tx=db.transaction(PKGS,"readwrite");
+  tx.objectStore(PKGS).put(record);
+  tx.oncomplete=resolve;
+  tx.onerror=()=>reject(tx.error||new Error("Could not save game source"));
+ });
+ return record;
+}
+async function clearAutoGameCache(){
+ const all=await getAll();
+ const auto=all.filter(record=>record.source==="genizymath-auto");
+ for(const item of auto)await erase(item.id);
+ return auto.length;
+}
 async function importStandaloneHtml(file,displayTitle){
  if(!(file instanceof Blob)||!file.name||!/\.html?$/i.test(file.name))throw new Error("Choose a standalone HTML game file");
  if(file.size>MAX_ENTRY)throw new Error("HTML file exceeds the 40 MB per-file limit");
@@ -177,7 +213,16 @@ async function importSavedHtml(record){
  if(!record||typeof record.html!=="string"||!record.html.trim())throw new Error("The saved HTML game was empty");
  const blob=new Blob([record.html],{type:"text/html;charset=utf-8"});
  if(blob.size>MAX_ENTRY)throw new Error("HTML file exceeds the 40 MB per-file limit");
- return storeEntries([{path:"index.html",blob,size:blob.size,type:"text/html;charset=utf-8"}],record.title||"HTML Game");
+ const entry=await storeEntries([{path:"index.html",blob,size:blob.size,type:"text/html;charset=utf-8"}],record.title||"HTML Game");
+ if(record.source==="genizymath-auto"){
+  entry.source="genizymath-auto";
+  const db=await database();
+  await new Promise((resolve,reject)=>{
+   const tx=db.transaction(PKGS,"readwrite");tx.objectStore(PKGS).put(entry);
+   tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error("Could not save game cache status"));
+  });
+ }
+ return entry;
 }
 
 /* Import only the 850 chosen HTML launch documents from a user-supplied
@@ -279,5 +324,5 @@ async function launchUrl(record){
  const scope=await ensureWorker();
  return new URL("local-games/"+record.id+"/"+record.root.split("/").map(encodeURIComponent).join("/"),scope).href;
 }
-window.LoliteLocalGamePackages=Object.freeze({importZip,importGenizyZip,importFolder,importStandaloneHtml,importSavedHtml,list:getAll,remove:erase,ensureWorker,launchUrl});
+window.LoliteLocalGamePackages=Object.freeze({importZip,importGenizyZip,importGenizyGameFromZip,clearAutoGameCache,importFolder,importStandaloneHtml,importSavedHtml,list:getAll,remove:erase,ensureWorker,launchUrl});
 })();
