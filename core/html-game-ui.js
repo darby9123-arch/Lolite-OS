@@ -72,6 +72,10 @@ const installingGenizy=new Set();
 window.LolitePlayGenizyHTML=async title=>{
  if(!packages){notify("Local HTML game support is unavailable");return}
  const key=titleKey(title);
+ // Don't automatically install age-restricted casino/wagering game content.
+ if(/(?:casino|poker|blackjack|roulette|slot\s?machine|lottery|gambl|wager|betting|baccarat|sportsbook)/i.test(String(title||""))){
+  notify("This title isn't available for direct local installation.");return
+ }
  const item=(window.LoliteGenizyCatalog||[]).find(x=>titleKey(x.title)===key);
  if(!item||typeof item.path!=="string"||!/^iframe\/[A-Za-z0-9_.-]+\.html$/.test(item.path)){
   notify("This game has no supported HTML launch file");return
