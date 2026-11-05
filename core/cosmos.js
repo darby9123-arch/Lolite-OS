@@ -9,7 +9,6 @@
   ['wallpaper-editor','Wallpaper'],['terminal','Terminal'],['settings','Settings']
  ];
  const quick=[['games','Game Store'],['cloud-gaming','Cloud Gaming'],['minecraft18','Minecraft 1.8'],['academy','Academy'],['appstore','App Store']];
- let hud=null;
  const safeText=(s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  // Preserve existing desktop icons and installed shortcuts.
  function shortcuts(){
@@ -46,25 +45,8 @@
    window.openApp?.(id,apps.find(a=>a[0]===id)?.[1]||id);
  }
 
- // Keep only the centered Lolite wordmark. Remove the corner labels,
- // dashboard widgets, status monitors and decorative frame.
- function createHud(){
-   if(hud)return;
-   hud=document.createElement('div');
-   hud.className='cosmos-hud';
-   hud.id='cosmosHud';
-   hud.innerHTML='<div class="cosmos-header"><div class="cosmos-headline">'+
-     '<h1 class="cosmos-wordmark-title"><img class="cosmos-wordmark" '+
-     'src="assets/lolite-desktop-wordmark.webp?v=wordmark-1" alt="Lolite OS" '+
-     'draggable="false" decoding="async"></h1></div></div>';
-   document.getElementById('desktop')?.appendChild(hud);
- }
- function apply(){
-   const on=enabled();
-   if(on&&!hud)createHud();
-   if(hud)hud.hidden=!on;
-   if(on)shortcuts();
- }
+ // The Cosmos desktop now has no overlaid header, logo or dashboard widgets.
+ function apply(){if(enabled())shortcuts()}
  // Lightweight local terminal: actual commands, no fake shell execution.
  function terminalMarkup(){
    return '<div class="cosmos-terminal"><div class="cosmos-terminal-intro">Lolite Terminal <small>Local workspace · type help for commands</small></div>'+
