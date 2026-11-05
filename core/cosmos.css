@@ -1,59 +1,59 @@
 /* Lolite Cosmos — original space desktop. CSS-only skin around existing app IDs and handlers. */
-html[data-desktop-theme="cosmos"]{
+html[data-lolite-design="cosmos"]{
   --lolite-font:"Plus Jakarta Sans","Manrope","Segoe UI",sans-serif;
   --lolite-display:"Space Grotesk","Sora",sans-serif;
-  --ui-font:var(--lolite-font);--accent:#4dcaff;--win-accent:#4dcaff;
+  --ui-font:var(--lolite-font);--accent:#76a9c4;--win-accent:#76a9c4;
   --ui-bg:#070d1a;--ui-surface:#101b30;--ui-raised:#1c2e49;
   --ui-border:#7bbef52c;--ui-text:#eaf5ff;--ui-muted:#a4bbd6;
   --bg:#070d1a;--panel:#101b30;--panel2:#1c2e49;
   --line:#52749c55;--text:#eaf5ff;--muted:#a4bbd6;
-  --lolite-focus:#9ae7ff;--lolite-highlight:#80cfff;
+  --lolite-focus:#9cbacf;--lolite-highlight:#8cb1c7;
   color-scheme:dark;
 }
-html[data-desktop-theme="cosmos"] body,
-html[data-desktop-theme="cosmos"] :is(button,input,select,textarea,h1,h2,h3,h4,.titlebar){
+html[data-lolite-design="cosmos"] body,
+html[data-lolite-design="cosmos"] :is(button,input,select,textarea,h1,h2,h3,h4,.titlebar){
   font-family:var(--lolite-font)!important;
 }
-html[data-desktop-theme="cosmos"] :is(h1,h2,h3,h4){font-family:var(--lolite-display)!important;letter-spacing:-.035em}
-html[data-desktop-theme="cosmos"] :is(button,input,select,textarea):focus-visible{
-  outline:2px solid #80dbff!important;outline-offset:3px;
+html[data-lolite-design="cosmos"] :is(h1,h2,h3,h4){font-family:var(--lolite-display)!important;letter-spacing:-.035em}
+html[data-lolite-design="cosmos"] :is(button,input,select,textarea):focus-visible{
+  outline:2px solid #85adc6!important;outline-offset:2px;
 }
-html[data-desktop-theme="cosmos"] *{scrollbar-color:#4b668b #0b1524}
-html[data-desktop-theme="cosmos"] #desktop{background:#030711!important}
-html[data-desktop-theme="cosmos"] #wallpaper{background-color:#020712!important}
-html[data-desktop-theme="cosmos"] #wallpaper::after{
+html[data-lolite-design="cosmos"] *{scrollbar-color:#4b668b #0b1524}
+html[data-lolite-design="cosmos"] #desktop{background:#030711!important}
+html[data-lolite-design="cosmos"] #wallpaper{background-color:#020712!important}
+html[data-lolite-design="cosmos"] #wallpaper::after{
   background:linear-gradient(90deg,#02071498 0,transparent 34%,transparent 66%,#03081985 100%),
    linear-gradient(0deg,#040b2090,transparent 25%,transparent 85%,#03081766)!important;
   opacity:1!important;pointer-events:none
 }
-html[data-desktop-theme="cosmos"] body::selection{background:#61caff55}
-html[data-desktop-theme="cosmos"] .cosmos-hud{position:fixed;inset:0;z-index:5;pointer-events:none;color:#f1f9ff}
-html[data-desktop-theme="cosmos"] .cosmos-hud *{box-sizing:border-box}
+html[data-lolite-design="cosmos"] body::selection{background:#61caff55}
+html[data-lolite-design="cosmos"] .cosmos-hud{position:fixed;inset:0;z-index:5;pointer-events:none;color:#f1f9ff}
+html[data-lolite-design="cosmos"] .cosmos-hud *{box-sizing:border-box}
 .cosmos-header{position:absolute;inset:0 0 auto;height:134px;pointer-events:none}
 .cosmos-brand{position:absolute;left:30px;top:23px;display:flex;align-items:center;gap:11px}
-.cosmos-brand-mark{display:grid;place-items:center;width:45px;height:45px;filter:drop-shadow(0 0 12px #49b7ff99)}
+.cosmos-brand-mark{display:grid;place-items:center;width:45px;height:45px;filter:none}
 .cosmos-brand-mark svg{height:41px;width:41px}
 .cosmos-brand strong{display:block;font:700 15px/1.1 "Space Grotesk",sans-serif;letter-spacing:.28em;color:#f6fbff}
 .cosmos-brand small{display:block;font:600 9px/1.8 "Plus Jakarta Sans",sans-serif;letter-spacing:.24em;color:#85b4db;margin-top:4px}
 .cosmos-headline{position:absolute;left:50%;top:22px;transform:translateX(-50%);text-align:center;white-space:nowrap}
 .cosmos-dateline{font-size:10px;font-weight:800;letter-spacing:.34em;color:#b9d6f8;text-shadow:0 1px 8px #000}
-.cosmos-headline h1{font:500 clamp(23px,4.2vw,51px)/1.15 "Space Grotesk",sans-serif!important;letter-spacing:.34em!important;margin:12px 0 0 13px;color:#eaf7ff;text-shadow:0 0 20px #287fe66d}
-.cosmos-headline h1::after{content:"";display:block;margin:10px auto 0;width:58%;height:1px;background:linear-gradient(90deg,transparent,#50beff,#c9dcff,transparent);box-shadow:0 0 12px #3dbbff}
+.cosmos-headline h1{font:500 clamp(23px,4.2vw,51px)/1.15 "Space Grotesk",sans-serif!important;letter-spacing:.34em!important;margin:12px 0 0 13px;color:#eaf7ff;text-shadow:0 1px 3px #0009}
+.cosmos-headline h1::after{content:"";display:block;margin:10px auto 0;width:58%;height:1px;background:linear-gradient(90deg,transparent,#50beff,#c9dcff,transparent);box-shadow:none}
 .cosmos-corner{position:absolute;width:35px;height:35px;opacity:.64;pointer-events:none;border-color:#4faeed}
 .cosmos-corner.tl{left:16px;top:15px;border-top:1px solid;border-left:1px solid}
 .cosmos-corner.tr{right:16px;top:15px;border-top:1px solid;border-right:1px solid}
 .cosmos-corner.bl{left:16px;bottom:16px;border-bottom:1px solid;border-left:1px solid}
 .cosmos-corner.br{right:16px;bottom:16px;border-bottom:1px solid;border-right:1px solid}
-.cosmos-corner::after{content:"";position:absolute;width:3px;height:3px;border-radius:50%;background:#b2e9ff;box-shadow:0 0 8px #47d5ff}
+.cosmos-corner::after{content:"";position:absolute;width:3px;height:3px;border-radius:50%;background:#b2e9ff;box-shadow:none}
 .cosmos-corner.tl::after{top:-2px;left:-2px}.cosmos-corner.tr::after{top:-2px;right:-2px}
 .cosmos-corner.bl::after{bottom:-2px;left:-2px}.cosmos-corner.br::after{bottom:-2px;right:-2px}
 .cosmos-rail{position:absolute;left:33px;top:157px;bottom:148px;width:1px;background:linear-gradient(180deg,transparent,#3ca9ff40 10%,#55cbff65 60%,transparent)}
-.cosmos-rail::before,.cosmos-rail::after{content:"";position:absolute;left:-2px;width:5px;height:5px;border-radius:50%;background:#8ad8ff;box-shadow:0 0 12px #71ceff}
+.cosmos-rail::before,.cosmos-rail::after{content:"";position:absolute;left:-2px;width:5px;height:5px;border-radius:50%;background:#8ad8ff;box-shadow:none}
 .cosmos-rail::before{top:21%}.cosmos-rail::after{top:82%}
 .cosmos-sidebar{position:absolute;right:24px;top:140px;width:min(316px,27vw);display:grid;gap:17px;pointer-events:auto}
 .cosmos-block-title{display:flex;align-items:center;gap:9px;font:800 10px/1.2 var(--lolite-font)!important;letter-spacing:.26em;text-transform:uppercase;color:#c5e9ff;margin:0 0 8px 4px}
-.cosmos-block-title::before{content:"";width:13px;height:8px;border-left:3px solid #5bdfff;border-right:3px solid #5bdfff;transform:skewX(-28deg);filter:drop-shadow(0 0 6px #30b9ff)}
-.cosmos-widget{border:1px solid #80bfff55;border-radius:16px;min-height:66px;padding:14px;background:linear-gradient(125deg,#111c33e9,#080f20e6 65%,#0d1935d9);box-shadow:inset 0 1px #ffffff19,0 12px 26px #0007,0 0 17px #0b64bd25;backdrop-filter:blur(23px);-webkit-backdrop-filter:blur(23px)}
+.cosmos-block-title::before{content:"";width:13px;height:8px;border-left:3px solid #709db8;border-right:3px solid #709db8;transform:skewX(-28deg);filter:none}
+.cosmos-widget{border:1px solid #6d8ca35a;border-radius:16px;min-height:66px;padding:14px;background:linear-gradient(125deg,#111c33e9,#080f20e6 65%,#0d1935d9);box-shadow:inset 0 1px #ffffff0c,0 10px 24px #0008;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .cosmos-widget:focus-within,.cosmos-widget:hover{border-color:#90dbff8c}
 .cosmos-widget-row{display:flex;align-items:center;gap:12px;min-width:0}
 .cosmos-widget-icon{width:44px;height:44px;display:grid;place-items:center;flex:none;border-radius:12px;background:radial-gradient(circle at 24% 18%,#445fba88,#162541 70%);border:1px solid #8dcaff4e;color:#a3e7ff}
@@ -63,7 +63,7 @@ html[data-desktop-theme="cosmos"] .cosmos-hud *{box-sizing:border-box}
 .cosmos-widget-copy small{display:block;color:#a8bfdc;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
 .cosmos-widget-action,.cosmos-tile{cursor:pointer;color:#e9f6ff;background:#1a31526b;border:1px solid #79b9f35c;border-radius:11px;display:grid;place-items:center}
 .cosmos-widget-action{width:35px;height:35px;flex:none;font-size:17px}
-.cosmos-widget-action:hover,.cosmos-tile:hover{background:#28507899;box-shadow:0 0 15px #35a6ff44;transform:translateY(-1px)}
+.cosmos-widget-action:hover,.cosmos-tile:hover{background:#28507899;box-shadow:none;transform:none}
 .cosmos-tile-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 .cosmos-tile{width:100%;aspect-ratio:1;min-width:0;padding:7px}
 .cosmos-tile .lolite-icon{width:100%!important;height:100%!important;background:transparent!important;border:0!important;box-shadow:none!important;color:#8dddff!important}
@@ -79,122 +79,122 @@ html[data-desktop-theme="cosmos"] .cosmos-hud *{box-sizing:border-box}
 .cosmos-stat span{display:block;color:#8bb1d2;font-size:9px;letter-spacing:.02em}
 .cosmos-stat strong{display:block;font-size:11px;font-weight:700;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cosmos-progress{height:3px;display:block;margin-top:11px;border-radius:7px;background:#28446b;overflow:hidden}
-.cosmos-progress i{display:block;background:linear-gradient(90deg,#398dff,#54e9fb);height:100%;width:0%;box-shadow:0 0 7px #4dd9ff}
+.cosmos-progress i{display:block;background:linear-gradient(90deg,#398dff,#54e9fb);height:100%;width:0%;box-shadow:none}
 .cosmos-footer-info{position:fixed;bottom:24px;left:30px;display:flex;align-items:center;gap:9px;border:1px solid #6bb9ef66;border-radius:11px;background:#0d1930bf;box-shadow:0 5px 20px #0007;padding:9px 12px;font:700 11px var(--lolite-font)!important;letter-spacing:.05em;pointer-events:none}
-.cosmos-footer-info::before{content:"";width:7px;height:7px;border:1px solid #60ccf9;border-radius:50%;box-shadow:0 0 10px #5adaff}
-html[data-desktop-theme="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode) #icons{
+.cosmos-footer-info::before{content:"";width:7px;height:7px;border:1px solid #60ccf9;border-radius:50%;box-shadow:none}
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode) #icons{
  position:fixed!important;top:151px!important;left:52px!important;right:auto!important;bottom:126px!important;
  display:grid!important;grid-template-columns:repeat(2,88px)!important;grid-auto-rows:104px!important;gap:16px 14px!important;
  width:200px!important;height:auto!important;align-content:start!important;overflow-y:auto!important;scrollbar-width:none;
  z-index:6;
 }
-html[data-desktop-theme="cosmos"] #icons::-webkit-scrollbar{display:none}
-html[data-lolite-design="crimson"][data-desktop-experience="windows"][data-desktop-theme="cosmos"] #icons .desktop-icon{
+html[data-lolite-design="cosmos"] #icons::-webkit-scrollbar{display:none}
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-desktop-theme="cosmos"] #icons .desktop-icon{
  width:88px!important;height:101px!important;padding:5px 1px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;
  border:1px solid transparent!important;border-radius:15px!important;background:transparent!important;transition:transform .15s,border-color .15s,background .15s!important;color:#f2f8ff!important;
 }
-html[data-desktop-theme="cosmos"] #icons .desktop-icon:hover,
-html[data-desktop-theme="cosmos"] #icons .desktop-icon.selected{background:#5b99ea16!important;border-color:#8bc5ff48!important;transform:translateY(-2px)}
-html[data-lolite-design="crimson"][data-desktop-experience="windows"][data-desktop-theme="cosmos"] #icons .desktop-icon .lolite-icon{
+html[data-lolite-design="cosmos"] #icons .desktop-icon:hover,
+html[data-lolite-design="cosmos"] #icons .desktop-icon.selected{background:#5b99ea16!important;border-color:#8bc5ff48!important;transform:translateY(-2px)}
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-desktop-theme="cosmos"] #icons .desktop-icon .lolite-icon{
   width:61px!important;height:61px!important;display:grid!important;place-items:center!important;flex:none!important;
   border-radius:17px!important;background:linear-gradient(145deg,#193963e0,#0c1431dd 60%,#182044e9)!important;
-  border:1px solid #89c2fc7e!important;color:#a5e8ff!important;box-shadow:inset 0 1px #ffffff36,0 4px 15px #0009,0 0 14px #168cf544!important;
+  border:1px solid #7895b16b!important;color:#a7cde2!important;box-shadow:inset 0 1px #ffffff12,0 4px 12px #0008!important;
 }
-html[data-desktop-theme="cosmos"] #icons .desktop-icon:nth-child(2n) .lolite-icon{color:#c4aeff!important;border-color:#aa88ff65!important}
-html[data-desktop-theme="cosmos"] #icons .desktop-icon:hover .lolite-icon{box-shadow:0 0 23px #58c8ff62,inset 0 1px #ffffff62!important}
-html[data-desktop-theme="cosmos"] #icons .desktop-icon .lolite-icon svg{width:62%!important;height:62%!important;filter:drop-shadow(0 0 5px #55c8ff6e)}
-html[data-desktop-theme="cosmos"] #icons .desktop-icon>span:last-child:not(.lolite-icon){font:650 11px/1.3 var(--lolite-font)!important;color:#f1f7ff;max-width:92px;text-align:center;text-shadow:0 2px 6px #000c}
-html[data-lolite-design="crimson"][data-desktop-experience="windows"][data-desktop-theme="cosmos"] #desktop #taskbar{
+html[data-lolite-design="cosmos"] #icons .desktop-icon:nth-child(2n) .lolite-icon{color:#c4aeff!important;border-color:#aa88ff65!important}
+html[data-lolite-design="cosmos"] #icons .desktop-icon:hover .lolite-icon{box-shadow:inset 0 1px #ffffff1e,0 4px 14px #0008!important}
+html[data-lolite-design="cosmos"] #icons .desktop-icon .lolite-icon svg{width:62%!important;height:62%!important;filter:none}
+html[data-lolite-design="cosmos"] #icons .desktop-icon>span:last-child:not(.lolite-icon){font:650 11px/1.3 var(--lolite-font)!important;color:#f1f7ff;max-width:92px;text-align:center;text-shadow:0 2px 6px #000c}
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-desktop-theme="cosmos"] #desktop #taskbar{
  position:fixed!important;left:0!important;right:0!important;top:auto!important;bottom:0!important;
  height:104px!important;width:100%!important;padding:0!important;display:flex!important;align-items:flex-end!important;
  justify-content:center!important;background:transparent!important;border:0!important;border-radius:0!important;
  box-shadow:none!important;backdrop-filter:none!important;pointer-events:none!important;z-index:90000;
 }
-html[data-desktop-theme="cosmos"] #taskbar .win-taskbar-brand{display:none!important}
-html[data-desktop-theme="cosmos"] #taskbar .win-taskbar-center{
+html[data-lolite-design="cosmos"] #taskbar .win-taskbar-brand{display:none!important}
+html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center{
  position:absolute!important;left:50%!important;bottom:15px!important;top:auto!important;
  transform:translateX(-50%)!important;display:flex;align-items:center;justify-content:center;
  width:max-content;max-width:min(750px,calc(100vw - 360px));height:66px;min-height:66px;
  gap:5px;padding:7px 16px;border:1px solid #80c7fc94;border-radius:23px;
- background:linear-gradient(160deg,#182e50e8,#081224e9 56%,#0b1830f0);box-shadow:inset 0 1px #fff4,0 12px 36px #000c,0 0 19px #2a9efa74,0 4px 0 -2px #74dafa;
- backdrop-filter:blur(23px);-webkit-backdrop-filter:blur(23px);pointer-events:auto!important;
+ background:linear-gradient(160deg,#182e50e8,#081224e9 56%,#0b1830f0);box-shadow:inset 0 1px #ffffff1a,0 13px 34px #000b;
+ backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:auto!important;
 }
-html[data-desktop-theme="cosmos"] #taskbar .win-taskbar-center::before{content:"";position:absolute;left:18%;right:18%;height:2px;bottom:-1px;box-shadow:0 0 20px 4px #4cbaff;z-index:-1}
-html[data-desktop-theme="cosmos"] #taskbar #winPinnedApps{gap:3px}
-html[data-desktop-theme="cosmos"] #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned){
+html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center::before{content:"";position:absolute;left:18%;right:18%;height:2px;bottom:-1px;box-shadow:none;z-index:-1}
+html[data-lolite-design="cosmos"] #taskbar #winPinnedApps{gap:3px}
+html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned){
  width:47px!important;min-width:47px!important;height:47px!important;border-radius:13px!important;
  color:#d3efff!important;border:1px solid transparent!important;padding:10px!important;
  background:transparent!important;transition:background .15s,transform .15s,box-shadow .15s!important;
 }
-html[data-desktop-theme="cosmos"] #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned):hover{background:#336ca347!important;border-color:#8ddaff44!important;transform:translateY(-3px)}
-html[data-desktop-theme="cosmos"] #taskbar #startBtn{background:linear-gradient(145deg,#2788ce,#102a51)!important;border-color:#6fe9ff99!important;box-shadow:0 0 20px #29b0ff66!important}
-html[data-desktop-theme="cosmos"] #taskbar .win-start-logo i{background:#b3f3ff!important;box-shadow:0 0 7px #5edaff}
-html[data-desktop-theme="cosmos"] #taskbar .win-pinned .lolite-icon{color:#b0ddff!important}
-html[data-desktop-theme="cosmos"] #taskbar .win-taskbar-center .lolite-icon svg{width:94%!important;height:94%!important}
-html[data-desktop-theme="cosmos"] #taskbar :is(.win-pinned,.taskwin).active::after{background:#4acbff!important;box-shadow:0 0 11px #32bfff}
-html[data-desktop-theme="cosmos"] #taskbar .tray{
+html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned):hover{background:#336ca347!important;border-color:#8ddaff44!important;transform:translateY(-3px)}
+html[data-lolite-design="cosmos"] #taskbar #startBtn{background:linear-gradient(145deg,#2788ce,#102a51)!important;border-color:#6fe9ff99!important;box-shadow:0 1px 6px #0008!important}
+html[data-lolite-design="cosmos"] #taskbar .win-start-logo i{background:#b3f3ff!important;box-shadow:none}
+html[data-lolite-design="cosmos"] #taskbar .win-pinned .lolite-icon{color:#b0ddff!important}
+html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center .lolite-icon svg{width:94%!important;height:94%!important}
+html[data-lolite-design="cosmos"] #taskbar :is(.win-pinned,.taskwin).active::after{background:#4acbff!important;box-shadow:none}
+html[data-lolite-design="cosmos"] #taskbar .tray{
  position:fixed!important;top:15px!important;right:20px!important;bottom:auto!important;
  display:flex!important;align-items:center!important;gap:2px!important;height:46px!important;min-height:0!important;
  padding:4px 9px!important;border-radius:15px!important;border:1px solid #6baef05c!important;
  background:#071528b8!important;backdrop-filter:blur(18px)!important;box-shadow:0 3px 17px #0009!important;
  margin:0!important;pointer-events:auto!important;
 }
-html[data-desktop-theme="cosmos"] #taskbar .tray #net{display:none!important}
-html[data-desktop-theme="cosmos"] #taskbar .tray .task{width:34px!important;min-width:34px!important;height:34px!important;border-radius:9px!important;color:#bdeaff!important}
-html[data-desktop-theme="cosmos"] #taskbar .tray #clock{min-width:94px;font-size:11px;color:#e6f5ff}
-html[data-desktop-theme="cosmos"] #taskbar #winShowDesktop{right:0;bottom:0;top:auto;width:8px;height:60px;pointer-events:auto}
-html[data-desktop-theme="cosmos"] #start{
+html[data-lolite-design="cosmos"] #taskbar .tray #net{display:none!important}
+html[data-lolite-design="cosmos"] #taskbar .tray .task{width:34px!important;min-width:34px!important;height:34px!important;border-radius:9px!important;color:#bdeaff!important}
+html[data-lolite-design="cosmos"] #taskbar .tray #clock{min-width:94px;font-size:11px;color:#e6f5ff}
+html[data-lolite-design="cosmos"] #taskbar #winShowDesktop{right:0;bottom:0;top:auto;width:8px;height:60px;pointer-events:auto}
+html[data-lolite-design="cosmos"] #start{
  position:fixed!important;left:50%!important;right:auto!important;top:auto!important;bottom:95px!important;
  transform:translateX(-50%)!important;width:min(640px,calc(100vw - 30px))!important;
  border-radius:20px!important;border:1px solid #6eb8f584!important;
- background:linear-gradient(160deg,#132443f5,#080f21fa)!important;box-shadow:0 25px 65px #000c,0 0 25px #1670c73d!important;
+ background:linear-gradient(160deg,#132443f5,#080f21fa)!important;box-shadow:0 22px 52px #000b!important;
  backdrop-filter:blur(32px)!important;
 }
-html[data-desktop-theme="cosmos"] :is(.win-flyout,.lolite-context,#searchPanel){
+html[data-lolite-design="cosmos"] :is(.win-flyout,.lolite-context,#searchPanel){
  background:#0b1730f3!important;border:1px solid #77bcff5b!important;border-radius:16px!important;
- box-shadow:0 20px 55px #000b,0 0 16px #236cbb28!important;color:#e8f4ff!important;
+ box-shadow:0 18px 44px #000a!important;color:#e8f4ff!important;
 }
-html[data-desktop-theme="cosmos"] .win-start-search{background:#070f22!important;border:1px solid #5b8dcd6b!important;border-bottom:2px solid #4bd3ff!important;border-radius:12px!important}
-html[data-desktop-theme="cosmos"] .win-start-grid button:hover,
-html[data-desktop-theme="cosmos"] .win-start-recent>button:hover{background:#70aaff1d!important;border-radius:11px}
-html[data-desktop-theme="cosmos"] .win-user-avatar{background:#1c73b2!important}
-html[data-desktop-theme="cosmos"] .win-start-footer{background:#0a1630b8!important}
-html[data-desktop-theme="cosmos"] .window{
+html[data-lolite-design="cosmos"] .win-start-search{background:#070f22!important;border:1px solid #5b8dcd6b!important;border-bottom:2px solid #4bd3ff!important;border-radius:12px!important}
+html[data-lolite-design="cosmos"] .win-start-grid button:hover,
+html[data-lolite-design="cosmos"] .win-start-recent>button:hover{background:#70aaff1d!important;border-radius:11px}
+html[data-lolite-design="cosmos"] .win-user-avatar{background:#1c73b2!important}
+html[data-lolite-design="cosmos"] .win-start-footer{background:#0a1630b8!important}
+html[data-lolite-design="cosmos"] .window{
  background:#0a1529f5!important;border:1px solid #74adfa70!important;border-radius:17px!important;
  box-shadow:0 28px 80px #000b,0 0 0 1px #ffffff09!important;overflow:hidden;
 }
-html[data-desktop-theme="cosmos"] .window.is-active{border-color:#86d5ffb3!important;box-shadow:0 24px 80px #000c,0 0 19px #2589ff40!important}
-html[data-lolite-design="crimson"][data-desktop-experience="windows"][data-desktop-theme="cosmos"] .window>.titlebar{
+html[data-lolite-design="cosmos"] .window.is-active{border-color:#86d5ffb3!important;box-shadow:0 22px 60px #000b!important}
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-desktop-theme="cosmos"] .window>.titlebar{
  background:linear-gradient(90deg,#172c4aec,#0b172be8)!important;border-bottom:1px solid #6a9ac04d!important;
  min-height:43px;height:43px;color:#e9f6ff;padding-left:14px!important
 }
-html[data-desktop-theme="cosmos"] .window>.titlebar strong{font-weight:650!important;color:#e9f6ff!important}
-html[data-desktop-theme="cosmos"] .window>.content{background:#081426ee!important;color:#e6f4ff!important}
-html[data-desktop-theme="cosmos"] .window :is(.card,.home-update,.home-feature,.win-home-apps button,.cr-setting-group,.store-card,.appstore-card){
+html[data-lolite-design="cosmos"] .window>.titlebar strong{font-weight:650!important;color:#e9f6ff!important}
+html[data-lolite-design="cosmos"] .window>.content{background:#081426ee!important;color:#e6f4ff!important}
+html[data-lolite-design="cosmos"] .window :is(.card,.home-update,.home-feature,.win-home-apps button,.cr-setting-group,.store-card,.appstore-card){
  background:#14223a!important;border-color:#6a9cc441!important;color:#ebf7ff!important;border-radius:12px!important
 }
-html[data-desktop-theme="cosmos"] .window :is(.card,.store-card,.appstore-card):hover{border-color:#62bdfb71!important}
-html[data-desktop-theme="cosmos"] .window :is(.primary,.store-primary,.store-play,.ldt-launch,.home-hero button,.home-feature button){
+html[data-lolite-design="cosmos"] .window :is(.card,.store-card,.appstore-card):hover{border-color:#62bdfb71!important}
+html[data-lolite-design="cosmos"] .window :is(.primary,.store-primary,.store-play,.ldt-launch,.home-hero button,.home-feature button){
  background:linear-gradient(135deg,#138ac7,#3164d6)!important;color:#fff!important;border-color:#6ccbff65!important
 }
-html[data-desktop-theme="cosmos"] .window :is(.soft,.cr-secondary,.setting-btn){
+html[data-lolite-design="cosmos"] .window :is(.soft,.cr-secondary,.setting-btn){
  background:#1a2f4a!important;border:1px solid #75b7e65c!important;color:#e9f5ff!important
 }
-html[data-desktop-theme="cosmos"] .window :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),textarea,select){
+html[data-lolite-design="cosmos"] .window :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),textarea,select){
  background:#09162b!important;border:1px solid #5989b86b!important;color:#e9f5ff!important;border-radius:9px!important
 }
-html[data-desktop-theme="cosmos"] .window .win-home-banner{background:radial-gradient(circle at 85% 20%,#2666ae77,transparent 60%),linear-gradient(120deg,#152c50,#101b37)!important;border-color:#71bcf64b!important}
-html[data-desktop-theme="cosmos"] .window :is(.win-kicker,.cr-eyebrow,.store-kicker){color:#71cdff!important}
-html[data-desktop-theme="cosmos"] :is(.cr-theme-choice[aria-pressed=true],.cr-filter button[aria-pressed=true]){border-color:#6fd7ff!important}
-html[data-desktop-theme="cosmos"] .win-calc-keys .equals{background:#167fc0!important;border-color:#3ccfff!important}
-html[data-desktop-theme="cosmos"] #lolite-splash{background:radial-gradient(circle at 50% 40%,#183d7c,#040a1c 65%)!important}
-html[data-desktop-theme="cosmos"] #lolite-splash .splash-title b{color:#5cdbff}
+html[data-lolite-design="cosmos"] .window .win-home-banner{background:radial-gradient(circle at 85% 20%,#2666ae77,transparent 60%),linear-gradient(120deg,#152c50,#101b37)!important;border-color:#71bcf64b!important}
+html[data-lolite-design="cosmos"] .window :is(.win-kicker,.cr-eyebrow,.store-kicker){color:#71cdff!important}
+html[data-lolite-design="cosmos"] :is(.cr-theme-choice[aria-pressed=true],.cr-filter button[aria-pressed=true]){border-color:#6fd7ff!important}
+html[data-lolite-design="cosmos"] .win-calc-keys .equals{background:#167fc0!important;border-color:#3ccfff!important}
+html[data-lolite-design="cosmos"] #lolite-splash{background:radial-gradient(circle at 50% 40%,#183d7c,#040a1c 65%)!important}
+html[data-lolite-design="cosmos"] #lolite-splash .splash-title b{color:#5cdbff}
 @media(max-width:1150px){
  .cosmos-sidebar{right:14px;width:260px;gap:10px;top:135px}
  .cosmos-widget{padding:10px;border-radius:13px}
  .cosmos-brand{left:20px}
- html[data-desktop-theme="cosmos"] #taskbar .win-taskbar-center{max-width:calc(100vw - 270px);padding-inline:8px;gap:2px}
- html[data-desktop-theme="cosmos"] #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned){width:38px!important;min-width:38px!important;height:43px!important;padding:9px!important}
+ html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center{max-width:calc(100vw - 270px);padding-inline:8px;gap:2px}
+ html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned){width:38px!important;min-width:38px!important;height:43px!important;padding:9px!important}
 }
 @media(max-width:810px){
  .cosmos-sidebar{display:none}
@@ -202,13 +202,13 @@ html[data-desktop-theme="cosmos"] #lolite-splash .splash-title b{color:#5cdbff}
  .cosmos-headline{top:42px}
  .cosmos-headline h1{font-size:24px!important;letter-spacing:.16em!important}
  .cosmos-dateline{font-size:8px;letter-spacing:.12em}
- html[data-desktop-theme="cosmos"] #taskbar .tray{top:9px;right:8px}
- html[data-desktop-theme="cosmos"] #taskbar .tray #clock{display:none!important}
- html[data-desktop-theme="cosmos"] #taskbar .win-taskbar-center{max-width:calc(100vw - 22px);bottom:10px;height:61px;min-height:61px}
- html[data-desktop-theme="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode) #icons{
+ html[data-lolite-design="cosmos"] #taskbar .tray{top:9px;right:8px}
+ html[data-lolite-design="cosmos"] #taskbar .tray #clock{display:none!important}
+ html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center{max-width:calc(100vw - 22px);bottom:10px;height:61px;min-height:61px}
+ html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode) #icons{
   left:20px!important;top:148px!important;grid-template-columns:repeat(3,80px)!important;width:272px!important;gap:12px!important;grid-auto-rows:96px!important
  }
- html[data-lolite-design="crimson"][data-desktop-experience="windows"][data-desktop-theme="cosmos"] #icons .desktop-icon{width:80px!important;height:94px!important}
+ html[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-desktop-theme="cosmos"] #icons .desktop-icon{width:80px!important;height:94px!important}
  .cosmos-footer-info{display:none}
 }
 @media(max-width:510px){
@@ -216,36 +216,37 @@ html[data-desktop-theme="cosmos"] #lolite-splash .splash-title b{color:#5cdbff}
  .cosmos-brand-mark{width:27px;height:27px}.cosmos-brand-mark svg{width:27px;height:27px}
  .cosmos-headline{top:81px}.cosmos-headline h1{font-size:23px!important;margin-top:4px!important}
  .cosmos-rail{display:none}.cosmos-header{height:160px}
- html[data-desktop-theme="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode) #icons{
+ html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode) #icons{
   top:163px!important;left:12px!important;right:12px!important;bottom:91px!important;
   width:calc(100vw - 24px)!important;grid-template-columns:repeat(auto-fit,minmax(72px,1fr))!important;gap:7px!important;grid-auto-rows:94px!important
  }
- html[data-lolite-design="crimson"][data-desktop-experience="windows"][data-desktop-theme="cosmos"] #icons .desktop-icon{width:100%!important}
- html[data-lolite-design="crimson"][data-desktop-experience="windows"][data-desktop-theme="cosmos"] #icons .desktop-icon .lolite-icon{width:54px!important;height:54px!important}
- html[data-desktop-theme="cosmos"] #taskbar .win-taskbar-center{max-width:calc(100vw - 12px)!important;padding:5px!important;height:56px;min-height:56px;gap:0}
- html[data-desktop-theme="cosmos"] #taskbar #winPinnedApps{gap:0}
- html[data-desktop-theme="cosmos"] #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned){width:36px!important;min-width:36px!important;height:40px!important;padding:8px!important}
- html[data-desktop-theme="cosmos"] #start{bottom:81px!important}
+ html[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-desktop-theme="cosmos"] #icons .desktop-icon{width:100%!important}
+ html[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-desktop-theme="cosmos"] #icons .desktop-icon .lolite-icon{width:54px!important;height:54px!important}
+ html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center{max-width:calc(100vw - 12px)!important;padding:5px!important;height:56px;min-height:56px;gap:0}
+ html[data-lolite-design="cosmos"] #taskbar #winPinnedApps{gap:0}
+ html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned){width:36px!important;min-width:36px!important;height:40px!important;padding:8px!important}
+ html[data-lolite-design="cosmos"] #start{bottom:81px!important}
 }
 @media(prefers-reduced-motion:reduce){
- html[data-desktop-theme="cosmos"] :is(.cosmos-tile,.desktop-icon,.win-pinned,.task){transition:none!important;animation:none!important}
+ html[data-lolite-design="cosmos"] :is(.cosmos-tile,.desktop-icon,.win-pinned,.task){transition:none!important;animation:none!important}
 }
-html[data-desktop-theme="cosmos"].reduce :is(.cosmos-tile,.desktop-icon,.win-pinned,.task){transition:none!important;animation:none!important}
-html[data-desktop-theme="cosmos"].browsing-mode .cosmos-hud,
-html[data-desktop-theme="cosmos"].mobile-mode .cosmos-hud{display:none}
+html[data-lolite-design="cosmos"].reduce :is(.cosmos-tile,.desktop-icon,.win-pinned,.task){transition:none!important;animation:none!important}
+html[data-lolite-design="cosmos"].browsing-mode .cosmos-hud,
+html[data-lolite-design="cosmos"].mobile-mode .cosmos-hud{display:none}
 
 /* Finish the desktop as a cohesive product, including terminal, theme previews and motion. */
-html[data-desktop-theme="cosmos"] #wallpaper{
+html[data-lolite-design="cosmos"] #wallpaper{
+ filter:brightness(.82) saturate(.72)!important;
  background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important;
  animation:none!important;will-change:auto!important;
 }
-html[data-desktop-theme="cosmos"] #icons{grid-auto-rows:104px!important;row-gap:16px!important}
-html[data-desktop-theme="cosmos"] #icons .desktop-icon{min-height:0!important}
-html[data-desktop-theme="cosmos"] :is(.window,.panel,.win-flyout){--accent:#4dcaff}
-html[data-desktop-theme="cosmos"] .window .controls button:hover{background:#2c668c83!important}
-html[data-desktop-theme="cosmos"] .window .controls button.close:hover{background:#953b5ebf!important}
-html[data-desktop-theme="cosmos"] .content :is(.cr-theme-check,.cr-theme-note,.cr-section-head>span){color:#96cdeb}
-html[data-desktop-theme="cosmos"] .content .cr-theme-choice[data-cr-theme-select="cosmos"]{
+/* Grid sizing is determined by the responsive desktop rules above. */
+html[data-lolite-design="cosmos"] #icons .desktop-icon{min-height:0!important}
+html[data-lolite-design="cosmos"] :is(.window,.panel,.win-flyout){--accent:#76a9c4}
+html[data-lolite-design="cosmos"] .window .controls button:hover{background:#2c668c83!important}
+html[data-lolite-design="cosmos"] .window .controls button.close:hover{background:#953b5ebf!important}
+html[data-lolite-design="cosmos"] .content :is(.cr-theme-check,.cr-theme-note,.cr-section-head>span){color:#96cdeb}
+html[data-lolite-design="cosmos"] .content .cr-theme-choice[data-cr-theme-select="cosmos"]{
  border-color:#63d9ff!important;box-shadow:0 0 19px #328ace32
 }
 #loliteDesktopThemePicker .ldt-scene.cosmos{
@@ -260,38 +261,38 @@ html[data-desktop-theme="cosmos"] .content .cr-theme-choice[data-cr-theme-select
 #loliteDesktopThemePicker .ldt-scene.cosmos::after{
  content:"";position:absolute;left:50%;top:42%;width:38px;height:38px;
  border-radius:50%;background:radial-gradient(circle at 30% 20%,#8cc7fb,#1a256b 70%,#080d2c);
- box-shadow:0 0 16px #73d2fc8c;
+ box-shadow:0 0 8px #75a1cb22;
 }
 #loliteDesktopThemePicker .ldt-card:has(.ldt-scene.cosmos){border-color:#366793}
 #loliteDesktopThemePicker .ldt-card:has(.ldt-scene.cosmos)[aria-checked="true"]{border-color:#78d8ff;box-shadow:0 0 0 2px #64ceff29}
-html[data-desktop-theme="cosmos"] .cosmos-terminal{
+html[data-lolite-design="cosmos"] .cosmos-terminal{
  display:flex;flex-direction:column;height:100%;min-height:330px;
  background:#050c1b;border:1px solid #315b82;border-radius:12px;overflow:hidden;
  font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
 }
-html[data-desktop-theme="cosmos"] .cosmos-terminal-intro{
+html[data-lolite-design="cosmos"] .cosmos-terminal-intro{
  padding:14px 17px;background:#0b2136;color:#8edfff;font:700 13px "Space Grotesk",sans-serif;
  border-bottom:1px solid #45749866
 }
-html[data-desktop-theme="cosmos"] .cosmos-terminal-intro small{font:400 10px var(--lolite-font);margin-left:12px;color:#9db7d0}
-html[data-desktop-theme="cosmos"] .cosmos-terminal-history{
+html[data-lolite-design="cosmos"] .cosmos-terminal-intro small{font:400 10px var(--lolite-font);margin-left:12px;color:#9db7d0}
+html[data-lolite-design="cosmos"] .cosmos-terminal-history{
  flex:1;overflow:auto;padding:14px 18px;color:#d1eeff;font:12px/1.7 ui-monospace,Consolas,monospace;
 }
-html[data-desktop-theme="cosmos"] .cosmos-terminal-history p{margin:0 0 8px;white-space:pre-wrap;overflow-wrap:anywhere}
-html[data-desktop-theme="cosmos"] .cosmos-terminal-response{color:#75c5ec}
-html[data-desktop-theme="cosmos"] .cosmos-terminal-form{
+html[data-lolite-design="cosmos"] .cosmos-terminal-history p{margin:0 0 8px;white-space:pre-wrap;overflow-wrap:anywhere}
+html[data-lolite-design="cosmos"] .cosmos-terminal-response{color:#75c5ec}
+html[data-lolite-design="cosmos"] .cosmos-terminal-form{
  display:flex;align-items:center;gap:11px;background:#0b1830;border-top:1px solid #4975ae55;padding:8px 13px
 }
-html[data-desktop-theme="cosmos"] .cosmos-terminal-form label{font-size:19px;color:#65d2ff}
-html[data-desktop-theme="cosmos"] .cosmos-terminal-form input{
+html[data-lolite-design="cosmos"] .cosmos-terminal-form label{font-size:19px;color:#65d2ff}
+html[data-lolite-design="cosmos"] .cosmos-terminal-form input{
  flex:1;min-width:0!important;border:0!important;outline:none!important;background:transparent!important;
  font:12px ui-monospace,Consolas,monospace!important;box-shadow:none!important
 }
-html[data-desktop-theme="cosmos"] .cosmos-terminal-form button{
+html[data-lolite-design="cosmos"] .cosmos-terminal-form button{
  padding:8px 12px;border-radius:7px;background:#1e6594;color:#f5fcff
 }
-html[data-desktop-theme="cosmos"] .cosmos-terminal-form button:hover{background:#2685b7}
+html[data-lolite-design="cosmos"] .cosmos-terminal-form button:hover{background:#2685b7}
 @media(max-width:510px){
- html[data-desktop-theme="cosmos"] #icons{grid-auto-rows:94px!important;row-gap:7px!important}
+ html[data-lolite-design="cosmos"] #icons{grid-auto-rows:94px!important;row-gap:7px!important}
  .cosmos-terminal-intro small{display:block;margin:4px 0 0!important}
 }
