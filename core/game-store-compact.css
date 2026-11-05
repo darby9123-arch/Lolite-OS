@@ -1,0 +1,56 @@
+/* Compact Game Store refresh: quiet tiles and a single primary action. */
+.store.store{grid-template-columns:185px minmax(0,1fr);background:#0c111a}
+.store .store-side{padding:16px 10px;gap:14px;background:#101722;border-color:#253344}
+.store .store-brand{font-size:17px;padding:3px 10px 12px;letter-spacing:-.3px}
+.store .store-brand span{font-size:9px;letter-spacing:1.1px}
+.store .store-nav{gap:2px}
+.store .store-nav button{padding:8px 9px;gap:8px;font-size:11px;border-radius:7px}
+.store .store-nav .nav-mark{width:23px;height:22px;font-size:9px}
+.store .store-side-footer{display:none!important}
+.store .store-main{padding:18px 17px 55px!important;background:#0c111a}
+.store .store-top{top:-18px;padding-bottom:13px;gap:9px;background:linear-gradient(#0c111a 88%,transparent)}
+.store .store-search{height:39px;border-radius:9px!important;background:#141d29!important}
+.store .store-count-pill{font-size:11px}
+.store .store-wallet{display:none!important}
+.store .store-section{margin:0 0 24px}
+.store .store-section-head{margin-bottom:12px}
+.store .store-section-head h2{font:700 17px 'DM Sans',system-ui,sans-serif}
+.store .store-section-head p{margin-top:3px;font-size:11px}
+.store .store-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(146px,178px))!important;justify-content:start;gap:10px!important}
+.store .store-card{border:1px solid #2d3b4a!important;border-radius:11px!important;background:#131b26!important;box-shadow:none!important;transition:border-color 150ms ease,background-color 150ms ease!important;animation:none!important;overflow:hidden}
+.store .store-card:hover{border-color:#7895ae!important;background:#172332!important;transform:none!important;box-shadow:none!important}
+.store .store-cover{height:94px!important;min-height:0!important;padding:0!important;overflow:hidden;border-radius:10px 10px 0 0}
+.store .store-cover:before,.store .store-cover:after,.store .store-cover-art:after,.store .store-cover-title,.store .store-cover-label{display:none!important}
+.store .store-cover.has-game-art .store-cover-art,.store .store-card:hover .store-cover.has-game-art .store-cover-art{transform:none!important;opacity:1!important}
+.store .store-cover-art-backdrop{filter:blur(12px) brightness(.65)}
+.store .store-cover-picture{object-fit:cover}
+.store .store-card-body{display:flex;flex-direction:column;gap:9px;padding:10px!important}
+.store .store-card h3{font:700 12px/1.3 'DM Sans',system-ui,sans-serif;margin:0!important;min-height:32px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;overflow:hidden;text-overflow:ellipsis}
+.store .store-card-meta,.store .store-external-note,.store .store-card .lolite-local-source-actions,.store .store-card .gd-use-local-zip{display:none!important}
+.store .store-card-actions{display:flex;flex-direction:column;gap:7px;margin-top:auto}
+.store .store-card-actions .store-play{width:100%;padding:8px 9px;border:1px solid #557894;border-radius:7px;background:#25445d;color:#edf7ff;font-size:12px;font-weight:750;box-shadow:none!important;transform:none!important}
+.store .store-card-actions .store-play:hover{background:#306082;border-color:#80b3d7}
+.store .store-server-picker{display:flex!important;align-items:center;gap:6px;padding:0!important;margin:0;width:100%;min-width:0;color:#a6b8c9;font-size:10px}
+.store .store-server-picker>span{flex:none}
+.store .store-server-select{flex:1;min-width:0;max-width:100%;height:30px;background:#101925;border:1px solid #354c61;border-radius:7px;padding:4px;color:#dce8f2;font-size:10px;cursor:pointer}
+.store .store-server-select:disabled{cursor:default;opacity:.75}
+.store .store-card :is(button,select):focus-visible,.store .store-nav button:focus-visible{outline:2px solid #92c7e6;outline-offset:2px}
+.store .store-import-tools{position:relative;flex:none;align-self:center}
+.store .store-import-tools>summary{cursor:pointer;list-style:none;border:1px solid #374e62;border-radius:7px;background:#192a3a;color:#c5d8e8;padding:10px 11px;font-size:11px}
+.store .store-import-tools>summary::-webkit-details-marker{display:none}
+.store .store-top:has(.store-import-tools[open]){flex-wrap:wrap}
+.store .store-import-tools[open]{display:flex;gap:7px;flex-wrap:wrap;align-items:center;width:100%;padding:9px;border:1px solid #344a5e;border-radius:9px;background:#101c29}
+.store .store-import-tools[open]>summary{margin-right:5px}
+.store .store-import-tools .store-play{width:auto!important;min-width:0!important;flex:0 1 auto!important;padding:7px 9px!important}
+.store .store-hero{display:none!important}
+@media(max-width:760px){
+ .store.store{grid-template-columns:1fr}
+ .store .store-side{display:none}
+ .store .store-main{padding:14px 12px 50px!important}
+ .store .store-top{top:-14px;flex-wrap:wrap}
+ .store .store-grid{grid-template-columns:repeat(auto-fill,minmax(136px,1fr))!important;gap:9px!important}
+ .store .store-card-body{padding:9px!important}
+ .store .store-cover{height:88px!important}
+}
+@media(max-width:380px){.store .store-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}.store .store-card h3{font-size:11px}.store .store-server-picker{gap:4px}.store .store-server-picker>span{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.store .store-card{transition:none!important}}
