@@ -30,6 +30,31 @@
   window.toggleGlass=on=>{key('glass',on?'true':'false');document.documentElement.classList.toggle('glass',!!on);document.documentElement.classList.toggle('liquid-glass',!!on);window.LoliteLiquidGlass?.setEnabled(!!on)};
   window.toggleReduce=on=>{key('reduce',on?'true':'false');document.documentElement.classList.toggle('reduce-motion',!!on);document.documentElement.classList.toggle('reduce',!!on)};
   window.loliteResetSettings=()=>{['glass','reduce','loliteCursor','loliteCursorPack','loliteCursorSize','loliteAccent','wallpaperCategory'].forEach(k=>localStorage.removeItem(k));location.reload()};
+  window.loliteClearCache=async()=>{
+    const proceed=window.confirm("Clear Lolite's temporary caches and automatically downloaded games? Your accounts, settings, files, and games installed from a ZIP will be kept.");
+    if(!proceed)return;
+    const button=document.getElementById("lolite-clear-cache");
+    const status=document.getElementById("lolite-cache-status");
+    if(button){button.disabled=true;button.textContent="Clearing cache…"}
+    if(status)status.textContent="Removing temporary cache data…";
+    try{
+      let stores=0,games=0;
+      if("caches" in window){
+        const keys=await caches.keys();
+        for(const name of keys){if(await caches.delete(name))stores++}
+      }
+      if(typeof window.LoliteLocalGamePackages?.clearAutoGameCache==="function")
+        games=await window.LoliteLocalGamePackages.clearAutoGameCache();
+      if(status)status.textContent="Cleared "+stores+" Cache Storage store(s) and "+games+" auto-downloaded game(s).";
+      if(typeof window.toast==="function")window.toast("Lolite cache cleared. Your settings and ZIP-installed games are safe.");
+      if(button){button.disabled=false;button.textContent="Clear Cache"}
+    }catch(error){
+      console.warn("Could not clear some Lolite caches",error);
+      if(status)status.textContent="Some cache items could not be removed: "+(error?.message||"unknown error")+".";
+      if(button){button.disabled=false;button.textContent="Try clearing cache again"}
+    }
+  };
+
   const style=document.createElement('style');style.textContent=
     ':root{--accent:#e85c64}.settings-extra{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.settings-extra .card{margin:0}.setting-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.setting-btn{border:1px solid #ffffff16;background:#ffffff08;color:inherit;border-radius:9px;padding:8px 10px;cursor:pointer}.setting-btn.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,transparent)}.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}' +
     'html.lolite-cursors-on,html.lolite-cursors-on body,html.lolite-cursors-on #desktop,html.lolite-cursors-on *{cursor:'+cursorCss('lolite')+'}'+
@@ -46,7 +71,7 @@
     const cursor=get('loliteCursor','lolite'),accent=get('loliteAccent','#e85c64');
     const choices=[['lolite','Lolite Cursor','Clean white pointer with violet detail'],['default','System','Original system cursors'],['pointer','Pointer','Simple hand pointer'],['crosshair','Crosshair','Precision cursor'],['none','Hidden','Hide the cursor']];
     const actions=[['pointer','Links & buttons'],['text','Text selection'],['progress','Loading'],['wait','Busy / waiting'],['grab','Grab / drag'],['move','Move objects'],['resize','Horizontal resize'],['resizeNS','Vertical resize'],['resizeNWSE','Diagonal resize ↘'],['resizeNESW','Diagonal resize ↗'],['notAllowed','Unavailable action'],['help','Help'],['crosshair','Precision'],['zoomIn','Zoom in'],['zoomOut','Zoom out']];
-    return html+'<div class="settings-extra"><div class="card"><h3>Accent</h3><div class="setting-row">'+['#e85c64','#3b82f6','#06b6d4','#22c55e','#f59e0b','#ef4444'].map(c=>'<button aria-label="Accent '+c+'" class="setting-btn" style="width:30px;height:30px;padding:0;background:'+c+'" onclick="loliteSetAccent(\''+c+'\');openApp(\'settings\',\'Settings\')"></button>').join('')+'</div><p class="muted">Choose the main highlight colour.</p></div><div class="card"><h3>System</h3><button class="setting-btn" onclick="loliteResetSettings()">Reset all settings</button></div></div>';
+    return html+'<div class="settings-extra"><div class="card"><h3>Accent</h3><div class="setting-row">'+['#e85c64','#3b82f6','#06b6d4','#22c55e','#f59e0b','#ef4444'].map(c=>'<button aria-label="Accent '+c+'" class="setting-btn" style="width:30px;height:30px;padding:0;background:'+c+'" onclick="loliteSetAccent(\''+c+'\');openApp(\'settings\',\'Settings\')"></button>').join('')+'</div><p class="muted">Choose the main highlight colour.</p></div><div class="card"><h3>Storage &amp; Cache</h3><button id="lolite-clear-cache" class="setting-btn" type="button" onclick="loliteClearCache()">Clear Cache</button><p id="lolite-cache-status" class="muted" aria-live="polite">Deletes temporary Lolite cache and auto-downloaded game HTML. Keeps accounts, settings and games installed from ZIP files.</p></div><div class="card"><h3>System</h3><button class="setting-btn" onclick="loliteResetSettings()">Reset all settings</button></div></div>';
   };
   setTimeout(()=>{const c=get('loliteCursor','default');window.loliteApplyCursor(c);const a=get('loliteAccent');if(a)window.loliteSetAccent(a);if(get('glass')==='true')document.documentElement.classList.add('liquid-glass');if(get('reduce')==='true')document.documentElement.classList.add('reduce-motion')},0);
 })();
