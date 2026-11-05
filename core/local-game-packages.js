@@ -303,7 +303,7 @@ async function ensureWorker(){
  if(workerPromise)return workerPromise;
  workerPromise=(async()=>{
   if(!("serviceWorker" in navigator))throw new Error("This browser doesn't support local packaged games");
-  const script=new URL("core/local-game-sw.js",document.baseURI);
+  const script=new URL("core/local-game-sw.js?v=in-app-player-20261106",document.baseURI);
   const scope=new URL("core/",document.baseURI);
   const registration=await navigator.serviceWorker.register(script.href,{scope:scope.href});
   const sw=registration.active||registration.waiting||registration.installing;
