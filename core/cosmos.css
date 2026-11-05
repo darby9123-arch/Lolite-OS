@@ -430,3 +430,45 @@ html[data-lolite-design="cosmos"] .cosmos-headline .cosmos-wordmark{
     width:180px;
   }
 }
+
+/* Clean, scrollable desktop shortcuts — soft edges only when there is more to scroll. */
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #icons{
+  --cosmos-fade-top:0px;
+  --cosmos-fade-bottom:0px;
+  top:30px!important;
+  bottom:112px!important;
+  padding:12px 0 18px!important;
+  box-sizing:border-box!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain;
+  scroll-behavior:smooth;
+  scrollbar-width:none!important;
+  -ms-overflow-style:none;
+  -webkit-overflow-scrolling:touch;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0px,#000 var(--cosmos-fade-top),#000 calc(100% - var(--cosmos-fade-bottom)),transparent 100%);
+  mask-image:linear-gradient(to bottom,transparent 0px,#000 var(--cosmos-fade-top),#000 calc(100% - var(--cosmos-fade-bottom)),transparent 100%);
+}
+html[data-lolite-design="cosmos"] #icons::-webkit-scrollbar{display:none!important}
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"] #icons .desktop-icon{
+  transition:background-color 180ms ease,border-color 180ms ease,transform 180ms ease!important;
+}
+@media(max-width:810px){
+  html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #icons{
+    top:28px!important;
+    bottom:95px!important;
+  }
+}
+@media(max-width:510px){
+  html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #icons{
+    top:18px!important;
+    bottom:88px!important;
+    padding:10px 0 16px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-lolite-design="cosmos"][data-desktop-experience="windows"] #icons{scroll-behavior:auto!important}
+  html[data-lolite-design="cosmos"][data-desktop-experience="windows"] #icons .desktop-icon{transition:none!important}
+}
+html[data-lolite-design="cosmos"].reduce #icons{scroll-behavior:auto!important}
+html[data-lolite-design="cosmos"].reduce #icons .desktop-icon{transition:none!important}
