@@ -233,3 +233,65 @@ html[data-desktop-theme="cosmos"] #lolite-splash .splash-title b{color:#5cdbff}
 html[data-desktop-theme="cosmos"].reduce :is(.cosmos-tile,.desktop-icon,.win-pinned,.task){transition:none!important;animation:none!important}
 html[data-desktop-theme="cosmos"].browsing-mode .cosmos-hud,
 html[data-desktop-theme="cosmos"].mobile-mode .cosmos-hud{display:none}
+
+/* Finish the desktop as a cohesive product, including terminal, theme previews and motion. */
+html[data-desktop-theme="cosmos"] #wallpaper{
+ background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important;
+ animation:none!important;will-change:auto!important;
+}
+html[data-desktop-theme="cosmos"] #icons{grid-auto-rows:104px!important;row-gap:16px!important}
+html[data-desktop-theme="cosmos"] #icons .desktop-icon{min-height:0!important}
+html[data-desktop-theme="cosmos"] :is(.window,.panel,.win-flyout){--accent:#4dcaff}
+html[data-desktop-theme="cosmos"] .window .controls button:hover{background:#2c668c83!important}
+html[data-desktop-theme="cosmos"] .window .controls button.close:hover{background:#953b5ebf!important}
+html[data-desktop-theme="cosmos"] .content :is(.cr-theme-check,.cr-theme-note,.cr-section-head>span){color:#96cdeb}
+html[data-desktop-theme="cosmos"] .content .cr-theme-choice[data-cr-theme-select="cosmos"]{
+ border-color:#63d9ff!important;box-shadow:0 0 19px #328ace32
+}
+#loliteDesktopThemePicker .ldt-scene.cosmos{
+ background:radial-gradient(ellipse at 58% 63%,#4dbaff9c 0 3%,#172f6e 16%,transparent 33%),
+  radial-gradient(ellipse at 28% 23%,#a151ed7f,transparent 34%),
+  radial-gradient(ellipse at 74% 68%,#315cba8c,transparent 55%),#030b1c;
+}
+#loliteDesktopThemePicker .ldt-scene.cosmos::before{
+ content:"";position:absolute;top:16%;left:23%;width:56%;height:60%;border:2px solid #83ccff92;
+ border-radius:50%;transform:rotate(-28deg);box-shadow:0 0 18px #50bbfc73;
+}
+#loliteDesktopThemePicker .ldt-scene.cosmos::after{
+ content:"";position:absolute;left:50%;top:42%;width:38px;height:38px;
+ border-radius:50%;background:radial-gradient(circle at 30% 20%,#8cc7fb,#1a256b 70%,#080d2c);
+ box-shadow:0 0 16px #73d2fc8c;
+}
+#loliteDesktopThemePicker .ldt-card:has(.ldt-scene.cosmos){border-color:#366793}
+#loliteDesktopThemePicker .ldt-card:has(.ldt-scene.cosmos)[aria-checked="true"]{border-color:#78d8ff;box-shadow:0 0 0 2px #64ceff29}
+html[data-desktop-theme="cosmos"] .cosmos-terminal{
+ display:flex;flex-direction:column;height:100%;min-height:330px;
+ background:#050c1b;border:1px solid #315b82;border-radius:12px;overflow:hidden;
+ font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+html[data-desktop-theme="cosmos"] .cosmos-terminal-intro{
+ padding:14px 17px;background:#0b2136;color:#8edfff;font:700 13px "Space Grotesk",sans-serif;
+ border-bottom:1px solid #45749866
+}
+html[data-desktop-theme="cosmos"] .cosmos-terminal-intro small{font:400 10px var(--lolite-font);margin-left:12px;color:#9db7d0}
+html[data-desktop-theme="cosmos"] .cosmos-terminal-history{
+ flex:1;overflow:auto;padding:14px 18px;color:#d1eeff;font:12px/1.7 ui-monospace,Consolas,monospace;
+}
+html[data-desktop-theme="cosmos"] .cosmos-terminal-history p{margin:0 0 8px;white-space:pre-wrap;overflow-wrap:anywhere}
+html[data-desktop-theme="cosmos"] .cosmos-terminal-response{color:#75c5ec}
+html[data-desktop-theme="cosmos"] .cosmos-terminal-form{
+ display:flex;align-items:center;gap:11px;background:#0b1830;border-top:1px solid #4975ae55;padding:8px 13px
+}
+html[data-desktop-theme="cosmos"] .cosmos-terminal-form label{font-size:19px;color:#65d2ff}
+html[data-desktop-theme="cosmos"] .cosmos-terminal-form input{
+ flex:1;min-width:0!important;border:0!important;outline:none!important;background:transparent!important;
+ font:12px ui-monospace,Consolas,monospace!important;box-shadow:none!important
+}
+html[data-desktop-theme="cosmos"] .cosmos-terminal-form button{
+ padding:8px 12px;border-radius:7px;background:#1e6594;color:#f5fcff
+}
+html[data-desktop-theme="cosmos"] .cosmos-terminal-form button:hover{background:#2685b7}
+@media(max-width:510px){
+ html[data-desktop-theme="cosmos"] #icons{grid-auto-rows:94px!important;row-gap:7px!important}
+ .cosmos-terminal-intro small{display:block;margin:4px 0 0!important}
+}
