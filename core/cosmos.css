@@ -127,7 +127,7 @@ html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center :is(.task,.taskwi
  background:transparent!important;transition:background .15s,transform .15s,box-shadow .15s!important;
 }
 html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned):hover{background:#336ca347!important;border-color:#8ddaff44!important;transform:translateY(-3px)}
-html[data-lolite-design="cosmos"] #taskbar #startBtn{background:linear-gradient(145deg,#2788ce,#102a51)!important;border-color:#6fe9ff99!important;box-shadow:0 1px 6px #0008!important}
+html[data-lolite-design="cosmos"][data-desktop-theme="cosmos"] #taskbar #startBtn{background:linear-gradient(145deg,#2788ce,#102a51)!important;border-color:#6fe9ff99!important;box-shadow:0 1px 6px #0008!important}
 html[data-lolite-design="cosmos"] #taskbar .win-start-logo i{background:#b3f3ff!important;box-shadow:none}
 html[data-lolite-design="cosmos"] #taskbar .win-pinned .lolite-icon{color:#b0ddff!important}
 html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center .lolite-icon svg{width:94%!important;height:94%!important}
@@ -143,7 +143,7 @@ html[data-lolite-design="cosmos"] #taskbar .tray #net{display:none!important}
 html[data-lolite-design="cosmos"] #taskbar .tray .task{width:34px!important;min-width:34px!important;height:34px!important;border-radius:9px!important;color:#bdeaff!important}
 html[data-lolite-design="cosmos"] #taskbar .tray #clock{min-width:94px;font-size:11px;color:#e6f5ff}
 html[data-lolite-design="cosmos"] #taskbar #winShowDesktop{right:0;bottom:0;top:auto;width:8px;height:60px;pointer-events:auto}
-html[data-lolite-design="cosmos"] #start{
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"] #start{
  position:fixed!important;left:50%!important;right:auto!important;top:auto!important;bottom:95px!important;
  transform:translateX(-50%)!important;width:min(640px,calc(100vw - 30px))!important;
  border-radius:20px!important;border:1px solid #6eb8f584!important;
@@ -159,11 +159,11 @@ html[data-lolite-design="cosmos"] .win-start-grid button:hover,
 html[data-lolite-design="cosmos"] .win-start-recent>button:hover{background:#70aaff1d!important;border-radius:11px}
 html[data-lolite-design="cosmos"] .win-user-avatar{background:#1c73b2!important}
 html[data-lolite-design="cosmos"] .win-start-footer{background:#0a1630b8!important}
-html[data-lolite-design="cosmos"] .window{
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"] .window{
  background:#0a1529f5!important;border:1px solid #74adfa70!important;border-radius:17px!important;
  box-shadow:0 28px 80px #000b,0 0 0 1px #ffffff09!important;overflow:hidden;
 }
-html[data-lolite-design="cosmos"] .window.is-active{border-color:#86d5ffb3!important;box-shadow:0 22px 60px #000b!important}
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"] .window.is-active{border-color:#86d5ffb3!important;box-shadow:0 22px 60px #000b!important}
 html[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-desktop-theme="cosmos"] .window>.titlebar{
  background:linear-gradient(90deg,#172c4aec,#0b172be8)!important;border-bottom:1px solid #6a9ac04d!important;
  min-height:43px;height:43px;color:#e9f6ff;padding-left:14px!important
@@ -225,7 +225,7 @@ html[data-lolite-design="cosmos"] #lolite-splash .splash-title b{color:#5cdbff}
  html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center{max-width:calc(100vw - 12px)!important;padding:5px!important;height:56px;min-height:56px;gap:0}
  html[data-lolite-design="cosmos"] #taskbar #winPinnedApps{gap:0}
  html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned){width:36px!important;min-width:36px!important;height:40px!important;padding:8px!important}
- html[data-lolite-design="cosmos"] #start{bottom:81px!important}
+ html[data-lolite-design="cosmos"][data-desktop-experience="windows"] #start{bottom:81px!important}
 }
 @media(prefers-reduced-motion:reduce){
  html[data-lolite-design="cosmos"] :is(.cosmos-tile,.desktop-icon,.win-pinned,.task){transition:none!important;animation:none!important}
@@ -352,7 +352,7 @@ html[data-lolite-design="cosmos"] :is(.la-logo,.lc-logo){background:#416881!impo
 html[data-lolite-design="cosmos"] .fe-sidebar button.active::before{background:#729cb2!important}
 html[data-lolite-design="cosmos"] .fe-row[aria-selected="true"]{background:#263e56!important}
 html[data-lolite-design="cosmos"] .win-calc-keys .equals{background:#326b8e!important;border-color:#668ca9!important}
-html[data-lolite-design="cosmos"] .window .controls .close:hover{background:#46586c!important;color:#f0f4f7!important}
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"] .window .controls .close:hover{background:#46586c!important;color:#f0f4f7!important}
 html[data-lolite-design="cosmos"] :is(#loliteDesktopThemePicker,#loliteModeChooser){background:#0e1927!important}
 html[data-lolite-design="cosmos"] :is(.ldt-launch,.lbt-launch){background:#2c6687!important;border-color:#628da4!important}
 html[data-lolite-design="cosmos"] .window .cr-settings :is(button,input,select,textarea):focus-visible{outline-color:#a9c4d7!important}
