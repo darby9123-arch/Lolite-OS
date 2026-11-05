@@ -46,7 +46,21 @@
  }
 
  // The Cosmos desktop now has no overlaid header, logo or dashboard widgets.
- function apply(){if(enabled())shortcuts()}
+ // Fade the scrolled ends of the desktop shortcut column without hiding first/last rows.
+ function updateIconFade(){
+   const holder=document.getElementById('icons');
+   if(!holder)return;
+   if(!enabled()){
+     holder.style.removeProperty('--cosmos-fade-top');
+     holder.style.removeProperty('--cosmos-fade-bottom');
+     return;
+   }
+   const remaining=Math.max(0,holder.scrollHeight-holder.clientHeight);
+   const top=holder.scrollTop;
+   holder.style.setProperty('--cosmos-fade-top',top>6?'28px':'0px');
+   holder.style.setProperty('--cosmos-fade-bottom',remaining-top>6?'28px':'0px');
+ }
+ function apply(){if(enabled())shortcuts();requestAnimationFrame(updateIconFade)}
  // Lightweight local terminal: actual commands, no fake shell execution.
  function terminalMarkup(){
    return '<div class="cosmos-terminal"><div class="cosmos-terminal-intro">Lolite Terminal <small>Local workspace · type help for commands</small></div>'+
@@ -85,7 +99,7 @@
    if(typeof originalRender==='function'){
      window.renderIcons=function(){
        const result=originalRender.apply(this,arguments);
-       if(enabled())queueMicrotask(shortcuts);
+       if(enabled())queueMicrotask(()=>{shortcuts();requestAnimationFrame(updateIconFade)});
        return result;
      };
    }
@@ -95,7 +109,15 @@
    window.addEventListener('lolite:desktopthemechange',()=>{if(!enabled())removeExtraShortcuts();apply()});
    window.addEventListener('lolite:modechange',apply);
    const icons=document.getElementById('icons');
-   if(icons)new MutationObserver(()=>{if(enabled())queueMicrotask(shortcuts)}).observe(icons,{childList:true});
+   if(icons){
+     icons.addEventListener('scroll',updateIconFade,{passive:true});
+     if(typeof ResizeObserver==='function')new ResizeObserver(updateIconFade).observe(icons);
+     new MutationObserver(()=>{
+       if(enabled())queueMicrotask(()=>{shortcuts();requestAnimationFrame(updateIconFade)});
+     }).observe(icons,{childList:true});
+     requestAnimationFrame(updateIconFade);
+   }
+   window.addEventListener('resize',updateIconFade,{passive:true});
    document.addEventListener('click',e=>{
      const shortcut=e.target.closest('#icons [data-cosmos-open]');
      if(shortcut){e.preventDefault();launch(shortcut.dataset.cosmosOpen)}
