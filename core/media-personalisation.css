@@ -9,3 +9,24 @@
 .cr-sound-section{border:1px solid #ffffff1c;border-radius:8px;margin:12px 0;background:#201d25;overflow:hidden}.cr-sound-section summary{cursor:pointer;padding:16px;font-size:12px;font-weight:600;color:#e4d8e2}.cr-sound-section summary span{float:right;font-size:10px;font-weight:400;color:#a897a6}.cr-sound-section .cr-sound-grid{padding:0 14px 14px}.cr-sound-section .cr-sound{padding:11px}.cr-sound-section .cr-sound:disabled{opacity:.4}.cr-sound-categories .cr-setting-row p{max-width:390px}
 @container (max-width:650px){.cr-wall-browse{flex-wrap:wrap}.cr-wall-search{min-width:160px}.cr-video-options>span{margin:0}.cr-now-playing{flex-wrap:wrap}.cr-sound-section .cr-sound-grid{grid-template-columns:1fr}.cr-wall-item .cr-wall-caption strong{font-size:10px}.cr-wall-toolbar .cr-filter{gap:5px}}
 @container (max-width:390px){.cr-wall-grid{grid-template-columns:1fr}.cr-wall-item .cr-wall-caption strong{min-height:0}.cr-wall-browse .cr-upload{font-size:10px}}
+
+/* User-supplied video wallpaper installer, replacing external MotionBGS. */
+.cr-pack-install{display:flex;align-items:center;justify-content:space-between;gap:18px;
+  padding:16px 18px;margin:0 0 17px;border:1px solid #5c78904d;
+  border-radius:12px;background:linear-gradient(120deg,#14253a,#101924);color:#e7f1fa}
+.cr-pack-install>div{flex:1;min-width:0}
+.cr-pack-install strong{display:block;font-size:13px;font-weight:700}
+.cr-pack-install p{max-width:660px;margin:6px 0 8px;line-height:1.6;font-size:11px;color:#b4c5d6}
+.cr-pack-install small{display:block;color:#8ec5db;font-size:10px;line-height:1.5}
+.cr-pack-upload{display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:175px;
+  padding:11px 13px;background:#2c6687;border:1px solid #6d9cb8;border-radius:9px;
+  color:#f5f9fe;font-size:11px;font-weight:700;cursor:pointer}
+.cr-pack-upload:hover{background:#367b9d;border-color:#a7c6d7}
+.cr-pack-upload:focus-within{outline:2px solid #a1bfd3;outline-offset:2px}
+.cr-pack-upload input[hidden]{display:none}
+.cr-wall-card .cr-live-label{background:#17384bd9;border:1px solid #8daebe88;color:#e6f4ff}
+.cr-wall-source.cr-wall-local{color:#92aabe}
+@media(max-width:800px){
+  .cr-pack-install{align-items:stretch;flex-direction:column;padding:14px}
+  .cr-pack-upload{width:100%}
+}
