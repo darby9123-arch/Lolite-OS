@@ -2,7 +2,7 @@
 (()=>{'use strict';
  const icon=id=>window.LoliteIcons?.tile(id)||'',root=document.documentElement;
  const apps=[['games','Game Store','Pick your next game'],['files','Files','Your files, organised'],['chatroom','Lolite Chat','Messages and calls'],['appstore','App Store','Find a useful tool'],['academy','Academy','Learn something new'],['lolite-quests','Quests','Activities and rewards'],['life-rp','Life RP','Build your own story'],['settings','Settings','Make it yours']];
- let tab='appearance',filter='MotionBGS',wallQuery='';const oldPage=window.page;
+ let tab='appearance',filter='Live',wallQuery='';const oldPage=window.page;
  function launch(id){const name=apps.find(a=>a[0]===id)?.[1]||id;if(window.LoliteDeviceMode?.mode().mode==='browsing'){window.LoliteDeviceMode.openApp(id);return}window.openApp(id,name,id==='settings'?970:1060,710)}
  const themePalettes={
   cosmos:['#07142d','#48caff','#e4f6ff'],crimson:['#222027','#c93b4e','#fbe5e8'],windows11:['#19283f','#3b91e9','#e1f3ff'],aero7:['#0d3455','#63a9df','#ecfbff'],
@@ -34,8 +34,8 @@
 
  const row=(title,desc,control)=>`<div class="cr-setting-row"><div><strong>${title}</strong><p>${desc}</p></div>${control}</div>`;
  const check=(attr,on,label)=>`<label class="cr-switch"><input type="checkbox" ${attr} ${on?'checked':''} aria-label="${label}"><span aria-hidden="true"></span></label>`;
- function appearance(){return `<div class="cr-section-head"><h2>Your workspace</h2><span>Personalisation</span></div><p class="cr-help">Adjust the layout, wallpapers, and sounds. Choose Desktop and Browser themes directly in the Home app.</p><div class="cr-setting-group">${row('Workspace layout','Switch between Desktop Style and Browsing Style.','<button class="cr-secondary" data-cr-action="layout">Change layout</button>')}${row('Wallpapers & live scenes','Choose from still and animated wallpapers.','<button class="cr-secondary" data-cr-settings="wallpapers">Browse wallpapers</button>')}${row('System sounds','Adjust volume, enable sounds, and try previews.','<button class="cr-secondary" data-cr-settings="sounds">Sound settings</button>')}</div><button class="cr-wall-link" data-cr-settings="wallpapers">${icon('wallpaper')}<span><strong>Wallpapers & live scenes</strong><small>Explore the collection</small></span><span aria-hidden="true">→</span></button>`}
- function wallpaperPanel(){const api=window.LoliteWallpapers,w=api.current();return `<div class="cr-now-playing"><div><span class="cr-eyebrow">ON YOUR DESKTOP</span><strong data-cr-wall-name>${w?.name||'Crimson Dunes'}</strong><small data-cr-wall-status role="status">${api.getStatus()}</small></div><label class="cr-inline-toggle"><input type="checkbox" data-cr-live ${api.isPaused()?'':'checked'}> Live motion</label></div><div class="cr-video-options"><label>Video quality <select data-wall-quality aria-label="Live wallpaper video quality"><option value="hd" ${api.getQuality()==='hd'?'selected':''}>HD · 1080p</option><option value="lite" ${api.getQuality()==='lite'?'selected':''}>Data saver · 540p</option></select></label><button type="button" class="cr-secondary" data-wall-retry ${w?.video?'':'hidden'}>Try again</button><span>24 MotionBGS videos · 8 Lolite live scenes</span></div><div data-cr-wall-library>${api.markup(filter,wallQuery)}</div>`}
+ function appearance(){return `<div class="cr-section-head"><h2>Your workspace</h2><span>Personalisation</span></div><p class="cr-help">Adjust the layout, wallpapers, and sounds. Choose Desktop and Browser themes directly in the Home app.</p><div class="cr-setting-group">${row('Workspace layout','Switch between Desktop Style and Browsing Style.','<button class="cr-secondary" data-cr-action="layout">Change layout</button>')}${row('Wallpapers & videos','Choose static backgrounds or your 20 local MP4 videos.','<button class="cr-secondary" data-cr-settings="wallpapers">Browse wallpapers</button>')}${row('System sounds','Adjust volume, enable sounds, and try previews.','<button class="cr-secondary" data-cr-settings="sounds">Sound settings</button>')}</div><button class="cr-wall-link" data-cr-settings="wallpapers">${icon('wallpaper')}<span><strong>Wallpapers & videos</strong><small>Explore the collection</small></span><span aria-hidden="true">→</span></button>`}
+ function wallpaperPanel(){const api=window.LoliteWallpapers,w=api.current();return `<div class="cr-now-playing"><div><span class="cr-eyebrow">ON YOUR DESKTOP</span><strong data-cr-wall-name>${w?.name||'Cosmic Orbit'}</strong><small data-cr-wall-status role="status">${api.getStatus()}</small></div><label class="cr-inline-toggle"><input type="checkbox" data-cr-live ${api.isPaused()?'':'checked'}> Play live videos</label></div><div class="cr-video-options"><button type="button" class="cr-secondary" data-wall-retry ${w?.video?'':'hidden'}>Try playback again</button><span>20 uploaded MP4 wallpapers · Local playback · No external streams</span></div><div data-cr-wall-library>${api.markup(filter,wallQuery)}</div>`}
  function soundsPanel(){const api=window.LoliteSounds,s=api.state();return `<div class="cr-sound-intro">${icon('sounds')}<div><h2>Bring your desktop to life.</h2><p>${api.catalog().length} original sounds. Set the volume and choose what makes a sound.</p></div></div><div class="cr-setting-group">${row('System sounds','Feedback for the things you do in Lolite.',check('data-cr-sounds',s.enabled,'System sounds'))}${row('Volume','Independent of games, calls and media.',`<div class="cr-volume"><input type="range" min="0" max="100" value="${Math.round(s.volume*100)}" data-cr-volume aria-label="System sound volume"><output data-cr-volume-label>${Math.round(s.volume*100)}%</output></div>`)}</div><div class="cr-section-head"><h2>Choose your soundscape</h2><span>Saved automatically</span></div><div class="cr-setting-group cr-sound-categories">${api.groups().map(g=>row(g.name,g.description,check(`data-cr-sound-group="${g.id}"`,g.enabled,g.name+' sounds'))).join('')}</div><div class="cr-section-head"><h2>Sound library</h2><span data-cr-sound-status role="status">Click to preview</span></div>${api.groups().map(g=>`<details class="cr-sound-section" ${g.id==='windows'?'open':''}><summary>${g.name}<span>${api.catalog().filter(s=>s.group===g.id).length} ${api.catalog().filter(s=>s.group===g.id).length===1?'sound':'sounds'}</span></summary><div class="cr-sound-grid">${api.catalog().filter(s=>s.group===g.id).map(({id,name})=>`<button class="cr-sound" data-cr-sound="${id}" ${s.enabled?'':'disabled'}><span aria-hidden="true">▷</span><strong>${name}</strong></button>`).join('')}</div></details>`).join('')}<p class="cr-help">Typing and hover sounds are optional. Previews let you hear any category while system sounds are on. Sounds start after an interaction and stop when this tab is hidden.</p>`}
  function motionPanel(){const reduced=root.classList.contains('reduce')||root.classList.contains('reduce-motion');return `<div class="cr-setting-group">${row('Reduce interface motion','Turn off the short fades and transitions.',check('data-cr-reduce',reduced,'Reduce interface motion'))}${row('Live wallpaper motion','Pause or resume animated scenes.',check('data-cr-live',!window.LoliteWallpapers.isPaused(),'Live wallpaper motion'))}</div><p class="cr-help">Windows open and close smoothly, minimise into the taskbar, and settle into snap layouts. Your device’s Reduce Motion preference also pauses live wallpapers.</p><h2 class="cr-subheading">Cursors & other settings</h2><div class="cr-advanced">${oldPage('settings')}</div>`}
  function settingsMarkup(){const sections=[['appearance','Appearance','settings'],['wallpapers','Wallpapers','wallpaper'],['sounds','Sounds','sounds'],['accessibility','Motion & cursors','autoclick']],current=sections.find(s=>s[0]===tab)||sections[0];return `<div class="cr-settings"><aside class="cr-settings-nav"><div class="cr-settings-brand"><span class="cr-eyebrow">LOLITE OS</span><h1>Settings</h1></div><nav aria-label="Settings sections">${sections.map(([id,label,glyph])=>`<button type="button" data-cr-tab="${id}" aria-current="${id===tab?'page':'false'}">${icon(glyph)}<span>${label}</span></button>`).join('')}</nav><small class="cr-settings-foot">Make it your own.</small></aside><section class="cr-settings-main" aria-label="${current[1]}"><header><span class="cr-eyebrow">PERSONALISATION</span><h1>${current[1]}</h1></header>${tab==='wallpapers'?wallpaperPanel():tab==='sounds'?soundsPanel():tab==='accessibility'?motionPanel():appearance()}</section></div>`}
@@ -63,7 +63,12 @@
   if(b.dataset.crOpen)launch(b.dataset.crOpen);
   if(b.dataset.crSettings)openSettings(b.dataset.crSettings);
   if(b.dataset.crTab){tab=b.dataset.crTab;renderSettings();document.querySelector(`[data-cr-tab="${tab}"]`)?.focus()}
-  if(b.dataset.wallId)window.LoliteWallpapers.apply(b.dataset.wallId);
+  if(b.dataset.wallId){
+    const selected=window.LoliteWallpapers.collection.find(w=>w.id===b.dataset.wallId);
+    if(selected?.local&&!window.LoliteWallpaperImports?.isInstalled(selected.id)){
+     document.querySelector('[data-wall-pack-upload]')?.click();
+    }else window.LoliteWallpapers.apply(b.dataset.wallId);
+   }
   if(b.dataset.wallFilter){filter=b.dataset.wallFilter;const holder=document.querySelector('[data-cr-wall-library]');if(holder){holder.innerHTML=window.LoliteWallpapers.markup(filter,wallQuery);holder.querySelector(`[data-wall-filter="${filter}"]`)?.focus()}}
   if(b.hasAttribute('data-wall-retry'))window.LoliteWallpapers.retry();
   if(b.dataset.crSound)window.LoliteSounds.preview(b.dataset.crSound).then(played=>{const status=document.querySelector('[data-cr-sound-status]');if(status)status.textContent=played?'Previewing '+b.querySelector('strong').textContent:'Turn on sounds and raise the volume to preview'});
@@ -72,14 +77,42 @@
  document.addEventListener('input',e=>{if(e.target.matches('[data-wall-search]')){wallQuery=e.target.value;const grid=e.target.closest('[data-cr-wall-library]').querySelector('.cr-wall-grid');grid.innerHTML=window.LoliteWallpapers.cards(filter,wallQuery)}if(e.target.matches('[data-cr-volume]')){window.LoliteSounds.setVolume(e.target.value/100);const label=document.querySelector('[data-cr-volume-label]');if(label)label.textContent=e.target.value+'%'}});
  document.addEventListener('change',e=>{
   const el=e.target;
-  if(el.matches('[data-cr-sound-group]'))window.LoliteSounds.setGroup(el.dataset.crSoundGroup,el.checked);
+  if(el.matches('[data-wall-pack-upload]')){
+    const selected=Array.from(el.files||[]);el.value='';
+    if(!selected.length)return;
+    const status=document.querySelector('[data-wall-pack-status]');
+    if(status)status.textContent='Installing '+selected.length+' selected files…';
+    window.LoliteWallpaperImports.importFiles(selected).then(result=>{
+     window.toast?.(result.added+' video wallpapers installed · '+result.installed+'/20 ready.');
+    }).catch(error=>{
+     window.toast?.('Wallpaper import: '+error.message);
+     if(status)status.textContent=error.message;
+    });
+   }
+   if(el.matches('[data-cr-sound-group]'))window.LoliteSounds.setGroup(el.dataset.crSoundGroup,el.checked);
   if(el.matches('[data-wall-quality]'))window.LoliteWallpapers.setQuality(el.value);
   if(el.matches('[data-cr-sounds]')){window.LoliteSounds.setEnabled(el.checked);document.querySelectorAll('[data-cr-sound]').forEach(b=>b.disabled=!el.checked)}
   if(el.matches('[data-cr-reduce]')){window.toggleReduce(el.checked);window.LoliteWallpapers.sync();document.querySelectorAll('[data-cr-live]').forEach(n=>n.checked=!window.LoliteWallpapers.isPaused())}
   if(el.matches('[data-cr-live]')){window.LoliteWallpapers.pause(!el.checked);el.checked=!window.LoliteWallpapers.isPaused()}
   if(el.matches('[data-wall-upload]')){const file=el.files?.[0];if(!file)return;if(!/^image\/(png|jpeg|webp)$/.test(file.type)||file.size>3*1024*1024){window.toast('Choose a JPG, PNG or WebP image under 3 MB.');el.value='';return}const reader=new FileReader();reader.onload=()=>{if(window.LoliteWallpapers.setCustom(String(reader.result)))window.toast('Your wallpaper is ready.')};reader.onerror=()=>window.toast('That image could not be read. Please try another.');reader.readAsDataURL(file);el.value=''}
  });
- addEventListener('lolite:wallpaperchange',e=>{document.querySelectorAll('[data-wall-id]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.wallId===e.detail.id)));document.querySelectorAll('[data-cr-wall-name]').forEach(n=>n.textContent=e.detail.name);document.querySelectorAll('[data-wall-retry]').forEach(n=>n.hidden=!window.LoliteWallpapers.current()?.video)});
+ addEventListener('lolite:wallpaperpackchange',e=>{
+   const holder=document.querySelector('[data-cr-wall-library]');
+   if(holder){
+    const activeInput=holder.querySelector('[data-wall-search]');
+    const typing=activeInput===document.activeElement;
+    if(!typing)holder.innerHTML=window.LoliteWallpapers.markup(filter,wallQuery);
+    else{
+     const grid=holder.querySelector('.cr-wall-grid');
+     if(grid)grid.innerHTML=window.LoliteWallpapers.cards(filter,wallQuery);
+    }
+    const status=holder.querySelector('[data-wall-pack-status]');
+    if(status)status.textContent=e.detail.error?e.detail.error:
+      e.detail.current?'Installed '+e.detail.installed+'/20 · '+e.detail.current:
+      e.detail.installed===20?'All 20 wallpaper videos installed.':e.detail.installed+'/20 videos installed on this browser.';
+   }
+  });
+  addEventListener('lolite:wallpaperchange',e=>{document.querySelectorAll('[data-wall-id]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.wallId===e.detail.id)));document.querySelectorAll('[data-cr-wall-name]').forEach(n=>n.textContent=e.detail.name);document.querySelectorAll('[data-wall-retry]').forEach(n=>n.hidden=!window.LoliteWallpapers.current()?.video)});
  addEventListener('lolite:wallpaperstatus',e=>{document.querySelectorAll('[data-cr-wall-status]').forEach(n=>n.textContent=e.detail.status)});
  // Keep the older Crimson design opt-in. Cosmos must not inherit Crimson's
  // hard-coded red buttons, focus rings, or backgrounds.
