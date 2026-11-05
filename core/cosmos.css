@@ -389,3 +389,44 @@ html[data-lolite-design="cosmos"] #lolite-splash .splash-title b{color:#93bcd2!i
 html[data-lolite-design="cosmos"] #lolite-splash .splash-progress{background:#668ca5!important;box-shadow:none!important}
 html[data-lolite-design="cosmos"] #lolite-splash .splash-status{color:#a8b8c6}
 html[data-lolite-design="cosmos"] #lolite-splash{background:radial-gradient(circle at 50% 42%,#1d3043 0%,#0c1726 50%,#060c16 100%)!important}
+
+/* Custom desktop heading: user's uploaded transparent Lolite wordmark. */
+html[data-lolite-design="cosmos"] .cosmos-headline{
+  top:12px;
+  width:clamp(190px,22vw,320px);
+}
+html[data-lolite-design="cosmos"] .cosmos-headline .cosmos-wordmark-title{
+  display:block;
+  font-size:0!important;
+  line-height:0!important;
+  letter-spacing:normal!important;
+  margin:6px 0 0!important;
+  padding:0!important;
+}
+html[data-lolite-design="cosmos"] .cosmos-headline .cosmos-wordmark-title::after{
+  display:none!important;
+  content:none!important;
+}
+html[data-lolite-design="cosmos"] .cosmos-headline .cosmos-wordmark{
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:105px;
+  object-fit:contain;
+  object-position:center;
+  filter:brightness(1.13) drop-shadow(0 2px 3px #0008);
+  user-select:none;
+  pointer-events:none;
+}
+@media(max-width:810px){
+  html[data-lolite-design="cosmos"] .cosmos-headline{
+    top:39px;
+    width:clamp(185px,32vw,265px);
+  }
+}
+@media(max-width:510px){
+  html[data-lolite-design="cosmos"] .cosmos-headline{
+    top:79px;
+    width:180px;
+  }
+}
