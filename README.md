@@ -11,9 +11,18 @@
 
 The Vercel version includes Ultraviolet runtime files and the Bare HTTP endpoint, but its service worker currently fails in browser testing. Scramjet's proxy runtime is unavailable on Vercel. Both browser apps now offer a standard, non-proxy embedded browsing mode for sites that permit framing, with an Open in tab option.
 
-A Lolite-branded browser desktop with the original Cosmos space interface, apps, games, files, live wallpapers and a responsive desktop or browser workspace. Earlier desktop themes remain available.
+A Lolite-branded browser desktop with the original Cosmos space interface, apps, games, files, optional locally installed video wallpapers, and a responsive desktop or browser workspace. Earlier desktop themes remain available.
 
 ## Update Log
+
+### Replacement user video wallpapers — 2026-11-06
+- Removed the 24 externally streamed MotionBGS videos and 8 built-in canvas animations from the selectable wallpaper collection. The old streaming catalog is no longer loaded and has been deleted.
+- Added a curated list of **20 video wallpapers** matching the names of the user's uploaded MP4 files: gaming, anime, cars, nature and abstract scenes. Existing **static** wallpapers remain available.
+- **Install once on your browser:** Settings → Wallpapers → **Import video wallpapers**, then multi-select the 20 original MP4 files. Lolite matches filenames automatically (including `motorcycle-parked.3840x2160(1).mp4`), stores the videos in browser IndexedDB and plays them locally without external video links.
+- Generates actual wallpaper preview thumbnails from each imported MP4, tracks progress, loops the active video muted, and frees memory when switching wallpaper. Hidden tabs and reduced-motion preferences pause playback.
+- Video files are **not hosted publicly in this GitHub repository** (the supplied 20 MP4s are approximately 514 MB and some depict third-party IP). Import is per browser/profile, and clearing browser site data may remove the local videos. Users can reselect them at any time.
+- Testing: `Verify local video wallpapers` checks the catalog, every provided filename, import UI, and local playback integration.
+
 
 ### Lolite Cosmos — Original Space Desktop Redesign — 2026-11-05
 - **New flagship desktop:** deep-space wallpaper, an original Lolite star mark, Space Grotesk and Plus Jakarta Sans typography, neon-glass floating taskbar, and unified blue/purple window styling.
