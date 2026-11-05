@@ -42,3 +42,23 @@ test('Cosmos local terminal does not execute operating-system commands', () => {
   assert.match(js,/cosmos-terminal-form/);
   assert.doesNotMatch(js,/\bchild_process\b|\bexecSync\b|\beval\(/);
 });
+
+test('Cosmos does not destroy original app shortcuts', () => {
+  const js=read('core/cosmos.js');
+  assert.match(js,/function removeExtraShortcuts/);
+  assert.match(js,/document\.createDocumentFragment\(/);
+  assert.doesNotMatch(js,/holder\.replaceChildren\(/);
+  assert.match(js,/window\.openApp\?\.\('terminal','Terminal'/);
+});
+
+test('Cosmos is isolated from the red Crimson design and refreshes cached files', () => {
+  const crimson=read('core/crimson.js');
+  const css=read('core/cosmos.css');
+  const html=read('index.html');
+  assert.match(crimson,/root\.dataset\.loliteDesign=cosmos\?'cosmos':'crimson'/);
+  assert.match(crimson,/lolite:desktopthemechange/);
+  assert.match(css,/html\[data-lolite-design="cosmos"\]/);
+  assert.match(css,/filter:brightness\(\.82\) saturate\(\.72\)/);
+  assert.match(html,/core\/cosmos\.css\?v=cosmos-polish-2/);
+  assert.match(html,/core\/cosmos\.js\?v=cosmos-polish-2/);
+});
