@@ -503,6 +503,12 @@ if(Array.isArray(window.LoliteMountainCatalog)){
       window.LoliteOpenInstalledGame(installed);
       return;
     }
+    // Load the actual game HTML into this browser on first Play; no ZIP
+    // upload, external website redirect, or iframe is required.
+    if(typeof window.LolitePlayGenizyHTML==='function'){
+      window.LolitePlayGenizyHTML(game.title);
+      return;
+    }
   }
   if(!hasGame(game)){toast('Buy '+game.title+' for '+priceLabel(game)+' Lolite Dollars first.');render();return}
   const selected=selectedSource(game);if(!selected)return;
