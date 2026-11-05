@@ -330,7 +330,11 @@
       startDesktop,
       startBrowsing,
       mode:()=>({mode,device:'desktop',style:mode}),
-      openApp:navigate
+      openApp:navigate,
+      activateWindow:id=>{
+        if(mode!=='browsing'||!allWindows().some(win=>win.dataset.windowId===id))return false;
+        activate(id);return true;
+      }
     };
     window.LoliteUIStyle=window.LoliteDeviceMode;
     function resumeWorkspace(){if(userSelected)return;let saved='desktop';try{saved=localStorage.getItem('loliteUiStyle')||'desktop'}catch(_){}if(saved==='browsing')startBrowsing();else startDesktop()}
