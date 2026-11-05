@@ -60,3 +60,10 @@ html[data-lolite-design="cosmos"] .window .store .store-card{background:#131b26!
 html[data-lolite-design="cosmos"] .window .store .store-card:hover{background:#172332!important;border-color:#7895ae!important}
 html[data-lolite-design="cosmos"] .window .store .store-card-actions .store-play{background:#25445d!important;color:#edf7ff!important;border-color:#557894!important}
 html[data-lolite-design="cosmos"] .window .store .store-card-actions .store-play:hover{background:#306082!important}
+
+/* Imported games have the same short controls, with management collapsed. */
+.store .store-local-server{display:block;font:10px/1.5 system-ui,sans-serif;color:#9eb4c6;padding:4px 1px}
+.store .store-local-manage{font:10px/1.5 system-ui,sans-serif;color:#91a9bb}
+.store .store-local-manage>summary{cursor:pointer;padding:2px 0}
+.store .store-local-manage>.store-play{margin-top:6px;width:auto!important;font-size:10px!important;padding:6px 8px!important;background:#3b2730;color:#f6cbd5}
+.store .store-local-manage>.store-play:hover{background:#55303c}
