@@ -235,6 +235,12 @@ if(Array.isArray(window.LoliteMountainCatalog)){
          if(game.mountain&&game.url!==url&&!(game.servers||[]).some(s=>s.url===game.url)){
            (game.servers||(game.servers=[])).push({name:'Mountain Games',url:game.url});
          }
+         // Preserve the existing local HTML as an alternate until a complete
+         // permission-cleared replacement is installed in this repository.
+         if(!game.external&&game.url.startsWith('html games/')&&game.url!==url&&
+            !(game.servers||[]).some(s=>s.url===game.url)){
+           (game.servers||(game.servers=[])).push({name:'Lolite OS (existing HTML)',url:game.url});
+         }
          games[existingIndex]={...game,url,external:true,genizy:true,source:'GenizyMath'};
          genizyCovers.set(game.file,cover);
          replaced++;
@@ -322,9 +328,44 @@ if(Array.isArray(window.LoliteMountainCatalog)){
    window.loliteExternalServerImport={added,alternatives,total:added+alternatives};
    if(document.querySelector('.store-main'))render();
  }
+ // Authorised locally hosted game packages take priority over external URLs.
+ // Each game consists of actual HTML and relative assets in the repository.
+ async function loadAuthorizedGames(){
+   try{
+     const response=await fetch('html%20games/authorized/manifest.json',{cache:'no-store'});
+     if(!response.ok)throw new Error('Local game manifest unavailable');
+     const manifest=await response.json();
+     if(manifest.version!==1||!Array.isArray(manifest.games))throw new Error('Invalid local game manifest');
+     let added=0,replaced=0;
+     const catalogKeys=new Set((window.LoliteGenizyCatalog||[]).map(item=>genizyKey(item.title)));
+     const existing=new Map(games.map((game,i)=>[genizyKey(game.title),i]));
+     for(const entry of manifest.games){
+       if(!entry||typeof entry.title!=='string'||typeof entry.slug!=='string'||typeof entry.entry!=='string')continue;
+       if(!/^[a-z0-9][a-z0-9-]{0,79}$/.test(entry.slug)||
+          !entry.entry.toLowerCase().endsWith('.html')||
+          entry.entry.split('/').some(segment=>!segment||segment==='.'||segment==='..'||!/^[a-zA-Z0-9._-]+$/.test(segment)))continue;
+       const title=entry.title.replace(/[<>&"'\x60]/g,'').slice(0,100).trim(),key=genizyKey(title);
+       if(!key)continue;
+       const url='html%20games/authorized/'+entry.slug+'/'+entry.entry.split('/').map(encodeURIComponent).join('/');
+       const n=existing.get(key);
+       const local={title,url,source:'Lolite OS (local HTML)',local:true,external:false,hosted:false,
+         genizy:catalogKeys.has(key),servers:[]};
+       if(n!==undefined){games[n]={...games[n],...local};replaced++;}
+       else{
+         games.push({...local,file:'authorized-'+entry.slug+'.html',category:categorize({file:entry.slug})});
+         existing.set(key,games.length-1);added++;
+       }
+     }
+     games.sort((a,b)=>a.title.localeCompare(b.title,undefined,{numeric:true,sensitivity:'base'}));
+     window.loliteAuthorizedGameImport=Object.freeze({added,replaced,total:added+replaced});
+     if(document.querySelector('.store-main'))render();
+   }catch(error){
+     console.warn('Authorized local game catalog could not be read.',error);
+   }
+ }
  const serverSelections=new Map();
  const availableServers=g=>{
-   const baseName=g.openExternally?'Official creator':g.genizy?'GenizyMath':g.source==="Chicken King's Vault"?"Chicken King's Vault":g.source==='DAKNUX'?'DAKNUX':g.mountain?'Mountain Games':'Lolite OS';
+   const baseName=g.local?'Lolite OS (local HTML)':g.openExternally?'Official creator':g.genizy?'GenizyMath':g.source==="Chicken King's Vault"?"Chicken King's Vault":g.source==='DAKNUX'?'DAKNUX':g.mountain?'Mountain Games':'Lolite OS';
    const raw=[{name:baseName,url:g.url},...(g.servers||[])];
    const seen=new Set();
    return raw.filter(x=>{if(!x?.url||seen.has(x.url))return false;seen.add(x.url);return true});
@@ -507,4 +548,5 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  loadGenizyCatalog();
  loadAdditionalServers();
  buildFranchiseCategories();
+ loadAuthorizedGames();
 })();
