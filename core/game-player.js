@@ -1,7 +1,7 @@
 /* Play games inside Lolite windows without navigating or reloading the OS. */
 (()=>{
  'use strict';
- const notify=message=>window.toast?.(message)||console.warn(message);
+ const notify=message=>{if(typeof window.toast==='function')window.toast(message);else console.warn(message)};
  const safeURL=value=>{
   try{
    const u=new URL(String(value||''),document.baseURI);
@@ -13,7 +13,7 @@
   const imported=url.pathname.includes('/core/local-games/');
   // Imported ZIP/HTML scripts must never gain Lolite's origin or account storage.
   if(imported)return 'allow-scripts allow-forms allow-pointer-lock allow-downloads';
-  if(url.origin===location.origin)return 'allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads';
+  if(url.origin===location.origin)return url.pathname.startsWith('/games/')?'allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads':'allow-scripts allow-forms allow-pointer-lock allow-downloads';
   return 'allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads allow-popups';
  };
  function buildFrame(url,title){
@@ -34,15 +34,15 @@
   const target=safeURL(url);
   if(!target){notify('This game server does not have a valid URL.');return false}
   const label=String(title||'Game').slice(0,110),id=windowId(file||label);
-  const existing=window.state?.windows?.[id];
-  const existingFrame=existing?.el.querySelector('.store-frame');
+  const existing=document.querySelector('#windows .window[data-window-id="'+id+'"]');
+  const existingFrame=existing?.querySelector('.store-frame');
   if(existingFrame?.src===target.href){
    window.restoreWin?.(id);
    return true; // Keeps game progress in this open window.
   }
   if(typeof window.openApp!=='function'){notify('The Lolite game window is unavailable.');return false}
   const win=window.openApp(id,label,1020,720);
-  const content=win?.querySelector('.content')||window.state?.windows?.[id]?.el?.querySelector('.content');
+  const content=win?.querySelector('.content')||document.querySelector('#windows .window[data-window-id="'+id+'"] .content');
   if(!content){notify('Could not open the Lolite game player.');return false}
   content.replaceChildren();
   content.style.padding='0';
@@ -85,7 +85,7 @@
   return true;
  }
  function switchServer(file,url,source){
-  const u=safeURL(url),id=windowId(file),content=window.state?.windows?.[id]?.el?.querySelector('.store-player');
+  const u=safeURL(url),id=windowId(file),content=document.querySelector('#windows .window[data-window-id="'+id+'"] .store-player');
   if(!u||!content)return false;
   const frame=content.querySelector('iframe.store-frame');
   if(frame&&frame.src!==u.href)frame.replaceWith(buildFrame(u,frame.title));
