@@ -39,12 +39,10 @@ async function refresh(){
 }
 function openPackage(record){
  if(!packages)return notify("Local package importer is unavailable");
- // Direct, same-tab document navigation. The installed HTML becomes the page,
- // with its relative JS, CSS, image and sound files served from IndexedDB.
- // Browser Back returns to Lolite; no iframe or popup is involved.
- notify("Opening "+(record.title||"local game")+"… Use your browser's Back button to return to Lolite.");
- packages.launchUrl(record).then(url=>window.location.assign(url))
- .catch(error=>notify(error?.message||"Could not start the installed game"));
+ notify("Opening "+(record.title||"local game")+" inside Lolite…");
+ packages.launchUrl(record).then(url=>{
+  if(!window.LoliteGamePlayer?.open({title:record.title||"Local game",url,file:"local-"+record.id,source:"Installed HTML"}))notify("Could not open this HTML game inside Lolite.");
+ }).catch(error=>notify(error?.message||"Could not start the installed game"));
 }
 async function openHtml(record){
  if(!record||!packages)return notify("Local HTML game loader is unavailable");
@@ -180,7 +178,10 @@ function ensureTop(root){
   else notify("Import an HTML file, game ZIP or folder first.");
  });
  localBtn.style.flex="0 0 auto";
- top.append(zipBtn,zipInput,genizyBtn,genizyInput,folderBtn,folderInput,localBtn);
+ const tools=document.createElement("details");tools.className="store-import-tools";
+ const summary=document.createElement("summary");summary.textContent="Import games";
+ tools.append(summary,htmlBtn,htmlInput,zipBtn,zipInput,genizyBtn,genizyInput,folderBtn,folderInput,localBtn);
+ top.append(tools);
 }
 function enhanceGenizyCards(root){
  if(!packages||!genizyTitles.size)return;
@@ -260,15 +261,16 @@ function enhance(){
    summary.style.cssText="padding:10px 12px;margin:12px 0;border:1px solid #394559;border-radius:9px;";
    root.querySelector(".store-top")?.after(summary);
   }
-  summary.textContent=genizyImported.length+" GenizyMath HTML games installed on this device. Select a GenizyMath game and press Play to open its local HTML directly. Some games need internet for external assets; source-site iframe wrappers are excluded.";
+  summary.textContent=genizyImported.length+" GenizyMath HTML games installed on this device. Select a GenizyMath game and press Play to open its HTML inside Lolite. Some games need internet for external assets; source-site iframe wrappers are excluded.";
  }else summary?.remove();
  buildSection(root,"lolite-local-package-section","Installed HTML Game Packages",
-   "Local HTML games, including scripts, images and sounds. Play locally opens the actual HTML in this same browser tab, with no iframe or popup. Use your browser's Back button to return to Lolite.",
+   "Local HTML games, including scripts, images and sounds. Play loads the actual HTML inside a Lolite game window. Close the window to return to the store.",
    installed.filter(record=>record.source!=="genizymath-zip"),openPackage,id=>packages.remove(id));
  buildSection(root,"lolite-saved-html-section","Saved Standalone HTML Games",
    "Older HTML imports will be migrated into direct-play local packages when launched. Multi-file games still require their complete ZIP or folder.",
    saved,openHtml,id=>storage.remove(id));
- enhanceGenizyCards(root);
+
+ // Game tiles keep only Play and Server; import tools live above the grid.
 }
 function schedule(){
  if(scheduled)return;scheduled=true;
