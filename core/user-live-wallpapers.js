@@ -10,7 +10,7 @@
  const bySlug=new Map(catalog.map(x=>[x.slug,x]));
  const installed=new Set();
  const DB='lolite-user-wallpapers-v1', STORE='videos';
- let dbPromise=null,loading=false;
+ let dbPromise=null,loading=false,previewQueue=Promise.resolve();
  const normalized=name=>String(name||'').toLowerCase().replace(/\.mp4$/,'')
   .replace(/\.\d{3,4}x\d{3,4}(?:\(\d+\))?$/,'').replace(/\(\d+\)$/,'')
   .replace(/[^a-z0-9]/g,'');
@@ -118,7 +118,9 @@
    loading=true;let added=0,error=null;
    try{
      for(const record of selected.values()){
-       try{await put(record);installed.add(record.id);added++;signal({progress:added,totalSelected:selected.size,current:record.name});thumbnail(record.blob,record.id).catch(()=>{})}
+       try{await put(record);installed.add(record.id);added++;signal({progress:added,totalSelected:selected.size,current:record.name});
+        // Decode only one 4K thumbnail at a time to avoid a memory spike.
+        previewQueue=previewQueue.then(()=>thumbnail(record.blob,record.id)).catch(()=>{});}
        catch(e){error=e;break}
      }
      try{await navigator.storage?.persist?.()}catch(_){}
