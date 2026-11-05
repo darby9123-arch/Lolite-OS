@@ -38,6 +38,7 @@
   const existingFrame=existing?.querySelector('.store-frame');
   if(existingFrame?.src===target.href){
    window.restoreWin?.(id);
+   window.LoliteDeviceMode?.activateWindow?.(id);
    return true; // Keeps game progress in this open window.
   }
   if(typeof window.openApp!=='function'){notify('The Lolite game window is unavailable.');return false}
@@ -82,6 +83,7 @@
   help.append(summary,text,outside);
   player.append(head,frame,help);content.append(player);
   win?.focus?.({preventScroll:true});
+  window.LoliteDeviceMode?.activateWindow?.(id);
   return true;
  }
  function switchServer(file,url,source){
