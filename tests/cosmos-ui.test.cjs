@@ -30,7 +30,7 @@ test('Cosmos uses an original local background and favicon', () => {
 
 test('Status widgets do not display fabricated telemetry', () => {
   const js=read('core/cosmos.js');
-  assert.match(js,/navigator\.storage\.estimate/);
+  assert.match(js,/navigator\.storage\?\.estimate/);
   assert.match(js,/navigator\.onLine/);
   assert.match(js,/navigator\.getBattery/);
   assert.match(js,/requestAnimationFrame\(fps\)/);
