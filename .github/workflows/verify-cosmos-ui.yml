@@ -1,0 +1,39 @@
+name: Verify Lolite Cosmos UI
+on:
+  push:
+    paths:
+      - 'index.html'
+      - 'core/cosmos.js'
+      - 'core/cosmos.css'
+      - 'assets/lolite-cosmos-logo.svg'
+      - 'assets/wallpapers/cosmos-orbit.svg'
+      - 'core/desktop-themes.js'
+      - 'core/wallpapers.js'
+      - 'tests/cosmos-ui.test.cjs'
+      - '.github/workflows/verify-cosmos-ui.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'core/cosmos.js'
+      - 'core/cosmos.css'
+      - 'assets/**'
+      - 'core/desktop-themes.js'
+      - 'core/wallpapers.js'
+      - 'tests/cosmos-ui.test.cjs'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check Javascript syntax
+        run: |
+          node --check core/cosmos.js
+          node --check core/desktop-themes.js
+          node --check core/wallpapers.js
+      - name: Test UI integration
+        run: node --test tests/cosmos-ui.test.cjs
