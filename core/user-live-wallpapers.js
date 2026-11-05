@@ -72,6 +72,39 @@
  function match(file){
    return byName.get(normalized(file.name))||null;
  }
+ // Build a small preview from each user's own video, so cards show actual footage.
+ function thumbnail(blob,id){
+   return new Promise(resolve=>{
+     const video=document.createElement('video');
+     const url=URL.createObjectURL(blob);
+     let completed=false;const timer=setTimeout(()=>done(),9000);
+     function done(){
+       if(completed)return;completed=true;clearTimeout(timer);
+       video.pause();video.removeAttribute('src');video.load();URL.revokeObjectURL(url);resolve();
+     }
+     video.muted=true;video.playsInline=true;video.preload='auto';video.src=url;
+     video.addEventListener('loadedmetadata',()=>{
+       try{video.currentTime=Math.min(1.2,Math.max(0,video.duration*.15))}catch{done()}
+     },{once:true});
+     video.addEventListener('seeked',()=>{
+       try{
+         const canvas=document.createElement('canvas');canvas.width=320;canvas.height=180;
+         const ctx=canvas.getContext('2d');
+         if(ctx){ctx.drawImage(video,0,0,320,180);
+           const data=canvas.toDataURL('image/webp',.62);
+           localStorage.setItem('loliteWallpaperPoster:'+id,data);
+           signal({poster:id});
+         }
+       }catch(_){}done();
+     },{once:true});
+     video.addEventListener('error',done,{once:true});
+     video.load();
+   });
+ }
+ function poster(id){
+   try{return localStorage.getItem('loliteWallpaperPoster:'+id)||null}
+   catch{return null}
+ }
  async function importFiles(files){
    if(loading)throw new Error('An import is already running.');
    const list=Array.from(files||[]),selected=new Map(),unknown=[];
@@ -85,7 +118,7 @@
    loading=true;let added=0,error=null;
    try{
      for(const record of selected.values()){
-       try{await put(record);installed.add(record.id);added++;signal({progress:added,totalSelected:selected.size,current:record.name})}
+       try{await put(record);installed.add(record.id);added++;signal({progress:added,totalSelected:selected.size,current:record.name});thumbnail(record.blob,record.id).catch(()=>{})}
        catch(e){error=e;break}
      }
      try{await navigator.storage?.persist?.()}catch(_){}
@@ -99,7 +132,7 @@
    return URL.createObjectURL(record.blob);
  }
  window.LoliteWallpaperImports=Object.freeze({
-   catalog,installed,importFiles,openUrl,get,remove,match,restore,
+   catalog,installed,importFiles,openUrl,get,remove,match,restore,poster,
    isInstalled:id=>installed.has(id),
    status:()=>({installed:installed.size,total:catalog.length,loading})
  });
