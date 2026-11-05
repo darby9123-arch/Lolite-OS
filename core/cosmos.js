@@ -80,7 +80,7 @@
    hud=document.createElement('div');hud.className='cosmos-hud';hud.id='cosmosHud';
    hud.innerHTML='<div class="cosmos-header">'+
      '<div class="cosmos-brand"><span class="cosmos-brand-mark">'+mark+'</span><span><strong>LOLITE OS</strong><small>YOUR UNIVERSE, YOUR DESKTOP</small></span></div>'+
-     '<div class="cosmos-headline"><div class="cosmos-dateline" id="cosmosDate"></div><h1>LOLITE OS</h1></div></div>'+
+     '<div class="cosmos-headline"><div class="cosmos-dateline" id="cosmosDate"></div><h1 class="cosmos-wordmark-title"><img class="cosmos-wordmark" src="assets/lolite-desktop-wordmark.webp?v=wordmark-1" alt="Lolite OS" draggable="false" decoding="async"></h1></div></div>'+
      '<span class="cosmos-corner tl"></span><span class="cosmos-corner tr"></span><span class="cosmos-corner bl"></span><span class="cosmos-corner br"></span><span class="cosmos-rail"></span>'+
      '<aside class="cosmos-sidebar" aria-label="Desktop dashboard">'+
      '<section>'+bootTitle('Continue')+'<div class="cosmos-widget"><div class="cosmos-widget-row" data-cosmos-recent></div></div></section>'+
