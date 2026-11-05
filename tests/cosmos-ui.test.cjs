@@ -65,6 +65,6 @@ test('Cosmos is isolated from the red Crimson design and refreshes cached files'
 
 test('Cosmos control styles outrank legacy desktop selectors', () => {
   const css=read('core/cosmos.css');
-  assert.match(css,/html\\[data-lolite-design="cosmos"\\]\\[data-desktop-experience="windows"\\] \\.window\\.is-active/);
-  assert.match(css,/html\\[data-lolite-design="cosmos"\\]\\[data-desktop-theme="cosmos"\\] #taskbar #startBtn/);
+  assert.match(css,/html\[data-lolite-design="cosmos"\]\[data-desktop-experience="windows"\] \.window\.is-active/);
+  assert.match(css,/html\[data-lolite-design="cosmos"\]\[data-desktop-theme="cosmos"\] #taskbar #startBtn/);
 });
