@@ -4,6 +4,7 @@
  const root=document.documentElement,read=(k,d='')=>{try{return localStorage.getItem(k)??d}catch{return d}},save=(k,v)=>{try{localStorage.setItem(k,v);return true}catch{return false}};
  const entry=(id,name,category,art=id,motion='')=>({id,name,category,src:'assets/wallpapers/'+art+(art==='crimson-dunes'?'.webp':'.svg'),motion});
  const collection=[
+  entry('cosmos-orbit','Cosmic Orbit','Space'),
   entry('crimson-dunes','Crimson Dunes','Signature'),entry('crimson-fold','Fold','Signature'),entry('red-ridges','Red Ridges','Nature'),
   entry('pine-silence','Pine Silence','Nature'),entry('tidal-night','Tidal Night','Nature'),entry('lunar','Lunar','Nature'),
   entry('contour','Contour','Abstract'),entry('carbon','Carbon','Abstract'),entry('rain-city','After Hours','Signature'),
