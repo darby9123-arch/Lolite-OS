@@ -11,9 +11,17 @@
 
 The Vercel version includes Ultraviolet runtime files and the Bare HTTP endpoint, but its service worker currently fails in browser testing. Scramjet's proxy runtime is unavailable on Vercel. Both browser apps now offer a standard, non-proxy embedded browsing mode for sites that permit framing, with an Open in tab option.
 
-A Lolite-branded browser desktop with a red and charcoal interface, apps, games, files, live wallpapers and a responsive desktop or browser workspace.
+A Lolite-branded browser desktop with the original Cosmos space interface, apps, games, files, live wallpapers and a responsive desktop or browser workspace. Earlier desktop themes remain available.
 
 ## Update Log
+
+### Lolite Cosmos — Original Space Desktop Redesign — 2026-11-05
+- **New flagship desktop:** deep-space wallpaper, an original Lolite star mark, Space Grotesk and Plus Jakarta Sans typography, neon-glass floating taskbar, and unified blue/purple window styling.
+- **Working live dashboard:** recent apps, five quick-access launchers, system sound controls, browser storage usage, real online/offline status, battery percentage when supported, release notes and a measured FPS readout. Unsupported hardware data is shown as unavailable, not invented.
+- **Cosmos Terminal:** a local-only, safe command interface for help, date/time, echo, clearing output and opening Lolite apps.
+- **Personalisation:** choose `Lolite Cosmos` in Desktop themes or switch back to other themes. Existing apps, games, chats and files are retained.
+- **Performance and accessibility:** static vector wallpaper, reduced-motion support, responsive layouts, and no third-party wallpaper image dependency.
+
 
 ### Actual HTML games in the same browser tab — 2026-11-03
 - **No new tabs and no game iframes:** Game Store Play navigates the current tab straight to the selected game's HTML page. Browser Back returns to Lolite.
