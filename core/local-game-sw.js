@@ -73,7 +73,7 @@ async function serve(request){
  // iframe, popup, proxy, remote-game download, or other document wrapper.
  // The link navigates only to Lolite's own root on the same origin.
  let output=data;
- if(isHTML&&request.method==="GET"){
+ if(isHTML&&request.method==="GET"&&request.destination==="document"){
   const loliteUrl=new URL("../",base).href.replace(/&/g,"&amp;").replace(/"/g,"&quot;");
   const link='<a id="lolite-game-return" href="'+loliteUrl+'" title="Return to Lolite OS" style="all:initial!important;position:fixed!important;right:12px!important;top:12px!important;z-index:2147483647!important;padding:8px 12px!important;border-radius:9px!important;background:#121a24eb!important;border:1px solid #7c8ca9!important;color:white!important;cursor:pointer!important;text-decoration:none!important;font:600 12px/1.3 system-ui,sans-serif!important;box-shadow:0 5px 18px #0008!important">↩ Lolite OS</a>';
   const html=await data.text();
