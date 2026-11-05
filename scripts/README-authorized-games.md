@@ -56,3 +56,22 @@ The archive is not bundled into Lolite, and installing its contents is local to
 that browser profile. To put games into the public repository for every user,
 verify each game's redistribution rights first and use the authorized importer
 above for complete, licensed packages.
+
+## Direct Play for GenizyMath titles (no ZIP selection required)
+
+For catalogued GenizyMath games, the Game Store's normal **Play** action
+now fetches the exact HTML launch file from the source repository on the
+first click and saves that HTML in the browser's private IndexedDB. It then
+launches the installed HTML as a top-level page via Lolite's local game
+service worker. Later clicks reuse the saved copy. The service worker applies
+an opaque-origin CSP sandbox to prevent imported games from accessing
+Lolite OS account information.
+
+This is *not* a public mirror: no third-party game HTML is committed to
+Lolite's Git repository. The upstream package has no repository-wide
+redistribution licence, and many HTML launch files depend on third-party
+CDNs for gameplay assets. Games which are only iframe wrappers are rejected
+rather than relayed, so a small number will not launch in this direct mode.
+Some HTML games may still fail when external assets enforce their original
+site's access rules. The source selector still offers the original hosted
+version for games that cannot run as direct local HTML.
