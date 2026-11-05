@@ -18,7 +18,7 @@ async function openGD(record){
  if(!packages)throw new Error("Lolite local game launcher is unavailable");
  notify("Launching Geometry Dash from your installed HTML…");
  const url=await packages.launchUrl(record);
- window.LoliteGamePlayer?.open({title:gdTitle,url,file:"local-"+record.id,source:"Installed GenizyMath ZIP"});
+ window.LoliteGamePlayer?.open({title:gdTitle,url,file:gdFile,source:"Installed GenizyMath ZIP"});
 }
 async function importGDFile(file){
  if(importInProgress||!file)return;
