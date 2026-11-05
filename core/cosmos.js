@@ -17,29 +17,33 @@
  const icoSound=svg('<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15 9a5 5 0 0 1 0 6M18 6a9 9 0 0 1 0 12"/>');
  const mark='<svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M24 2 28 19 46 24 28 28 24 46 20 28 2 24 20 19Z" fill="#dbf7ff"/><path d="m5 5 12 12M43 5 31 17M5 43l12-12M43 43 31 31" stroke="#58bfff" stroke-width="1.5"/><circle cx="24" cy="24" r="5" fill="#44c4ff"/></svg>';
  const bootTitle=(s)=>'<div class="cosmos-block-title">'+s+'</div>';
+ // Preserve existing desktop icons and installed shortcuts.
  function shortcuts(){
    const holder=document.getElementById('icons');
    if(!holder||!enabled())return;
-   if(holder.querySelector('[data-cosmos-shortcut]')&&holder.children.length===apps.length)return;
-   holder.replaceChildren();
-   apps.forEach(([id,title])=>{
-     const b=document.createElement('button');
-     b.type='button';b.className='desktop-icon';b.dataset.cosmosShortcut='1';
-     b.dataset.shellOpen=id;b.setAttribute('aria-label','Open '+title);
-     b.title=title;b.innerHTML=icon(id)+'<span>'+safeText(title)+'</span>';
-     holder.appendChild(b);
-   });
+   const existing=new Set(Array.from(holder.querySelectorAll('.desktop-icon'),el=>
+     (el.getAttribute('aria-label')||el.textContent||'').replace(/^open\s+/i,'').trim().toLowerCase()));
+   const aliases={browser:['browser','ultraviolet browser','lolite browser'],games:['games','game store','default games'],
+     'wallpaper-editor':['wallpaper','wallpaper editor']};
+   const additions=document.createDocumentFragment();
+   for(const [id,title] of apps){
+     if((aliases[id]||[title.toLowerCase()]).some(name=>existing.has(name)))continue;
+     const button=document.createElement('button');
+     button.type='button';button.className='desktop-icon';button.dataset.cosmosShortcut='1';button.dataset.cosmosOpen=id;
+     button.setAttribute('aria-label','Open '+title);button.title=title;
+     button.innerHTML=icon(id)+'<span>'+safeText(title)+'</span>';
+     additions.appendChild(button);
+   }
+   if(additions.childNodes.length)holder.appendChild(additions);
  }
+ function removeExtraShortcuts(){document.querySelectorAll('#icons [data-cosmos-shortcut]').forEach(el=>el.remove())}
  function launch(id){
    if(id==='updates'){window.LoliteWhatsNew?.open?.();if(!window.LoliteWhatsNew?.open)window.openApp?.('updates','What’s New');return}
    if(id==='lowlight-ai'){
      if(typeof window.loliteOpenApp==='function'){window.loliteOpenApp('lowlight-ai');return}
      window.openApp?.('lowlight-ai','Lolite AI');return;
    }
-   if(id==='terminal'){
-     if(typeof window.loliteOpenApp==='function'){window.loliteOpenApp('terminal');return}
-     window.openApp?.('terminal','Terminal');return;
-   }
+   if(id==='terminal'){window.openApp?.('terminal','Terminal',800,550);return}
    if(id==='wallpaper-editor'){
      if(typeof window.loliteOpenApp==='function'){window.loliteOpenApp('wallpaper-editor');return}
      window.openApp?.('wallpaper-editor','Wallpaper Editor');return;
@@ -83,7 +87,7 @@
      '<section>'+bootTitle('Quick access')+'<div class="cosmos-widget"><div class="cosmos-tile-row">'+quick.map(([id,title])=>'<button type="button" class="cosmos-tile" data-cosmos-open="'+id+'" title="'+safeText(title)+'" aria-label="Open '+safeText(title)+'">'+icon(id)+'</button>').join('')+'</div></div></section>'+
      '<section>'+bootTitle('Audio')+'<div class="cosmos-widget" data-cosmos-audio>'+audio()+'</div></section>'+
      '<section>'+bootTitle('System status')+'<div class="cosmos-widget cosmos-system">'+
-     stat('Storage','Checking…','storage')+stat('Network',navigator.onLine?'Online':'Offline','network')+stat('Battery','—','battery')+
+     stat('Site data','Checking…','storage')+stat('Network',navigator.onLine?'Online':'Offline','network')+stat('Battery','—','battery')+
      '</div></section>'+
      '<section>'+bootTitle('Update log')+'<div class="cosmos-widget"><div class="cosmos-widget-row"><span class="cosmos-widget-icon">'+icoSync+'</span>'+
      '<span class="cosmos-widget-copy"><strong>What’s new in Lolite</strong><small>Open the real release notes</small></span>'+
@@ -198,18 +202,17 @@
    apply();
    setTimeout(apply,350);
    setTimeout(apply,900);
-   window.addEventListener('lolite:desktopthemechange',()=>{if(!enabled()&&typeof originalRender==='function')originalRender();apply()});
+   window.addEventListener('lolite:desktopthemechange',()=>{if(!enabled())removeExtraShortcuts();apply()});
    window.addEventListener('lolite:modechange',apply);
    window.addEventListener('lolite:windowchange',renderRecent);
    window.addEventListener('online',refreshNetwork);window.addEventListener('offline',refreshNetwork);
    setInterval(updateClock,30000);
    storageTimer=setInterval(()=>{if(enabled())refreshStorage()},60000);
    const icons=document.getElementById('icons');
-   if(icons)new MutationObserver(()=>{if(enabled()&&!icons.querySelector('[data-cosmos-shortcut]'))queueMicrotask(shortcuts)}).observe(icons,{childList:true});
-   // The Windows-like shell has no Terminal or AI entries; handle these shortcuts directly.
+   if(icons)new MutationObserver(()=>{if(enabled())queueMicrotask(shortcuts)}).observe(icons,{childList:true});
    document.addEventListener('click',e=>{
-     const b=e.target.closest('#icons [data-cosmos-shortcut]');
-     if(b&&(b.dataset.shellOpen==='terminal'||b.dataset.shellOpen==='lowlight-ai'))launch(b.dataset.shellOpen);
+     const shortcut=e.target.closest('#icons [data-cosmos-open]');
+     if(shortcut){e.preventDefault();launch(shortcut.dataset.cosmosOpen)}
    });
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
