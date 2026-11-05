@@ -5,7 +5,7 @@
  let tab='appearance',filter='MotionBGS',wallQuery='';const oldPage=window.page;
  function launch(id){const name=apps.find(a=>a[0]===id)?.[1]||id;if(window.LoliteDeviceMode?.mode().mode==='browsing'){window.LoliteDeviceMode.openApp(id);return}window.openApp(id,name,id==='settings'?970:1060,710)}
  const themePalettes={
-  crimson:['#222027','#c93b4e','#fbe5e8'],windows11:['#19283f','#3b91e9','#e1f3ff'],aero7:['#0d3455','#63a9df','#ecfbff'],
+  cosmos:['#07142d','#48caff','#e4f6ff'],crimson:['#222027','#c93b4e','#fbe5e8'],windows11:['#19283f','#3b91e9','#e1f3ff'],aero7:['#0d3455','#63a9df','#ecfbff'],
   plasma:['#241c36','#9670e6','#efe6ff'],gnome:['#242830','#d1d6df','#f1f3f5'],deepin:['#253a52','#52b3c9','#e9ffff'],
   firefox:['#29183a','#fd7a48','#fff4e7'],opera:['#210f19','#eb3656','#ffe2e9'],arc:['#29293f','#9d9def','#f5f4ff'],
   zen:['#1b2028','#7b8b9b','#edf4f7'],brave:['#292539','#ff794e','#fff1e8']
