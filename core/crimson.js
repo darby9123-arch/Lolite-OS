@@ -81,7 +81,20 @@
  });
  addEventListener('lolite:wallpaperchange',e=>{document.querySelectorAll('[data-wall-id]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.wallId===e.detail.id)));document.querySelectorAll('[data-cr-wall-name]').forEach(n=>n.textContent=e.detail.name);document.querySelectorAll('[data-wall-retry]').forEach(n=>n.hidden=!window.LoliteWallpapers.current()?.video)});
  addEventListener('lolite:wallpaperstatus',e=>{document.querySelectorAll('[data-cr-wall-status]').forEach(n=>n.textContent=e.detail.status)});
- function init(){root.dataset.loliteDesign='crimson';root.style.setProperty('--accent',localStorage.getItem('loliteAccent')||'#e85c64');root.style.setProperty('--blue','var(--accent)');
+ // Keep the older Crimson design opt-in. Cosmos must not inherit Crimson's
+ // hard-coded red buttons, focus rings, or backgrounds.
+ function syncDesktopVisualTheme(){
+   const cosmos=root.dataset.desktopTheme==='cosmos'&&!root.classList.contains('browsing-mode')&&!root.classList.contains('mobile-mode');
+   root.dataset.loliteDesign=cosmos?'cosmos':'crimson';
+   root.style.setProperty('--accent',cosmos?'#76a9c4':(localStorage.getItem('loliteAccent')||'#e85c64'));
+   root.style.setProperty('--blue','var(--accent)');
+   root.style.setProperty('--cr-red',cosmos?'#426c8d':'#bd3541');
+   root.style.setProperty('--cr-hover',cosmos?'#5387a6':'#d0434e');
+   root.style.setProperty('--cr-soft',cosmos?'#182a3d':'#3a2429');
+ }
+ function init(){syncDesktopVisualTheme();
+   window.addEventListener('lolite:desktopthemechange',syncDesktopVisualTheme);
+   window.addEventListener('lolite:modechange',syncDesktopVisualTheme);
   // Existing paint exports also become proper persisted custom wallpapers.
   window.loliteWallpaperData=data=>window.LoliteWallpapers.setCustom(data);
   const oldSave=window.wpSave;if(oldSave)window.wpSave=()=>{oldSave();const data=localStorage.getItem('loliteCustomWallpaper');if(data)window.LoliteWallpapers.setCustom(data)};
