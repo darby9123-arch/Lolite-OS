@@ -54,3 +54,9 @@
 }
 @media(max-width:380px){.store .store-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}.store .store-card h3{font-size:11px}.store .store-server-picker{gap:4px}.store .store-server-picker>span{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.store .store-card{transition:none!important}}
+
+/* Cosmos card polish: overrides shared desktop card backgrounds. */
+html[data-lolite-design="cosmos"] .window .store .store-card{background:#131b26!important;border-color:#2d3b4a!important;border-radius:11px!important}
+html[data-lolite-design="cosmos"] .window .store .store-card:hover{background:#172332!important;border-color:#7895ae!important}
+html[data-lolite-design="cosmos"] .window .store .store-card-actions .store-play{background:#25445d!important;color:#edf7ff!important;border-color:#557894!important}
+html[data-lolite-design="cosmos"] .window .store .store-card-actions .store-play:hover{background:#306082!important}
