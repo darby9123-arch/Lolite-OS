@@ -100,10 +100,10 @@
   window.dispatchEvent(new CustomEvent('lolite:wallpaperchange',{detail:{id:w.id,name:w.name,live:live(w)}}));
  }
  function apply(id,{persist=true}={}){const w=find(id);if(!w)return false;if(persist){save('wallpaperId',w.id);save('wallpaper',w.id);save('loliteWallpaperCustomActive','false')}show(w);return true}
- function restore(){const custom=read('loliteCustomWallpaper');if(custom&&read('loliteWallpaperCustomActive')==='true')show({id:'custom',name:'Your wallpaper',src:custom,motion:''});else apply(read('wallpaperId',root.dataset.desktopTheme==='cosmos'?'cosmos-orbit':'crimson-dunes'),{persist:false})||apply('cosmos-orbit',{persist:false})}
+ function restore(){const custom=read('loliteCustomWallpaper');if(custom&&read('loliteWallpaperCustomActive')==='true')show({id:'custom',name:'Your wallpaper',src:custom,motion:''});else apply(read('wallpaperId',root.dataset.desktopTheme==='cosmos'?'cosmos-orbit':'crimson-dunes'),{persist:false})||apply('cosmos-orbit',{persist:true})}
  function setCustom(data){if(!/^data:image\/(png|jpeg|webp);base64,/.test(data))return false;if(!save('loliteCustomWallpaper',data)){window.toast?.('This image is too large to save. Try a smaller image.');return false}save('loliteWallpaperCustomActive','true');show({id:'custom',name:'Your wallpaper',src:data,motion:''});return true}
  function matches(w,filter,query=''){
-  return (filter==='All'||filter==='Live'&&live(w)||filter==='MotionBGS'&&w.provider==='MotionBGS'||w.category===filter)&&(!query||`${w.name} ${w.category} ${w.provider||'Lolite'}`.toLowerCase().includes(query.trim().toLowerCase()));
+  return (filter==='All'||filter==='Live'&&live(w)||w.category===filter)&&(!query||`${w.name} ${w.category} ${w.provider||'Lolite'}`.toLowerCase().includes(query.trim().toLowerCase()));
  }
  function cards(filter='All',query=''){
   const items=collection.filter(w=>matches(w,filter,query));
