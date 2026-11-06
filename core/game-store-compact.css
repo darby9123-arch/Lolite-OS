@@ -42,7 +42,39 @@
 .store .store-import-tools[open]{display:flex;gap:7px;flex-wrap:wrap;align-items:center;width:100%;padding:9px;border:1px solid #344a5e;border-radius:9px;background:#101c29}
 .store .store-import-tools[open]>summary{margin-right:5px}
 .store .store-import-tools .store-play{width:auto!important;min-width:0!important;flex:0 1 auto!important;padding:7px 9px!important}
-.store .store-hero{display:none!important}
+
+/* Featured carousel restored above the compact game grid. */
+.store .store-hero.store-featured-hero{
+ display:flex!important;align-items:center;min-height:224px!important;
+ padding:22px 26px!important;margin:2px 0 24px!important;
+ border-radius:13px!important;border:1px solid #34465d!important;
+ background-color:#111a2a!important;
+ overflow:hidden!important;
+}
+.store .store-hero-copy{position:relative;z-index:2;max-width:min(65%,580px)}
+.store .store-featured-hero h1{font-size:clamp(24px,3vw,34px)!important;line-height:1.12;margin:10px 0 9px;letter-spacing:-.8px}
+.store .store-featured-hero p{font-size:12px!important;line-height:1.5!important;max-width:410px;margin-bottom:14px!important}
+.store .store-featured-hero .store-primary{background:#e9f3fc!important;color:#12202e!important;border:0!important;border-radius:7px!important;padding:9px 15px!important;font-size:12px!important;box-shadow:none!important}
+.store .store-featured-hero .store-primary:hover{background:#fff!important;transform:none!important}
+.store .store-featured-hero .store-eyebrow{font-size:10px;letter-spacing:1.4px;color:#b8d5ea}
+.store .store-featured-hero .store-hero-side{display:none!important}
+.store .store-featured-hero .store-hero-dots{margin-top:16px!important;gap:7px}
+.store .store-featured-hero .store-hero-dots button{height:6px;width:6px;background:#ffffff77}
+.store .store-featured-hero .store-hero-dots button.active{width:21px;background:#fff}
+.store .store-featured-hero .store-hero-art{pointer-events:none}
+@media(max-width:760px){
+ .store .store-hero.store-featured-hero{min-height:200px!important;padding:20px!important;margin-bottom:20px!important}
+ .store .store-hero-copy{max-width:80%}
+ .store .store-featured-hero h1{font-size:25px!important}
+ .store .store-featured-hero p{font-size:11px!important}
+}
+@media(max-width:450px){
+ .store .store-hero.store-featured-hero{min-height:210px!important;padding:17px!important}
+ .store .store-hero-copy{max-width:100%}
+ .store .store-featured-hero h1{font-size:23px!important}
+ .store .store-featured-hero.has-feature-art{background-image:linear-gradient(90deg,#080c16ed,#080c16ba),var(--hero-art)!important}
+}
+
 @media(max-width:760px){
  .store.store{grid-template-columns:1fr}
  .store .store-side{display:none}
