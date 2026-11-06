@@ -178,9 +178,24 @@ function ensureTop(root){
   else notify("Import an HTML file, game ZIP or folder first.");
  });
  localBtn.style.flex="0 0 auto";
+ const collectionInput=fileInput(".zip,application/zip",async files=>{
+  if(!files.length)return;
+  if(typeof packages.importGamefilesZip!=="function")throw new Error("Game collection importer is unavailable");
+  collectionBtn.disabled=true;collectionBtn.textContent="Reading game collection…";
+  try{
+   const result=await packages.importGamefilesZip(files[0],status=>{collectionBtn.textContent=status});
+   notify("Added "+result.imported+" HTML games from gamefiles.zip to the Lolite Game Store.");
+  }finally{collectionBtn.disabled=false;collectionBtn.textContent="Import gamefiles.zip"}
+ });
+ const collectionBtn=button("Import gamefiles.zip",()=>collectionInput.click());
+ const removeCollectionBtn=button("Remove gamefiles.zip",async()=>{
+  if(!window.confirm("Remove the imported gamefiles.zip collection from this device?"))return;
+  try{const count=await packages.removeGamefilesZip();notify("Removed "+count+" games.");await refresh()}
+  catch(error){notify(error?.message||"Could not remove the game collection")}
+ });
  const tools=document.createElement("details");tools.className="store-import-tools";
  const summary=document.createElement("summary");summary.textContent="Import games";
- tools.append(summary,htmlBtn,htmlInput,zipBtn,zipInput,genizyBtn,genizyInput,folderBtn,folderInput,localBtn);
+ tools.append(summary,collectionBtn,collectionInput,removeCollectionBtn,htmlBtn,htmlInput,zipBtn,zipInput,genizyBtn,genizyInput,folderBtn,folderInput,localBtn);
  top.append(tools);
 }
 function enhanceGenizyCards(root){
@@ -268,7 +283,7 @@ function enhance(){
  }else summary?.remove();
  buildSection(root,"lolite-local-package-section","Installed HTML Game Packages",
    "Local HTML games, including scripts, images and sounds. Play loads the actual HTML inside a Lolite game window. Close the window to return to the store.",
-   installed.filter(record=>record.source!=="genizymath-zip"),openPackage,id=>packages.remove(id));
+   installed.filter(record=>!["genizymath-zip","gamefiles-collection","gamefiles-collection-assets"].includes(record.source)),openPackage,id=>packages.remove(id));
  buildSection(root,"lolite-saved-html-section","Saved Standalone HTML Games",
    "Older HTML imports will be migrated into direct-play local packages when launched. Multi-file games still require their complete ZIP or folder.",
    saved,openHtml,id=>storage.remove(id));
