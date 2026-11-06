@@ -36,15 +36,16 @@
  // validated HTML documents to srcdoc in a sandboxed, opaque-origin frame.
  const MAX_RAW_GAME_BYTES=16*1024*1024;
  const rawTypes=new Set(['text/plain','text/markdown','application/octet-stream']);
- const htmlDocument=text=>/^\\s*(?:(?:<!--[^]*?-->\\s*)*)?(?:<!doctype\\s+html\\b|<html[\\s>]|<head[\\s>]|<body[\\s>])/i.test(text)||
-    /^\\s*<(?:div|canvas|script|main|section)[\\s>]/i.test(text);
+ const htmlDocument=text=>/^\s*(?:<!--[\s\S]*?-->\s*)*(?:<!doctype\s+html\b|<html(?:\s|>)|<head(?:\s|>)|<body(?:\s|>))/i.test(text)||
+   /^\s*<(?:div|canvas|script|main|section)(?:\s|>)/i.test(text);
  const htmlWithBase=(html,url)=>{
-   if(/<base\\s/i.test(html))return html;
+   if(/<base\s/i.test(html))return html;
    const base='<base href="'+url.href.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">';
-   return /<head(?:\\s[^>]*)?>/i.test(html)
-      ?html.replace(/<head(?:\\s[^>]*)?>/i,match=>match+base)
+   return /<head(?:\s[^>]*)?>/i.test(html)
+      ?html.replace(/<head(?:\s[^>]*)?>/i,match=>match+base)
       :base+html;
  };
+
  function buildError(frame,url,reason){
    if(!frame.isConnected||frame.dataset.gameUrl!==url.href)return;
    const notice=document.createElement('div');notice.className='store-load-error';
