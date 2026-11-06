@@ -368,6 +368,36 @@ if(Array.isArray(window.LoliteMountainCatalog)){
      console.warn('Authorized local game catalog could not be read.',error);
    }
  }
+ // User-selected gamefiles.zip games share on-device assets; no third-party game code is published here.
+ const gamefilesKey=value=>String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
+ async function syncGamefilesCollection(){
+  const packages=window.LoliteLocalGamePackages;
+  if(!packages?.list)return;
+  let records;
+  try{records=(await packages.list()).filter(rec=>rec.source==='gamefiles-collection'&&rec.packId&&rec.root)}
+  catch(error){console.warn('Cannot load gamefiles collection',error);return}
+  games=games.filter(game=>!game.gamefilesCreated).map(game=>game.gamefilesBackup||game);
+  const existing=new Map(games.map((game,index)=>[gamefilesKey(game.title),index]));
+  let added=0,alternates=0;
+  for(const record of records){
+   const key=gamefilesKey(record.title);if(!key)continue;
+   const url='core/local-games/'+encodeURIComponent(record.packId)+'/'+record.root.split('/').map(encodeURIComponent).join('/');
+   const found=existing.get(key);
+   if(found!==undefined){
+    const old=games[found],backup={...old},original={name:old.source||'Lolite OS',url:old.url};
+    games[found]={...old,url,local:true,source:'Gamefiles ZIP (installed)',gamefilesRecord:record,gamefilesBackup:backup,servers:[original,...(old.servers||[])]};
+    alternates++;
+   }else{
+    const file='gamefiles-'+record.id;
+    games.push({file,title:record.title,url,local:true,source:'Gamefiles ZIP (installed)',gamefilesRecord:record,gamefilesCreated:true,category:categorize({file:record.title})});
+    existing.set(key,games.length-1);added++;
+   }
+  }
+  games.sort((a,b)=>a.title.localeCompare(b.title,undefined,{numeric:true,sensitivity:'base'}));
+  window.LoliteGamefilesImport=Object.freeze({installed:records.length,added,alternates});
+  if(document.querySelector('.store-main'))render();
+ }
+ window.addEventListener('lolite-local-packages-changed',()=>{void syncGamefilesCollection()});
  const serverSelections=new Map();
  const availableServers=g=>{
    const baseName=(g.local||g.url.startsWith('html games/'))?'Lolite OS (local HTML)':g.openExternally?'Official creator':g.genizy?'GenizyMath':g.source==="Chicken King's Vault"?"Chicken King's Vault":g.source==='DAKNUX'?'DAKNUX':g.mountain?'Mountain Games':'Lolite OS';
