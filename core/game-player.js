@@ -31,18 +31,28 @@
   frame.tabIndex=0;
   return frame;
  }
- // Check HTTP status and MIME before navigating to games, so a missing file
- // or text/plain source cannot appear as a 404 page or code dump.
- function startFrame(frame,url){
-  const live=()=>frame.isConnected&&frame.dataset.gameUrl===url.href;
-  const run=()=>{if(live())frame.src=url.href};
-  const failure=reason=>{
-   if(!live())return;
+ // A number of external game hosts serve real HTML as text/plain.
+ // The browser normally DISPLAYS those responses as code. Safely convert only
+ // validated HTML documents to srcdoc in a sandboxed, opaque-origin frame.
+ const MAX_RAW_GAME_BYTES=16*1024*1024;
+ const rawTypes=new Set(['text/plain','text/markdown','application/octet-stream']);
+ const htmlDocument=text=>/^\\s*(?:(?:<!--[^]*?-->\\s*)*)?(?:<!doctype\\s+html\\b|<html[\\s>]|<head[\\s>]|<body[\\s>])/i.test(text)||
+    /^\\s*<(?:div|canvas|script|main|section)[\\s>]/i.test(text);
+ const htmlWithBase=(html,url)=>{
+   if(/<base\\s/i.test(html))return html;
+   const base='<base href="'+url.href.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">';
+   return /<head(?:\\s[^>]*)?>/i.test(html)
+      ?html.replace(/<head(?:\\s[^>]*)?>/i,match=>match+base)
+      :base+html;
+ };
+ function buildError(frame,url,reason){
+   if(!frame.isConnected||frame.dataset.gameUrl!==url.href)return;
    const notice=document.createElement('div');notice.className='store-load-error';
    notice.dataset.gameUrl=url.href;
-   const heading=document.createElement('strong');heading.textContent='This game server is unavailable';
+   const heading=document.createElement('strong');heading.textContent='This game could not launch';
    const detail=document.createElement('p');detail.textContent=reason;
-   const hint=document.createElement('p');hint.textContent='Try a different server in the Game Store. Some external links expire or are served as source code.';
+   const hint=document.createElement('p');
+   hint.textContent='If the source is a real HTML game, Lolite can render it here. Some servers block cross-site access, and some games require extra files.';
    const actions=document.createElement('div');
    const retry=document.createElement('button');retry.textContent='Retry';retry.type='button';
    retry.onclick=()=>{const fresh=buildFrame(url,frame.title);notice.replaceWith(fresh);startFrame(fresh,url)};
@@ -50,27 +60,64 @@
    store.onclick=()=>window.openApp?.('games','Game Store');
    actions.append(retry,store);notice.append(heading,detail,hint,actions);
    frame.replaceWith(notice);
-  };
-  const local=url.origin===location.origin;
-  // The imported-games service worker only handles GET, not HEAD.
-  if(url.pathname.includes('/core/local-games/')){run();return}
-  const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),local?6000:3000);
-  fetch(url.href,{method:'HEAD',signal:controller.signal,cache:'no-store'})
-   .then(response=>{
-    if(!live())return;
-    if(!response.ok){
-     if(response.status===405||response.status===501){run();return}
-     failure('The selected game returned HTTP '+response.status+'.');return;
-    }
-    const type=String(response.headers.get('content-type')||'').split(';')[0].toLowerCase().trim();
-    if(['text/plain','application/json','application/octet-stream','text/markdown'].includes(type)){
-     failure('This server returned raw code or a file, not a playable HTML page.');return;
-    }
-    run();
-   })
-   .catch(()=>{if(local)failure('The local game file is unavailable.');else run()})
-   .finally(()=>clearTimeout(timeout));
+ }
+ function startFrame(frame,url){
+   const live=()=>frame.isConnected&&frame.dataset.gameUrl===url.href;
+   const run=()=>{if(live())frame.src=url.href};
+   async function rawGame(){
+     const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
+     try{
+       const response=await fetch(url.href,{
+         method:'GET',cache:'no-store',signal:controller.signal,mode:'cors',credentials:'omit'
+       });
+       if(!response.ok)throw new Error('Game HTML returned HTTP '+response.status+'.');
+       const headerSize=Number(response.headers.get('content-length')||0);
+       if(headerSize>MAX_RAW_GAME_BYTES)throw new Error('This HTML source is too large to render safely.');
+       const html=await response.text();
+       if(new Blob([html]).size>MAX_RAW_GAME_BYTES)
+         throw new Error('This HTML source is too large to render safely.');
+       if(!htmlDocument(html))
+         throw new Error('This file is not a complete playable HTML document.');
+       if(!live())return;
+       // Never grant same-origin privileges to HTML fetched from another host.
+       // A sandboxed srcdoc frame gets its own opaque origin.
+       frame.setAttribute('sandbox','allow-scripts allow-forms allow-pointer-lock allow-downloads');
+       frame.dataset.gameRender='raw-html';
+       frame.srcdoc=htmlWithBase(html,url);
+     }catch(error){
+       if(!live())return;
+       const reason=error?.name==='TypeError'
+         ?'This host prevents Lolite from reading its HTML (CORS blocked). Try another server.'
+         :error?.name==='AbortError'
+          ?'The HTML source took too long to load.'
+          :String(error?.message||'Could not load game HTML.');
+       buildError(frame,url,reason);
+     }finally{clearTimeout(timeout)}
+   }
+   // Imported games have their own GET-only service worker and CSP sandbox.
+   if(url.pathname.includes('/core/local-games/')){run();return}
+   const local=url.origin===location.origin;
+   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),local?6000:4500);
+   fetch(url.href,{method:'HEAD',signal:controller.signal,cache:'no-store'})
+     .then(response=>{
+       if(!live())return;
+       if(!response.ok){
+         if(response.status===405||response.status===501){run();return}
+         buildError(frame,url,'The selected game returned HTTP '+response.status+'.');return;
+       }
+       const type=String(response.headers.get('content-type')||'').split(';')[0].toLowerCase().trim();
+       if(rawTypes.has(type)){void rawGame();return}
+       if(['application/json','application/javascript','text/javascript'].includes(type)){
+         buildError(frame,url,'This server returned a script or data file rather than an HTML game.');return;
+       }
+       run();
+     })
+     .catch(()=>{
+       if(!live())return;
+       if(local)buildError(frame,url,'Could not reach the local game page.');
+       else run(); // Cross-origin HEAD/CORS may fail while iframe loading works.
+     })
+     .finally(()=>clearTimeout(timeout));
  }
  function open({title='Game',url,file,source='Lolite OS'}={}){
   const target=safeURL(url);
