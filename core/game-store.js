@@ -541,6 +541,14 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  window.loliteStorePlay=file=>{
   const game=games.find(g=>g.file===file);if(!game)return;
   const chosen=Number(serverSelections.get(file)||0);
+  if(game.gamefilesRecord&&chosen===0){
+   const packages=window.LoliteLocalGamePackages;
+   if(!packages?.launchUrl){window.toast?.('Local HTML game support is unavailable.');return}
+   void packages.launchUrl(game.gamefilesRecord).then(url=>{
+    window.LoliteGamePlayer?.open({file:game.file,title:game.title,url,source:'gamefiles.zip · Local HTML'});
+   }).catch(error=>window.toast?.(error?.message||'Could not open installed HTML game'));
+   return;
+  }
   if(game.genizy&&!game.local&&!game.url.startsWith('html games/')&&chosen===0){
    const installed=window.LoliteInstalledGameByTitle?.(game.title);
    if(installed&&typeof window.LoliteOpenInstalledGame==='function'){window.LoliteOpenInstalledGame(installed);return}
@@ -590,5 +598,5 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  loadGenizyCatalog();
  loadAdditionalServers();
  buildFranchiseCategories();
- loadAuthorizedGames();
+ void loadAuthorizedGames().finally(syncGamefilesCollection);
 })();
