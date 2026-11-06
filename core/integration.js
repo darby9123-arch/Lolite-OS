@@ -43,7 +43,7 @@
   };
   window.launchHTMLGame=function(name,file){
     const clean=String(file||'');
-    if(!/^[a-zA-Z0-9._-]+\\.html?$/i.test(clean)){
+    if(!/^[a-zA-Z0-9._-]+\.html?$/i.test(clean)){
       window.toast?.('This game file has an invalid path.');return;
     }
     const url='html%20games/'+encodeURIComponent(clean);
