@@ -1,0 +1,37 @@
+name: Verify real Popular Games rankings
+on:
+  push:
+    paths:
+      - 'core/game-popularity.js'
+      - 'core/game-popularity.css'
+      - 'core/game-store.js'
+      - 'core/game-player.js'
+      - 'index.html'
+      - 'supabase/functions/lolite-game-popularity/**'
+      - 'tests/game-popularity.test.cjs'
+      - '.github/workflows/verify-game-popularity.yml'
+  pull_request:
+    paths:
+      - 'core/game-popularity.js'
+      - 'core/game-popularity.css'
+      - 'core/game-store.js'
+      - 'core/game-player.js'
+      - 'index.html'
+      - 'tests/game-popularity.test.cjs'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate scripts
+        run: |
+          node --check core/game-popularity.js
+          node --check core/game-store.js
+          node --check core/game-player.js
+      - name: Test anonymous play ranking and launch tracking
+        run: node --test tests/game-popularity.test.cjs
