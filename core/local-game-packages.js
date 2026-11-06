@@ -299,6 +299,77 @@ async function importFolder(files,displayTitle){
  if(first&&entries.every(e=>e.path.startsWith(first+"/")))for(const e of entries)e.path=e.path.slice(first.length+1);
  return storeEntries(entries,displayTitle||first||"Local Game");
 }
+
+/* Import a user-selected gamefiles.zip as a single shared local asset pack.
+ * Does not publish game HTML/JS/assets to GitHub or copy games across devices. */
+const GAMEFILES_SOURCE="gamefiles-collection";
+const GAMEFILES_PARENT="gamefiles-collection-assets";
+const GAMEFILES_SKIP=/^(?:apps|gamepage|index|home|ai|search|settings|sandstoneproxy|heliosbrowser|nautilisos|sites|about|faq|credits|login|register|options|games|tools)$/i;
+const GAMEFILES_BLOCK=/(?:casino|poker|blackjack|roulette|slot[\s_-]*machine|sportsbook|betting|wager|porn|adult|sex)/i;
+const gamefilesId=()=>"pkg-"+(crypto.randomUUID?crypto.randomUUID():Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,"0")).join(""));
+async function importGamefilesZip(file,onProgress){
+ if(!file||!/\.zip$/i.test(file.name||""))throw new Error("Choose your gamefiles.zip archive");
+ onProgress?.("Unpacking your HTML game collection…");
+ const files=await unzip(file,3000,path=>path.startsWith("gamefiles/"));
+ const formats=new Set(["html","htm","css","js","mjs","json","wasm","png","jpg","jpeg","gif","webp","svg","ico","mp3","wav","ogg","mp4","webm","otf","ttf","woff","woff2","manifest","bin","data","xml"]);
+ const assets=files.filter(entry=>formats.has(entry.path.split(".").pop().toLowerCase()));
+ const matches=new Map();let checked=0,skipped=0;
+ for(const entry of assets){
+  if(!/^gamefiles\/[^/]+\.html?$/i.test(entry.path))continue;
+  const title=entry.path.slice("gamefiles/".length).replace(/\.html?$/i,"");
+  const key=title.normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toLowerCase();
+  if(!key||GAMEFILES_SKIP.test(key)||GAMEFILES_BLOCK.test(title)||entry.size<700){skipped++;continue}
+  const html=await entry.blob.text();
+  if(!/<(?:html|head|body|canvas|script|div)\b/i.test(html)||/<Module\s*>/i.test(html)||/<iframe\b/i.test(html)){skipped++;continue}
+  const score=(/[A-Z]/.test(title)?4:0)+(/\s/.test(title)?2:0)+(entry.size>7000?1:0);
+  const before=matches.get(key);
+  if(!before||score>before.score)matches.set(key,{title:title.replace(/[<>]/g,"").trim().slice(0,90),root:entry.path,bytes:entry.size,score});
+  if(++checked%200===0)onProgress?.("Checking playable HTML… "+checked+" pages checked");
+ }
+ const games=[...matches.values()];
+ if(!games.length)throw new Error("No standalone HTML games found in this ZIP");
+ const previous=(await getAll()).filter(rec=>rec.source===GAMEFILES_SOURCE||rec.source===GAMEFILES_PARENT);
+ const packId=gamefilesId(),db=await database(),now=Date.now();
+ const total=assets.reduce((sum,item)=>sum+item.size,0);
+ onProgress?.("Installing "+games.length+" games…");
+ await new Promise((resolve,reject)=>{
+  const tx=db.transaction([PKGS,ASSETS],"readwrite"),pkgs=tx.objectStore(PKGS),stored=tx.objectStore(ASSETS);
+  pkgs.put({id:packId,title:"gamefiles.zip",root:games[0].root,files:assets.length,bytes:total,savedAt:now,source:GAMEFILES_PARENT});
+  for(const game of games){
+   pkgs.put({id:gamefilesId(),title:game.title,root:game.root,packId,files:1,bytes:game.bytes,savedAt:now,source:GAMEFILES_SOURCE});
+  }
+  for(const entry of assets)stored.put({key:packId+"/"+entry.path,packageId:packId,path:entry.path,data:entry.blob,type:entry.type});
+  for(const old of previous)pkgs.delete(old.id);
+  for(const old of previous.filter(rec=>rec.source===GAMEFILES_PARENT)){
+   const cursor=stored.index("packageId").openCursor(IDBKeyRange.only(old.id));
+   cursor.onsuccess=()=>{const row=cursor.result;if(row){row.delete();row.continue()}};
+  }
+  tx.oncomplete=resolve;
+  tx.onerror=()=>reject(tx.error||new Error("Not enough browser storage for your game collection"));
+  tx.onabort=()=>reject(tx.error||new Error("Game collection import was cancelled"));
+ });
+ window.dispatchEvent(new CustomEvent("lolite-local-packages-changed",{detail:{source:GAMEFILES_SOURCE,count:games.length}}));
+ return {imported:games.length,skipped,assets:assets.length,bytes:total,replaced:previous.filter(rec=>rec.source===GAMEFILES_SOURCE).length};
+}
+async function removeGamefilesZip(){
+ const previous=(await getAll()).filter(rec=>rec.source===GAMEFILES_SOURCE||rec.source===GAMEFILES_PARENT);
+ if(!previous.length)return 0;
+ const db=await database();
+ await new Promise((resolve,reject)=>{
+  const tx=db.transaction([PKGS,ASSETS],"readwrite"),pkgs=tx.objectStore(PKGS),stored=tx.objectStore(ASSETS);
+  previous.forEach(rec=>pkgs.delete(rec.id));
+  for(const parent of previous.filter(rec=>rec.source===GAMEFILES_PARENT)){
+   const cursor=stored.index("packageId").openCursor(IDBKeyRange.only(parent.id));
+   cursor.onsuccess=()=>{const row=cursor.result;if(row){row.delete();row.continue()}};
+  }
+  tx.oncomplete=resolve;
+  tx.onerror=()=>reject(tx.error||new Error("Could not remove game collection"));
+  tx.onabort=()=>reject(tx.error||new Error("Removal cancelled"));
+ });
+ window.dispatchEvent(new CustomEvent("lolite-local-packages-changed",{detail:{source:GAMEFILES_SOURCE,count:0}}));
+ return previous.filter(rec=>rec.source===GAMEFILES_SOURCE).length;
+}
+
 async function ensureWorker(){
  if(workerPromise)return workerPromise;
  workerPromise=(async()=>{
@@ -322,7 +393,8 @@ async function ensureWorker(){
 async function launchUrl(record){
  if(!record||!safeId(record.id)||!safePath(record.root))throw new Error("Invalid local game");
  const scope=await ensureWorker();
- return new URL("local-games/"+record.id+"/"+record.root.split("/").map(encodeURIComponent).join("/"),scope).href;
+ const id=record.packId&&safeId(record.packId)?record.packId:record.id;
+ return new URL("local-games/"+id+"/"+record.root.split("/").map(encodeURIComponent).join("/"),scope).href;
 }
-window.LoliteLocalGamePackages=Object.freeze({importZip,importGenizyZip,importGenizyGameFromZip,clearAutoGameCache,importFolder,importStandaloneHtml,importSavedHtml,list:getAll,remove:erase,ensureWorker,launchUrl});
+window.LoliteLocalGamePackages=Object.freeze({importZip,importGenizyZip,importGenizyGameFromZip,clearAutoGameCache,importFolder,importStandaloneHtml,importSavedHtml,importGamefilesZip,removeGamefilesZip,list:getAll,remove:erase,ensureWorker,launchUrl});
 })();
