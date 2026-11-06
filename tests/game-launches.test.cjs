@@ -82,3 +82,10 @@ test('Existing local HTML takes precedence over a matching external game source'
  assert.match(source,/if\(!game\.external&&game\.url\.startsWith\('html games\/'\)\)/);
  assert.match(source,/game\.genizy&&!game\.local&&!game\.url\.startsWith\('html games\/'\)/);
 });
+
+test('Legacy HTML games also use the validated in-app player',()=>{
+ const legacy=read('core/integration.js');
+ assert.ok(legacy.includes('window.LoliteGamePlayer?.open('));
+ assert.ok(legacy.includes("html%20games/"));
+ assert.ok(!legacy.includes('raw.githubusercontent.com/'));
+});
