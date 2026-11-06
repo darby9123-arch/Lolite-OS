@@ -368,6 +368,34 @@ if(Array.isArray(window.LoliteMountainCatalog)){
      console.warn('Authorized local game catalog could not be read.',error);
    }
  }
+ // Real HTML files committed into this repository by the release import workflow.
+ function loadBundledGamefiles(){
+  const catalog=window.LoliteBundledGamefiles;
+  if(!Array.isArray(catalog)||!catalog.length)return;
+  const key=value=>String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
+  const existing=new Map(games.map((g,i)=>[key(g.title),i]));
+  let added=0,replaced=0;
+  for(const entry of catalog){
+   if(!entry||typeof entry.title!=='string'||typeof entry.file!=='string'||typeof entry.url!=='string')continue;
+   if(!/^bundle-[a-f0-9]{12}\.html$/.test(entry.file)||!/^html%20games\/gamefiles\/[^\s?#]+\.html?$/i.test(entry.url))continue;
+   const title=entry.title.trim().slice(0,90),normal=key(title);
+   if(!normal||title.includes('<')||title.includes('>'))continue;
+   const found=existing.get(normal);
+   if(found!==undefined){
+    const current=games[found],backup={...current},alternative={name:current.source||'Previous game server',url:current.url};
+    games[found]={...current,title,url:entry.url,local:true,external:false,bundledGameFile:true,
+     bundledGameBackup:backup,source:'Gamefiles ZIP (GitHub HTML)',
+     servers:[alternative,...(current.servers||[])]};
+    replaced++;
+   }else{
+    const game={file:entry.file,title,url:entry.url,category:categorize({title,file:entry.file}),
+     local:true,external:false,bundledGameFile:true,source:'Gamefiles ZIP (GitHub HTML)'};
+    games.push(game);existing.set(normal,games.length-1);added++;
+   }
+  }
+  games.sort((a,b)=>a.title.localeCompare(b.title,undefined,{numeric:true,sensitivity:'base'}));
+  window.LoliteBundledGamefilesStatus=Object.freeze({added,replaced,total:added+replaced});
+ }
  // User-selected gamefiles.zip games share on-device assets; no third-party game code is published here.
  const gamefilesKey=value=>String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
  async function syncGamefilesCollection(){
@@ -400,7 +428,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  window.addEventListener('lolite-local-packages-changed',()=>{void syncGamefilesCollection()});
  const serverSelections=new Map();
  const availableServers=g=>{
-   const baseName=g.gamefilesRecord?'Gamefiles ZIP · Local':(g.local||g.url.startsWith('html games/'))?'Lolite OS (local HTML)':g.openExternally?'Official creator':g.genizy?'GenizyMath':g.source==="Chicken King's Vault"?"Chicken King's Vault":g.source==='DAKNUX'?'DAKNUX':g.mountain?'Mountain Games':'Lolite OS';
+   const baseName=g.gamefilesRecord?'Gamefiles ZIP · Local':g.bundledGameFile?'Gamefiles ZIP · GitHub HTML':(g.local||g.url.startsWith('html games/'))?'Lolite OS (local HTML)':g.openExternally?'Official creator':g.genizy?'GenizyMath':g.source==="Chicken King's Vault"?"Chicken King's Vault":g.source==='DAKNUX'?'DAKNUX':g.mountain?'Mountain Games':'Lolite OS';
    const raw=[{name:baseName,url:g.url},...(g.servers||[])];
    const seen=new Set();
    return raw.filter(x=>{if(!x?.url||seen.has(x.url))return false;seen.add(x.url);return true});
@@ -435,7 +463,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  const priceLabel=g=>gamePrice(g)===0?'FREE':economy()?.money?.(gamePrice(g))||'$'+gamePrice(g);
  const storeWallet=()=>economy()?.money?.(economy().balance())||'—';
  const isPopular=g=>/baldi|fnaf|granny|mario|angrybirds|pvz|minecraft|growagarden|slope|escaperoad|gta|cookieclicker|terraria|caseoh|epstein|sonic|geometry dash|cuphead|undertale|subway surfers|friday night funkin/i.test(g.file+' '+g.title);
- const matchesCategory=g=>franchiseNames.has(active)?g.franchise===active:active==='All Games'||active==='Featured'||active==='Popular Games'?true:active==='My Library'?hasGame(g):active==='GenizyMath'?!!g.genizy:active==='Mountain Games'?!!g.mountain:active==='Chicken King’s Vault'?availableServers(g).some(x=>x.name==="Chicken King's Vault"):active==='DAKNUX'?availableServers(g).some(x=>x.name==='DAKNUX'):active==='Gamefiles ZIP'?!!g.gamefilesRecord:active==='Free to Play'?gamePrice(g)===0:g.category===active;
+ const matchesCategory=g=>franchiseNames.has(active)?g.franchise===active:active==='All Games'||active==='Featured'||active==='Popular Games'?true:active==='My Library'?hasGame(g):active==='GenizyMath'?!!g.genizy:active==='Mountain Games'?!!g.mountain:active==='Chicken King’s Vault'?availableServers(g).some(x=>x.name==="Chicken King's Vault"):active==='DAKNUX'?availableServers(g).some(x=>x.name==='DAKNUX'):active==='Gamefiles ZIP'?(!!g.gamefilesRecord||!!g.bundledGameFile):active==='Free to Play'?gamePrice(g)===0:g.category===active;
  const filtered=()=>games.filter(g=>matchesCategory(g)&&(!query||g.title.toLowerCase().includes(query.toLowerCase())||g.category.toLowerCase().includes(query.toLowerCase())||(g.franchise||'').toLowerCase().includes(query.toLowerCase())||availableServers(g).some(x=>x.name.toLowerCase().includes(query.toLowerCase())))&&(active!=='Popular Games'||isPopular(g)));
  const coverPalette=g=>{let hash=0;for(const ch of g.file)hash=(Math.imul(hash,31)+ch.charCodeAt(0))>>>0;const hue=hash%360,hue2=(hue+48+(hash%73))%360;return [`hsl(${hue} 62% 28%)`,`hsl(${hue2} 48% 13%)`,`${12+(hash%13)}s`,String(hash%6),`-${hash%17000}ms`]};
  const card=g=>{const colors=coverPalette(g),poster=lolitePosterArt(g.title,g.file),file=encodeLabel(g.file),title=encodeLabel(g.title);
@@ -598,5 +626,5 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  loadGenizyCatalog();
  loadAdditionalServers();
  buildFranchiseCategories();
- void loadAuthorizedGames().finally(syncGamefilesCollection);
+ void loadAuthorizedGames().finally(()=>{loadBundledGamefiles();void syncGamefilesCollection()});
 })();
