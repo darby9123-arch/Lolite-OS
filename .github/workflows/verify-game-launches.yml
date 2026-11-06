@@ -1,0 +1,33 @@
+name: Verify Lolite game launchers
+on:
+  push:
+    paths:
+      - 'core/gd-loading-fix.js'
+      - 'core/game-player.js'
+      - 'core/game-store.js'
+      - 'tests/game-launches.test.cjs'
+      - 'html games/**'
+      - '.github/workflows/verify-game-launches.yml'
+  pull_request:
+    paths:
+      - 'core/gd-loading-fix.js'
+      - 'core/game-player.js'
+      - 'core/game-store.js'
+      - 'tests/game-launches.test.cjs'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check game launcher syntax
+        run: |
+          node --check core/gd-loading-fix.js
+          node --check core/game-player.js
+          node --check core/game-store.js
+      - name: Test game launching, fallbacks and file paths
+        run: node --test tests/game-launches.test.cjs
