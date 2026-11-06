@@ -34,7 +34,7 @@
  // A number of external game hosts serve real HTML as text/plain.
  // The browser normally DISPLAYS those responses as code. Safely convert only
  // validated HTML documents to srcdoc in a sandboxed, opaque-origin frame.
- const MAX_RAW_GAME_BYTES=16*1024*1024;
+ const MAX_RAW_GAME_BYTES=40*1024*1024;
  const rawTypes=new Set(['text/plain','text/markdown','application/octet-stream']);
  const htmlDocument=text=>/^\s*(?:<!--[\s\S]*?-->\s*)*(?:<!doctype\s+html\b|<html(?:\s|>)|<head(?:\s|>)|<body(?:\s|>))/i.test(text)||
    /^\s*<(?:div|canvas|script|main|section)(?:\s|>)/i.test(text);
@@ -98,12 +98,13 @@
    // Imported games have their own GET-only service worker and CSP sandbox.
    if(url.pathname.includes('/core/local-games/')){run();return}
    const local=url.origin===location.origin;
+   const knownRawHost=/^(?:cdn\.jsdelivr\.net|raw\.githubusercontent\.com)$/i.test(url.hostname);
    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),local?6000:4500);
    fetch(url.href,{method:'HEAD',signal:controller.signal,cache:'no-store'})
      .then(response=>{
        if(!live())return;
        if(!response.ok){
-         if(response.status===405||response.status===501){run();return}
+         if(response.status===405||response.status===501){if(knownRawHost)void rawGame();else run();return}
          buildError(frame,url,'The selected game returned HTTP '+response.status+'.');return;
        }
        const type=String(response.headers.get('content-type')||'').split(';')[0].toLowerCase().trim();
@@ -116,6 +117,7 @@
      .catch(()=>{
        if(!live())return;
        if(local)buildError(frame,url,'Could not reach the local game page.');
+       else if(knownRawHost)void rawGame();
        else run(); // Cross-origin HEAD/CORS may fail while iframe loading works.
      })
      .finally(()=>clearTimeout(timeout));
