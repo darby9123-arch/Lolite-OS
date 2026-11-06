@@ -11,7 +11,7 @@ test('Cosmos is an actual loaded desktop, not a static mockup', () => {
   assert.match(html,/core\/cosmos\.js\?v=/);
   assert.match(js,/LoliteDesktopShell/);
   assert.match(js,/data-cosmos-open/);
-  assert.match(js,/function renderRecent/);
+  assert.match(js,/function updateIconFade/);
 });
 
 test('Cosmos is registered in both themes and wallpapers', () => {
@@ -28,12 +28,12 @@ test('Cosmos uses an original local background and favicon', () => {
   assert.match(read('index.html'),/assets\/lolite-cosmos-logo\.svg/);
 });
 
-test('Status widgets do not display fabricated telemetry', () => {
+test('Removed Cosmos widgets stay removed without fabricated telemetry', () => {
   const js=read('core/cosmos.js');
-  assert.match(js,/navigator\.storage\?\.estimate/);
-  assert.match(js,/navigator\.onLine/);
-  assert.match(js,/navigator\.getBattery/);
-  assert.match(js,/requestAnimationFrame\(fps\)/);
+  assert.doesNotMatch(js,/navigator\.storage\?\.estimate/);
+  assert.doesNotMatch(js,/navigator\.getBattery/);
+  assert.doesNotMatch(js,/requestAnimationFrame\(fps\)/);
+  assert.match(js,/The Cosmos desktop now has no overlaid header, logo or dashboard widgets/);
 });
 
 test('Cosmos local terminal does not execute operating-system commands', () => {
@@ -59,8 +59,8 @@ test('Cosmos is isolated from the red Crimson design and refreshes cached files'
   assert.match(crimson,/lolite:desktopthemechange/);
   assert.match(css,/html\[data-lolite-design="cosmos"\]/);
   assert.match(css,/filter:brightness\(\.82\) saturate\(\.72\)/);
-  assert.match(html,/core\/cosmos\.css\?v=wordmark-1/);
-  assert.match(html,/core\/cosmos\.js\?v=wordmark-1/);
+  assert.match(html,/core\/cosmos\.css\?v=/);
+  assert.match(html,/core\/cosmos\.js\?v=/);
 });
 
 test('Cosmos control styles outrank legacy desktop selectors', () => {
@@ -69,14 +69,9 @@ test('Cosmos control styles outrank legacy desktop selectors', () => {
   assert.match(css,/html\[data-lolite-design="cosmos"\]\[data-desktop-theme="cosmos"\] #taskbar #startBtn/);
 });
 
-test('User wordmark renders as a real transparent desktop image', () => {
+test('Removed desktop wordmark and header stay hidden after visual cleanup', () => {
   const js=read('core/cosmos.js');
-  const css=read('core/cosmos.css');
-  const bytes=fs.readFileSync(path.join(root,'assets/lolite-desktop-wordmark.webp'));
-  assert.equal(bytes.toString('ascii',0,4),'RIFF');
-  assert.equal(bytes.toString('ascii',8,12),'WEBP');
-  assert.match(js,/class="cosmos-wordmark"/);
-  assert.match(js,/assets\/lolite-desktop-wordmark\.webp\?v=wordmark-1/);
+  assert.doesNotMatch(js,/class="cosmos-wordmark"/);
   assert.doesNotMatch(js,/<h1>LOLITE OS<\/h1>/);
-  assert.match(css,/\.cosmos-headline \.cosmos-wordmark/);
+  assert.match(js,/function updateIconFade/);
 });
