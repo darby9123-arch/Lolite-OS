@@ -108,6 +108,18 @@ def import_zip(filename: pathlib.Path) -> None:
             + json.dumps(games, ensure_ascii=False, separators=(",", ":"))
             + ";\n", encoding="utf-8"
         )
+        # Bust the catalog URL after importing so GitHub Pages does not reuse an empty manifest.
+        index = ROOT / "index.html"
+        if index.is_file():
+            page = index.read_text(encoding="utf-8")
+            revised = re.sub(
+                r'core/gamefiles-bundled-catalog\.js\?v=[^"]+',
+                'core/gamefiles-bundled-catalog.js?v='
+                + hashlib.sha256(CATALOG.read_bytes()).hexdigest()[:12],
+                page
+            )
+            if revised != page:
+                index.write_text(revised, encoding="utf-8")
         print(f"Committed-ready: {len(games)} distinct HTML titles and {len(keep)} source files/assets.")
         print(f"Skipped {skipped_wrappers} iframe or gadget wrappers.")
 
