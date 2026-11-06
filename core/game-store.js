@@ -318,12 +318,15 @@ if(Array.isArray(window.LoliteMountainCatalog)){
    // Do not mirror the author's unlicensed source code in the Lolite repo.
    const neonTide=games.find(g=>genizyKey(g.title)==='neontide');
    if(neonTide){
+     // The raw HTML host is now playable using the isolated HTML renderer.
+     // Keep the official creator's page first, with the raw HTML as a choice.
+     const rawHTML=neonTide.url;
      neonTide.url='https://promptpotatogames.itch.io/neon-tide';
      neonTide.source='Official creator';
      neonTide.external=true;
      neonTide.openExternally=true;
-     neonTide.servers=[]; // Don't offer the broken text/plain HTML CDN as a server.
-     window.loliteNeonTideSource='official-browser-game';
+     neonTide.servers=[{name:'DAKNUX (raw HTML)',url:rawHTML}];
+     window.loliteNeonTideSource='official-browser-game-and-raw-html';
    }
    games.forEach(g=>g.category=categorize(g));
    games.sort((a,b)=>a.title.localeCompare(b.title,undefined,{numeric:true,sensitivity:'base'}));
