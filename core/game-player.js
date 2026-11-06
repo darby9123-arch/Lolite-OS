@@ -37,7 +37,7 @@
  const MAX_RAW_GAME_BYTES=40*1024*1024;
  const rawTypes=new Set(['text/plain','text/markdown','application/octet-stream']);
  const htmlDocument=text=>/^\s*(?:<!--[\s\S]*?-->\s*)*(?:<!doctype\s+html\b|<html(?:\s|>)|<head(?:\s|>)|<body(?:\s|>))/i.test(text)||
-   /^\s*<(?:div|canvas|script|main|section)(?:\s|>)/i.test(text);
+   /^\s*<(?:meta|link|style|div|canvas|script|main|section|article)(?:\s|>)/i.test(text);
  const htmlWithBase=(html,url)=>{
    if(/<base\s/i.test(html))return html;
    const base='<base href="'+url.href.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">';
@@ -62,66 +62,88 @@
    actions.append(retry,store);notice.append(heading,detail,hint,actions);
    frame.replaceWith(notice);
  }
+ // Convert source HTML only inside an opaque-origin sandbox. Unlike iframe
+ // navigation, srcdoc renders real HTML even when the publisher's server labels
+ // the .html response text/plain.
  function startFrame(frame,url){
    const live=()=>frame.isConnected&&frame.dataset.gameUrl===url.href;
    const run=()=>{if(live())frame.src=url.href};
-   async function rawGame(){
-     const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
+   const local=url.origin===location.origin;
+   const knownRawHost=/^(?:cdn\.jsdelivr\.net|raw\.githubusercontent\.com|rawcdn\.githack\.com)$/i.test(url.hostname);
+   let pending=false;
+   async function renderSource({allowNormalHTML=true}={}){
+     if(pending||!live())return;
+     pending=true;
+     const controller=new AbortController();
+     const timeout=setTimeout(()=>controller.abort(),15000);
      try{
        const response=await fetch(url.href,{
-         method:'GET',cache:'no-store',signal:controller.signal,mode:'cors',credentials:'omit'
+         method:'GET',cache:'no-store',signal:controller.signal,
+         mode:'cors',credentials:'omit'
        });
-       if(!response.ok)throw new Error('Game HTML returned HTTP '+response.status+'.');
-       const headerSize=Number(response.headers.get('content-length')||0);
-       if(headerSize>MAX_RAW_GAME_BYTES)throw new Error('This HTML source is too large to render safely.');
+       if(!response.ok)throw new Error('The game HTML returned HTTP '+response.status+'.');
+       const mime=String(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase();
+       if(mime==='text/html'&&allowNormalHTML){run();return}
+       if(mime&&!rawTypes.has(mime)&&mime!=='text/html'){
+         throw new Error('The game server returned '+mime+' instead of an HTML page.');
+       }
+       const declared=Number(response.headers.get('content-length')||0);
+       if(declared>MAX_RAW_GAME_BYTES)throw new Error('This HTML source is too large to render.');
        const html=await response.text();
-       if(new Blob([html]).size>MAX_RAW_GAME_BYTES)
-         throw new Error('This HTML source is too large to render safely.');
-       if(!htmlDocument(html))
-         throw new Error('This file is not a complete playable HTML document.');
+       if(new Blob([html]).size>MAX_RAW_GAME_BYTES)throw new Error('This HTML source is too large to render.');
+       if(!htmlDocument(html))throw new Error('The server returned text, but not playable HTML.');
        if(!live())return;
-       // Never grant same-origin privileges to HTML fetched from another host.
-       // A sandboxed srcdoc frame gets its own opaque origin.
+       // srcdoc has a unique opaque origin; never allow same-origin, popups or
+       // top navigation for third-party source code rendered as an HTML document.
        frame.setAttribute('sandbox','allow-scripts allow-forms allow-pointer-lock allow-downloads');
        frame.dataset.gameRender='raw-html';
        frame.srcdoc=htmlWithBase(html,url);
      }catch(error){
        if(!live())return;
        const reason=error?.name==='TypeError'
-         ?'This host prevents Lolite from reading its HTML (CORS blocked). Try another server.'
+         ?'This server blocks cross-origin access (CORS), so Lolite cannot turn its source into a playable page.'
          :error?.name==='AbortError'
-          ?'The HTML source took too long to load.'
-          :String(error?.message||'Could not load game HTML.');
-       buildError(frame,url,reason);
-     }finally{clearTimeout(timeout)}
+           ?'The game source took too long to load.'
+           :String(error?.message||'The game source could not load.');
+       // A failed inspection does not mean the URL is necessarily broken: on
+       // ordinary HTML hosts an iframe may still load when fetch/CORS is denied.
+       if(error?.name==='TypeError'&&!knownRawHost&&!local)run();
+       else buildError(frame,url,reason);
+     }finally{
+       pending=false;
+       clearTimeout(timeout);
+     }
    }
-   // Imported games have their own GET-only service worker and CSP sandbox.
+   // The installed-game service worker has a GET-only sandbox, not HEAD.
    if(url.pathname.includes('/core/local-games/')){run();return}
-   const local=url.origin===location.origin;
-   const knownRawHost=/^(?:cdn\.jsdelivr\.net|raw\.githubusercontent\.com)$/i.test(url.hostname);
-   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),local?6000:4500);
+   const controller=new AbortController();
+   const timeout=setTimeout(()=>controller.abort(),local?6000:4500);
    fetch(url.href,{method:'HEAD',signal:controller.signal,cache:'no-store'})
      .then(response=>{
        if(!live())return;
        if(!response.ok){
-         if(response.status===405||response.status===501){if(knownRawHost)void rawGame();else run();return}
+         if(response.status===405||response.status===501){
+           // No HEAD support: check GET instead of blindly showing raw text.
+           void renderSource();return;
+         }
          buildError(frame,url,'The selected game returned HTTP '+response.status+'.');return;
        }
-       const type=String(response.headers.get('content-type')||'').split(';')[0].toLowerCase().trim();
-       if(rawTypes.has(type)){void rawGame();return}
-       if(['application/json','application/javascript','text/javascript'].includes(type)){
-         buildError(frame,url,'This server returned a script or data file rather than an HTML game.');return;
+       const mime=String(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase();
+       if(rawTypes.has(mime)||!mime){void renderSource();return}
+       if(['application/json','application/javascript','text/javascript'].includes(mime)){
+         buildError(frame,url,'This server returned JavaScript or data rather than an HTML game.');return;
        }
        run();
      })
      .catch(()=>{
        if(!live())return;
-       if(local)buildError(frame,url,'Could not reach the local game page.');
-       else if(knownRawHost)void rawGame();
-       else run(); // Cross-origin HEAD/CORS may fail while iframe loading works.
+       // Some CDNs deny HEAD/CORS yet permit GET. Try converting the actual
+       // response before giving up or sending the browser to a raw-code page.
+       void renderSource();
      })
      .finally(()=>clearTimeout(timeout));
  }
+
  function open({title='Game',url,file,source='Lolite OS'}={}){
   const target=safeURL(url);
   if(!target){notify('This game server does not have a valid URL.');return false}
