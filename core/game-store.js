@@ -367,7 +367,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  }
  const serverSelections=new Map();
  const availableServers=g=>{
-   const baseName=g.local?'Lolite OS (local HTML)':g.openExternally?'Official creator':g.genizy?'GenizyMath':g.source==="Chicken King's Vault"?"Chicken King's Vault":g.source==='DAKNUX'?'DAKNUX':g.mountain?'Mountain Games':'Lolite OS';
+   const baseName=(g.local||g.url.startsWith('html games/'))?'Lolite OS (local HTML)':g.openExternally?'Official creator':g.genizy?'GenizyMath':g.source==="Chicken King's Vault"?"Chicken King's Vault":g.source==='DAKNUX'?'DAKNUX':g.mountain?'Mountain Games':'Lolite OS';
    const raw=[{name:baseName,url:g.url},...(g.servers||[])];
    const seen=new Set();
    return raw.filter(x=>{if(!x?.url||seen.has(x.url))return false;seen.add(x.url);return true});
