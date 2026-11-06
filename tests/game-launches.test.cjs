@@ -89,3 +89,42 @@ test('Legacy HTML games also use the validated in-app player',()=>{
  assert.ok(legacy.includes("html%20games/"));
  assert.ok(!legacy.includes('raw.githubusercontent.com/'));
 });
+
+test('Text/plain game HTML is rendered as an executable sandboxed document',async()=>{
+ const original=read('core/game-player.js');
+ // Expose the internal frame loader to this isolated VM-only regression test.
+ const script=original.replace(
+  'window.LoliteGamePlayer=Object.freeze({open,switchServer});',
+  'window.LoliteGamePlayer=Object.freeze({open,switchServer,startFrame});'
+ );
+ assert.notEqual(script,original,'The test harness must expose startFrame');
+ const requests=[], attrs={};
+ const html='<!doctype html><html><head><title>Test</title></head><body><canvas id="game"></canvas><script>document.body.dataset.loaded="yes"</script></body></html>';
+ const win={};
+ const context={
+  window:win,location:{origin:'https://lolite.example'},
+  document:{baseURI:'https://lolite.example/',head:{append(){}},
+   createElement(tag){
+    if(tag==='style')return {id:'',textContent:''};
+    throw Error('Unexpected DOM element: '+tag);
+   }},
+  fetch:async(url,options)=>{
+   requests.push(options.method);
+   if(options.method==='HEAD')return {ok:true,status:200,headers:{get:()=> 'text/plain'}};
+   return {ok:true,status:200,headers:{get:k=>k==='content-type'?'text/plain':null},text:async()=>html};
+  },
+  URL,Blob,AbortController,setTimeout,clearTimeout,console,
+ };
+ vm.runInNewContext(script,context);
+ const frame={dataset:{gameUrl:'https://cdn.example.org/game.html'},isConnected:true,
+  setAttribute(name,value){attrs[name]=value},
+  src:'about:blank',srcdoc:''};
+ win.LoliteGamePlayer.startFrame(frame,new URL(frame.dataset.gameUrl));
+ await new Promise(resolve=>setTimeout(resolve,20));
+ assert.deepEqual(requests,['HEAD','GET']);
+ assert.match(frame.srcdoc,/canvas id="game"/);
+ assert.match(frame.srcdoc,/<base href="https:\/\/cdn\.example\.org\/game\.html">/);
+ assert.equal(frame.dataset.gameRender,'raw-html');
+ assert.match(attrs.sandbox,/allow-scripts/);
+ assert.doesNotMatch(attrs.sandbox,/allow-same-origin|allow-top-navigation/);
+});
