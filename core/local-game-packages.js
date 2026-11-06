@@ -327,18 +327,24 @@ async function importGamefilesZip(file,onProgress){
   if(++checked%200===0)onProgress?.("Checking playable HTML… "+checked+" pages checked");
  }
  const games=[...matches.values()];
+ // Include the one multi-file standalone title with its own assets directory.
+ const shark=assets.find(entry=>entry.path==="gamefiles/idle-shark/index.html");
+ if(shark&&shark.size>700)games.push({title:"Idle Shark",root:shark.path,bytes:shark.size});
+ const gamePaths=new Set(games.map(item=>item.root));
+ // Avoid persisting duplicated iframe launchers, broken HTML and excluded titles.
+ const storedAssets=assets.filter(entry=>!/^gamefiles\/[^/]+\.html?$/i.test(entry.path)||gamePaths.has(entry.path));
  if(!games.length)throw new Error("No standalone HTML games found in this ZIP");
  const previous=(await getAll()).filter(rec=>rec.source===GAMEFILES_SOURCE||rec.source===GAMEFILES_PARENT);
  const packId=gamefilesId(),db=await database(),now=Date.now();
- const total=assets.reduce((sum,item)=>sum+item.size,0);
+ const total=storedAssets.reduce((sum,item)=>sum+item.size,0);
  onProgress?.("Installing "+games.length+" games…");
  await new Promise((resolve,reject)=>{
   const tx=db.transaction([PKGS,ASSETS],"readwrite"),pkgs=tx.objectStore(PKGS),stored=tx.objectStore(ASSETS);
-  pkgs.put({id:packId,title:"gamefiles.zip",root:games[0].root,files:assets.length,bytes:total,savedAt:now,source:GAMEFILES_PARENT});
+  pkgs.put({id:packId,title:"gamefiles.zip",root:games[0].root,files:storedAssets.length,bytes:total,savedAt:now,source:GAMEFILES_PARENT});
   for(const game of games){
    pkgs.put({id:gamefilesId(),title:game.title,root:game.root,packId,files:1,bytes:game.bytes,savedAt:now,source:GAMEFILES_SOURCE});
   }
-  for(const entry of assets)stored.put({key:packId+"/"+entry.path,packageId:packId,path:entry.path,data:entry.blob,type:entry.type});
+  for(const entry of storedAssets)stored.put({key:packId+"/"+entry.path,packageId:packId,path:entry.path,data:entry.blob,type:entry.type});
   for(const old of previous)pkgs.delete(old.id);
   for(const old of previous.filter(rec=>rec.source===GAMEFILES_PARENT)){
    const cursor=stored.index("packageId").openCursor(IDBKeyRange.only(old.id));
@@ -349,7 +355,7 @@ async function importGamefilesZip(file,onProgress){
   tx.onabort=()=>reject(tx.error||new Error("Game collection import was cancelled"));
  });
  window.dispatchEvent(new CustomEvent("lolite-local-packages-changed",{detail:{source:GAMEFILES_SOURCE,count:games.length}}));
- return {imported:games.length,skipped,assets:assets.length,bytes:total,replaced:previous.filter(rec=>rec.source===GAMEFILES_SOURCE).length};
+ return {imported:games.length,skipped,assets:storedAssets.length,bytes:total,replaced:previous.filter(rec=>rec.source===GAMEFILES_SOURCE).length};
 }
 async function removeGamefilesZip(){
  const previous=(await getAll()).filter(rec=>rec.source===GAMEFILES_SOURCE||rec.source===GAMEFILES_PARENT);
