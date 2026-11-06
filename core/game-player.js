@@ -69,7 +69,6 @@
    const live=()=>frame.isConnected&&frame.dataset.gameUrl===url.href;
    const run=()=>{if(live())frame.src=url.href};
    const local=url.origin===location.origin;
-   const knownRawHost=/^(?:cdn\.jsdelivr\.net|raw\.githubusercontent\.com|rawcdn\.githack\.com)$/i.test(url.hostname);
    let pending=false;
    async function renderSource({allowNormalHTML=true}={}){
      if(pending||!live())return;
@@ -105,10 +104,9 @@
          :error?.name==='AbortError'
            ?'The game source took too long to load.'
            :String(error?.message||'The game source could not load.');
-       // A failed inspection does not mean the URL is necessarily broken: on
-       // ordinary HTML hosts an iframe may still load when fetch/CORS is denied.
-       if(error?.name==='TypeError'&&!knownRawHost&&!local)run();
-       else buildError(frame,url,reason);
+       // If GET is blocked, rendering a raw-code URL directly would just
+       // expose source text to the player. Explain the server limitation.
+       buildError(frame,url,reason);
      }finally{
        pending=false;
        clearTimeout(timeout);
