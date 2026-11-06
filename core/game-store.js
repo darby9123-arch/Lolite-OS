@@ -235,13 +235,15 @@ if(Array.isArray(window.LoliteMountainCatalog)){
          if(game.mountain&&game.url!==url&&!(game.servers||[]).some(s=>s.url===game.url)){
            (game.servers||(game.servers=[])).push({name:'Mountain Games',url:game.url});
          }
-         // Preserve the existing local HTML as an alternate until a complete
-         // permission-cleared replacement is installed in this repository.
-         if(!game.external&&game.url.startsWith('html games/')&&game.url!==url&&
-            !(game.servers||[]).some(s=>s.url===game.url)){
-           (game.servers||(game.servers=[])).push({name:'Lolite OS (existing HTML)',url:game.url});
+         // Keep already-hosted HTML as the default game; an external source
+         // may instead be a plain-text file or a removed URL.
+         if(!game.external&&game.url.startsWith('html games/')){
+           if(game.url!==url&&!(game.servers||[]).some(s=>s.url===url))
+             (game.servers||(game.servers=[])).push({name:'GenizyMath',url});
+           games[existingIndex]={...game,genizy:true,source:'Lolite OS (existing HTML)'};
+         }else{
+           games[existingIndex]={...game,url,external:true,genizy:true,source:'GenizyMath'};
          }
-         games[existingIndex]={...game,url,external:true,genizy:true,source:'GenizyMath'};
          genizyCovers.set(game.file,cover);
          replaced++;
        }else{
@@ -506,7 +508,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  window.loliteStorePlay=file=>{
   const game=games.find(g=>g.file===file);if(!game)return;
   const chosen=Number(serverSelections.get(file)||0);
-  if(game.genizy&&!game.local&&chosen===0){
+  if(game.genizy&&!game.local&&!game.url.startsWith('html games/')&&chosen===0){
    const installed=window.LoliteInstalledGameByTitle?.(game.title);
    if(installed&&typeof window.LoliteOpenInstalledGame==='function'){window.LoliteOpenInstalledGame(installed);return}
    if(typeof window.LolitePlayGenizyHTML==='function'){window.LolitePlayGenizyHTML(game.title);return}
