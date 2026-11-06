@@ -42,9 +42,13 @@
     return originalPage(id);
   };
   window.launchHTMLGame=function(name,file){
-    const id='html-game-'+file.replace(/[^a-z0-9]+/gi,'-')+'-'+Date.now();openApp(id,name,900,650);
-    const w=state.windows[id]?.el.querySelector('.content');
-    if(w){w.innerHTML=`<iframe title="${esc(name)}" src="html%20games/${encodeURIComponent(file)}" style="width:100%;height:100%;min-height:560px;border:0;border-radius:12px;background:#000"></iframe>`}
+    const clean=String(file||'');
+    if(!/^[a-zA-Z0-9._-]+\\.html?$/i.test(clean)){
+      window.toast?.('This game file has an invalid path.');return;
+    }
+    const url='html%20games/'+encodeURIComponent(clean);
+    if(!window.LoliteGamePlayer?.open({title:String(name||'HTML Game'),file:clean,url,source:'Lolite OS · local HTML'}))
+      window.toast?.('The in-app game player could not launch this HTML game.');
   };
   const originalLaunch=window.launchGame;
   window.launchGame=async function(name){
