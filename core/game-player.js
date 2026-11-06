@@ -16,6 +16,18 @@
   if(url.origin===location.origin)return url.pathname.startsWith('/games/')?'allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads':'allow-scripts allow-forms allow-pointer-lock allow-downloads';
   return 'allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads allow-popups';
  };
+ // Record only when the actual game iframe finishes loading.
+ // The initial about:blank frame and preflight failures must not count.
+ function trackFrame(frame,file){
+  if(!file)return;
+  frame.dataset.popularityFile=String(file);
+  frame.addEventListener('load',()=>{
+   if(!frame.isConnected||frame.dataset.popularityRecorded==='yes'||frame.dataset.gameReady!=='1')return;
+   if(!frame.srcdoc && (!frame.src||frame.src==='about:blank'))return;
+   frame.dataset.popularityRecorded='yes';
+   void window.LoliteGamePopularity?.record?.(file);
+  });
+ }
  function buildFrame(url,title){
   const frame=document.createElement('iframe');
   frame.className='store-frame';
@@ -50,13 +62,14 @@
    if(!frame.isConnected||frame.dataset.gameUrl!==url.href)return;
    const notice=document.createElement('div');notice.className='store-load-error';
    notice.dataset.gameUrl=url.href;
+   notice.dataset.popularityFile=frame.dataset.popularityFile||'';
    const heading=document.createElement('strong');heading.textContent='This game could not launch';
    const detail=document.createElement('p');detail.textContent=reason;
    const hint=document.createElement('p');
    hint.textContent='If the source is a real HTML game, Lolite can render it here. Some servers block cross-site access, and some games require extra files.';
    const actions=document.createElement('div');
    const retry=document.createElement('button');retry.textContent='Retry';retry.type='button';
-   retry.onclick=()=>{const fresh=buildFrame(url,frame.title);notice.replaceWith(fresh);startFrame(fresh,url)};
+   retry.onclick=()=>{const fresh=buildFrame(url,frame.title);trackFrame(fresh,notice.dataset.popularityFile);notice.replaceWith(fresh);startFrame(fresh,url)};
    const store=document.createElement('button');store.textContent='Back to Game Store';store.type='button';
    store.onclick=()=>window.openApp?.('games','Game Store');
    actions.append(retry,store);notice.append(heading,detail,hint,actions);
@@ -67,7 +80,7 @@
  // the .html response text/plain.
  function startFrame(frame,url){
    const live=()=>frame.isConnected&&frame.dataset.gameUrl===url.href;
-   const run=()=>{if(live())frame.src=url.href};
+   const run=()=>{if(live()){frame.dataset.gameReady='1';frame.src=url.href}};
    const local=url.origin===location.origin;
    let pending=false;
    async function renderSource({allowNormalHTML=true}={}){
@@ -96,6 +109,7 @@
        // top navigation for third-party source code rendered as an HTML document.
        frame.setAttribute('sandbox','allow-scripts allow-forms allow-pointer-lock allow-downloads');
        frame.dataset.gameRender='raw-html';
+       frame.dataset.gameReady='1';
        frame.srcdoc=htmlWithBase(html,url);
      }catch(error){
        if(!live())return;
@@ -173,7 +187,7 @@
   const reload=button('↻','Restart game',()=>{
     const old=player.querySelector('.store-frame,.store-load-error');
     const source=safeURL(old?.dataset.gameUrl||old?.src);
-    if(old&&source){const fresh=buildFrame(source,label);old.replaceWith(fresh);startFrame(fresh,source)}
+    if(old&&source){const fresh=buildFrame(source,label);trackFrame(fresh,player.dataset.gameFile);old.replaceWith(fresh);startFrame(fresh,source)}
    });
   const full=button('⛶','Fullscreen game',()=>window.loliteStoreFullscreen?.(id));
   full.classList.add('store-fullscreen-icon');
@@ -184,6 +198,7 @@
   });
   actions.append(reload,full,back);head.append(info,actions);
   const frame=buildFrame(target,label);
+  trackFrame(frame,file);
   const help=document.createElement('details');help.className='store-player-help';
   const summary=document.createElement('summary');summary.textContent='Game not loading?';
   const text=document.createElement('span');
@@ -206,6 +221,7 @@
   const old=content.querySelector('.store-frame,.store-load-error');
   if(old&&old.dataset.gameUrl!==u.href){
    const frame=buildFrame(u,content.querySelector('.store-player-info strong')?.textContent||'Game');
+   trackFrame(frame,file);
    old.replaceWith(frame);startFrame(frame,u);
   }
   const label=content.querySelector('.store-player-server');
