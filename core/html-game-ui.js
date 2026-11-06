@@ -188,6 +188,7 @@ function ensureTop(root){
   }finally{collectionBtn.disabled=false;collectionBtn.textContent="Import gamefiles.zip"}
  });
  const collectionBtn=button("Import gamefiles.zip",()=>collectionInput.click());
+  window.LoliteChooseGamefilesZip=()=>collectionInput.click();
  const removeCollectionBtn=button("Remove gamefiles.zip",async()=>{
   if(!window.confirm("Remove the imported gamefiles.zip collection from this device?"))return;
   try{const count=await packages.removeGamefilesZip();notify("Removed "+count+" games.");await refresh()}
