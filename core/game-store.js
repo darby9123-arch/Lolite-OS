@@ -559,7 +559,28 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   }else if(active==='All Games')list=games;
   else list=filtered();
   const showFeatured=!query&&active==='Featured';
-  root.innerHTML=top+(showFeatured?heroMarkup():'')+'<section class="store-section"><div class="store-section-head"><div><h2>'+(query?'Search results':encodeLabel(active))+'</h2><p>'+list.length+' games</p></div></div>'+   (list.length?listCards(list):'<div class="store-empty">'+(active==='Gamefiles ZIP'?'<strong>Import games from your ZIP</strong><p>Select gamefiles.zip to add its supported standalone HTML games to Lolite.</p><button type="button" class="store-play" style="width:auto;max-width:230px;margin:12px auto;padding:10px 15px" onclick="window.LoliteChooseGamefilesZip?.()">Import gamefiles.zip</button>':'No games found. Try another search or category.')+'</div>')+'</section>';
+  const livePopularity=active==='Popular Games';
+  const popularityStatus=popularity()?.getStatus()?.status||'loading';
+  const summary=livePopularity
+    ?'Most launched in Lolite · Last 30 days · Anonymous totals'
+    :list.length+' games';
+  const empty=livePopularity
+    ?(popularityStatus==='loading'||popularityStatus==='refreshing'
+      ?'Loading real game launch counts…'
+      :popularityStatus==='unavailable'
+        ?'Live popularity counts are unavailable. Try reopening this category.'
+        :'No game launches counted yet. Popular Games will fill in as people play.')
+    :active==='Gamefiles ZIP'
+      ?'<strong>Import games from your ZIP</strong><p>Select gamefiles.zip to add its supported standalone HTML games to Lolite.</p><button type="button" class="store-play" style="width:auto;max-width:230px;margin:12px auto;padding:10px 15px" onclick="window.LoliteChooseGamefilesZip?.()">Import gamefiles.zip</button>'
+      :'No games found. Try another search or category.';
+  const privacy=livePopularity
+    ?'<div class="store-popularity-privacy"><label><input type="checkbox" onchange="window.LoliteGamePopularity?.setSharingEnabled(this.checked)" '+(popularity()?.shareEnabled()?'checked':'')+'> Count my game launches anonymously</label><small>Only game launch totals are kept, not player accounts or profiles.</small></div>'
+    :'';
+  root.innerHTML=top+(showFeatured?heroMarkup():'')+
+    '<section class="store-section"><div class="store-section-head"><div><h2>'+
+    (query?'Search results':encodeLabel(active))+'</h2><p>'+summary+'</p></div></div>'+
+    privacy+(list.length?listCards(list):'<div class="store-empty">'+empty+'</div>')+
+    '</section>';
   if(showFeatured)loadHeroArt();
  }
  function shell(){return '<div class="store"><aside class="store-side"><div class="store-brand">lolite<span>GAME LIBRARY</span></div><div><div class="store-nav-label">Browse library</div><nav class="store-nav">'+categoryNames.map(c=>'<button type="button" class="'+(active===c?'active':'')+'" data-category="'+c+'" aria-pressed="'+(active===c)+'" onclick=\'window.loliteStoreCategory("'+c+'")\'><span class="nav-mark" aria-hidden="true">'+navMarks[c]+'</span><span>'+c+'</span></button>').join('')+'</nav></div></aside><main class="store-main"><div class="store-empty">Loading your library…</div></main></div>'}
