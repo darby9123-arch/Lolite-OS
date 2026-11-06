@@ -20,7 +20,8 @@
   const frame=document.createElement('iframe');
   frame.className='store-frame';
   frame.title=title;
-  frame.src=url.href;
+  frame.src='about:blank';
+  frame.dataset.gameUrl=url.href;
   frame.loading='eager';
   frame.referrerPolicy='no-referrer';
   frame.setAttribute('sandbox',sandboxFor(url));
@@ -30,13 +31,54 @@
   frame.tabIndex=0;
   return frame;
  }
+ // Check HTTP status and MIME before navigating to games, so a missing file
+ // or text/plain source cannot appear as a 404 page or code dump.
+ function startFrame(frame,url){
+  const live=()=>frame.isConnected&&frame.dataset.gameUrl===url.href;
+  const run=()=>{if(live())frame.src=url.href};
+  const failure=reason=>{
+   if(!live())return;
+   const notice=document.createElement('div');notice.className='store-load-error';
+   notice.dataset.gameUrl=url.href;
+   const heading=document.createElement('strong');heading.textContent='This game server is unavailable';
+   const detail=document.createElement('p');detail.textContent=reason;
+   const hint=document.createElement('p');hint.textContent='Try a different server in the Game Store. Some external links expire or are served as source code.';
+   const actions=document.createElement('div');
+   const retry=document.createElement('button');retry.textContent='Retry';retry.type='button';
+   retry.onclick=()=>{const fresh=buildFrame(url,frame.title);notice.replaceWith(fresh);startFrame(fresh,url)};
+   const store=document.createElement('button');store.textContent='Back to Game Store';store.type='button';
+   store.onclick=()=>window.openApp?.('games','Game Store');
+   actions.append(retry,store);notice.append(heading,detail,hint,actions);
+   frame.replaceWith(notice);
+  };
+  const local=url.origin===location.origin;
+  // The imported-games service worker only handles GET, not HEAD.
+  if(url.pathname.includes('/core/local-games/')){run();return}
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),local?6000:3000);
+  fetch(url.href,{method:'HEAD',signal:controller.signal,cache:'no-store'})
+   .then(response=>{
+    if(!live())return;
+    if(!response.ok){
+     if(response.status===405||response.status===501){run();return}
+     failure('The selected game returned HTTP '+response.status+'.');return;
+    }
+    const type=String(response.headers.get('content-type')||'').split(';')[0].toLowerCase().trim();
+    if(['text/plain','application/json','application/octet-stream','text/markdown'].includes(type)){
+     failure('This server returned raw code or a file, not a playable HTML page.');return;
+    }
+    run();
+   })
+   .catch(()=>{if(local)failure('The local game file is unavailable.');else run()})
+   .finally(()=>clearTimeout(timeout));
+ }
  function open({title='Game',url,file,source='Lolite OS'}={}){
   const target=safeURL(url);
   if(!target){notify('This game server does not have a valid URL.');return false}
   const label=String(title||'Game').slice(0,110),id=windowId(file||label);
   const existing=document.querySelector('#windows .window[data-window-id="'+id+'"]');
   const existingFrame=existing?.querySelector('.store-frame');
-  if(existingFrame?.src===target.href){
+  if(existingFrame?.dataset.gameUrl===target.href||existingFrame?.src===target.href){
    window.restoreWin?.(id);
    window.LoliteDeviceMode?.activateWindow?.(id);
    return true; // Keeps game progress in this open window.
@@ -59,9 +101,10 @@
   const actions=document.createElement('div');actions.className='store-player-actions';
   const button=(text,aria,handler)=>{const b=document.createElement('button');b.type='button';b.textContent=text;b.title=aria;b.setAttribute('aria-label',aria);b.addEventListener('click',handler);return b};
   const reload=button('↻','Restart game',()=>{
-   const old=player.querySelector('iframe.store-frame');
-   if(old)old.replaceWith(buildFrame(safeURL(old.src),label));
-  });
+    const old=player.querySelector('.store-frame,.store-load-error');
+    const source=safeURL(old?.dataset.gameUrl||old?.src);
+    if(old&&source){const fresh=buildFrame(source,label);old.replaceWith(fresh);startFrame(fresh,source)}
+   });
   const full=button('⛶','Fullscreen game',()=>window.loliteStoreFullscreen?.(id));
   full.classList.add('store-fullscreen-icon');
   const back=button('← Store','Return to Game Store',()=>{
@@ -77,11 +120,12 @@
   text.textContent='Some external servers do not allow games inside another website. You can open that server separately without closing Lolite.';
   const outside=button('Open server in new tab','Open selected game server in a new tab',()=>{
    const active=player.querySelector('iframe.store-frame');
-   const link=safeURL(active?.src);
+   const link=safeURL(active?.dataset.gameUrl||active?.src);
    if(link)window.open(link.href,'_blank','noopener,noreferrer');
   });
   help.append(summary,text,outside);
   player.append(head,frame,help);content.append(player);
+  startFrame(frame,target);
   win?.focus?.({preventScroll:true});
   window.LoliteDeviceMode?.activateWindow?.(id);
   return true;
@@ -89,8 +133,11 @@
  function switchServer(file,url,source){
   const u=safeURL(url),id=windowId(file),content=document.querySelector('#windows .window[data-window-id="'+id+'"] .store-player');
   if(!u||!content)return false;
-  const frame=content.querySelector('iframe.store-frame');
-  if(frame&&frame.src!==u.href)frame.replaceWith(buildFrame(u,frame.title));
+  const old=content.querySelector('.store-frame,.store-load-error');
+  if(old&&old.dataset.gameUrl!==u.href){
+   const frame=buildFrame(u,content.querySelector('.store-player-info strong')?.textContent||'Game');
+   old.replaceWith(frame);startFrame(frame,u);
+  }
   const label=content.querySelector('.store-player-server');
   if(label)label.textContent=source||'Game server';
   return true;
@@ -104,6 +151,7 @@
   '.store-player .store-frame{display:block;width:100%!important;height:100%!important;min-height:0!important;flex:1 1 0!important;border:0!important;border-radius:0!important;background:#05070b}'+
   '.store-player-help{position:relative;flex:none;padding:5px 12px;background:#0d1621;border-top:1px solid #ffffff13;color:#a9b9c9;font:11px/1.45 system-ui,sans-serif}.store-player-help summary{cursor:pointer;list-style:inside;font-size:11px}.store-player-help[open]{padding:10px 13px}.store-player-help span{display:block;margin:8px 0}.store-player-help button{background:#203549;color:#eaf3fa;border:1px solid #66829c64;border-radius:6px;padding:6px 9px;cursor:pointer}'+
   '.store-player:fullscreen,.store-player:-webkit-full-screen{height:100dvh!important;width:100vw!important;padding:0!important;gap:0!important}.store-player:fullscreen .store-player-head,.store-player:fullscreen .store-player-help,.store-player:-webkit-full-screen .store-player-head,.store-player:-webkit-full-screen .store-player-help{display:none!important}'+
+  '.store-load-error{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;text-align:center;padding:28px 18px;background:#0b1522;color:#f0f6ff}.store-load-error strong{font-size:19px}.store-load-error p{max-width:520px;margin:0;font:13px/1.55 system-ui;color:#b1bfd0}.store-load-error div{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.store-load-error button{border:1px solid #6b9abc99;border-radius:8px;background:#234a66;color:white;padding:9px 13px;cursor:pointer}'+
   '@media(max-width:520px){.store-player-head{padding:8px;gap:6px}.store-player-info strong{font-size:12px}.store-player-actions{gap:3px}.store-player-actions button{min-width:33px;padding:0 6px}}';
  document.head.append(style);
  window.LoliteGamePlayer=Object.freeze({open,switchServer});
