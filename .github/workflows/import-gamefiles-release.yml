@@ -1,0 +1,45 @@
+name: Import original Gamefiles HTML into Lolite OS
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag containing the gamefiles.zip asset"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  import-games:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Lolite OS
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+      - name: Download the user-supplied archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+        run: |
+          mkdir -p .upload
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern 'gamefiles.zip' --dir .upload
+          test -s .upload/gamefiles.zip
+      - name: Extract actual HTML games and supporting assets
+        run: python3 scripts/import_gamefiles_release.py .upload/gamefiles.zip
+      - name: Commit the actual game files
+        run: |
+          git config user.name 'Lolite Game Importer'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- 'html games/gamefiles' 'core/gamefiles-bundled-catalog.js'
+          if ! git diff --cached --quiet; then
+            git commit -m 'Import playable HTML games and assets from uploaded gamefiles.zip'
+            git push origin HEAD:main
+          else
+            echo 'No game file changes'
+          fi
