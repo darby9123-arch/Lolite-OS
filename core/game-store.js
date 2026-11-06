@@ -400,7 +400,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  window.addEventListener('lolite-local-packages-changed',()=>{void syncGamefilesCollection()});
  const serverSelections=new Map();
  const availableServers=g=>{
-   const baseName=(g.local||g.url.startsWith('html games/'))?'Lolite OS (local HTML)':g.openExternally?'Official creator':g.genizy?'GenizyMath':g.source==="Chicken King's Vault"?"Chicken King's Vault":g.source==='DAKNUX'?'DAKNUX':g.mountain?'Mountain Games':'Lolite OS';
+   const baseName=g.gamefilesRecord?'Gamefiles ZIP · Local':(g.local||g.url.startsWith('html games/'))?'Lolite OS (local HTML)':g.openExternally?'Official creator':g.genizy?'GenizyMath':g.source==="Chicken King's Vault"?"Chicken King's Vault":g.source==='DAKNUX'?'DAKNUX':g.mountain?'Mountain Games':'Lolite OS';
    const raw=[{name:baseName,url:g.url},...(g.servers||[])];
    const seen=new Set();
    return raw.filter(x=>{if(!x?.url||seen.has(x.url))return false;seen.add(x.url);return true});
@@ -524,7 +524,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   }else if(active==='All Games')list=games;
   else list=filtered();
   const showFeatured=!query&&active==='Featured';
-  root.innerHTML=top+(showFeatured?heroMarkup():'')+'<section class="store-section"><div class="store-section-head"><div><h2>'+(query?'Search results':encodeLabel(active))+'</h2><p>'+list.length+' games</p></div></div>'+   (list.length?listCards(list):'<div class="store-empty">No games found. Try another search or category.</div>')+'</section>';
+  root.innerHTML=top+(showFeatured?heroMarkup():'')+'<section class="store-section"><div class="store-section-head"><div><h2>'+(query?'Search results':encodeLabel(active))+'</h2><p>'+list.length+' games</p></div></div>'+   (list.length?listCards(list):'<div class="store-empty">'+(active==='Gamefiles ZIP'?'Select Import games → Import gamefiles.zip to add your HTML games to Lolite.':'No games found. Try another search or category.')+'</div>')+'</section>';
   if(showFeatured)loadHeroArt();
  }
  function shell(){return '<div class="store"><aside class="store-side"><div class="store-brand">lolite<span>GAME LIBRARY</span></div><div><div class="store-nav-label">Browse library</div><nav class="store-nav">'+categoryNames.map(c=>'<button type="button" class="'+(active===c?'active':'')+'" data-category="'+c+'" aria-pressed="'+(active===c)+'" onclick=\'window.loliteStoreCategory("'+c+'")\'><span class="nav-mark" aria-hidden="true">'+navMarks[c]+'</span><span>'+c+'</span></button>').join('')+'</nav></div></aside><main class="store-main"><div class="store-empty">Loading your library…</div></main></div>'}
