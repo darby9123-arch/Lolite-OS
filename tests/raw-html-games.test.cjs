@@ -10,6 +10,11 @@ class MockElement {
   this.tagName=tag.toUpperCase();this.children=[];this.dataset={};
   this.attributes={};this.style={};this.className='';this.isConnected=false;
   this.src='';this.srcdoc='';this.listeners={};this.parent=null;
+  this.classList={
+    add:name=>{this.className=[...new Set([...this.className.split(/\s+/).filter(Boolean),name])].join(' ')},
+    remove:name=>{this.className=this.className.split(/\s+/).filter(x=>x!==name).join(' ')},
+    contains:name=>this.className.split(/\s+/).includes(name)
+  };
  }
  setAttribute(key,value){this.attributes[key]=String(value)}
  append(...nodes){
