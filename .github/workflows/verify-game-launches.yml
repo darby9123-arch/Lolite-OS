@@ -4,6 +4,8 @@ on:
     paths:
       - 'core/gd-loading-fix.js'
       - 'core/game-player.js'
+      - 'core/integration.js'
+      - 'index.html'
       - 'core/game-store.js'
       - 'tests/game-launches.test.cjs'
       - 'html games/**'
@@ -12,6 +14,8 @@ on:
     paths:
       - 'core/gd-loading-fix.js'
       - 'core/game-player.js'
+      - 'core/integration.js'
+      - 'index.html'
       - 'core/game-store.js'
       - 'tests/game-launches.test.cjs'
 jobs:
@@ -29,5 +33,6 @@ jobs:
           node --check core/gd-loading-fix.js
           node --check core/game-player.js
           node --check core/game-store.js
+          node --check core/integration.js
       - name: Test game launching, fallbacks and file paths
         run: node --test tests/game-launches.test.cjs
