@@ -1,23 +1,29 @@
-name: Verify built-in live wallpapers
+name: Verify live and interactive wallpapers
 on:
   push:
     paths:
       - 'core/live-wallpapers-catalog.js'
+      - 'core/interactive-wallpapers.js'
+      - 'core/uploaded-wallpapers-catalog.js'
       - 'core/wallpapers.js'
       - 'core/crimson.js'
       - 'core/media-personalisation.css'
       - 'index.html'
       - 'tests/local-live-wallpapers.test.cjs'
+      - 'tests/interactive-wallpapers.test.cjs'
       - 'tests/crimson.test.cjs'
       - '.github/workflows/verify-local-wallpapers.yml'
   pull_request:
     paths:
       - 'core/live-wallpapers-catalog.js'
+      - 'core/interactive-wallpapers.js'
+      - 'core/uploaded-wallpapers-catalog.js'
       - 'core/wallpapers.js'
       - 'core/crimson.js'
       - 'core/media-personalisation.css'
       - 'index.html'
       - 'tests/local-live-wallpapers.test.cjs'
+      - 'tests/interactive-wallpapers.test.cjs'
       - 'tests/crimson.test.cjs'
 jobs:
   verify:
@@ -32,7 +38,9 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check core/live-wallpapers-catalog.js
+          node --check core/interactive-wallpapers.js
+          node --check core/uploaded-wallpapers-catalog.js
           node --check core/wallpapers.js
           node --check core/crimson.js
-      - name: Verify 36 live scenes, 4K quality, and sound compatibility
-        run: node --test tests/local-live-wallpapers.test.cjs tests/crimson.test.cjs
+      - name: Verify 52 live scenes, MP4 discovery, cursor effects and sound compatibility
+        run: node --test tests/local-live-wallpapers.test.cjs tests/interactive-wallpapers.test.cjs tests/crimson.test.cjs
