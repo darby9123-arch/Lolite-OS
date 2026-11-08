@@ -50,6 +50,12 @@
  const rawTypes=new Set(['text/plain','text/markdown','application/octet-stream']);
  const htmlDocument=text=>/^\s*(?:<!--[\s\S]*?-->\s*)*(?:<!doctype\s+html\b|<html(?:\s|>)|<head(?:\s|>)|<body(?:\s|>))/i.test(text)||
    /^\s*<(?:meta|link|style|div|canvas|script|main|section|article)(?:\s|>)/i.test(text);
+ const isErrorDocument=html=>{
+  const start=String(html||'').slice(0,12000);
+  return /<title[^>]*>\s*(?:(?:404|410)(?:\s*[-–:]\s*)?)?(?:not found|page not found|404 error|404 not found|site not found)\s*<\/title>/i.test(start)
+   || /<title[^>]*>\s*404\s*<\/title>/i.test(start)
+   || /<h1[^>]*>\s*(?:404(?:\s*[-–:]\s*(?:not found|file not found))?|page not found)\s*<\/h1>/i.test(start);
+ };
  const htmlWithBase=(html,url)=>{
    if(/<base\s/i.test(html))return html;
    const base='<base href="'+url.href.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">';
@@ -109,7 +115,7 @@
        });
        if(!response.ok)throw new Error('The game HTML returned HTTP '+response.status+'.');
        const mime=String(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase();
-       if(mime==='text/html'&&allowNormalHTML){run();return}
+       if(mime==='text/html'&&allowNormalHTML&&!local){run();return}
        if(mime&&!rawTypes.has(mime)&&mime!=='text/html'){
          throw new Error('The game server returned '+mime+' instead of an HTML page.');
        }
@@ -117,8 +123,10 @@
        if(declared>MAX_RAW_GAME_BYTES)throw new Error('This HTML source is too large to render.');
        const html=await response.text();
        if(new Blob([html]).size>MAX_RAW_GAME_BYTES)throw new Error('This HTML source is too large to render.');
+       if(isErrorDocument(html))throw new Error('The selected game page is missing (404 Not Found).');
        if(!htmlDocument(html))throw new Error('The server returned text, but not playable HTML.');
        if(!live())return;
+       if(mime==='text/html'&&allowNormalHTML){run();return}
        // srcdoc has a unique opaque origin; never allow same-origin, popups or
        // top navigation for third-party source code rendered as an HTML document.
        frame.setAttribute('sandbox','allow-scripts allow-forms allow-pointer-lock allow-downloads');
@@ -155,6 +163,7 @@
          buildError(frame,url,'The selected game returned HTTP '+response.status+'.');return;
        }
        const mime=String(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase();
+       if(mime==='text/html'&&local){void renderSource();return}
        if(rawTypes.has(mime)||!mime){void renderSource();return}
        if(['application/json','application/javascript','text/javascript'].includes(mime)){
          buildError(frame,url,'This server returned JavaScript or data rather than an HTML game.');return;
