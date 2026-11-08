@@ -60,6 +60,20 @@
 
  function buildError(frame,url,reason){
    if(!frame.isConnected||frame.dataset.gameUrl!==url.href)return;
+   const player=frame.closest('.store-player');
+   const next=player?._loliteFallbackSources?.shift();
+   if(next){
+    const fallback=safeURL(next.url);
+    if(fallback){
+     const replacement=buildFrame(fallback,frame.title);
+     trackFrame(replacement,player.dataset.gameFile);
+     frame.replaceWith(replacement);
+     const label=player.querySelector('.store-player-server');
+     if(label)label.textContent=next.name+' · backup server';
+     startFrame(replacement,fallback);
+     return;
+    }
+   }
    const notice=document.createElement('div');notice.className='store-load-error';
    notice.dataset.gameUrl=url.href;
    notice.dataset.popularityFile=frame.dataset.popularityFile||'';
@@ -156,7 +170,16 @@
      .finally(()=>clearTimeout(timeout));
  }
 
- function open({title='Game',url,file,source='Lolite OS'}={}){
+ const normaliseFallbacks=(sources,current)=>{
+  const seen=new Set([current.href]);
+  return (Array.isArray(sources)?sources:[]).map(src=>{
+   const target=safeURL(src?.url);
+   if(!target||seen.has(target.href))return null;
+   seen.add(target.href);
+   return {name:String(src.name||'Backup server').slice(0,80),url:target.href};
+  }).filter(Boolean).slice(0,8);
+ };
+ function open({title='Game',url,file,source='Lolite OS',fallbackSources=[]}={}){
   const target=safeURL(url);
   if(!target){notify('This game server does not have a valid URL.');return false}
   const label=String(title||'Game').slice(0,110),id=windowId(file||label);
@@ -177,6 +200,7 @@
   const player=document.createElement('section');
   player.className='store-player';
   player.dataset.gameFile=String(file||'');
+  player._loliteFallbackSources=normaliseFallbacks(fallbackSources,target);
   const head=document.createElement('header');head.className='store-player-head';
   const info=document.createElement('div');info.className='store-player-info';
   const heading=document.createElement('strong');heading.textContent=label;
@@ -215,9 +239,10 @@
   window.LoliteDeviceMode?.activateWindow?.(id);
   return true;
  }
- function switchServer(file,url,source){
+ function switchServer(file,url,source,fallbackSources=[]){
   const u=safeURL(url),id=windowId(file),content=document.querySelector('#windows .window[data-window-id="'+id+'"] .store-player');
   if(!u||!content)return false;
+  content._loliteFallbackSources=normaliseFallbacks(fallbackSources,u);
   const old=content.querySelector('.store-frame,.store-load-error');
   if(old&&old.dataset.gameUrl!==u.href){
    const frame=buildFrame(u,content.querySelector('.store-player-info strong')?.textContent||'Game');
