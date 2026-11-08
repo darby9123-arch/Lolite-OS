@@ -47,7 +47,7 @@ class MockElement {
  }
  focus(){}
 }
-function harness({mime='text/plain',html='<!doctype html><html><head><title>Game</title></head><body><canvas></canvas></body></html>',httpStatus=200,corsBlocked=false,fallbackSources=[]}={}){
+function harness({mime='text/plain',html='<!doctype html><html><head><title>Game</title></head><body><canvas></canvas></body></html>',httpStatus=200,corsBlocked=false,fallbackSources=[],gameURL='https://cdn.example/games/demo.html'}={}){
  const calls=[],opened=[],head=new MockElement('head'),content=new MockElement('main');
  content.connect();head.connect();
  const doc={
@@ -78,7 +78,7 @@ function harness({mime='text/plain',html='<!doctype html><html><head><title>Game
  },{timeout:1500});
  const success=win.LoliteGamePlayer.open({
   title:'Test game',file:'test-game.html',
-  url:'https://cdn.example/games/demo.html',source:'Test server',fallbackSources
+  url:gameURL,source:'Test server',fallbackSources
  });
  assert.equal(success,true);
  const player=content.querySelector('.store-player');
@@ -98,6 +98,15 @@ test('HTML served as text/plain renders as a playable srcdoc page',async()=>{
  assert.equal(h.frame.attributes.sandbox.includes('allow-scripts'),true);
  assert.equal(h.frame.attributes.sandbox.includes('allow-same-origin'),false);
  assert.deepEqual(h.calls.map(x=>x.method),['HEAD','GET']);
+});
+test('Raw GitHub HTML source uses the original game asset host for relative files',async()=>{
+ const h=harness({
+  gameURL:'https://raw.githubusercontent.com/mountain658/mountain658.github.io/main/puzzle.html',
+  html:'<!doctype html><html><head><script src="js/game.js"></script></head><body><canvas></canvas></body></html>'
+ });
+ await flush();
+ assert.match(h.frame.srcdoc,/<base href="https:\/\/mountain658\.github\.io\/puzzle\.html">/);
+ assert.match(h.frame.srcdoc,/<script src="js\/game\.js">/);
 });
 test('Existing game base href is preserved',async()=>{
  const h=harness({html:'<html><head><base href="https://assets.example/game/"></head><body><canvas></canvas></body></html>'});
