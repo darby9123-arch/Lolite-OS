@@ -26,12 +26,20 @@
    return site.href;
   }catch{return ''}
  };
- const siteChoice=value=>{
+ // Most sites don't expose their favicon at /favicon.ico. Google's favicon
+ // service resolves icons from the site's metadata without requiring CORS.
+ const faviconFor=hostname=>'https://www.google.com/s2/favicons?domain='+encodeURIComponent(hostname)+'&sz=64';
+ const siteChoice=(value,override='')=>{
   const href=normaliseWebsite(value);
   if(!href)return null;
   const site=new URL(href),host=site.hostname.toLowerCase();
-  const known={'classroom.google.com':'Google Classroom','drive.google.com':'Google Drive','docs.google.com':'Google Docs','mail.google.com':'Gmail'};
-  return {title:'Lolite OS · '+(known[host]||host.replace(/^www\./,'')),icon:site.origin+'/favicon.ico'};
+  const known={'classroom.google.com':'Google Classroom','drive.google.com':'Google Drive',
+   'docs.google.com':'Google Docs','mail.google.com':'Gmail','youtube.com':'YouTube',
+   'www.youtube.com':'YouTube','github.com':'GitHub','www.wikipedia.org':'Wikipedia',
+   'en.wikipedia.org':'Wikipedia','www.google.com':'Google','discord.com':'Discord',
+   'www.reddit.com':'Reddit','reddit.com':'Reddit','www.roblox.com':'Roblox'};
+  return {title:cleanTitle(override)||known[host]||host.replace(/^www\./,''),
+    icon:faviconFor(host),fallbackIcon:site.origin+'/favicon.ico',websiteUrl:site.href};
  };
  function load(){
   try{
@@ -39,17 +47,38 @@
    return {mode:stored.mode==='custom'||(stored.mode==='website'&&normaliseWebsite(stored.websiteUrl))||Object.hasOwn(PRESETS,stored.mode)?stored.mode:'lolite',
     customTitle:cleanTitle(stored.customTitle)||'My Tab',
     customIcon:validIcon(stored.customIcon)?stored.customIcon:'',
-    websiteUrl:normaliseWebsite(stored.websiteUrl)};
-  }catch{return {mode:'lolite',customTitle:'My Tab',customIcon:'',websiteUrl:''}}
+    websiteUrl:normaliseWebsite(stored.websiteUrl),
+    websiteTitle:cleanTitle(stored.websiteTitle)};
+  }catch{return {mode:'lolite',customTitle:'My Tab',customIcon:'',websiteUrl:'',websiteTitle:''}}
  }
  let state=load();
  const current=()=>state.mode==='custom'
   ?{title:cleanTitle(state.customTitle)||'My Tab',icon:state.customIcon||DEFAULT_ICON}
-  :state.mode==='website'?(siteChoice(state.websiteUrl)||PRESETS.lolite)
+  :state.mode==='website'?(siteChoice(state.websiteUrl,state.websiteTitle)||PRESETS.lolite)
   :PRESETS[state.mode]||PRESETS.lolite;
+ let iconGeneration=0;
+ function updateIcons(icon){
+  document.querySelectorAll('link[rel~="icon"]').forEach(link=>{
+   // The original Lolite links specify SVG, which prevents PNG/ICO favicons
+   // from displaying in some browsers if the MIME hint is left unchanged.
+   link.removeAttribute('type');
+   link.href=icon;
+  });
+  const preview=document.querySelector('[data-ltc-preview-icon]');
+  if(preview)preview.src=icon;
+ }
  function apply(){
-  const choice=current();document.title=choice.title;
-  document.querySelectorAll('link[rel~="icon"]').forEach(link=>{link.href=choice.icon});
+  const choice=current(),generation=++iconGeneration;
+  document.title=choice.title;
+  updateIcons(choice.icon);
+  if(choice.fallbackIcon){
+   const test=new Image();
+   test.onerror=()=>{
+    if(generation===iconGeneration&&state.mode==='website')
+      updateIcons(choice.fallbackIcon);
+   };
+   test.src=choice.icon;
+  }
  }
  function save(){
   try{localStorage.setItem(KEY,JSON.stringify(state));return true}
@@ -61,7 +90,13 @@
   const title=panel.querySelector('[data-ltc-preview-title]');
   const icon=panel.querySelector('[data-ltc-preview-icon]');
   if(title)title.textContent=choice.title;
-  if(icon)icon.src=choice.icon;
+  if(icon){
+   icon.onerror=()=>{
+    if(choice.fallbackIcon&&icon.src!==choice.fallbackIcon)icon.src=choice.fallbackIcon;
+    else if(icon.src!==new URL(DEFAULT_ICON,document.baseURI).href)icon.src=DEFAULT_ICON;
+   };
+   icon.src=choice.icon;
+  }
   panel.querySelectorAll('[data-ltc-preset]').forEach(b=>b.setAttribute('aria-pressed',String(state.mode===b.dataset.ltcPreset)));
   const custom=panel.querySelector('[data-ltc-custom]');
   if(custom)custom.setAttribute('aria-pressed',String(state.mode==='custom'));
@@ -75,30 +110,32 @@
   window.toast?.('Browser tab appearance updated.');
  }
  function reset(){
-  state={mode:'lolite',customTitle:'My Tab',customIcon:'',websiteUrl:''};
+  state={mode:'lolite',customTitle:'My Tab',customIcon:'',websiteUrl:'',websiteTitle:''};
   try{localStorage.removeItem(KEY)}catch{}
   apply();sync();
   const input=document.querySelector('[data-ltc-title]');if(input)input.value=state.customTitle;
   const website=document.querySelector('[data-ltc-website-url]');if(website)website.value='';
+  const websiteTitle=document.querySelector('[data-ltc-website-title]');if(websiteTitle)websiteTitle.value='';
   window.toast?.('Original Lolite tab restored.');
  }
  function markup(){
   const choice=current();
   return '<div data-ltc-panel class="ltc-panel">'+
    '<div class="cr-section-head"><h2>Browser tab appearance</h2><span>Local to this browser</span></div>'+
-   '<p class="cr-help">Change the title and icon shown in the browser tab. This does not change the site URL, bookmarks or browsing history.</p>'+
+   '<p class="cr-help">Choose a website to match its browser-tab title and icon, or use your own custom design. The real site address stays unchanged.</p>'+
    '<div class="ltc-preview" aria-label="Current tab preview"><span class="ltc-preview-caption">TAB PREVIEW</span><div class="ltc-preview-tab"><img data-ltc-preview-icon alt="" src="'+escapeHTML(choice.icon)+'"><span data-ltc-preview-title>'+escapeHTML(choice.title)+'</span><span aria-hidden="true">×</span></div></div>'+
    '<h2 class="cr-subheading">Quick presets</h2><div class="ltc-presets" role="group" aria-label="Tab appearance presets">'+
    Object.entries(PRESETS).map(([id,preset])=>'<button type="button" class="ltc-preset" data-ltc-preset="'+id+'" aria-pressed="'+(state.mode===id)+'"><img src="'+escapeHTML(preset.icon)+'" alt=""><span>'+escapeHTML(preset.label)+'</span></button>').join('')+
    '</div><h2 class="cr-subheading">Use a website link</h2><div class="cr-setting-group ltc-custom-settings">'+
-   '<p class="cr-help">Enter an HTTPS website to use its domain name and favicon for your tab. The title still says Lolite OS, and the actual website address does not change.</p>'+
+   '<p class="cr-help">Paste an HTTPS website link. Lolite will use the website name and its favicon in your tab, without adding “Lolite OS” to the title. You can optionally choose a different tab title.</p>'+
    '<label class="ltc-field" for="ltc-website-url">Website URL<input id="ltc-website-url" data-ltc-website-url type="url" maxlength="2048" autocomplete="off" spellcheck="false" value="'+escapeHTML(state.websiteUrl)+'" placeholder="https://example.com"></label>'+
+   '<label class="ltc-field" for="ltc-website-title">Tab title (optional)<input id="ltc-website-title" data-ltc-website-title type="text" maxlength="80" autocomplete="off" value="'+escapeHTML(state.websiteTitle)+'" placeholder="Use website name automatically"></label>'+
    '<div class="ltc-actions"><button type="button" class="cr-secondary" data-ltc-website aria-pressed="'+(state.mode==='website')+'">Use website appearance</button></div>'+
    '</div><h2 class="cr-subheading">Your own tab</h2><div class="cr-setting-group ltc-custom-settings">'+
    '<label class="ltc-field" for="ltc-title">Custom tab title<input id="ltc-title" data-ltc-title type="text" maxlength="80" autocomplete="off" value="'+escapeHTML(state.customTitle)+'" placeholder="My Tab"></label>'+
    '<label class="ltc-field" for="ltc-icon">Custom tab icon <span class="ltc-hint">PNG, JPG or WebP, up to 300 KB</span><input id="ltc-icon" data-ltc-icon type="file" accept="image/png,image/jpeg,image/webp"></label>'+
    '<div class="ltc-actions"><button type="button" class="cr-secondary" data-ltc-custom aria-pressed="'+(state.mode==='custom')+'">Use custom tab</button><button type="button" class="cr-secondary" data-ltc-clear-icon>Remove custom icon</button><button type="button" class="cr-secondary" data-ltc-reset>Restore Lolite tab</button></div>'+
-   '<p class="cr-help">Your changes are saved on this device. Other devices and private windows have their own tab settings. You cannot change Lolite’s address to about:blank; that is a separate browser page.</p>'+
+   '<p class="cr-help">The site URL in the address bar, browser history, and browser security information cannot be disguised or changed into another domain or about:blank. These controls affect the tab name and favicon only. Preferences are saved on this device.</p>'+
    '</div></div>';
  }
  const style=document.createElement('style');style.textContent=
@@ -114,15 +151,21 @@
    const value=document.querySelector('[data-ltc-website-url]')?.value;
    const parsed=normaliseWebsite(value);
    if(!parsed){window.toast?.('Enter a valid HTTPS website, such as https://example.com.');return}
-   state.websiteUrl=parsed;setMode('website');
+   state.websiteUrl=parsed;
+   state.websiteTitle=cleanTitle(document.querySelector('[data-ltc-website-title]')?.value);
+   setMode('website');
    const input=document.querySelector('[data-ltc-website-url]');if(input)input.value=parsed;
   }
   else if(button.hasAttribute('data-ltc-clear-icon')){state.customIcon='';setMode('custom')}
   else if(button.hasAttribute('data-ltc-reset'))reset();
  });
  document.addEventListener('input',event=>{
-  if(!event.target.matches('[data-ltc-title]'))return;
-  state.customTitle=cleanTitle(event.target.value)||'My Tab';state.mode='custom';
+  if(event.target.matches('[data-ltc-title]')){
+   state.customTitle=cleanTitle(event.target.value)||'My Tab';state.mode='custom';
+  }else if(event.target.matches('[data-ltc-website-title]')){
+   state.websiteTitle=cleanTitle(event.target.value);
+   if(state.mode!=='website')return;
+  }else return;
   apply();save();sync();
  });
  document.addEventListener('change',event=>{
