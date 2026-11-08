@@ -17,16 +17,18 @@ const run=(env,name)=>vm.runInContext(fs.readFileSync('core/'+name+'.js','utf8')
 function wallpapers(seed){
  const env=environment(seed);
  run(env,'live-wallpapers-catalog');
+ run(env,'interactive-wallpapers');
+ run(env,'uploaded-wallpapers-catalog');
  run(env,'wallpapers');
  return env;
 }
-test('36 built-in live scenes and all 10 static images are available without downloads',()=>{
+test('52 moving scenes and 10 static wallpapers are available without downloads',()=>{
  const e=wallpapers({wallpaperId:'ocean-dawn',loliteAccent:'#e85c64'});
  assert.equal(e.c.LoliteWallpapers.current().id,'tidal-night');
  assert.equal(e.data.get('loliteAccent'),'#e85c64');
  const all=e.c.LoliteWallpapers.collection;
- assert.equal(all.length,46);
- assert.equal(all.filter(w=>w.scene).length,36);
+ assert.equal(all.length,62);
+ assert.equal(all.filter(w=>w.scene).length,52);
  for(const w of all){
   if(w.scene){assert.match(w.src,/^data:image\/svg\+xml,/);assert.equal(w.poster,w.src)}
   else assert.ok(fs.existsSync(w.src),w.src);
@@ -56,6 +58,30 @@ test('max quality renders at full physical resolution on 4K-sized desktop',()=>{
  assert.deepEqual(Array.from(e.c.LoliteWallpapers.debug().resolution),[Math.round(3840*Math.sqrt(6000000/(3840*2160))),Math.round(2160*Math.sqrt(6000000/(3840*2160)))]);
  e.c.LoliteWallpapers.setQuality('max');
  assert.deepEqual(Array.from(e.c.LoliteWallpapers.debug().resolution),[3840,2160]);
+});
+test('interactive scenes react to cursor movement and clicks without blocking the desktop',()=>{
+ const e=wallpapers();
+ assert.equal(e.c.LoliteWallpapers.apply('interactive-gravity-well'),true);
+ assert.equal(e.children.length,1);
+ assert.equal(e.queue.size,1);
+ e.docEmit('pointermove',{clientX:1100,clientY:150});
+ e.step(100);
+ assert.ok(e.c.LoliteWallpapers.debug().pointer.strength>0);
+ const firstX=e.c.LoliteWallpapers.debug().pointer.x;
+ e.step(150);assert.ok(e.c.LoliteWallpapers.debug().pointer.x>firstX);
+ e.docEmit('pointerdown',{clientX:1100,clientY:150,button:0,target:{closest:()=>null}});
+ assert.equal(e.c.LoliteWallpapers.debug().ripples,1);
+ e.c.LoliteWallpapers.setInteractiveEnabled(false);
+ assert.equal(e.c.LoliteWallpapers.debug().ripples,0);
+ assert.equal(e.c.LoliteWallpapers.isInteractiveEnabled(),false);
+ assert.equal(e.data.get('loliteWallpaperInteractive'),'off');
+ e.c.LoliteWallpapers.setInteractiveEnabled(true);
+ assert.equal(e.c.LoliteWallpapers.isInteractiveEnabled(),true);
+ e.c.LoliteWallpapers.setInteractionStrength(1.2);
+ assert.equal(e.data.get('loliteWallpaperInteractionStrength'),'1.2');
+ e.c.LoliteWallpapers.apply('carbon');
+ assert.equal(e.children.length,0);
+ assert.equal(e.queue.size,0);
 });
 test('live scenes pause on hidden tabs, Browsing Style and reduced motion',()=>{
  const e=wallpapers();
@@ -104,8 +130,8 @@ test('full resolution mode stays bounded at 16 MP on high-DPI displays',()=>{
 test('wallpaper library has zero video import prompts or fake download options',()=>{
  const e=wallpapers(),html=e.c.LoliteWallpapers.markup('Live');
  assert.match(html,/LIVE/);
- assert.doesNotMatch(html,/MP4|Install|Import video|data-wall-pack-upload|local download/i);
- assert.equal((html.match(/data-wall-id=/g)||[]).length,36);
+ assert.doesNotMatch(html,/Install|Import video|data-wall-pack-upload|local download/i);
+ assert.equal((html.match(/data-wall-id=/g)||[]).length,52);
  assert.doesNotMatch(e.c.LoliteWallpapers.cards('Live'),/src="https?:/);
 });
 test('sound categories persist; disabled groups stay silent but can be previewed',()=>{const e=soundEnvironment();run(e,'system-sounds');const api=e.c.LoliteSounds;api.unlock();assert.equal(api.catalog().length,36);assert.equal(api.play('type'),false);api.setGroup('windows',false);assert.equal(api.play('open'),false);assert.equal(api.play('open',true),true);const fresh=soundEnvironment(Object.fromEntries(e.data));run(fresh,'system-sounds');assert.equal(fresh.c.LoliteSounds.groups().find(g=>g.id==='windows').enabled,false)});
