@@ -21,3 +21,17 @@
 .cr-wall-quality select{background:#162c3d;color:#f2f9ff;border:1px solid #7da8c16e;border-radius:7px;min-height:33px;padding:6px 9px;font:inherit}
 .cr-wall-quality select:focus-visible{outline:2px solid var(--accent,#76a9c4);outline-offset:2px}
 .cr-video-options>span{font-size:11px;color:#a5c5d8}
+
+/* Pointer-reactive live wallpapers: controls are compact and retain desktop readability. */
+.cr-wall-interactions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 19px;
+ padding:12px 15px;border:1px solid #92c5e132;border-radius:10px;background:#6db8d70b;
+ color:#d8eaf8;font:600 12px/1.5 system-ui}
+.cr-wall-interactions label{display:flex;align-items:center;gap:9px}
+.cr-wall-interaction-toggle{cursor:pointer}
+.cr-wall-interaction-toggle input{accent-color:#79daff;width:16px;height:16px;cursor:pointer}
+.cr-wall-interaction-range{min-width:180px}
+.cr-wall-interaction-range input{width:100px;accent-color:#7acfff;cursor:pointer}
+.cr-wall-interactions small{color:#a0b4c8;font:11px/1.5 system-ui;flex-basis:100%;font-weight:400}
+.cr-wall-item .cr-live-label{z-index:2}
+@media(max-width:600px){.cr-wall-interactions{align-items:flex-start;flex-direction:column}
+.cr-wall-interaction-range input{width:min(200px,45vw)}}
