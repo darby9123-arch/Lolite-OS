@@ -105,9 +105,13 @@ window.LolitePlayGenizyHTML=async title=>{
   installed.unshift(record);
   openPackage(record);
  }catch(error){
-  notify((error?.message||"Could not load the direct HTML game")+
-   ". You can use the source selector for its original hosted version.");
-  console.warn("GenizyMath HTML launch failed",item.path,error);
+  console.warn("GenizyMath HTML installation failed",item.path,error);
+  if(window.loliteStoreTryBackupForTitle?.(title)){
+   notify("Trying the game's other available servers inside Lolite.");
+  }else{
+   notify((error?.message||"Could not load this game's HTML")+
+     ". No working source could be confirmed.");
+  }
  }finally{installingGenizy.delete(key)}
 };
 
