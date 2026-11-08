@@ -30,7 +30,7 @@ test('All scene previews decode into standalone valid SVG image markup',()=>{
   assert.match(xml,/<svg[^>]+viewBox=/);
   assert.match(xml,/<linearGradient/);
   assert.match(xml,/<\/svg>$/);
-  assert.doesNotMatch(xml,/https?:|<script|onerror=/i);
+  assert.doesNotMatch(xml.replace('xmlns="http://www.w3.org/2000/svg"',''),/https?:|<script|onerror=/i);
  }
 });
 test('Original static backgrounds and saved selections remain available',()=>{
