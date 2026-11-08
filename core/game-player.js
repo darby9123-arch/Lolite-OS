@@ -58,7 +58,20 @@
  };
  const htmlWithBase=(html,url)=>{
    if(/<base\s/i.test(html))return html;
-   const base='<base href="'+url.href.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">';
+   // Raw GitHub returns relative scripts/styles as text/plain. For game HTML
+   // source backups, point relative assets to the original published website.
+   const origins={
+    '/genizymath/genizymath.github.io/main/':'https://genizymath.github.io/',
+    '/mountain658/mountain658.github.io/main/':'https://mountain658.github.io/',
+    '/WanoCapy/ChickenKingsVault/main/':'https://wanocapy.github.io/ChickenKingsVault/',
+    '/daknux/html/main/':'https://cdn.jsdelivr.net/gh/daknux/html@main/'
+   };
+   let baseURL=url.href;
+   if(url.hostname==='raw.githubusercontent.com'){
+    const prefix=Object.keys(origins).find(p=>url.pathname.startsWith(p));
+    if(prefix)baseURL=origins[prefix]+url.pathname.slice(prefix.length)+url.search;
+   }
+   const base='<base href="'+baseURL.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">';
    return /<head(?:\s[^>]*)?>/i.test(html)
       ?html.replace(/<head(?:\s[^>]*)?>/i,match=>match+base)
       :base+html;
