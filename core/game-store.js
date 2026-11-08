@@ -194,7 +194,7 @@
  let games=manifest.map(file=>{
    const isMinecraft=file==='clminecraftpocketedition.html';
    return {file,title:isMinecraft?'Minecraft 1.8':window.loliteGameArt?.[file]?.title||pretty(file),
-     url:isMinecraft?minecraft18:'html games/'+encodeURIComponent(file),
+     url:isMinecraft?minecraft18:'html games/'+encodeURIComponent(file)+(file==='Drift-Hunters.html'?'?v=fixed-mountain-path-20261109':''),
      category:categorize({file}),hosted:isMinecraft,source:isMinecraft?minecraftSource:undefined};
  });
 
