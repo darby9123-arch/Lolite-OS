@@ -37,9 +37,17 @@ class MockElement {
   while(queue.length){const e=queue.shift();if(matches(e))return e;queue.unshift(...e.children)}
   return null;
  }
+ closest(selector){
+  let element=this;
+  while(element){
+   if(selector.startsWith('.')&&element.className.split(/\s+/).includes(selector.slice(1)))return element;
+   element=element.parent;
+  }
+  return null;
+ }
  focus(){}
 }
-function harness({mime='text/plain',html='<!doctype html><html><head><title>Game</title></head><body><canvas></canvas></body></html>',httpStatus=200,corsBlocked=false}={}){
+function harness({mime='text/plain',html='<!doctype html><html><head><title>Game</title></head><body><canvas></canvas></body></html>',httpStatus=200,corsBlocked=false,fallbackSources=[]}={}){
  const calls=[],opened=[],head=new MockElement('head'),content=new MockElement('main');
  content.connect();head.connect();
  const doc={
@@ -56,7 +64,8 @@ function harness({mime='text/plain',html='<!doctype html><html><head><title>Game
  const fetch=async (url,opts)=>{
   calls.push({url,method:opts.method});
   if(opts.method==='HEAD'){
-   return {ok:httpStatus>=200&&httpStatus<300,status:httpStatus,
+   const status=String(url).includes('cdn-backup.example')?200:httpStatus;
+   return {ok:status>=200&&status<300,status,
      headers:{get:key=>key==='content-type'?mime:null}};
   }
   if(corsBlocked)throw new TypeError('Failed to fetch');
@@ -69,7 +78,7 @@ function harness({mime='text/plain',html='<!doctype html><html><head><title>Game
  },{timeout:1500});
  const success=win.LoliteGamePlayer.open({
   title:'Test game',file:'test-game.html',
-  url:'https://cdn.example/games/demo.html',source:'Test server'
+  url:'https://cdn.example/games/demo.html',source:'Test server',fallbackSources
  });
  assert.equal(success,true);
  const player=content.querySelector('.store-player');
@@ -122,6 +131,22 @@ test('Missing HTML pages are not shown as 404 inside the game',async()=>{
  await flush();
  assert.equal(h.frame.replacedBy?.className,'store-load-error');
  assert.match(h.frame.replacedBy.children[1].textContent,/404/);
+});
+test('When the first server returns 404, its HTML backup loads in the same Lolite window',async()=>{
+ const h=harness({
+  httpStatus:404,
+  fallbackSources:[{name:'Backup source',url:'https://cdn-backup.example/games/demo.html'}]
+ });
+ await flush();
+ const recovered=h.player.querySelector('.store-frame');
+ assert.ok(recovered,'recovery should keep a playable game frame');
+ assert.notEqual(recovered,h.frame,'failed frame should be replaced');
+ assert.equal(recovered.dataset.gameUrl,'https://cdn-backup.example/games/demo.html');
+ assert.equal(recovered.dataset.gameRender,'raw-html');
+ assert.match(recovered.srcdoc,/<canvas>/);
+ assert.match(h.player.querySelector('.store-player-server').textContent,/Backup source/);
+ assert.deepEqual(h.calls.map(x=>x.method),['HEAD','HEAD','GET']);
+ assert.equal(h.content.querySelector('.store-player'),h.player,'the game window is preserved');
 });
 test('Neon Tide makes its original raw HTML server selectable again',()=>{
  const store=fs.readFileSync(path.join(__dirname,'../core/game-store.js'),'utf8');
