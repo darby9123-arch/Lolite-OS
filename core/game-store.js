@@ -470,6 +470,15 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  };
  window.loliteStoreSelectedIndex=file=>Number(serverSelections.get(file)||0);
  window.loliteStoreFileForTitle=title=>games.find(game=>game.title===title)?.file||null;
+ window.loliteStoreTryBackupForTitle=title=>{
+  const game=games.find(item=>item.title===title);
+  if(!game||/casino|poker|blackjack|roulette|slot[\s_-]*machine|sportsbook|betting|wager|porn|adult|sex/i.test(game.title))return false;
+  const source=selectedSource(game);
+  return !!(source&&window.LoliteGamePlayer?.open({
+   title:game.title,file:game.file,url:source.url,source:source.name,
+   fallbackSources:fallbackSourcesFor(game,source)
+  }));
+ };
  window.loliteStorePickServer=(file,index)=>{
   const game=games.find(x=>x.file===file);if(!game)return;
   const sources=availableServers(game),n=Math.max(0,Math.min(sources.length-1,Number(index)||0));
