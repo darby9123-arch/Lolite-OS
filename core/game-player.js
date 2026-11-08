@@ -60,7 +60,7 @@
 
  function buildError(frame,url,reason){
    if(!frame.isConnected||frame.dataset.gameUrl!==url.href)return;
-   const player=frame.closest('.store-player');
+   const player=typeof frame.closest==='function'?frame.closest('.store-player'):null;
    const next=player?._loliteFallbackSources?.shift();
    if(next){
     const fallback=safeURL(next.url);
