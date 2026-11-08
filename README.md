@@ -11,9 +11,15 @@
 
 The Vercel version includes Ultraviolet runtime files and the Bare HTTP endpoint, but its service worker currently fails in browser testing. Scramjet's proxy runtime is unavailable on Vercel. Both browser apps now offer a standard, non-proxy embedded browsing mode for sites that permit framing, with an Open in tab option.
 
-A Lolite-branded browser desktop with the original Cosmos space interface, apps, games, files, 36 built-in animated live wallpapers, and a responsive desktop or browser workspace. Earlier desktop themes remain available.
+A Lolite-branded browser desktop with the original Cosmos space interface, apps, games, files, 52 built-in animated live wallpapers, and a responsive desktop or browser workspace. Earlier desktop themes remain available.
 
 ## Update Log
+
+### Interactive wallpapers + original MP4 auto-detection — 2026-11-09
+- Added **16 new interactive live wallpaper scenes** (gravity wells, magnetic stars, liquid waves, ripple ponds, neon 3D grids, constellations, nebula portals, electric fields and fireflies). The full built-in collection now includes **52 animated wallpapers plus 10 still images**.
+- Interactive effects follow pointer movement and respond to clicks on the desktop, with a saved on/off switch and strength slider. Pointer input uses passive document listeners so app controls stay clickable.
+- Added automatic discovery for **20 original MP4 filenames** previously provided to the project. Actual files must be published under `assets/wallpapers/videos/` in this repository first; each URL is checked with an HTTP HEAD request and only genuine hosted videos are added to the Videos category. The repository did not have MP4 files at the time of this update; nothing is falsely listed as installed.
+- Existing 4K-ready canvas rendering, live wallpaper pause behavior, sound settings, and custom static backgrounds remain intact. [Wallpaper implementation](docs/LIVE-WALLPAPERS-SOUNDS.md).
 
 ### Built-in 4K-ready live wallpapers — 2026-11-09
 - Rebuilt the Wallpaper Library with **36 original animated scenes** across Space, Nature, City, Neon and Abstract, plus 10 existing still images.
