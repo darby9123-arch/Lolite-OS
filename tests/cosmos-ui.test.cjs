@@ -16,7 +16,7 @@ test('Cosmos is an actual loaded desktop, not a static mockup', () => {
 
 test('Cosmos is registered in both themes and wallpapers', () => {
   assert.match(read('core/desktop-themes.js'),/id:'cosmos'/);
-  assert.match(read('core/wallpapers.js'),/entry\('cosmos-orbit'/);
+  assert.match(read('core/wallpapers.js'),/staticWall\('cosmos-orbit'/);
   assert.match(read('index.html'),/loliteCosmosUpgrade/);
 });
 
