@@ -433,6 +433,31 @@ if(Array.isArray(window.LoliteMountainCatalog)){
    const seen=new Set();
    return raw.filter(x=>{if(!x?.url||seen.has(x.url))return false;seen.add(x.url);return true});
  };
+ // If a public game host has moved or returns 404, try the original
+ // HTML file from its verified source repository before giving up.
+ // This never imports or publishes third-party code to Lolite's repository.
+ const sourceBackup=url=>{
+  const routes=[
+   [/^https:\/\/genizymath\.github\.io\/(iframe\/[a-z0-9._-]+\.html(?:-a)?)$/i,'https://raw.githubusercontent.com/genizymath/genizymath.github.io/main/'],
+   [/^https:\/\/mountain658\.github\.io\/([a-z0-9._/-]+\.html)$/i,'https://raw.githubusercontent.com/mountain658/mountain658.github.io/main/'],
+   [/^https:\/\/wanocapy\.github\.io\/ChickenKingsVault\/(gamefiles\/[^?#]+\.html)$/i,'https://raw.githubusercontent.com/WanoCapy/ChickenKingsVault/main/'],
+   [/^https:\/\/cdn\.jsdelivr\.net\/gh\/daknux\/html@main\/([a-z0-9._-]+\.html)$/i,'https://raw.githubusercontent.com/daknux/html/main/']
+  ];
+  for(const [pattern,root] of routes){const match=String(url||'').match(pattern);if(match)return {name:'Original HTML backup',url:root+match[1]}}
+  return null;
+ };
+ const fallbackSourcesFor=(g,chosen)=>{
+  // No automatic alternate-source retrieval for age-restricted titles.
+  if(/casino|poker|blackjack|roulette|slot[\s_-]*machine|sportsbook|betting|wager|porn|adult|sex/i.test(g.title||''))return [];
+  const sources=availableServers(g),candidates=[];
+  const selectedBackup=sourceBackup(chosen.url);if(selectedBackup)candidates.push(selectedBackup);
+  for(const source of sources){
+   if(source.url===chosen.url)continue;
+   candidates.push(source);
+   const backup=sourceBackup(source.url);if(backup)candidates.push(backup);
+  }
+  return candidates.slice(0,8);
+ };
  const selectedSource=g=>{
    const sources=availableServers(g);
    const i=Math.max(0,Math.min(sources.length-1,Number(serverSelections.get(g.file)||0)));
@@ -450,11 +475,11 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   const sources=availableServers(game),n=Math.max(0,Math.min(sources.length-1,Number(index)||0));
   serverSelections.set(file,n);
   document.querySelectorAll('.store-server-select').forEach(el=>{if(el.dataset.sourceGame===file)el.value=String(n)});
-  window.LoliteGamePlayer?.switchServer(file,sources[n].url,sources[n].name);
+  window.LoliteGamePlayer?.switchServer(file,sources[n].url,sources[n].name,fallbackSourcesFor(game,sources[n]));
  };
  window.loliteStoreOpenSelected=file=>{
   const game=games.find(x=>x.file===file),source=game&&selectedSource(game);
-  if(source)window.LoliteGamePlayer?.open({file,title:game.title,url:source.url,source:source.name});
+  if(source)window.LoliteGamePlayer?.open({file,title:game.title,url:source.url,source:source.name,fallbackSources:fallbackSourcesFor(game,source)});
  };
  let active='Featured',query='',visibleCount=60;
  const economy=()=>window.LoliteEconomy;
@@ -612,7 +637,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   }
   if(!hasGame(game)){window.toast?.('This game is not unlocked.');return}
   const source=selectedSource(game);if(!source)return;
-  if(!window.LoliteGamePlayer?.open({title:game.title,file:game.file,url:source.url,source:source.name})){
+  if(!window.LoliteGamePlayer?.open({title:game.title,file:game.file,url:source.url,source:source.name,fallbackSources:fallbackSourcesFor(game,source)})){
    window.toast?.('Could not start this game inside Lolite.');
   }
  };
