@@ -1,0 +1,27 @@
+name: Verify website tab appearance
+on:
+  push:
+    paths:
+      - 'core/tab-cloaking.js'
+      - 'index.html'
+      - 'tests/tab-cloaking.test.cjs'
+      - '.github/workflows/verify-tab-cloaking.yml'
+  pull_request:
+    paths:
+      - 'core/tab-cloaking.js'
+      - 'index.html'
+      - 'tests/tab-cloaking.test.cjs'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate tab appearance script
+        run: node --check core/tab-cloaking.js
+      - name: Verify custom website favicon and title
+        run: node --test tests/tab-cloaking.test.cjs
