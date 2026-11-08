@@ -23,7 +23,9 @@
    staticWall('rain-city','After Hours','Signature')
  ];
  collection.push(...(window.LoliteLiveWallpapers?.catalog||[]));
+ collection.push(...(window.LoliteInteractiveWallpapers?.catalog||[]));
  const live=wall=>Boolean(wall?.scene||wall?.video||wall?.src4k||wall?.motion);
+ const interactive=wall=>!!wall?.scene?.startsWith('interactive-');
  // Existing preferences migrate without making an unhosted MP4 look installed.
  const legacy={
   'lolite-aurora':'crimson-dunes','purple-bloom':'crimson-fold','blue-pulse':'tidal-night',
@@ -72,6 +74,20 @@
  let active=null,canvas=null,ctx=null,video=null,raf=0,last=0,elapsed=0;
  let width=1,height=1,scale=1,status='Still wallpaper',frames=0,playSerial=0;
  let fallbackIndex=0;
+ const effects=window.LoliteInteractiveWallpapers;
+ const getInteractionFlag=()=>read('loliteWallpaperInteractive','on')!=='off';
+ let interactionOn=getInteractionFlag(),intensity=Math.max(.2,Math.min(1.4,Number(read('loliteWallpaperInteractionStrength','.8'))||.8));
+ const pointer={targetX:.5,targetY:.5,x:.5,y:.5,strength:0,inside:false};
+ const ripples=[];
+ const pointerAllowed=()=>interactionOn&&!paused()&&visible()&&!!active?.scene;
+ function getCursor(){
+   const ease=quality==='lite'?.055:.12;
+   pointer.x+=(pointer.targetX-pointer.x)*ease;
+   pointer.y+=(pointer.targetY-pointer.y)*ease;
+   const desired=pointerAllowed()&&pointer.inside?intensity:0;
+   pointer.strength+=(desired-pointer.strength)*ease;
+   return {x:pointer.x,y:pointer.y,strength:pointer.strength};
+ }
  const TAU=Math.PI*2;
  const fract=n=>n-Math.floor(n);
  const rgb=hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)||0);
@@ -262,6 +278,12 @@
   if(!ctx)return;
   const p=wall.palette||['#06111f','#203850','#76b4e1','#e8f3ff'];
   const scene=wall.scene||wall.motion||'stars';
+  const cursor=getCursor();
+  if(interactive(wall)){
+   effects?.render(ctx,{wall,t,w,h,cursor});
+   effects?.overlay(ctx,{wall,t,w,h,cursor,ripples});
+   return;
+  }
   background(ctx,w,h,p,t,scene);
   if(/^(stars|nebula|galaxy|meteor|particles|orbit|solar)$/.test(scene)){
    particles(ctx,w,h,t,p,scene,wall.seed||1);
@@ -296,6 +318,7 @@
   }else if(scene==='embers'||scene==='bokeh'){
    particles(ctx,w,h,t,p,scene,wall.seed);
   }else particles(ctx,w,h,t,p,scene,wall.seed);
+  effects?.overlay(ctx,{wall,t,w,h,cursor,ripples});
  }
  const maxPixels=mode=>mode==='lite'?2_100_000:mode==='balanced'?6_000_000:16_000_000;
  function resize(){
@@ -316,7 +339,10 @@
   const fps=quality==='lite'?24:canvas.width*canvas.height>8_000_000?30:45;
   if(!last||now-last>=1000/fps){
    const dt=last?Math.min((now-last)/1000,.09):0;
-   elapsed+=dt;last=now;sceneFrame(active,elapsed,width,height);frames++;
+   elapsed+=dt;last=now;
+   // Ripple rings fade after 2.4s and are kept in a bounded queue.
+   for(let i=ripples.length-1;i>=0;i--)if(elapsed-ripples[i].at>2.4)ripples.splice(i,1);
+   sceneFrame(active,elapsed,width,height);frames++;
   }
   raf=requestAnimationFrame(tick);
  }
@@ -362,7 +388,7 @@
   const target=document.getElementById('wallpaper');
   if(!target)return;
   if(!force&&active?.id===wall.id){sync();return}
-  release();active=wall;elapsed=0;frames=0;
+  release();active=wall;elapsed=0;frames=0;pointer.strength=0;ripples.length=0;
   target.classList.remove('wallpaper-animated','wallpaper-pixel');
   target.dataset.motion=wall.scene||wall.motion||'';
   const poster=wall.poster||wall.src;
@@ -438,7 +464,7 @@
   }).join('');
  }
  function markup(filter='All',query=''){
-  const cats=['All','Live','Space','Nature','City','Neon','Abstract','Signature'];
+  const cats=['All','Live','Interactive','Videos','Space','Nature','City','Neon','Abstract','Signature'];
   if(!cats.includes(filter))filter='All';
   return '<div class="cr-wall-browse"><label class="cr-wall-search"><span aria-hidden="true">⌕</span>'+
    '<input type="search" data-wall-search placeholder="Search '+collection.length+' wallpapers" aria-label="Search wallpapers" value="'+escape(query)+'"></label>'+
@@ -447,7 +473,7 @@
    cats.map(cat=>'<button type="button" data-wall-filter="'+cat+'" aria-pressed="'+(cat===filter)+'">'+
    escape(cat)+' <small>'+collection.filter(w=>matches(w,cat)).length+'</small></button>').join('')+
    '</div></div><div class="cr-wall-grid">'+cards(filter,query)+'</div>'+
-   '<p class="cr-help">Original Lolite live scenes render at your screen resolution, up to a 16-megapixel canvas. Only one animation plays at a time; it pauses when this tab is hidden or Reduce Motion is enabled.</p>';
+   '<p class="cr-help">Move your mouse to interact with the live scenes. Click the desktop background to create ripples. Your videos appear automatically in the Videos collection after the actual MP4 files are published to assets/wallpapers/videos/. Motion pauses when the tab is hidden or Reduce Motion is enabled.</p>';
  }
  const setQuality=value=>{
   quality=validQuality.has(value)?value:value==='hd'||value==='4k'?'max':'balanced';
@@ -463,15 +489,37 @@
  window.LoliteWallpapers={
   collection,apply,restore,markup,cards,setCustom,getStatus:()=>status,
   getQuality:()=>quality,setQuality,retry:()=>{if(active)show(active,{force:true})},
+  isInteractiveEnabled:()=>interactionOn,
+  setInteractiveEnabled:value=>{interactionOn=!!value;save('loliteWallpaperInteractive',interactionOn?'on':'off');if(!interactionOn){pointer.inside=false;ripples.length=0}sync()},
+  interactionStrength:()=>intensity,
+  setInteractionStrength:value=>{intensity=Math.max(.2,Math.min(1.4,Number(value)||.8));save('loliteWallpaperInteractionStrength',String(intensity))},
   pause:value=>{save('loliteWallpaperPaused',String(value));sync()},
   isPaused:paused,current:()=>active,
   debug:()=>({running:!!raf||!!(video&&!video.paused),frames,status,
    resolution:canvas?[canvas.width,canvas.height]:null,
-   videoCount:video?1:0,canvasCount:document.querySelectorAll('.lolite-live-canvas').length}),
+   videoCount:video?1:0,canvasCount:document.querySelectorAll('.lolite-live-canvas').length,
+   pointer:{x:pointer.x,y:pointer.y,strength:pointer.strength},ripples:ripples.length,interactive:interactionOn}),
   sync
  };
  const previous=window.page;
  window.page=id=>id==='settings'?'':previous(id);
+ // Pointer events are observed on the document, not the canvas: desktop
+ // shortcuts and windows remain clickable because canvas uses pointer-events:none.
+ document.addEventListener('pointermove',event=>{
+  if(!interactionOn||!active?.scene||!Number.isFinite(event.clientX)||!Number.isFinite(event.clientY))return;
+  pointer.targetX=Math.max(0,Math.min(1,event.clientX/Math.max(1,innerWidth)));
+  pointer.targetY=Math.max(0,Math.min(1,event.clientY/Math.max(1,innerHeight)));
+  pointer.inside=true;
+ },{passive:true});
+ document.addEventListener('pointerdown',event=>{
+  if(!pointerAllowed()||event.button>0||event.target?.closest?.('.window,#taskbar,.panel,button,input,a,select,textarea,[role="dialog"]'))return;
+  const x=Math.max(0,Math.min(1,event.clientX/Math.max(1,innerWidth)));
+  const y=Math.max(0,Math.min(1,event.clientY/Math.max(1,innerHeight)));
+  if(ripples.length>=10)ripples.shift();
+  ripples.push({x,y,at:elapsed,power:intensity});
+ },{passive:true});
+ document.addEventListener('pointerleave',()=>{pointer.inside=false},{passive:true});
+ addEventListener('blur',()=>{pointer.inside=false});
  addEventListener('resize',resize,{passive:true});
  document.addEventListener('visibilitychange',sync);
  addEventListener('lolite:modechange',sync);
