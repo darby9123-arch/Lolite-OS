@@ -126,6 +126,14 @@ test('Proper HTML sources continue opening normally without downloading',async()
  assert.equal(h.frame.srcdoc,'');
  assert.deepEqual(h.calls.map(x=>x.method),['HEAD']);
 });
+test('Soft 404 HTML is rejected even when HTTP status reports success',async()=>{
+ const html='<!doctype html><html><head><title>404 Not Found</title></head><body><h1>404 Not Found</h1></body></html>';
+ const h=harness({mime:'text/plain',html,httpStatus:200});
+ await flush();
+ assert.equal(h.frame.replacedBy?.className,'store-load-error');
+ assert.match(h.frame.replacedBy.children[1].textContent,/404/);
+ assert.equal(h.frame.srcdoc,'');
+});
 test('Missing HTML pages are not shown as 404 inside the game',async()=>{
  const h=harness({httpStatus:404});
  await flush();
