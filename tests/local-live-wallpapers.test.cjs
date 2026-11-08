@@ -1,93 +1,73 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
-const path=require('node:path');
 const vm=require('node:vm');
+const path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
-
-function catalogModule(){
-  const listeners=new Map();
-  const win={
-    addEventListener(){},
-    dispatchEvent(){},
-    localStorage:{getItem(){return null}},
-    document:{readyState:'loading',addEventListener(name,fn){listeners.set(name,fn)}}
-  };
-  vm.runInNewContext(read('core/user-live-wallpapers.js'),{
-    window:win,document:win.document,localStorage:win.localStorage,CustomEvent:class{constructor(name,o){this.name=name;this.detail=o?.detail}},
-    URL:{createObjectURL(){return 'blob:mock'},revokeObjectURL(){}},setTimeout,clearTimeout
-  });
-  return win.LoliteWallpaperImports;
+function catalog(){
+ const context={window:{},URL,encodeURIComponent};
+ vm.runInNewContext(read('core/live-wallpapers-catalog.js'),context);
+ return context.window.LoliteLiveWallpapers.catalog;
 }
-
-test('20 user-submitted MP4 titles replace the external live catalog',()=>{
- const api=catalogModule();
- assert.equal(api.catalog.length,20);
- assert.equal(new Set(api.catalog.map(x=>x.id)).size,20);
- assert.ok(api.catalog.every(x=>x.local&&x.video==='local'&&!x.source));
- assert.ok(api.catalog.some(x=>x.name.includes('Nissan')));
- assert.ok(api.catalog.some(x=>x.name.includes('Whales')));
+test('36 original live scenes render without any local video install or remote stream',()=>{
+ const walls=catalog();
+ assert.equal(walls.length,36);
+ assert.equal(new Set(walls.map(w=>w.id)).size,36);
+ assert.ok(walls.every(w=>w.scene&&w.motion&&w.poster&&w.palette));
+ assert.ok(walls.every(w=>w.src.startsWith('data:image/svg+xml,')));
+ assert.ok(walls.every(w=>!w.video&&!w.local&&!w.src4k&&!w.src1080));
+ const set=new Set(walls.map(w=>w.scene));
+ assert.ok(set.size>=20,'Diverse animation types must exist');
 });
-test('Each uploaded video filename matches an exact catalog item, including (1) suffix',()=>{
- const api=catalogModule();
- const files=[
- 'sukuna-fuga-flames.3840x2160.mp4',
- 'nissan-gt-r32-rocket-bunny.3840x2160.mp4',
- 'hiyuki-silent-storm.3840x2160.mp4',
- 'minecraft-aquarium.3840x2160.mp4',
- 'spider-man-2.3840x2160.mp4',
- 'zelda-starlight-adventure.3840x2160.mp4',
- 'fortnite-stormy-sky.1920x1080.mp4',
- 'japans-majestic-peaks-and-cherry-blossoms.1920x1080.mp4',
- 'isagi-yoichi-devil-eyes.3840x2160.mp4',
- 'where-whales-fly.3840x2160.mp4',
- 'minecraft-dog.3840x2160.mp4',
- 'kakashi-hatake-naruto.3840x2160.mp4',
- 'liquid-lines-cyan.3840x2160.mp4',
- 'aesthetic-mountains-in-front-of-the-sky.3840x2160.mp4',
- 'forest-rainfall.1920x1080.mp4',
- 'konata-on-windows-xp.3840x2160.mp4',
- 'audi-rs-7-sportback-under-the-rain.3840x2160.mp4',
- 'rain-drops-on-window.3840x2160.mp4',
- 'blurred-sunset-while-raining.3840x2160.mp4',
- 'motorcycle-parked.3840x2160(1).mp4'
- ];
- assert.equal(files.length,20);
- assert.equal(new Set(files.map(name=>api.match({name})?.id)).size,20);
- assert.ok(files.every(name=>api.match({name})?.local));
- assert.equal(api.match({name:'unknown.mp4'}),null);
+test('Wallpaper category mix includes nature, neon, space, city and abstract',()=>{
+ const cats=new Set(catalog().map(w=>w.category));
+ for(const category of ['Space','Nature','City','Neon','Abstract'])assert.ok(cats.has(category));
 });
-
-test('Old MotionBGS and canvas animations are not in the live library',()=>{
- const js=read('core/wallpapers.js'),html=read('index.html');
- assert.doesNotMatch(js,/collection\.push\(\.\.\.\(window\.LoliteMotionBGS/);
- assert.doesNotMatch(js,/entry\('live-embers'/);
- assert.doesNotMatch(html,/src="core\/motionbgs-catalog\.js/);
- assert.match(html,/src="core\/user-live-wallpapers\.js/);
- assert.ok(html.indexOf('core/user-live-wallpapers.js')<html.indexOf('core/wallpapers.js'));
+test('All scene previews decode into standalone valid SVG image markup',()=>{
+ for(const wall of catalog()){
+  const xml=decodeURIComponent(wall.src.slice('data:image/svg+xml,'.length));
+  assert.match(xml,/<svg[^>]+viewBox=/);
+  assert.match(xml,/<linearGradient/);
+  assert.match(xml,/<\/svg>$/);
+  assert.doesNotMatch(xml,/https?:|<script|onerror=/i);
+ }
 });
-
-test('Local MP4 playback loads from IndexedDB Blob URLs with cleanup',()=>{
- const module=read('core/user-live-wallpapers.js'),js=read('core/wallpapers.js');
- assert.match(module,/indexedDB\.open\(DB,1\)/);
- assert.match(module,/URL\.createObjectURL\(record\.blob\)/);
- assert.match(js,/LoliteWallpaperImports\?\.openUrl\(w\.id\)/);
- assert.match(js,/URL\.revokeObjectURL\(localUrl\)/);
- assert.match(js,/current\.muted=true/);
- assert.match(js,/current\.loop=true/);
- assert.match(js,/current\.playsInline=true/);
+test('Original static backgrounds and saved selections remain available',()=>{
+ const js=read('core/wallpapers.js');
+ const oldFiles=['cosmos-orbit.svg','crimson-dunes.webp','crimson-fold.svg',
+  'red-ridges.svg','pine-silence.svg','tidal-night.svg','lunar.svg',
+  'contour.svg','carbon.svg','rain-city.svg'];
+ for(const f of oldFiles)assert.ok(fs.existsSync(path.join(root,'assets/wallpapers',f)));
+ assert.match(js,/const legacy=/);
+ assert.match(js,/setCustom\(image\)/);
+ assert.match(js,/window\.LoliteWallpapers=/);
 });
-
-test('User can import all MP4s at once and see real thumbnails',()=>{
- const importer=read('core/user-live-wallpapers.js');
+test('New controls do not request local video imports or unhosted videos',()=>{
+ const html=read('index.html'),js=read('core/wallpapers.js');
  const settings=read('core/crimson.js');
- const wallpapers=read('core/wallpapers.js');
- assert.match(importer,/async function importFiles\(files\)/);
- assert.match(importer,/function thumbnail\(blob,id\)/);
- assert.match(importer,/canvas\.toDataURL\('image\/webp'/);
- assert.match(wallpapers,/data-wall-pack-upload/);
- assert.match(wallpapers,/accept="\.mp4,video\/mp4" multiple/);
- assert.match(settings,/LoliteWallpaperImports\.importFiles\(selected\)/);
- assert.match(settings,/lolite:wallpaperpackchange/);
+ assert.match(html,/src="core\/live-wallpapers-catalog\.js/);
+ assert.doesNotMatch(html,/src="core\/user-live-wallpapers\.js/);
+ assert.ok(html.indexOf('core/live-wallpapers-catalog.js')<html.indexOf('core/wallpapers.js'));
+ for(const source of [js,settings]){
+  assert.doesNotMatch(source,/data-wall-pack-upload|LoliteWallpaperImports|Import video wallpapers|lolite:wallpaperpackchange/);
+ }
+});
+test('Highest quality targets native 4K screens, while others have pixel budgets',()=>{
+ const js=read('core/wallpapers.js'),settings=read('core/crimson.js');
+ assert.match(js,/16_000_000/);
+ assert.match(js,/devicePixelRatio/);
+ assert.match(js,/canvas\.width=Math\.max/);
+ assert.match(js,/requestAnimationFrame\(tick\)/);
+ assert.match(settings,/Highest · native \/ 4K\+/);
+ assert.match(settings,/Balanced/);
+ assert.match(settings,/Performance/);
+});
+test('Only one live scene runs and browser visibility pauses playback',()=>{
+ const js=read('core/wallpapers.js');
+ assert.match(js,/cancelAnimationFrame\(raf\)/);
+ assert.match(js,/canvas\.remove\(\)/);
+ assert.match(js,/document\.addEventListener\('visibilitychange',sync\)/);
+ assert.match(js,/media\.addEventListener\?\.\('change',sync\)/);
+ assert.match(js,/root\.classList\.contains\('browsing-mode'\)/);
 });
