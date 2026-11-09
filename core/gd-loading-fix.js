@@ -21,13 +21,13 @@
      throw new Error('Could not start installed Geometry Dash.');
     return;
    }
-   // This fully-fledged HTML title is already present in the Lolite repository.
-   // It is a fan-made alternative, not the original Geometry Dash release.
+   // This browser webport is present in the Lolite repository.
+   // It uses an upstream CDN for its additional game resources.
    notify('Original Geometry Dash is not installed. Opening Geometry Dash Full instead.');
    if(!window.LoliteGamePlayer?.open({
-     title:'Geometry Dash Breeze',
-     file:'clgdbreeze.html',
-     url:'html%20games/clgdbreeze.html',
+     title:'Geometry Dash Full',
+     file:'Geometry Dash webport.html',
+     url:'html%20games/Geometry%20Dash%20webport.html',
      source:'Lolite OS · included HTML game'
    }))throw new Error('Could not start Geometry Dash Full.');
   }catch(error){
