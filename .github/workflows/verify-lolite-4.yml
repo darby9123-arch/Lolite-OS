@@ -1,0 +1,50 @@
+name: Verify Lolite OS 4.0
+on:
+  push:
+    paths:
+      - 'core/game-health.js'
+      - 'core/game-player.js'
+      - 'core/game-store.js'
+      - 'core/spotlight.js'
+      - 'core/taskbar-enhancements.js'
+      - 'core/host-status.js'
+      - 'core/window-manager.js'
+      - 'core/interface.js'
+      - 'core/lolite-4.css'
+      - 'index.html'
+      - 'server.mjs'
+      - 'tests/*.test.cjs'
+      - '.github/workflows/deploy-pages.yml'
+      - '.github/workflows/desktop-windows.yml'
+      - '.github/workflows/verify-lolite-4.yml'
+  pull_request:
+    paths:
+      - 'core/**'
+      - 'index.html'
+      - 'server.mjs'
+      - 'tests/*.test.cjs'
+      - '.github/workflows/**'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Validate Lolite 4.0 JavaScript
+        run: |
+          node --check core/game-health.js
+          node --check core/game-store.js
+          node --check core/game-player.js
+          node --check core/spotlight.js
+          node --check core/taskbar-enhancements.js
+          node --check core/host-status.js
+          node --check core/window-manager.js
+          node --check core/interface.js
+          node --check server.mjs
+      - name: Test game library, host version, taskbar, Spotlight and snapping
+        run: |
+          node --test tests/lolite-4.test.cjs tests/window-manager.test.cjs tests/game-launches.test.cjs tests/game-popularity.test.cjs tests/tab-cloaking.test.cjs
