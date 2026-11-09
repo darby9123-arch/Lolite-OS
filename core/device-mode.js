@@ -7,6 +7,7 @@
     {id:'home',name:'Home',group:'main',desc:'Your Lolite starting point',glyph:'⌂'},
     {id:'games',name:'Game Store',group:'main',desc:'Find and play HTML games',glyph:'▣'},
     {id:'appstore',name:'App Store',group:'main',desc:'Explore Lolite apps',glyph:'▦'},
+    {id:'music',name:'Lolite Music',group:'main',desc:'Listen, upload and create playlists',glyph:'♫'},
     {id:'files',name:'Files',group:'main',desc:'Your folders and documents',glyph:'▤'},
     {id:'chatroom',name:'Lolite Chat',group:'main',desc:'Messages, calls and conversations',glyph:'◉',optional:true},
     {id:'academy',name:'Lolite Academy',group:'main',desc:'Guides, courses and lessons',glyph:'◇',optional:true},

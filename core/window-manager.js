@@ -39,7 +39,7 @@
  function openApp(id,title,w,h){
   if(workspace.windows[id]?.closing)workspace.windows[id].finishClose();
   if(workspace.windows[id]){window.restoreWin(id);return workspace.windows[id].el}
-  const sizes={home:[900,660],settings:[1000,720],files:[1000,680],games:[1140,760],appstore:[980,700],chatroom:[1100,740],calculator:[420,610],notes:[680,560]},size=sizes[id]||[920,650],area=bounds(),offset=(Object.keys(workspace.windows).length%5)*24;
+  const sizes={home:[900,660],settings:[1000,720],files:[1000,680],games:[1140,760],appstore:[980,700],music:[1100,760],chatroom:[1100,740],calculator:[420,610],notes:[680,560]},size=sizes[id]||[920,650],area=bounds(),offset=(Object.keys(workspace.windows).length%5)*24;
   const stored=savedLayouts[id],storedNormal=!w&&!h?validRect(stored?.normal):null;
   const normal=storedNormal?fit(storedNormal,area):fit({left:area.left+(area.width-(w||size[0]))/2+offset,top:area.top+(area.height-(h||size[1]))/2+offset,width:w||size[0],height:h||size[1]},area);
   const oldSnap=!w&&!h&&['left','right','max','top-left','top-right','bottom-left','bottom-right'].includes(stored?.snap)?stored.snap:'';
