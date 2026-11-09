@@ -30,6 +30,10 @@ jobs:
         with:
           enablement: true
 
+      - name: Stamp exact GitHub Pages source commit
+        run: |
+          printf '{"ok":true,"service":"lolite-os","version":"4.0.0","provider":"github-pages","commit":"%s"}\n' "$GITHUB_SHA" > core/lolite-build.json
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
         with:
