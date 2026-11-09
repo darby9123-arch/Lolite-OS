@@ -96,5 +96,6 @@
  window.addEventListener('resize',resizeToViewport);window.addEventListener('lolite:desktopthemechange',resizeToViewport);window.addEventListener('lolite:modechange',()=>{closeSnapMenu();resizeToViewport()});
  Object.assign(window,{openApp,closeWin,minWin,restoreWin,maxWin,snapWin,drag,setActiveTask});
  window.LoliteWindowManager={focus,toggleTask,showDesktop,bounds,fit,resizeToViewport,showSnapMenu,
-  savedLayouts:()=>({...savedLayouts}),forgetLayout};window.LoliteWindowGeometry={fit,snapRect};
+  savedLayouts:()=>({...savedLayouts}),forgetLayout,
+  getWindow:id=>workspace.windows[id]||null,activeWindowId:()=>workspace.activeId};window.LoliteWindowGeometry={fit,snapRect};
 })();
