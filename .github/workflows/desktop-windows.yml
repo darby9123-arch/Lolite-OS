@@ -80,7 +80,16 @@ jobs:
             exit 1
           fi
           if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release $TAG already exists; refusing to replace its verified files." >&2
+            echo "Checking whether $TAG already contains the exact verified installer..."
+            existing="$(mktemp -d)"
+            trap 'rm -rf "$existing"' EXIT
+            gh release download "$TAG" --pattern lolite-desktop.json --pattern SHA512SUMS --dir "$existing"
+            if cmp -s release/SHA512SUMS "$existing/SHA512SUMS" &&
+               node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1]));const y=JSON.parse(fs.readFileSync(process.argv[2]));if(x.version!==y.version||x.sha512!==y.sha512||x.size!==y.size||x.sourceCommit!==y.sourceCommit)process.exit(1)' release/lolite-desktop.json "$existing/lolite-desktop.json"; then
+              echo "Release $TAG already has identical checksums and source commit; publishing is safely complete."
+              exit 0
+            fi
+            echo "::error::Release $TAG exists for different installer bytes or a different source commit. It will not be overwritten. Re-run the workflow from main to pick the next version."
             exit 1
           fi
           FLAGS=()
