@@ -194,7 +194,7 @@
  // Show only actual HTML files in the Lolite repository, never substituted remote web pages.
  let games=manifest.map(file=>({
   file,title:window.loliteGameArt?.[file]?.title||pretty(file),
-  url:'html%20games/'+encodeURIComponent(file),
+  url:'html%20games/'+encodeURIComponent(file)+(file==='Geometry Dash webport.html'?'?v=gd-gamepad-policy-fix-20261110':''),
   category:categorize({file}),local:true,external:false,source:'Lolite OS · repository HTML',
   recentlyAdded:file==='Geometry Dash webport.html',
   addedAt:file==='Geometry Dash webport.html'?'2026-11-10T00:00:00+10:30':undefined
