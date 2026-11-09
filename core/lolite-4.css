@@ -1,0 +1,65 @@
+/* Lolite OS 4.0 — Spotlight, hosting diagnostics and taskbar context UI. */
+.lolite-spotlight,.lolite-host-panel{position:fixed;inset:0;z-index:220000;font:13px/1.45 'Segoe UI',system-ui,sans-serif;color:#e6eefa}
+.lolite-spotlight.hidden{display:none!important}
+.lolite-spot-backdrop,.lolite-host-backdrop{position:absolute;inset:0;background:#060b15ab;backdrop-filter:blur(6px)}
+.lolite-spot-window{position:relative;margin:clamp(50px,14vh,160px) auto 0;width:min(720px,calc(100vw - 24px));max-height:min(72vh,700px);overflow:hidden;background:#171e2af7;border:1px solid #9dbce04a;box-shadow:0 28px 100px #000a;border-radius:16px;display:flex;flex-direction:column}
+.lolite-spot-search{display:flex;align-items:center;gap:13px;padding:14px 18px;border-bottom:1px solid #ffffff24}
+.lolite-spot-search>span{font-size:25px;color:#bbd5fa}
+.lolite-spot-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#fff;font-size:17px;padding:8px 0}
+.lolite-spot-search input::placeholder{color:#9faebf}
+.lolite-spot-search kbd,.lolite-spot-window footer{font:11px/1.5 system-ui;color:#91a7c3}
+.lolite-spot-search kbd{border:1px solid #ffffff30;border-radius:6px;padding:4px 8px}
+.lolite-spot-results{overflow:auto;overscroll-behavior:contain;min-height:60px;padding:9px 10px;scrollbar-width:thin}
+.lolite-spot-item{display:flex;width:100%;align-items:center;text-align:left;gap:11px;border:1px solid transparent;border-radius:9px;background:transparent;color:#e9edf8;padding:10px;cursor:pointer}
+.lolite-spot-item:hover,.lolite-spot-item.is-selected,.lolite-spot-item:focus-visible{background:#5b8ec82e;border-color:#7baad164;outline:0}
+.lolite-spot-icon{display:grid;place-items:center;flex:none;width:37px;height:37px;border-radius:9px;background:#ffffff13;font-size:20px;overflow:hidden}
+.lolite-spot-icon .lolite-icon{width:32px;height:32px}
+.lolite-spot-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.lolite-spot-copy strong{font:600 13px system-ui;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.lolite-spot-copy small{font:11px/1.4 system-ui;color:#a2b4cb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lolite-spot-kind{text-transform:uppercase;letter-spacing:1px;font:700 9px system-ui;color:#8fa3bc}
+.lolite-spot-empty{padding:20px;color:#9caec4;text-align:center}
+.lolite-spot-window footer{display:flex;justify-content:space-between;gap:12px;padding:10px 17px;background:#101927;border-top:1px solid #ffffff19}
+.lolite-task-preview,.lolite-task-context{position:fixed;z-index:221000;background:#1a2330f8;color:#e5eef9;border:1px solid #ffffff35;border-radius:11px;box-shadow:0 15px 44px #0009;padding:13px;backdrop-filter:blur(18px);font:12px system-ui}
+.lolite-task-preview{width:250px;pointer-events:auto}
+.lolite-task-preview-head{display:flex;align-items:center;gap:10px}
+.lolite-task-preview-head>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.lolite-task-preview-head strong{max-width:172px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lolite-task-preview-head small{color:#a4c3e0}
+.lolite-task-preview-icon{width:38px;height:38px;display:grid;place-items:center;background:#ffffff11;border-radius:8px}
+.lolite-task-preview-icon .lolite-icon{width:32px;height:32px}
+.lolite-task-preview-info{font:11px system-ui;color:#9bacc1;margin:12px 0}
+.lolite-task-preview-actions{display:flex;gap:6px}
+.lolite-task-preview-actions button,.lolite-task-context button{color:#e5f0ff;border:1px solid #ffffff2b;background:#ffffff12;border-radius:6px;padding:7px 9px;cursor:pointer;font:11px system-ui}
+.lolite-task-preview-actions button:hover,.lolite-task-context button:hover{background:#6eabe53a}
+.lolite-task-context{width:220px;display:flex;flex-direction:column;gap:6px}
+.lolite-task-context>strong{padding:6px;color:#c4d1df;font:600 12px system-ui}
+.lolite-task-context button{text-align:left}
+#taskbar .lolite-task-count{display:grid;place-items:center;position:absolute;top:-2px;right:1px;height:17px;min-width:17px;padding:1px 4px;background:#e75572;color:white;border-radius:12px;font:700 10px system-ui;pointer-events:none}
+.lolite-host-panel{z-index:223000}
+.lolite-host-dialog{position:relative;display:flex;flex-direction:column;margin:clamp(24px,9vh,100px) auto 0;width:min(680px,calc(100vw - 24px));max-height:82vh;overflow:hidden;border-radius:16px;background:#171e2af7;box-shadow:0 28px 100px #000a;border:1px solid #9dbce04a}
+.lolite-host-dialog header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:23px 25px 17px;border-bottom:1px solid #ffffff24}
+.lolite-host-dialog header h2{margin:4px 0 5px;font-size:21px;font-weight:750}
+.lolite-host-dialog header p{margin:0;color:#b4c8e0;font-size:12px}
+.lolite-host-kicker{color:#8ebcfc;letter-spacing:1.2px;font:800 10px system-ui}
+.lolite-host-dialog header button{background:#ffffff19;border:1px solid #ffffff29;color:white;border-radius:8px;padding:5px 11px;font-size:20px;cursor:pointer}
+.lolite-host-list{overflow:auto;padding:9px 20px}
+.lolite-host-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 5px;border-bottom:1px solid #ffffff16}
+.lolite-host-row>div{min-width:0;display:flex;flex-direction:column;gap:6px}
+.lolite-host-row strong{font-size:13px}
+.lolite-host-row small{font-size:11px;color:#9eb4c9;max-width:460px}
+.lolite-host-row a{flex:none;color:#bddafa;text-decoration:none;font-weight:650}
+.lolite-host-row a:hover{text-decoration:underline}
+.lolite-host-label{font:700 11px system-ui}
+.lolite-host-label.is-current{color:#8ee3bd}
+.lolite-host-label.is-outdated{color:#f5c583}
+.lolite-host-label.is-online{color:#b3d0fa}
+.lolite-host-label.is-unverified{color:#a7a7b9}
+.lolite-host-empty{padding:25px;color:#b4c6db}
+.lolite-host-dialog footer{padding:13px 23px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid #ffffff20;background:#121928}
+.lolite-host-dialog footer small{color:#b1bdce}
+.lolite-host-dialog footer button{background:#294968;color:#e4f3ff;border:1px solid #ffffff30;border-radius:8px;padding:8px 12px;cursor:pointer}
+.store-health-check{background:#1f3346;color:#bfd8ef;border:1px solid #526b834f;border-radius:8px;padding:8px 11px;cursor:pointer;font:600 11px system-ui;white-space:nowrap}
+.store-health-check:hover{background:#274764}
+@media(max-width:640px){.lolite-spot-window{margin-top:8vh}.lolite-spot-search input{font-size:14px}.lolite-host-dialog header{padding:17px}.lolite-host-list{padding:7px 13px}.lolite-host-row a{font-size:11px}.store-health-check{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.lolite-spotlight *,.lolite-host-panel *,.lolite-task-context,.lolite-task-preview{transition:none!important;animation:none!important}}
