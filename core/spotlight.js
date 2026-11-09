@@ -40,7 +40,12 @@
     if(points<0)continue;
     out.push({kind:'file',id:'file:'+row.path,label:row.path.split('/').filter(Boolean).pop()||row.path,
      detail:'My files · '+row.path,points,icon:'▤',
-     go:()=>{launch('files');window.toast?.('Find '+row.path+' in Files')}});
+     go:()=>{launch('files');
+      if(row.path.endsWith('/')){window.toast?.('Folder: '+row.path);return}
+      if(row.data instanceof Blob&&window.LoliteViewers?.open){
+       Promise.resolve(window.LoliteViewers.open(row)).catch(err=>window.toast?.(err.message||'Could not open that file'));
+      }else window.toast?.('Open '+row.path+' from Files');
+     }});
    }
   }
   for(const s of settings){
