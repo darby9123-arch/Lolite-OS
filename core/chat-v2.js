@@ -74,8 +74,10 @@ function restoreInputs(snapshot){
   }catch(e){console.debug('Could not restore chat caret',e)}
  }
 }
-const state={user:null,me:null,profiles:[],conversations:[],members:[],requests:[],blocks:[],messages:[],reactions:[],view:'browse',channel:'general',conversationId:null,replyTo:null,authTab:'login',authError:'',search:'',sidebarQuery:'',modal:null,showPins:false,error:'',busy:false,again:false,loading:true};
+const state={user:null,me:null,profiles:[],conversations:[],members:[],requests:[],blocks:[],messages:[],reactions:[],view:'browse',channel:'general',conversationId:null,replyTo:null,authTab:'login',authError:'',search:'',sidebarQuery:'',modal:null,showPins:false,error:'',busy:false,again:false,loading:true,adminIds:[]};
 const meId=()=>state.user?.id;
+const isAdmin=()=>state.adminIds.includes(meId());
+const canModerate=()=>isAdmin()&&activeConv()?.type==='channel';
 const person=id=>state.profiles.find(p=>p.id===id);
 const self=()=>state.me||person(meId());
 const label=p=>p?.display_name||p?.username||'Lolite User';
@@ -125,9 +127,9 @@ function sideHtml(){
  '<button type="button" class="lc-iconbtn lc-create-group" data-lc-action="group" title="Create a group" aria-label="Create a group">'+lcIcon('plus',20)+'</button></div>'+
  '<div class="lc-side-search">'+lcIcon('search',16)+'<input type="search" autocomplete="off" data-lc-sidebar-search aria-label="Search conversations" placeholder="Search conversations" value="'+esc(state.sidebarQuery)+'"></div>'+
  '<div class="lc-side-shortcuts"><button type="button" data-lc-action="friends">'+lcIcon('users',15)+' Find friends</button>'+
- '<button type="button" data-lc-action="calls">'+lcIcon('phone',15)+' Calls</button></div>'+
+ '<button type="button" data-lc-action="calls">'+lcIcon('phone',15)+' Calls</button>'+(isAdmin()?'<button type="button" data-lc-action="adminCenter">'+lcIcon('settings',15)+' Admin Center</button>':'')+'</div>'+
  '<div class="lc-side-scroll" data-lc-sidebar-content>'+sideContents()+'</div>'+
- '<div class="lc-side-account">'+avatar(self())+'<span class="lc-account-label"><b>'+esc(label(self()))+'</b><small>@'+esc(self()?.username||'user')+'</small></span>'+
+ '<div class="lc-side-account">'+avatar(self())+'<span class="lc-account-label"><b>'+esc(label(self()))+'</b><small>@'+esc(self()?.username||'user')+(isAdmin()?' · ADMIN':'')+'</small></span>'+
  '<button type="button" title="Edit profile" aria-label="Edit profile" class="lc-iconbtn" data-lc-action="profile">'+lcIcon('settings',18)+'</button></div></aside>';
 }
 function railTab(action,label,iconKey,active,extra=''){
@@ -150,15 +152,16 @@ function messageHtml(m){
  const react=state.reactions.filter(r=>r.message_id===m.id);
  const counts={};react.forEach(r=>{(counts[r.emoji]??=[]).push(r.user_id)});
  return '<article class="lc-msg '+(own?'lc-msg-own':'')+'" data-lc-message="'+m.id+'"><button type="button" class="lc-user-avatar" data-lc-user="'+esc(m.sender_id)+'" title="View profile">'+avatar(p)+'</button>'+ 
- '<div class="lc-msg-body"><div class="lc-msg-title"><button type="button" class="lc-user-name" data-lc-user="'+esc(m.sender_id)+'" title="View profile">'+esc(label(p))+'</button><time>'+esc(new Date(m.created_at).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))+'</time>'+
+ '<div class="lc-msg-body"><div class="lc-msg-title"><button type="button" class="lc-user-name" data-lc-user="'+esc(m.sender_id)+'" title="View profile">'+esc(label(p))+'</button>'+(state.adminIds.includes(m.sender_id)?'<small class="lc-admin-badge">ADMIN</small>':'')+'<time>'+esc(new Date(m.created_at).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))+'</time>'+
  (m.edited_at?'<small>(edited)</small>':'')+(m.is_pinned?'<small class="lc-msg-pin">'+lcIcon('pin',12)+' Pinned</small>':'')+'</div>'+
  (reply?'<div class="lc-replyref">↳ '+esc(label(person(reply.sender_id)))+': '+esc(reply.content.slice(0,75))+'</div>':'')+
  '<div class="lc-msg-content">'+fmt(m.content)+'</div>'+
  (Object.keys(counts).length?'<div class="lc-msg-reactions">'+Object.keys(counts).map(em=>'<button type="button" class="lc-reaction" data-lc-action="react" data-lc-id="'+m.id+'" data-lc-emoji="'+esc(em)+'">'+esc(em)+' '+counts[em].length+'</button>').join('')+'</div>':'')+
  '<details class="lc-msg-more"><summary aria-label="More message actions" title="Message actions"><span aria-hidden="true">···</span></summary><div class="lc-msg-actions"><button type="button" data-lc-action="reply" data-lc-id="'+m.id+'">Reply</button><button type="button" data-lc-action="copy" data-lc-id="'+m.id+'">Copy</button>'+
  ['👍','❤️','😂'].map(em=>'<button type="button" aria-label="React '+esc(em)+'" data-lc-action="react" data-lc-id="'+m.id+'" data-lc-emoji="'+esc(em)+'">'+em+'</button>').join('')+
- (own?'<button type="button" data-lc-action="edit" data-lc-id="'+m.id+'">Edit</button><button type="button" data-lc-action="pin" data-lc-id="'+m.id+'">'+(m.is_pinned?'Unpin':'Pin')+'</button><button type="button" data-lc-action="delete" data-lc-id="'+m.id+'">Delete</button>':
- '<button type="button" data-lc-action="report" data-lc-id="'+m.id+'">Report</button>')+
+ (own?'<button type="button" data-lc-action="edit" data-lc-id="'+m.id+'">Edit</button><button type="button" data-lc-action="pin" data-lc-id="'+m.id+'">'+(m.is_pinned?'Unpin':'Pin')+'</button>':'')+
+ (own||canModerate()?'<button type="button" data-lc-action="delete" data-lc-id="'+m.id+'">'+(own?'Delete':'Delete as admin')+'</button>':'')+
+ (!own?'<button type="button" data-lc-action="report" data-lc-id="'+m.id+'">Report</button>':'')+
  '</div></details></div></article>';
 }
 
@@ -306,14 +309,16 @@ async function refresh(quiet=false){
     sb.from('conversations').select('id,type,name,created_by,created_at').order('created_at',{ascending:false}),
     sb.from('conversation_members').select('conversation_id,user_id'),
     sb.from('friend_requests').select('id,from_id,to_id,status,created_at'),
-    sb.from('blocks').select('blocked_id')
+    sb.from('blocks').select('blocked_id'),
+    sb.from('lolite_admins').select('user_id')
    ]);
    a.forEach(check);
-   [state.profiles,state.conversations,state.members,state.requests,state.blocks]=a.map(x=>x.data||[]);
+   [state.profiles,state.conversations,state.members,state.requests,state.blocks]=a.slice(0,5).map(x=>x.data||[]);
+   state.adminIds=(a[5].data||[]).map(row=>row.user_id);
    state.me=person(usr.id)||null;
    await loadMessages();
   }else{
-   state.profiles=[];state.conversations=[];state.members=[];state.requests=[];state.blocks=[];state.messages=[];state.reactions=[];state.me=null;
+   state.profiles=[];state.conversations=[];state.members=[];state.requests=[];state.blocks=[];state.messages=[];state.reactions=[];state.me=null;state.adminIds=[];
   }
  }catch(e){state.error=String(e.message||e);console.error('Lolite Chat:',e)}
  finally{state.busy=false;state.loading=false;render(quiet);if(state.user&&!state.error){subscribe().catch(console.error)}if(state.again){state.again=false;queueMicrotask(()=>refresh(true))}}
@@ -371,6 +376,7 @@ async function dispatch(action,id,button){
  case 'addFriend':state.modal={type:'addFriend'};return render();
  case 'group':state.modal={type:'group'};return render();
  case 'profile':state.modal={type:'profile'};return render();
+ case 'adminCenter':if(isAdmin())window.LoliteAdmin?.open?.();return;
  case 'closeModal':state.modal=null;return render();
  case 'dm':return createDM(id);
  case 'reply':state.replyTo=Number(id);render();return $('[data-lc-message-input]')?.focus();
@@ -380,7 +386,14 @@ async function dispatch(action,id,button){
  case 'react':return react(Number(id),button.dataset.lcEmoji);
  case 'search':state.search=state.search?'':' ';return render();
  case 'edit':{const m=state.messages.find(m=>m.id===Number(id));if(!m||m.sender_id!==meId())return;const value=prompt('Edit your message:',m.content);if(value===null||!value.trim()||value===m.content)return;check(await sb.from('messages').update({content:value.trim(),edited_at:new Date().toISOString()}).eq('id',m.id));return refresh(true)}
- case 'delete':{const m=state.messages.find(m=>m.id===Number(id));if(!m||m.sender_id!==meId()||!confirm('Delete your message?'))return;check(await sb.from('messages').delete().eq('id',m.id));return refresh(true)}
+ case 'delete':{
+  const m=state.messages.find(m=>m.id===Number(id)),own=m?.sender_id===meId();
+  if(!m||(!own&&!canModerate()))return;
+  if(!confirm(own?'Delete your message?':'Delete this public channel message for everyone?'))return;
+  const deleted=check(await sb.from('messages').delete().eq('id',m.id).select('id'));
+  if(!deleted?.length)throw Error('Message could not be deleted. Your permissions may have changed.');
+  return refresh(true);
+ }
  case 'pin':{const m=state.messages.find(m=>m.id===Number(id));if(!m||m.sender_id!==meId())return;check(await sb.from('messages').update({is_pinned:!m.is_pinned}).eq('id',m.id));return refresh(true)}
  case 'report':state.modal={type:'report',messageId:Number(id)};return render();
  case 'logout':{messageDrafts.clear();await sb.auth.signOut();state.view='browse';state.channel='general';state.conversationId=null;state.modal=null;return refresh(true)}
