@@ -1,6 +1,6 @@
 /* Geometry Dash launcher: never interrupt Play with an unexpected OS file picker.
  * Prefer the user's installed Geometry Dash source HTML; otherwise open the
- * bundled, clearly labelled Geometry Dash Breeze game.
+ * included Geometry Dash webport.
  */
 (()=>{
  'use strict';
@@ -23,13 +23,13 @@
    }
    // This fully-fledged HTML title is already present in the Lolite repository.
    // It is a fan-made alternative, not the original Geometry Dash release.
-   notify('Original Geometry Dash is not installed. Opening Geometry Dash Breeze instead.');
+   notify('Original Geometry Dash is not installed. Opening Geometry Dash Full instead.');
    if(!window.LoliteGamePlayer?.open({
      title:'Geometry Dash Breeze',
      file:'clgdbreeze.html',
      url:'html%20games/clgdbreeze.html',
      source:'Lolite OS · included HTML game'
-   }))throw new Error('Could not start Geometry Dash Breeze.');
+   }))throw new Error('Could not start Geometry Dash Full.');
   }catch(error){
    console.warn('Geometry Dash launch issue',error);
    notify(error?.message||'Geometry Dash could not start.');
@@ -50,7 +50,7 @@
    const heading=card.querySelector('.store-card-body h3');
    if(heading?.textContent?.trim()!==gdTitle)return;
    const play=card.querySelector('.store-card-actions .store-play');
-   if(play)play.title='Launch installed Geometry Dash or play the included Geometry Dash Breeze alternative';
+   if(play)play.title='Launch installed Geometry Dash or play the included Geometry Dash Full webport';
   });
  }
  function init(){
