@@ -5,7 +5,7 @@
  'use strict';
  const sb=window.LoliteBrowserAccounts?.getClient?.();
  const BUCKET='lolite-admin-media';
- const state={user:null,admin:false,items:[],loaded:false,error:'',busy:false};
+ const state={user:null,admin:false,items:[],loaded:false,error:'',busy:false,zip:null,zipBusy:false,zipError:'',zipProgress:'',zipToken:0};
  const safe=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
  const notify=message=>window.toast?.(String(message))||console.info(message);
  const validateURL=value=>{
@@ -15,6 +15,88 @@
   }catch{return ''}
  };
  const getAdmin=()=>state.admin;
+ function clearZip(){
+  state.zipToken++;
+  for(const entry of state.zip?.entries||[])if(entry.preview)URL.revokeObjectURL(entry.preview);
+  state.zip=null;state.zipBusy=false;state.zipError='';state.zipProgress='';
+ }
+ const zipForm=()=>document.querySelector('.window[data-window-id="admin"] form[data-la-form]');
+ function zipMarkup(){
+  if(state.zipBusy)return '<p class="la-note" role="status">Inspecting ZIP, checking MP4 checksums and testing video playback…</p>';
+  if(state.zipError)return '<p class="la-zip-error" role="alert">'+safe(state.zipError)+'</p>';
+  if(!state.zip)return '';
+  const entries=state.zip.entries,ready=entries.filter(e=>e.selected&&!e.error&&!e.published).length;
+  return '<div class="la-zip-head"><div><strong>Review wallpaper ZIP</strong><p>'+entries.length+' video(s) found · '+ready+' selected for publishing. Only MP4 files are uploaded, not the ZIP.</p></div>'+
+    '<span role="status">'+safe(state.zipProgress)+'</span></div>'+
+    '<div class="la-zip-grid">'+entries.map((entry,i)=>'<label class="la-zip-card '+(entry.error?'la-zip-invalid':'')+'">'+
+      '<video src="'+safe(entry.preview)+'" muted playsinline loop controls preload="none"></video>'+
+      '<span class="la-zip-meta"><input type="checkbox" data-la-zip-entry="'+i+'" '+(entry.selected?'checked ':'')+(entry.error||entry.published||state.busy?'disabled ':'')+'>'+
+      '<span><strong>'+safe(entry.name)+'</strong><small>'+safe(entry.error||entry.published?'Published':entry.width+' × '+entry.height+' · '+Math.round(entry.duration)+'s · '+(entry.size/1024/1024).toFixed(1)+' MB')+'</small>'+
+      (entry.error?'<small class="la-zip-error">'+safe(entry.error)+'</small>':'')+'</span></span></label>').join('')+'</div>'+
+    '<p class="la-note">The title above is an optional pack prefix; each video keeps its filename as its wallpaper name. Any previously published files are skipped if you retry.</p>';
+ }
+ function showZipPreview(){
+  const form=zipForm(),box=form?.querySelector('[data-la-zip-preview]');
+  if(!box)return;
+  const kind=form.elements.kind?.value,file=form.elements.file?.files?.[0];
+  const isZip=kind==='wallpaper'&&(/\.zip$/i.test(file?.name||'')||!!state.zip||state.zipBusy);
+  box.hidden=!isZip;box.innerHTML=isZip?zipMarkup():'';
+  if(form.elements.title)form.elements.title.required=!isZip;
+ }
+ async function prepareZip(file){
+  clearZip();
+  if(!file||!/\.zip$/i.test(file.name))return;
+  const token=state.zipToken;
+  state.zipBusy=true;showZipPreview();
+  try{
+   if(!window.LoliteWallpaperZip?.inspect)throw Error('ZIP inspector is unavailable. Reload Lolite OS.');
+   const entries=await window.LoliteWallpaperZip.inspect(file);
+   if(token!==state.zipToken)return;
+   for(const entry of entries)entry.preview=URL.createObjectURL(entry.blob);
+   state.zip={file,entries};
+  }catch(error){if(token===state.zipToken)state.zipError=error?.message||String(error)}
+  finally{if(token===state.zipToken){state.zipBusy=false;showZipPreview()}}
+ }
+ async function publishZip(form,file,prefix){
+  if(state.zipBusy)throw Error('The ZIP is still being inspected.');
+  if(state.zipError)throw Error(state.zipError);
+  if(state.zip?.file!==file)throw Error('Select the ZIP again and review the videos before publishing.');
+  const selected=state.zip.entries.filter(entry=>entry.selected&&!entry.error&&!entry.published);
+  if(!selected.length)throw Error('Select at least one valid MP4 to publish.');
+  state.busy=true;
+  let published=0;
+  try{
+   for(const entry of selected){
+    const title=(prefix?prefix+' — ':'')+entry.name;
+    const finalTitle=title.slice(0,90);
+    const unique=crypto.randomUUID();
+    const storagePath='wallpapers/'+unique+'.mp4';
+    state.zipProgress='Publishing '+(published+1)+' of '+selected.length+': '+entry.name;
+    showZipPreview();
+    const uploaded=await sb.storage.from(BUCKET).upload(storagePath,entry.blob,{contentType:'video/mp4',upsert:false});
+    if(uploaded.error)throw Error('Upload failed for '+entry.name+': '+uploaded.error.message);
+    const url=validateURL(sb.storage.from(BUCKET).getPublicUrl(storagePath).data?.publicUrl);
+    if(!url){await sb.storage.from(BUCKET).remove([storagePath]);throw Error('Could not create a public URL for '+entry.name)}
+    const added=await sb.from('lolite_library_items').insert({
+     kind:'wallpaper',title:finalTitle,url,storage_path:storagePath,created_by:state.user.id
+    }).select('id').single();
+    if(added.error){
+     await sb.storage.from(BUCKET).remove([storagePath]);
+     throw Error('Publish failed for '+entry.name+': '+added.error.message);
+    }
+    entry.published=true;entry.selected=false;published++;
+   }
+   state.zipProgress=published+' wallpaper(s) published.';
+   form.reset();clearZip();
+   notify('Published '+published+' video wallpaper(s) for everyone.');
+  }catch(error){
+   state.zipProgress=published?published+' published; remaining clips can be retried.':'';
+   throw error;
+  }finally{
+   state.busy=false;showZipPreview();
+   if(published)await loadItems();
+  }
+ }
  const list=kind=>state.items.filter(item=>!kind||item.kind===kind);
  const adminRoot=()=>document.querySelector('.window[data-window-id="admin"] .content');
  const displayDate=value=>{const d=new Date(value);return Number.isNaN(d.getTime())?'New':d.toLocaleDateString([], {month:'short',day:'numeric',year:'numeric'})};
@@ -61,10 +143,10 @@
   return '<section class="la-shell"><div class="la-head"><div><small>LOLITE OS · STAFF</small><h1>Admin Center</h1><p>Your changes are saved to the shared Lolite library. Public chat moderation is available in Lolite Chat.</p></div><button type="button" data-la-action="reload">Refresh library</button></div>'+
    '<form data-la-form class="la-form"><h2>Publish new content</h2>'+
    '<label>Content type<select name="kind" required data-la-kind><option value="game">HTML game</option><option value="wallpaper">Wallpaper</option><option value="website">Website shortcut</option></select></label>'+
-   '<label>Title<input name="title" required maxlength="90" minlength="2" placeholder="Name to display"></label>'+
+   '<label>Title<input name="title" required maxlength="90" minlength="2" placeholder="Name to display (optional ZIP prefix)"></label>'+
    '<label>HTTPS website or file URL<input name="url" type="url" placeholder="https://example.com/game.html" autocomplete="url"></label>'+
-   '<label data-la-upload-box>Or upload an HTML game / wallpaper file<input type="file" name="file" accept=".html,.htm,text/html"></label>'+
-   '<p class="la-note">HTML uploads work best as self-contained games. Files that need additional scripts or assets may need a fully hosted URL. Website shortcuts only change the tab title/icon when you choose that option; they cannot change the real address.</p>'+
+   '<label data-la-upload-box>Or upload a file / MP4 wallpaper ZIP<input type="file" name="file" data-la-file accept=".html,.htm,text/html"></label>'+
+   '<p class="la-note">Wallpapers: upload an image, MP4, WebM, or ZIP containing up to 24 MP4s. ZIPs are checked and reviewed before publishing. HTML games should be self-contained; website shortcuts require HTTPS.</p>'+   '<div data-la-zip-preview class="la-zip-review" hidden></div>'+
    '<button class="la-primary" type="submit" '+(state.busy?'disabled':'')+'>'+(state.busy?'Publishing…':'Publish to Lolite')+'</button></form>'+
    '<div class="la-list-head"><h2>Published items</h2><span>'+state.items.length+' total</span></div>'+
    '<div class="la-items">'+(state.items.length?state.items.map(row).join(''):'<p class="la-note">No shared items yet. Publish your first game, wallpaper or website.</p>')+'</div></section>';
@@ -77,7 +159,7 @@
  }
  function draw(){
   const root=adminRoot();
-  if(root&&!root.querySelector('[data-la-form]:focus-within'))root.innerHTML=panel();
+  if(root&&!state.zipBusy&&!state.zip&&!root.querySelector('[data-la-form]:focus-within'))root.innerHTML=panel();
   const web=document.querySelector('.window[data-window-id="websites"] .content');
   if(web)web.innerHTML=websites();
  }
@@ -98,7 +180,9 @@
   const kind=form.elements.kind?.value;
   const title=String(form.elements.title?.value||'').trim().slice(0,90);
   const file=form.querySelector('input[name="file"]')?.files?.[0]||null;
-  if(!['game','wallpaper','website'].includes(kind)||title.length<2)throw Error('Choose a type and enter a title.');
+  const isZip=kind==='wallpaper'&&/\.zip$/i.test(file?.name||'');
+  if(!['game','wallpaper','website'].includes(kind)||(!isZip&&title.length<2))throw Error('Choose a type and enter a title.');
+  if(isZip)return publishZip(form,file,title);
   let url=validateURL(form.elements.url?.value),storagePath=null;
   if(file){
    if(kind==='website')throw Error('Website shortcuts require an HTTPS link, not a file.');
@@ -115,7 +199,7 @@
    const suffix=kind==='game'?'html':ext;
    const unique=typeof crypto?.randomUUID==='function'?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2);
    storagePath=(kind==='game'?'games/':'wallpapers/')+unique+'.'+suffix;
-   state.busy=true;draw();
+   state.busy=true;
    const uploaded=await sb.storage.from(BUCKET).upload(storagePath,file,{contentType:type,upsert:false});
    if(uploaded.error)throw Error('Upload failed: '+uploaded.error.message);
    url=validateURL(sb.storage.from(BUCKET).getPublicUrl(storagePath).data?.publicUrl);
@@ -149,16 +233,32 @@
   const button=form.querySelector('[type="submit"]');if(button?.disabled||state.busy)return;
   if(button)button.disabled=true;
   try{await publish(form)}catch(e){notify(e.message||String(e));console.warn('Admin publish:',e)}
-  finally{state.busy=false;if(button?.isConnected)button.disabled=false;draw()}
+  finally{state.busy=false;if(button?.isConnected)button.disabled=false;draw();showZipPreview()}
  });
  document.addEventListener('change',event=>{
-  const kind=event.target.closest('[data-la-kind]');if(!kind)return;
-  const form=kind.closest('form'),file=form?.querySelector('input[type=file]');
-  if(!file)return;
-  const website=kind.value==='website';
-  file.disabled=website;file.value='';
-  file.accept=kind.value==='game'?'.html,.htm,text/html':'.png,.jpg,.jpeg,.webp,.mp4,.webm,image/png,image/jpeg,image/webp,video/mp4,video/webm';
-  form.querySelector('[data-la-upload-box]')?.classList.toggle('la-hidden',website);
+  const checkbox=event.target.closest('[data-la-zip-entry]');
+  if(checkbox){
+   const entry=state.zip?.entries?.[Number(checkbox.dataset.laZipEntry)];
+   if(entry&&!entry.error&&!entry.published)entry.selected=checkbox.checked;
+   showZipPreview();return;
+  }
+  const kind=event.target.closest('[data-la-kind]');
+  if(kind){
+   const form=kind.closest('form'),file=form?.querySelector('input[type=file]');
+   if(!file)return;
+   clearZip();
+   const website=kind.value==='website';
+   file.disabled=website;file.value='';
+   file.accept=kind.value==='game'?'.html,.htm,text/html':'.png,.jpg,.jpeg,.webp,.mp4,.webm,.zip,image/png,image/jpeg,image/webp,video/mp4,video/webm,application/zip';
+   form.querySelector('[data-la-upload-box]')?.classList.toggle('la-hidden',website);
+   showZipPreview();return;
+  }
+  const file=event.target.closest('[data-la-file]');
+  if(file){
+   if(file.closest('form')?.elements.kind?.value==='wallpaper'&&/\.zip$/i.test(file.files?.[0]?.name||'')){
+    void prepareZip(file.files[0]);
+   }else{clearZip();showZipPreview()}
+  }
  });
  document.addEventListener('click',async event=>{
   const button=event.target.closest('[data-la-action]');
