@@ -463,7 +463,7 @@
   show({id:'custom',name:'Your wallpaper',src:image});return true;
  }
  function matches(wall,filter,query=''){
-  const valid=filter==='All'||(filter==='Live'&&live(wall))||wall.category===filter;
+  const valid=filter==='All'||(filter==='Live'&&live(wall))||(filter==='Admin Uploads'&&wall.provider==='Admin Library')||wall.category===filter;
   return valid&&(!query||[wall.name,wall.category,wall.provider||'Lolite'].join(' ').toLowerCase().includes(query.trim().toLowerCase()));
  }
  function cards(filter='All',query=''){
@@ -481,7 +481,7 @@
   }).join('');
  }
  function markup(filter='All',query=''){
-  const cats=['All','Live','Interactive','Videos','Space','Nature','City','Neon','Abstract','Signature'];
+  const cats=['All','Live','Interactive','Videos','Admin Uploads','Space','Nature','City','Neon','Abstract','Signature'];
   if(!cats.includes(filter))filter='All';
   return '<div class="cr-wall-browse"><label class="cr-wall-search"><span aria-hidden="true">⌕</span>'+
    '<input type="search" data-wall-search placeholder="Search '+collection.length+' wallpapers" aria-label="Search wallpapers" value="'+escape(query)+'"></label>'+
@@ -503,8 +503,33 @@
   save('wallpaperCategory',category);
   window.dispatchEvent(new Event('lolite:wallpapercategory'));
  };
+ function syncAdminWallpapers(items){
+  const added=(Array.isArray(items)?items:[]).filter(item=>item.kind==='wallpaper'&&
+    /^[0-9a-f-]{36}$/i.test(item.id)&&typeof item.url==='string'&&
+    /^https:\/\/[^\s]+$/i.test(item.url));
+  for(let i=collection.length-1;i>=0;i--)if(collection[i].provider==='Admin Library')collection.splice(i,1);
+  for(const item of added){
+   const videoFile=/\.(?:mp4|webm)(?:[?#]|$)/i.test(item.url);
+   collection.push({
+    id:'admin-'+item.id,name:String(item.title||'Community wallpaper').slice(0,90),
+    category:videoFile?'Videos':'Signature',provider:'Admin Library',
+    src:videoFile?'assets/wallpapers/cosmos-orbit.svg':item.url,
+    poster:videoFile?'assets/wallpapers/cosmos-orbit.svg':item.url,
+    ...(videoFile?{video:item.url}:{})
+   });
+  }
+  window.loliteWallpaperIds=[...collection.map(w=>w.id),...Object.keys(legacy)];
+  if(active?.provider==='Admin Library'){
+   const replacement=find(active.id);
+   if(!replacement)apply('cosmos-orbit');
+   else if(active.src!==replacement.src||active.video!==replacement.video)show(replacement,{force:true});
+  }
+  window.dispatchEvent(new CustomEvent('lolite:wallpapercollectionchange',
+   {detail:{admin:added.length,total:collection.length}}));
+ }
+ window.addEventListener('lolite:library-updated',event=>syncAdminWallpapers(event.detail?.items));
  window.LoliteWallpapers={
-  collection,apply,restore,markup,cards,setCustom,discoverVideos,getStatus:()=>status,
+  collection,apply,restore,markup,cards,setCustom,discoverVideos,syncAdminWallpapers,getStatus:()=>status,
   getQuality:()=>quality,setQuality,retry:()=>{if(active)show(active,{force:true})},
   isInteractiveEnabled:()=>interactionOn,
   setInteractiveEnabled:value=>{interactionOn=!!value;save('loliteWallpaperInteractive',interactionOn?'on':'off');if(!interactionOn){pointer.inside=false;ripples.length=0}sync()},
