@@ -535,7 +535,9 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  const matchesCategory=g=>franchiseNames.has(active)?g.franchise===active:active==='All Games'||active==='Featured'||active==='Popular Games'?true:active==='Recently Added'?!!g.adminSharedGame||g.recentlyAdded||g.file.startsWith('local-'):active==='My Library'?hasGame(g):active==='Built-in HTML'?g.url.startsWith('games/'):active==='Free to Play'?gamePrice(g)===0:g.category===active;
  const broken=g=>window.LoliteGameHealth?.isUnavailable?.(g)&&availableServers(g).length<=1;
  const healthy=list=>list.filter(g=>!broken(g));
- const requestHealth=()=>{void window.LoliteGameHealth?.scan?.(games)};
+ // Avoid issuing thousands of HEAD requests every time the user opens the store.
+ // The explicit Check game files action still validates the entire hosted library.
+ const requestHealth=()=>{void window.LoliteGameHealth?.scan?.(games.filter(g=>g.url?.startsWith('html games/')||g.url?.startsWith('games/')).slice(0,80))};
  window.LoliteGameSearch=(text,limit=8)=>{
    const q=String(text||'').trim().toLowerCase();
    if(q.length<2)return [];
