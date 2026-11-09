@@ -15,6 +15,14 @@ A Lolite-branded browser desktop with the original Cosmos space interface, apps,
 
 ## Update Log
 
+### Cosmos logo and app icon library — 2026-11-09
+- Introduced **34 original multicolour SVG app icons** in `core/app-icon-art.js` without emojis, stock icon fonts or remotely hosted artwork.
+- Includes distinct icons for Files, Browser, Scramjet, Games, App Store, Chat, AI, Settings, Paint, Notes, Calculator, Terminal, Clock, Capture, Wallpapers, Academy, Quests, Life RP, Cloud Gaming, Minecraft and utility apps.
+- Reworked the **Lolite Cosmos orbital L logo** in `assets/lolite-cosmos-logo.svg`; updated the browser favicon and icon script cache keys.
+- Icons inherit the existing Lolite icon API and keep their mappings across the desktop, taskbar, Start menu, App Store, mobile launcher and Cosmos shortcuts. Apps without new artwork still use the existing SVG icon fallback.
+- Added a responsive, self-contained **[icon gallery](icons.html)** to review the current vector designs, and `tests/app-icons.test.cjs` for rendering and icon mapping checks.
+- All designs are local SVGs. Cosmos gets dark glass tile backing; other desktop themes continue using the existing shared tiles.
+
 ### Interactive wallpapers + original MP4 auto-detection — 2026-11-09
 - Added **16 new interactive live wallpaper scenes** (gravity wells, magnetic stars, liquid waves, ripple ponds, neon 3D grids, constellations, nebula portals, electric fields and fireflies). The full built-in collection now includes **52 animated wallpapers plus 10 still images**.
 - Interactive effects follow pointer movement and respond to clicks on the desktop, with a saved on/off switch and strength slider. Pointer input uses passive document listeners so app controls stay clickable.
