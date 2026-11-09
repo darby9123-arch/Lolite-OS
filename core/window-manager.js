@@ -1,6 +1,10 @@
 /* One owner for desktop window state, focus, bounds and snapping. */
 (()=>{'use strict';
  const workspace=state,root=document.documentElement,$=id=>document.getElementById(id);
+ const DESKTOPS=3;
+ function readDesktop(){try{const value=Number(localStorage.getItem('loliteCurrentDesktopV4')||0);return Number.isInteger(value)&&value>=0&&value<DESKTOPS?value:0}catch{return 0}}
+ workspace.desktopIndex=readDesktop();
+ const onDesktop=record=>record.desktopIndex===workspace.desktopIndex;
  const browser=()=>root.classList.contains('browsing-mode'),clamp=(n,min,max)=>Math.max(min,Math.min(n,max));
  const LAYOUT_KEY='loliteWindowLayoutsV4';
  function readSaved(){
@@ -30,9 +34,9 @@
  const rectOf=el=>el.style.display==='none'?Object.fromEntries(['left','top','width','height'].map(k=>[k,parseFloat(el.style[k])||0])):({left:el.offsetLeft,top:el.offsetTop,width:el.offsetWidth,height:el.offsetHeight});
  function setRect(el,rect){for(const k of ['left','top','width','height'])el.style[k]=Math.round(rect[k])+'px'}
  function emit(type,id,extra={}){window.dispatchEvent(new CustomEvent('lolite:windowchange',{detail:{type,id,...extra}}))}
- function focus(id){const record=workspace.windows[id];if(!record||record.minimised||record.closing)return;if(workspace.activeId!==id)record.el.style.zIndex=++workspace.z;setActiveTask(id)}
- function setActiveTask(id){workspace.activeId=id||null;for(const [key,w] of Object.entries(workspace.windows)){w.el.classList.toggle('is-active',key===id);const task=$('task-'+key);if(task){task.classList.toggle('active',key===id);task.setAttribute('aria-pressed',String(key===id));task.classList.toggle('is-minimised',!!w.minimised)}}emit('focus',id)}
- function focusNext(){const available=Object.entries(workspace.windows).filter(([,w])=>!w.minimised&&!w.closing).sort((a,b)=>Number(b[1].el.style.zIndex)-Number(a[1].el.style.zIndex));if(available.length)focus(available[0][0]);else setActiveTask(null)}
+ function focus(id){const record=workspace.windows[id];if(!record||record.minimised||record.closing||!onDesktop(record))return;if(workspace.activeId!==id)record.el.style.zIndex=++workspace.z;setActiveTask(id)}
+ function setActiveTask(id){workspace.activeId=id||null;for(const [key,w] of Object.entries(workspace.windows)){w.el.classList.toggle('is-active',key===id);const task=$('task-'+key);if(task){task.hidden=!onDesktop(w);task.classList.toggle('active',key===id);task.setAttribute('aria-pressed',String(key===id));task.classList.toggle('is-minimised',!!w.minimised)}}emit('focus',id)}
+ function focusNext(){const available=Object.entries(workspace.windows).filter(([,w])=>!w.minimised&&!w.closing&&onDesktop(w)).sort((a,b)=>Number(b[1].el.style.zIndex)-Number(a[1].el.style.zIndex));if(available.length)focus(available[0][0]);else setActiveTask(null)}
  const motion=(el,frames,options,done)=>window.LoliteMotion?.animate?window.LoliteMotion.animate(el,frames,options,done):done?.();
  function taskTransform(id,el){const task=document.querySelector('[data-task-app="'+CSS.escape(id)+'"]')||$('task-'+id)||$('startBtn'),from=el.getBoundingClientRect(),to=task?.getBoundingClientRect();return to?`translate(${to.left+to.width/2-from.left-from.width/2}px, ${to.top+to.height/2-from.top-from.height/2}px) scale(.12)`:'translateY(32px) scale(.92)'}
  const glyphs={min:'<path d="M3 8h10"/>',snap:'<rect x="2.5" y="3" width="11" height="10" rx=".5"/><path d="M8 3v10"/>',max:'<rect x="3.5" y="3.5" width="9" height="9" rx=".5"/>',close:'<path d="m3.5 3.5 9 9m0-9-9 9"/>'};
@@ -47,7 +51,7 @@
   const el=document.createElement('section');el.className='window';el.dataset.windowId=id;
   if(oldSnap)el.dataset.snap=oldSnap;el.setAttribute('role','region');el.setAttribute('aria-label',title||id);el.tabIndex=-1;setRect(el,frame);el.style.zIndex=++workspace.z;
   el.innerHTML='<header class="titlebar"><span class="window-app-icon" aria-hidden="true">'+(window.LoliteIcons?.tile(id)||'')+'</span><strong></strong><div class="controls">'+[['min','Minimise'],['snap','Snap layouts'],['max','Maximise'],['close','Close']].map(([cls,label])=>`<button type="button" class="${cls}" aria-label="${label}" title="${label}"><svg viewBox="0 0 16 16" aria-hidden="true">${glyphs[cls]}</svg></button>`).join('')+'</div></header><div class="content"></div>';
-  el.querySelector('.titlebar strong').textContent=title||id;workspace.windows[id]={el,title:title||id,minimised:false,closing:false,normal};el.querySelector('.content').innerHTML=renderPageSafely(id);
+  el.querySelector('.titlebar strong').textContent=title||id;workspace.windows[id]={el,title:title||id,minimised:false,closing:false,normal,desktopIndex:workspace.desktopIndex};el.querySelector('.content').innerHTML=renderPageSafely(id);
   el.querySelector('.min').onclick=()=>window.minWin(id);el.querySelector('.max').onclick=()=>window.maxWin(id);el.querySelector('.close').onclick=()=>window.closeWin(id);el.querySelector('.snap').onclick=event=>{event.stopPropagation();showSnapMenu(id,event.currentTarget)};
   el.addEventListener('pointerdown',()=>focus(id),{capture:true});el.querySelector('.titlebar').ondblclick=event=>{if(!event.target.closest('button')&&!browser())window.maxWin(id)};
   $('windows').appendChild(el);drag(el);syncControls(el);
@@ -56,11 +60,11 @@
  }
  function closeWin(id){const record=workspace.windows[id];if(!record||record.closing)return;remember(id,record);record.closing=true;closeSnapMenu();$('task-'+id)?.remove();const remove=()=>{record.el.remove();if(workspace.windows[id]===record)delete workspace.windows[id];emit('close',id)};record.finishClose=()=>{window.LoliteMotion?.cancel(record.el);remove()};if(workspace.activeId===id)focusNext();record.el.style.pointerEvents='none';if(browser()||record.minimised)record.finishClose();else motion(record.el,[{opacity:1,transform:'none'},{opacity:0,transform:'translateY(8px) scale(.97)'}],{duration:130},remove)}
  function minWin(id){const record=workspace.windows[id];if(!record||record.minimised||record.closing)return;closeSnapMenu();record.minimised=true;if(workspace.activeId===id)focusNext();emit('minimise',id);const hide=()=>{if(record.minimised)record.el.style.display='none'};if(browser())hide();else motion(record.el,[{opacity:1,transform:'none'},{opacity:0,transform:taskTransform(id,record.el)}],{duration:180},hide)}
- function restoreWin(id){const record=workspace.windows[id];if(!record||record.closing)return;const wasMinimised=record.minimised;window.LoliteMotion?.cancel(record.el);record.minimised=false;record.el.style.display='';focus(id);emit('restore',id);if(wasMinimised&&!browser())motion(record.el,[{opacity:0,transform:taskTransform(id,record.el)},{opacity:1,transform:'none'}],{duration:200})}
+ function restoreWin(id){const record=workspace.windows[id];if(!record||record.closing)return;const wasMinimised=record.minimised;window.LoliteMotion?.cancel(record.el);record.desktopIndex=workspace.desktopIndex;record.minimised=false;record.el.style.display='';focus(id);emit('restore',id);if(wasMinimised&&!browser())motion(record.el,[{opacity:0,transform:taskTransform(id,record.el)},{opacity:1,transform:'none'}],{duration:200})}
  function toggleTask(id){const record=workspace.windows[id];if(record&&!record.minimised&&workspace.activeId===id)window.minWin(id);else window.restoreWin(id)}
  function syncControls(el){const max=el.querySelector('.max'),on=!!el.dataset.snap;max?.setAttribute('aria-label',on?'Restore window':'Maximise');if(max)max.title=on?'Restore window':'Maximise';el.classList.toggle('is-maximised',el.dataset.snap==='max')}
  function layout(id,kind){const record=workspace.windows[id];if(!record||record.closing||browser())return;window.LoliteMotion?.cancel(record.el);const before=rectOf(record.el);if(!record.el.dataset.snap){record.normal=before;record.el.dataset.old=[before.left,before.top,before.width,before.height].map(n=>n+'px').join('|')}
-  const target=kind?snapRect(kind,bounds()):fit(record.normal,bounds());if(kind)record.el.dataset.snap=kind;else{delete record.el.dataset.snap;delete record.el.dataset.old}setRect(record.el,target);if(!kind)record.normal=target;remember(id,record);record.minimised=false;record.el.style.display='';focus(id);syncControls(record.el);emit('layout',id,{kind});closeSnapMenu();
+  const target=kind?snapRect(kind,bounds()):fit(record.normal,bounds());if(kind)record.el.dataset.snap=kind;else{delete record.el.dataset.snap;delete record.el.dataset.old}setRect(record.el,target);if(!kind)record.normal=target;record.desktopIndex=workspace.desktopIndex;remember(id,record);record.minimised=false;record.el.style.display='';focus(id);syncControls(record.el);emit('layout',id,{kind});closeSnapMenu();
   const dx=before.left-target.left,dy=before.top-target.top,sx=before.width/target.width,sy=before.height/target.height;motion(record.el,[{transformOrigin:'top left',transform:`translate(${dx}px,${dy}px) scale(${sx},${sy})`},{transformOrigin:'top left',transform:'none'}],{duration:220});
  }
  const maxWin=id=>layout(id,workspace.windows[id]?.el.dataset.snap?'':'max');
@@ -82,10 +86,23 @@
   const stop=e=>{bar.removeEventListener('pointermove',move);bar.removeEventListener('pointerup',stop);bar.removeEventListener('pointercancel',stop);document.body.classList.remove('win-dragging');el.classList.remove('is-dragging');previewSnap('');try{bar.releasePointerCapture(start.pointerId)}catch{}if(moving&&e.type!=='pointercancel'&&drop)snapWin(id,drop);else if(moving){setRect(el,fit(rectOf(el),bounds()));record.normal=rectOf(el);if(e.type!=='pointercancel'){remember(id,record);emit('move',id)}}};
   bar.addEventListener('pointermove',move);bar.addEventListener('pointerup',stop);bar.addEventListener('pointercancel',stop);
  }}
- function resizeToViewport(){if(browser())return;for(const record of Object.values(workspace.windows)){if(record.closing)continue;window.LoliteMotion?.cancel(record.el);if(record.minimised)record.el.style.display='none';setRect(record.el,record.el.dataset.snap?snapRect(record.el.dataset.snap,bounds()):fit(rectOf(record.el),bounds()))}}
- let desktopHidden=[];function showDesktop(){if(desktopHidden.length){for(const id of desktopHidden)window.restoreWin(id);desktopHidden=[]}else{desktopHidden=Object.keys(workspace.windows).filter(id=>!workspace.windows[id].minimised&&!workspace.windows[id].closing);for(const id of desktopHidden)window.minWin(id)}}
+ function resizeToViewport(){if(browser())return;for(const record of Object.values(workspace.windows)){if(record.closing)continue;window.LoliteMotion?.cancel(record.el);if(record.minimised||!onDesktop(record))record.el.style.display='none';setRect(record.el,record.el.dataset.snap?snapRect(record.el.dataset.snap,bounds()):fit(rectOf(record.el),bounds()))}}
+ let desktopHidden=[];function showDesktop(){if(desktopHidden.length){for(const id of desktopHidden)window.restoreWin(id);desktopHidden=[]}else{desktopHidden=Object.keys(workspace.windows).filter(id=>onDesktop(workspace.windows[id])&&!workspace.windows[id].minimised&&!workspace.windows[id].closing);for(const id of desktopHidden)window.minWin(id)}}
+ function switchDesktop(index){
+  if(browser()||!Number.isInteger(index)||index<0||index>=DESKTOPS)return false;
+  if(index===workspace.desktopIndex)return true;
+  workspace.desktopIndex=index;desktopHidden=[];
+  try{localStorage.setItem('loliteCurrentDesktopV4',String(index))}catch{}
+  for(const record of Object.values(workspace.windows)){
+   window.LoliteMotion?.cancel(record.el);
+   record.el.style.display=record.minimised||!onDesktop(record)?'none':'';
+  }
+  focusNext();
+  window.dispatchEvent(new CustomEvent('lolite:desktopchange',{detail:{index,count:DESKTOPS}}));
+  return true;
+ }
  document.addEventListener('pointerdown',e=>{if(snapMenu&&!snapMenu.contains(e.target)&&!e.target.closest('.controls'))closeSnapMenu()});
- document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSnapMenu();previewSnap('')}if(browser())return;if(e.ctrlKey&&e.altKey&&!e.metaKey&&e.key.startsWith('Arrow')&&workspace.activeId){
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSnapMenu();previewSnap('')}if(browser())return;if(e.ctrlKey&&e.altKey&&!e.metaKey&&!e.shiftKey&&/^[1-3]$/.test(e.key)){e.preventDefault();switchDesktop(Number(e.key)-1);return}if(e.ctrlKey&&e.altKey&&!e.metaKey&&e.key.startsWith('Arrow')&&workspace.activeId){
  e.preventDefault();const id=workspace.activeId;
  if(e.shiftKey){
   const corner=e.key==='ArrowLeft'?'top-left':e.key==='ArrowRight'?'top-right':e.key==='ArrowDown'?'bottom-left':'bottom-right';
@@ -97,5 +114,6 @@
  Object.assign(window,{openApp,closeWin,minWin,restoreWin,maxWin,snapWin,drag,setActiveTask});
  window.LoliteWindowManager={focus,toggleTask,showDesktop,bounds,fit,resizeToViewport,showSnapMenu,
   savedLayouts:()=>({...savedLayouts}),forgetLayout,
-  getWindow:id=>workspace.windows[id]||null,activeWindowId:()=>workspace.activeId};window.LoliteWindowGeometry={fit,snapRect};
+  getWindow:id=>workspace.windows[id]||null,activeWindowId:()=>workspace.activeId,
+  desktopIndex:()=>workspace.desktopIndex,desktopCount:DESKTOPS,switchDesktop};window.LoliteWindowGeometry={fit,snapRect};
 })();
