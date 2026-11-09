@@ -130,10 +130,31 @@
   button?.setAttribute('aria-expanded',String(show));
   if(show){updatePicker();picker.querySelector('[data-lw-close]')?.focus()}
  }
+ function findFreePosition(type){
+  const cardWidth=widthFor(),heights={clock:174,calendar:310,notes:250,weather:210,shortcuts:205,system:265,timer:190};
+  const height=heights[type]||210,space=desktopHeight(),width=desktopWidth();
+  const occupied=data.items.map(w=>{
+   const el=Array.from(layer?.children||[]).find(node=>node.dataset.lwId===w.id);
+   const p=position(w,el);
+   return {x:p.x,y:p.y,w:el?.offsetWidth||cardWidth,h:el?.offsetHeight||210};
+  });
+  const cols=Math.max(1,Math.floor(width/(cardWidth+16)));
+  for(let column=0;column<cols;column++){
+   const x=Math.max(0,width-cardWidth-18-column*(cardWidth+16));
+   let y=22;
+   for(let pass=0;pass<occupied.length+1;pass++){
+    const hit=occupied.find(r=>x<r.x+r.w+12&&x+cardWidth+12>r.x&&y<r.y+r.h+12&&y+height+12>r.y);
+    if(!hit)break;
+    y=hit.y+hit.h+16;
+   }
+   if(y+height<=space-10)return {x,y};
+  }
+  return {x:Math.max(0,width-cardWidth-18),y:Math.max(0,space-height-15)};
+ }
  function add(type){
   if(!TYPES[type]||data.items.some(w=>w.type===type))return;
-  const step=data.items.length;
-  data.items.push({id:type+'-'+Date.now(),type,x:-1,y:22+step*38});
+  const {x,y}=findFreePosition(type);
+  data.items.push({id:type+'-'+Date.now(),type,x,y});
   save();paint();togglePicker(false);
  }
  function remove(id){
@@ -275,6 +296,7 @@
   layer.addEventListener('pointerdown',e=>{const h=e.target.closest('.lw-header');if(h)beginDrag(e,h)});
   document.addEventListener('submit',handleSubmit);
   document.addEventListener('input',e=>{if(e.target.matches('[data-lw-note]')){data.note=e.target.value.slice(0,10000);save()}});
+  document.addEventListener('change',e=>{if(e.target.matches('[data-lw-timer-minutes]')){const card=e.target.closest('.lw-card'),timer=timerState(card.dataset.lwId);if(!timer.running){timer.seconds=bounded(Number(e.target.value)||5,1,180)*60;updateTicks()}}});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!picker.hidden)togglePicker(false)});
   window.addEventListener('resize',fitAll,{passive:true});
   window.addEventListener('online',()=>{const node=layer?.querySelector('[data-lw-type="system"] .lw-body');if(node)node.innerHTML=systemMarkup()});
