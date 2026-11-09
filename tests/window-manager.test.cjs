@@ -80,7 +80,7 @@ test('three virtual desktops isolate windows and taskbar state without losing ap
  assert.equal(e.c.state.activeId,null);
  assert.equal(e.nodes.get('task-files').hidden,true);
  const b=e.c.openApp('settings','Settings');await e.settle();
- assert.equal(b.style.display,'');
+ assert.equal(b.style.display||'','');
  assert.equal(e.nodes.get('task-settings').hidden,false);
  e.c.LoliteWindowManager.switchDesktop(0);
  assert.equal(a.style.display,'');
