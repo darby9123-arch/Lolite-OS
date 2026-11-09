@@ -452,10 +452,18 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  const serverSelections=new Map();
  const availableServers=g=>{
    const baseName=g.adminSharedGame?'Admin library':g.gamefilesRecord?'Gamefiles ZIP · Local':g.bundledGameFile?'Gamefiles ZIP · GitHub HTML':(g.local||g.url.startsWith('html games/'))?'Lolite OS (local HTML)':g.openExternally?'Official creator':g.genizy?'GenizyMath':g.source==="Chicken King's Vault"?"Chicken King's Vault":g.source==='DAKNUX'?'DAKNUX':g.mountain?'Mountain Games':'Lolite OS';
-   const raw=[{name:baseName,url:g.url}];
+   // Offer each alternate server as its own playable version; skip duplicate URLs.
+   const raw=[{name:baseName,url:g.url},...(Array.isArray(g.servers)?g.servers:[])];
    const seen=new Set();
-   return raw.filter(x=>{if(!x?.url||seen.has(x.url))return false;seen.add(x.url);return true});
+   return raw.filter(x=>{
+    if(!x||typeof x.url!=='string')return false;
+    const url=x.url.trim();
+    if(!url||/^(?:javascript|data):/i.test(url)||seen.has(url))return false;
+    seen.add(url);
+    return true;
+   }).map(x=>({name:String(x.name||'Server'),url:x.url.trim()}));
  };
+ const playableVersionCount=list=>list.reduce((total,game)=>total+availableServers(game).length,0);
  // If a public game host has moved or returns 404, try the original
  // HTML file from its verified source repository before giving up.
  // This never imports or publishes third-party code to Lolite's repository.
@@ -621,7 +629,8 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   requestHealth();
   const healthStatus=window.LoliteGameHealth?.summary?.();
   const healthText=healthStatus?.missing?healthStatus.missing+' unavailable hidden':'Check game files';
-  const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" aria-label="Search games" placeholder="Search games…" value="'+encodeLabel(query)+'" oninput="window.loliteStoreSearch(this.value)"></div><button class="store-health-check" type="button" onclick="window.loliteStoreCheckFiles()" title="Check local game paths">'+encodeLabel(healthText)+'</button><span class="store-count-pill">'+healthy(games).length+' available</span></div>';
+  const totalGames=healthy(games),totalPlayable=playableVersionCount(totalGames);
+  const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" aria-label="Search games" placeholder="Search games…" value="'+encodeLabel(query)+'" oninput="window.loliteStoreSearch(this.value)"></div><button class="store-health-check" type="button" onclick="window.loliteStoreCheckFiles()" title="Check local game paths">'+encodeLabel(healthText)+'</button><span class="store-count-pill" title="Every distinct server counts as one playable version">'+totalPlayable.toLocaleString()+' games incl. servers ('+totalGames.length+' titles)</span></div>';
   let list;
   if(query)list=filtered();
   else if(active==='Featured'){
@@ -635,7 +644,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   const popularityStatus=popularity()?.getStatus()?.status||'loading';
   const summary=livePopularity
     ?'Most launched in Lolite · Last 30 days · Anonymous totals'
-    :list.length+' games';
+    :playableVersionCount(list).toLocaleString()+' playable versions · '+list.length+' unique titles';
   const empty=livePopularity
     ?(popularityStatus==='loading'||popularityStatus==='refreshing'
       ?'Loading real game launch counts…'
