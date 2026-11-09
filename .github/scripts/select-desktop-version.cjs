@@ -2,7 +2,7 @@
 const fs=require('node:fs');
 const path=require('node:path');
 const semver=require('../../desktop/node_modules/semver');
-function chooseVersion(requested,releases,{ref,sha,event}){
+function chooseVersion(requested,releases,{ref,sha,event,runNumber=0}){
   if(!semver.valid(requested))throw Error('Invalid desktop package version.');
   if(ref.startsWith('refs/tags/desktop-v')){
     if(ref!==`refs/tags/desktop-v${requested}`)throw Error('Tag and package version do not match.');
@@ -14,7 +14,16 @@ function chooseVersion(requested,releases,{ref,sha,event}){
   const built=channel.find(r=>r.target_commitish===sha&&!r.draft);
   if(built)return {version:built.tag_name.slice(9),publish:false};
   const latest=channel.map(r=>r.tag_name.slice(9)).sort(semver.rcompare)[0];
-  const version=!latest||semver.gt(requested,latest)?requested:beta?semver.inc(latest,'prerelease',String(semver.prerelease(requested)[0])):semver.inc(latest,'patch');
+  let version=!latest||semver.gt(requested,latest)?requested:beta?semver.inc(latest,'prerelease',String(semver.prerelease(requested)[0])):semver.inc(latest,'patch');
+  // Concurrent workflow runs previously both chose the same next patch version,
+  // then one tried to overwrite the other run's verified Windows installer.
+  // For stable releases, a monotonically increasing GitHub workflow run number
+  // provides a unique, SemVer-compatible minimum patch number.
+  const unique=Number(runNumber);
+  if(!beta&&Number.isSafeInteger(unique)&&unique>0){
+    const candidate=semver.parse(version);
+    version=candidate.major+'.'+candidate.minor+'.'+Math.max(candidate.patch,unique);
+  }
   return {version,publish:true};
 }
 async function main(){
@@ -24,7 +33,7 @@ async function main(){
     if(!response.ok)throw Error('Could not resolve desktop release version: HTTP '+response.status);
     const rows=await response.json();releases.push(...rows);if(rows.length<100)break;if(page===20)throw Error('Release history exceeds the version resolver limit.');
   }
-  const result=chooseVersion(pkg.version,releases,{ref:process.env.GITHUB_REF,sha:process.env.GITHUB_SHA,event:process.env.GITHUB_EVENT_NAME});
+  const result=chooseVersion(pkg.version,releases,{ref:process.env.GITHUB_REF,sha:process.env.GITHUB_SHA,event:process.env.GITHUB_EVENT_NAME,runNumber:process.env.GITHUB_RUN_NUMBER});
   pkg.version=result.version;fs.writeFileSync(path.join(root,'package.json'),JSON.stringify(pkg,null,2)+'\n');
   const lock=JSON.parse(fs.readFileSync(path.join(root,'package-lock.json')));lock.version=result.version;lock.packages[''].version=result.version;fs.writeFileSync(path.join(root,'package-lock.json'),JSON.stringify(lock,null,2)+'\n');
   if(process.env.GITHUB_OUTPUT)fs.appendFileSync(process.env.GITHUB_OUTPUT,`version=${result.version}\npublish=${result.publish}\n`);
