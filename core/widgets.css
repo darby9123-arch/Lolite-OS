@@ -1,0 +1,72 @@
+/* Lolite OS desktop widgets — transparent desktop layer, independent of app windows. */
+#lolite-widget-layer{position:absolute;inset:0 0 58px;z-index:4;pointer-events:none;overflow:hidden}
+.lw-card{position:absolute;box-sizing:border-box;width:286px;min-height:150px;pointer-events:auto;color:#edf7ff;background:linear-gradient(140deg,rgba(20,34,63,.94),rgba(7,17,37,.92));border:1px solid rgba(130,193,250,.27);border-radius:18px;box-shadow:0 13px 32px #0008,inset 0 1px #ffffff13;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);overflow:hidden;font:13px/1.45 var(--lolite-font,"Manrope","Segoe UI",sans-serif)}
+.lw-card *{box-sizing:border-box}
+.lw-card button,.lw-picker button{font:inherit;cursor:pointer}
+.lw-card:focus-within,.lw-card:hover{border-color:#83d7ff8a;box-shadow:0 15px 40px #0009,0 0 0 1px #7ecbf126}
+.lw-header{height:43px;display:flex;align-items:center;gap:8px;padding:0 12px 0 15px;cursor:grab;touch-action:none;user-select:none;border-bottom:1px solid #ffffff12}
+.lw-header:active{cursor:grabbing}
+.lw-symbol{font-size:17px;color:#8ddfff;line-height:1}
+.lw-header strong{font-size:12px;font-weight:750;letter-spacing:.03em;flex:1}
+.lw-remove{display:grid!important;place-items:center;width:25px!important;height:25px!important;min-width:25px!important;min-height:25px!important;padding:0!important;color:#a9c5db!important;background:transparent!important;border:0!important;border-radius:8px!important;font-size:17px!important}
+.lw-remove:hover,.lw-remove:focus-visible{color:white!important;background:#ffffff23!important}
+.lw-body{padding:14px 16px 17px}
+.lw-clock-time{font-size:38px;font-weight:700;letter-spacing:-1.8px;line-height:1.2;font-variant-numeric:tabular-nums}
+.lw-clock-date{color:#b5d2e7;font-size:12px;margin-top:6px}
+.lw-clock-zone{font-size:10px;letter-spacing:1.3px;color:#79c6f3;text-transform:uppercase;margin-top:10px}
+.lw-month-nav{display:flex;align-items:center;justify-content:space-between;gap:4px;margin:-2px 0 10px}
+.lw-month-nav b{font-size:13px}
+.lw-month-nav button{width:29px;height:29px;padding:0;border:1px solid #ffffff22;background:#ffffff0a;color:#e7f6ff;border-radius:8px}
+.lw-month-nav button:hover{background:#ffffff20}
+.lw-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center}
+.lw-calendar-grid span{display:grid;place-items:center;height:27px;font-size:11px;color:#c0d3e5;border-radius:6px}
+.lw-calendar-grid .lw-day-name{height:20px;color:#75a8ce;font-size:10px;font-weight:800}
+.lw-calendar-grid .lw-today{background:#2f84c5;color:white;font-weight:850}
+.lw-calendar-grid .lw-other-month{opacity:.3}
+.lw-note{width:100%;height:135px;resize:vertical;min-height:90px;max-height:360px;display:block;background:#08142675;color:#eef9ff;border:1px solid #ffffff27;border-radius:10px;outline:none;padding:11px;font:12px/1.55 var(--lolite-font,"Segoe UI",sans-serif)}
+.lw-note:focus{border-color:#7bc9fc}
+.lw-hint{font-size:10px;color:#a9c3da;margin:8px 0 0}
+.lw-quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.lw-quick-grid button{min-height:56px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;padding:9px 12px;border-radius:10px;border:1px solid #ffffff20;background:#ffffff0e;color:#ebf5ff;text-align:left;font-size:12px}
+.lw-quick-grid button:hover{background:#5c9ad038;border-color:#9cd6ff5e}
+.lw-quick-grid button span{color:#8bc7f0;font-size:17px}
+.lw-system-line{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #ffffff14}
+.lw-system-line:last-child{border-bottom:0}
+.lw-system-line span{color:#adc8df}.lw-system-line b{font-size:12px;font-weight:650;text-align:right}
+.lw-positive{color:#9befbc!important}
+.lw-weather-main{display:flex;align-items:center;gap:15px;margin:4px 0 8px}
+.lw-weather-icon{font-size:37px;line-height:1}
+.lw-weather-temp{font-size:33px;line-height:1.1;font-weight:700;letter-spacing:-1px}
+.lw-weather-city{font-size:13px;font-weight:750;line-height:1.3}
+.lw-weather-sub{font-size:11px;color:#aac7de}
+.lw-weather-set{display:flex;gap:7px;margin-top:12px}
+.lw-weather-set input{flex:1;min-width:0;background:#071429a8;color:white;border:1px solid #ffffff3b;border-radius:8px;padding:8px 9px;font:12px var(--lolite-font,"Segoe UI",sans-serif)}
+.lw-weather-set button,.lw-timer-actions button{border:1px solid #8bd1ff4a;background:#1f648f5c;color:white;border-radius:8px;padding:7px 10px}
+.lw-weather-set button:hover,.lw-timer-actions button:hover{background:#2f80ad}
+.lw-timer-time{text-align:center;font-size:36px;font-weight:750;letter-spacing:1px;font-variant-numeric:tabular-nums}
+.lw-timer-actions{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px}
+.lw-timer-actions label{font-size:11px;color:#b2cadd}
+.lw-timer-actions input{width:52px;border:1px solid #ffffff36;border-radius:7px;background:#071429;color:white;padding:6px}
+.lw-picker{position:fixed;right:16px;bottom:70px;width:min(340px,calc(100vw - 24px));max-height:min(570px,calc(100dvh - 90px));overflow:auto;z-index:100080;padding:17px;background:#111d32f4;color:#edf7ff;border:1px solid #91cafa60;border-radius:16px;box-shadow:0 25px 65px #000c;backdrop-filter:blur(23px);-webkit-backdrop-filter:blur(23px);font:13px var(--lolite-font,"Manrope","Segoe UI",sans-serif)}
+.lw-picker[hidden]{display:none!important}
+.lw-picker-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:13px}
+.lw-picker-head strong{display:block;font-size:17px}.lw-picker-head small{display:block;color:#adcbdf;margin-top:4px}
+.lw-picker-head button{background:transparent;border:0;color:#c6dcee;font-size:20px;padding:0 5px}
+.lw-picker-list{display:grid;gap:7px}
+.lw-picker-list button{width:100%;display:flex;align-items:center;gap:12px;text-align:left;border:1px solid #ffffff20;border-radius:10px;background:#ffffff09;color:#eef7ff;padding:11px}
+.lw-picker-list button:hover{background:#23517c8c;border-color:#8ccafa75}
+.lw-picker-list button .lw-picker-icon{font-size:23px;width:30px;text-align:center;color:#8cd7ff}
+.lw-picker-list button .lw-picker-copy{display:flex;flex:1;flex-direction:column;gap:4px}
+.lw-picker-list button small{color:#abc3d9;font-size:11px}
+.lw-picker-add{font-size:20px;color:#82d2fb}
+#loliteWidgetButton{position:relative}
+#loliteWidgetButton .lw-task-glyph{font-size:20px;line-height:1;color:#9fdbff}
+#loliteWidgetButton[aria-expanded=true]{background:#2c6f9d66!important}
+html.browsing-mode #lolite-widget-layer,html.mobile-mode #lolite-widget-layer,html.tablet-mode #lolite-widget-layer,html.phone-mode #lolite-widget-layer,
+html.browsing-mode #loliteWidgetButton,html.mobile-mode #loliteWidgetButton,html.tablet-mode #loliteWidgetButton,html.phone-mode #loliteWidgetButton{display:none!important}
+html:not([data-lolite-design=cosmos]) .lw-card{background:#242027ef;border-color:#ffffff26;color:#f8eff1}
+html:not([data-lolite-design=cosmos]) .lw-symbol{color:#ef889f}
+html:not([data-lolite-design=cosmos]) .lw-picker{background:#241e26f3;border-color:#ffffff3a}
+@media(max-width:700px){.lw-card{width:240px}.lw-clock-time{font-size:31px}.lw-picker{bottom:62px}.lw-body{padding:12px}}
+@media(prefers-reduced-motion:reduce){.lw-card,.lw-picker,.lw-picker *{transition:none!important;animation:none!important}}
+html.reduce .lw-card,html.reduce .lw-picker{transition:none!important;animation:none!important}
