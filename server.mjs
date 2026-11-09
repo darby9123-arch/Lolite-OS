@@ -54,9 +54,19 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/healthz", (_req, res) => res.json({
-  ok: true, service: "lolite-os", accounts: "supabase", browserLogin: true, proxyTransport: "disabled"
-}));
+app.get("/healthz", (_req, res) => {
+  // Public, non-sensitive build status. Accessible across Lolite's own hosts.
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Cache-Control", "no-store, max-age=0");
+  const commit=process.env.RAILWAY_GIT_COMMIT_SHA||
+    process.env.VERCEL_GIT_COMMIT_SHA||process.env.GITHUB_SHA||null;
+  res.json({
+    ok:true,service:"lolite-os",version:"4.0.0",
+    commit,provider:process.env.RAILWAY_ENVIRONMENT_NAME?"railway":
+      process.env.VERCEL?"vercel":"node",
+    accounts:"supabase",browserLogin:true,proxyTransport:"disabled"
+  });
+});
 
 // No COEP isolation is required while proxy transports are disabled.
 // In standard iframe mode it can prevent otherwise embeddable sites from loading.
