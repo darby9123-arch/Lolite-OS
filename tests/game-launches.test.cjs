@@ -38,10 +38,10 @@ test('Geometry Dash Play does not open a file picker',async()=>{
  h.win.loliteStorePlay('genizy-868.html');
  await flush();
  assert.equal(h.opened.length,1);
- assert.equal(h.opened[0].title,'Geometry Dash Breeze');
- assert.equal(h.opened[0].url,'html%20games/clgdbreeze.html');
+ assert.equal(h.opened[0].title,'Geometry Dash Full');
+ assert.equal(h.opened[0].url,'html%20games/Geometry%20Dash%20webport.html');
  assert.equal(h.forwarded.length,0);
- assert.match(h.toasts.join(' '),/Breeze/);
+ assert.match(h.toasts.join(' '),/Geometry Dash Full/);
  assert.doesNotMatch(read('core/gd-loading-fix.js'),/chooseZip|zipInput\.click/);
 });
 test('Already installed Geometry Dash is used before the fallback',async()=>{
