@@ -13,7 +13,9 @@ permissions:
 
 concurrency:
   group: github-pages
-  cancel-in-progress: true
+  # GitHub Pages rejects overlapping deployments even after previous runs are cancelled.
+  # Queue commits instead of leaving a half-cancelled Pages deployment in progress.
+  cancel-in-progress: false
 
 jobs:
   deploy:
