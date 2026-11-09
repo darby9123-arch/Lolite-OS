@@ -131,7 +131,7 @@ test('Text/plain game HTML is rendered as an executable sandboxed document',asyn
 
 test('Geometry Dash webport handles denied gamepad access without crashing',()=>{
  const html=read('html games/Geometry Dash webport.html');
- const script=html.match(/<script id="lolite-gd-gamepad-compat">([\\s\\S]*?)<\\/script>/);
+ const script=html.match(/<script id="lolite-gd-gamepad-compat">([\s\S]*?)<\/script>/);
  assert.ok(script,'Gamepad compatibility shim must load before game engine');
  assert.ok(html.indexOf('lolite-gd-gamepad-compat')<html.indexOf('googletagmanager'),'Shim must run before other webport scripts');
  const blocked={
