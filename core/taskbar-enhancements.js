@@ -1,7 +1,7 @@
 /* Lolite OS 4.0: taskbar context controls, live window-state previews and badges. */
 (()=>{'use strict';
  const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
- let pop=null,menu=null,hoverTimer=null,activeId=null;
+ let pop=null,menu=null,hoverTimer=null,hideTimer=null,activeId=null;
  const notifications=new Map();
  const apps=()=>window.LoliteDesktopShell?.apps||[];
  const record=id=>window.LoliteWindowManager?.getWindow?.(id)||null;
@@ -13,7 +13,7 @@
   const id=el.dataset.taskApp||el.dataset.appId;
   return /^(?:[a-z0-9_-]){1,80}$/i.test(id)?id:null;
  };
- function closePreview(){if(pop){pop.remove();pop=null}activeId=null}
+ function closePreview(){if(hideTimer){clearTimeout(hideTimer);hideTimer=null}if(pop){pop.remove();pop=null}activeId=null}
  function closeMenu(){menu?.remove();menu=null}
  function locate(target,popup){
   const rect=target.getBoundingClientRect(),width=popup.offsetWidth||250;
@@ -39,6 +39,8 @@
     '<button type="button" data-preview-action="min">Minimise</button>'+
     '<button type="button" data-preview-action="close">Close</button></div>';
   pop.dataset.appId=id;document.body.appendChild(pop);locate(target,pop);
+  pop.addEventListener('pointerenter',()=>{if(hideTimer){clearTimeout(hideTimer);hideTimer=null}});
+  pop.addEventListener('pointerleave',closePreview);
  }
  function renderBadges(){
   document.querySelectorAll('#taskbar [data-task-app],#taskbar .taskwin').forEach(el=>{
@@ -83,7 +85,8 @@
   });
   bar.addEventListener('pointerout',e=>{
    if(hoverTimer){clearTimeout(hoverTimer);hoverTimer=null}
-   if(!e.relatedTarget?.closest?.('.lolite-task-preview'))closePreview();
+   if(hideTimer)clearTimeout(hideTimer);
+   hideTimer=setTimeout(()=>{hideTimer=null;closePreview()},220);
   });
   bar.addEventListener('focusin',e=>{
    const button=e.target.closest?.('[data-task-app],.taskwin');if(button)preview(button);
