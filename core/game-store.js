@@ -525,8 +525,19 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  const isRanked=g=>playCount(g)>0&&!!popularity()?.isEligible(g);
  const ranked=list=>list.filter(isRanked).sort((a,b)=>playCount(b)-playCount(a)||a.title.localeCompare(b.title));
  const matchesCategory=g=>franchiseNames.has(active)?g.franchise===active:active==='All Games'||active==='Featured'||active==='Popular Games'?true:active==='Recently Added'?!!g.adminSharedGame||g.recentlyAdded||g.file.startsWith('local-'):active==='My Library'?hasGame(g):active==='Built-in HTML'?g.url.startsWith('games/'):active==='Free to Play'?gamePrice(g)===0:g.category===active;
+ const broken=g=>window.LoliteGameHealth?.isUnavailable?.(g)&&availableServers(g).length<=1;
+ const healthy=list=>list.filter(g=>!broken(g));
+ const requestHealth=()=>{void window.LoliteGameHealth?.scan?.(games)};
+ window.LoliteGameSearch=(text,limit=8)=>{
+   const q=String(text||'').trim().toLowerCase();
+   if(q.length<2)return [];
+   return healthy(games).filter(g=>!/(?:casino|gambling|poker|roulette|slot.?machine|adult)/i.test(g.title+' '+g.category)&&
+    (g.title+' '+g.category+' '+(g.franchise||'')).toLowerCase().includes(q))
+    .slice(0,Math.min(20,Math.max(1,limit)))
+    .map(g=>({file:g.file,title:g.title,category:g.category,unlocked:hasGame(g)}));
+ };
  const filtered=()=>{
-  const found=games.filter(g=>matchesCategory(g)&&(!query||g.title.toLowerCase().includes(query.toLowerCase())||g.category.toLowerCase().includes(query.toLowerCase())||(g.franchise||'').toLowerCase().includes(query.toLowerCase())||availableServers(g).some(x=>x.name.toLowerCase().includes(query.toLowerCase()))));
+  const found=healthy(games).filter(g=>matchesCategory(g)&&(!query||g.title.toLowerCase().includes(query.toLowerCase())||g.category.toLowerCase().includes(query.toLowerCase())||(g.franchise||'').toLowerCase().includes(query.toLowerCase())||availableServers(g).some(x=>x.name.toLowerCase().includes(query.toLowerCase()))));
   return active==='Popular Games'?ranked(found):active==='Recently Added'?found.sort((a,b)=>Date.parse(b.addedAt||0)-Date.parse(a.addedAt||0)||a.title.localeCompare(b.title)):found;
  };
  const coverPalette=g=>{let hash=0;for(const ch of g.file)hash=(Math.imul(hash,31)+ch.charCodeAt(0))>>>0;const hue=hash%360,hue2=(hue+48+(hash%73))%360;return [`hsl(${hue} 62% 28%)`,`hsl(${hue2} 48% 13%)`,`${12+(hash%13)}s`,String(hash%6),`-${hash%17000}ms`]};
@@ -607,14 +618,18 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  const section=(title,list)=>list.length?'<section class="store-section"><div class="store-section-head"><div><h2>'+title+'</h2><p>'+list.length+' games to explore</p></div><button type="button" onclick=\'window.loliteStoreCategory("'+title+'")\'>View collection →</button></div><div class="store-grid">'+list.slice(0,8).map(card).join('')+'</div></section>':'';
  function render(){
   const root=document.querySelector('.store-main');if(!root)return;
-  const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" aria-label="Search games" placeholder="Search games…" value="'+encodeLabel(query)+'" oninput="window.loliteStoreSearch(this.value)"></div><span class="store-count-pill">'+games.length+' games</span></div>';
+  requestHealth();
+  const healthStatus=window.LoliteGameHealth?.summary?.();
+  const healthText=healthStatus?.missing?healthStatus.missing+' unavailable hidden':'Check game files';
+  const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" aria-label="Search games" placeholder="Search games…" value="'+encodeLabel(query)+'" oninput="window.loliteStoreSearch(this.value)"></div><button class="store-health-check" type="button" onclick="window.loliteStoreCheckFiles()" title="Check local game paths">'+encodeLabel(healthText)+'</button><span class="store-count-pill">'+healthy(games).length+' available</span></div>';
   let list;
   if(query)list=filtered();
   else if(active==='Featured'){
    const picks=featuredGames.map(item=>games.find(g=>g.file===item.file)).filter(Boolean);
    list=[...picks,...ranked(games)].filter((g,i,all)=>all.findIndex(item=>item.file===g.file)===i);
-  }else if(active==='All Games')list=games;
+  }else if(active==='All Games')list=healthy(games);
   else list=filtered();
+  list=healthy(list);
   const showFeatured=!query&&active==='Featured';
   const livePopularity=active==='Popular Games';
   const popularityStatus=popularity()?.getStatus()?.status||'loading';
@@ -651,6 +666,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  };
  window.loliteStorePlay=file=>{
   const game=games.find(g=>g.file===file);if(!game)return;
+  if(broken(game)){window.toast?.('This game is missing on this host. Try another game or rescan.');return}
   const chosen=Number(serverSelections.get(file)||0);
   if(game.gamefilesRecord&&chosen===0){
    const packages=window.LoliteLocalGamePackages;
@@ -703,6 +719,8 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  document.addEventListener('webkitfullscreenchange',syncGameFullscreen);
  window.loliteStoreOpenSeparate=url=>window.open(url,'_blank','noopener,noreferrer');
  window.lolitePlayMinecraft=()=>window.loliteStorePlay('clminecraftpocketedition.html');
+ window.loliteStoreCheckFiles=()=>window.LoliteGameHealth?.scan?.(games,{force:true});
+ window.addEventListener('lolite:gamehealthchange',()=>{if(document.querySelector('.store-main'))render()});
  window.addEventListener('lolite:popular-games',()=>{if((active==='Popular Games'||active==='Featured')&&document.querySelector('.store-main'))render()});
  window.addEventListener('lolite-store-purchase',()=>render());
  window.addEventListener('lolite-wallet-updated',()=>render());
