@@ -40,5 +40,6 @@ test('Game Library count and category totals include server versions without mul
   assert.match(source, /totalPlayable=playableVersionCount\(totalGames\)/);
   assert.match(source, /totalPlayable\.toLocaleString\(\)\+' games incl\. servers/);
   assert.match(source, /playableVersionCount\(list\)\.toLocaleString\(\)/);
-  assert.match(source, /list\.slice\(0,visibleCount\)\.map\(card\)/);
+  assert.match(source, /const showing=list\.slice\(0,visibleCount\)/);
+  assert.match(source, /showing\.map\(card\)/);
 });
