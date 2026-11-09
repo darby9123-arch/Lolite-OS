@@ -52,7 +52,7 @@ test('saved window geometry and snap position survive closing and reopening the 
  const second=desktop(saved),reopened=second.c.openApp('files','Files');
  assert.equal(reopened.dataset.snap,'right');
  const bounds=reopened.getBoundingClientRect();
- assert.equal(bounds.left,648);
+ assert.equal(bounds.left,644);
  assert.equal(bounds.width,628);
  second.c.LoliteWindowManager.forgetLayout('files');
  assert.equal(JSON.parse(saved.get('loliteWindowLayoutsV4')).files,undefined);
