@@ -269,6 +269,12 @@
  });
  const oldPage=window.page;
  window.page=function(id){if(id==='music'){setTimeout(load,0);return '<div id="lmRoot" class="lm-shell"><div class="lm-loading">Loading Lolite Music…</div></div>'}return oldPage(id)};
- sb?.auth.onAuthStateChange(()=>setTimeout(()=>{if(root())void load()},0));
+ sb?.auth.onAuthStateChange(event=>{
+  if(event==='SIGNED_OUT'){
+   audio.pause();audio.removeAttribute('src');audio.load();
+   S.current=null;S.queue=[];S.user=null;
+  }
+  setTimeout(()=>{if(root())void load()},0);
+ });
  window.LoliteMusic=Object.freeze({open:()=>window.openApp?.('music','Lolite Music',1100,760),refresh:load});
 })();
