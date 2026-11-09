@@ -4,9 +4,9 @@
  let pop=null,menu=null,hoverTimer=null,activeId=null;
  const notifications=new Map();
  const apps=()=>window.LoliteDesktopShell?.apps||[];
- const record=id=>window.state?.windows?.[id]||null;
+ const record=id=>window.LoliteWindowManager?.getWindow?.(id)||null;
  const label=id=>apps().find(a=>a[0]===id)?.[1]||record(id)?.title||id;
- const status=id=>{const w=record(id);return !w?'Not open':w.minimised?'Minimised':w.closing?'Closing':window.state?.activeId===id?'Active window':'Open in background'};
+ const status=id=>{const w=record(id);return !w?'Not open':w.minimised?'Minimised':w.closing?'Closing':window.LoliteWindowManager?.activeWindowId?.()===id?'Active window':'Open in background'};
  const getId=target=>{
   const el=target?.closest?.('[data-task-app],#tasks .taskwin');
   if(!el)return null;
