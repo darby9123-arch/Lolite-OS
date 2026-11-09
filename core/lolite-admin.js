@@ -187,14 +187,19 @@
   if(file){
    if(kind==='website')throw Error('Website shortcuts require an HTTPS link, not a file.');
    const ext=(file.name.split('.').pop()||'').toLowerCase();
-   const type=kind==='game'?'text/html':file.type;
+   const type=kind==='game'?'text/html':file.type||({png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp',mp4:'video/mp4',webm:'video/webm'}[ext]||'');
    if(kind==='game'&&!['html','htm'].includes(ext))throw Error('Upload a standalone .html or .htm game.');
    if(kind==='wallpaper'&&!['image/png','image/jpeg','image/webp','video/mp4','video/webm'].includes(type))throw Error('Choose a PNG, JPG, WebP, MP4 or WebM wallpaper.');
-   if(file.size===0||file.size>25*1024*1024)throw Error('Files must be between 1 byte and 25 MB.');
+   const maxSize=(kind==='wallpaper'?50:25)*1024*1024;
+   if(file.size===0||file.size>maxSize)throw Error('Files must be between 1 byte and '+(maxSize/1024/1024)+' MB.');
    if(kind==='game'){
     const html=await file.text();
     if(!/<(?:html|head|body|script|canvas|div)\b/i.test(html))throw Error('This file does not contain an HTML game.');
     if(/<iframe\b/i.test(html))throw Error('Please upload an actual HTML game, not an iframe wrapper.');
+   }
+   if(kind==='wallpaper'&&type==='video/mp4'){
+    const signature=new Uint8Array(await file.slice(0,12).arrayBuffer());
+    if(String.fromCharCode(...signature.slice(4,8))!=='ftyp')throw Error('The selected file is not a valid MP4.');
    }
    const suffix=kind==='game'?'html':ext;
    const unique=typeof crypto?.randomUUID==='function'?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2);
