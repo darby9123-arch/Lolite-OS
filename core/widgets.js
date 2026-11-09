@@ -1,0 +1,287 @@
+/* Lolite OS desktop widgets: local layouts and notes; optional ad-free weather. */
+(()=>{'use strict';
+ const KEY='lolite.widgets.v1';
+ const TYPES={
+  clock:{title:'Clock',icon:'◷',description:'Live local time and date'},
+  calendar:{title:'Calendar',icon:'▦',description:'Browse months and today'},
+  notes:{title:'Sticky note',icon:'✎',description:'A note saved in this browser'},
+  weather:{title:'Weather',icon:'☁',description:'Current conditions for a city you choose'},
+  shortcuts:{title:'Quick launch',icon:'✦',description:'Open your favourite Lolite apps'},
+  system:{title:'System info',icon:'▤',description:'Real browser and device information'},
+  timer:{title:'Timer',icon:'⌛',description:'A simple countdown'}
+ };
+ const $=s=>document.querySelector(s);
+ const safe=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+ const bounded=(n,min,max)=>Math.max(min,Math.min(max,n));
+ const initial={items:[{id:'clock-1',type:'clock',x:-1,y:22},{id:'calendar-1',type:'calendar',x:-1,y:225}],note:'',weatherCity:''};
+ let data=read(),layer=null,picker=null,button=null,drag=null;
+ const months=new Map(),timers=new Map(),weatherCache=new Map();
+ let weatherPending=null;
+ function read(){
+  try{
+   const value=JSON.parse(localStorage.getItem(KEY)||'null');
+   if(value&&Array.isArray(value.items)){
+    const seen=new Set();
+    const items=value.items.filter(w=>w&&TYPES[w.type]&&typeof w.id==='string'&&!seen.has(w.type)&&seen.add(w.type)).slice(0,7)
+      .map(w=>({id:w.id.slice(0,80),type:w.type,x:Number.isFinite(w.x)?w.x:-1,y:Number.isFinite(w.y)?w.y:22}));
+    return {items,note:typeof value.note==='string'?value.note.slice(0,10000):'',weatherCity:typeof value.weatherCity==='string'?value.weatherCity.slice(0,70):''};
+   }
+  }catch(e){console.warn('Lolite widgets: saved layout unavailable',e)}
+  return JSON.parse(JSON.stringify(initial));
+ }
+ function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){console.warn('Lolite widgets: could not save settings',e)}
+ }
+ function desktopWidth(){return layer?.clientWidth||window.innerWidth}
+ function desktopHeight(){return layer?.clientHeight||Math.max(200,window.innerHeight-60)}
+ function widthFor(){return window.innerWidth<=700?240:286}
+ function position(w,el){
+  const maxX=Math.max(0,desktopWidth()-(el?.offsetWidth||widthFor())-10);
+  const maxY=Math.max(0,desktopHeight()-(el?.offsetHeight||195)-10);
+  const x=w.x<0?maxX:bounded(w.x,0,maxX),y=bounded(w.y,0,maxY);
+  if(el){el.style.left=x+'px';el.style.top=y+'px'}
+  return {x,y};
+ }
+ function clockMarkup(){
+  const now=new Date();
+  return '<div class="lw-clock-time" data-lw-clock>'+safe(now.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}))+'</div>'+
+   '<div class="lw-clock-date" data-lw-date>'+safe(now.toLocaleDateString([],{weekday:'long',day:'numeric',month:'long'}))+'</div>'+
+   '<div class="lw-clock-zone">'+safe(Intl.DateTimeFormat().resolvedOptions().timeZone||'Local time')+'</div>';
+ }
+ function calendarMarkup(id){
+  const offset=months.get(id)||0,now=new Date(),view=new Date(now.getFullYear(),now.getMonth()+offset,1);
+  const year=view.getFullYear(),month=view.getMonth(),first=new Date(year,month,1).getDay(),days=new Date(year,month+1,0).getDate();
+  let grid='<div class="lw-calendar-grid">'+['S','M','T','W','T','F','S'].map(d=>'<span class="lw-day-name">'+d+'</span>').join('');
+  for(let i=0;i<first;i++)grid+='<span class="lw-other-month"></span>';
+  for(let d=1;d<=days;d++)grid+='<span class="'+(year===now.getFullYear()&&month===now.getMonth()&&d===now.getDate()?'lw-today':'')+'">'+d+'</span>';
+  return '<div class="lw-month-nav"><button type="button" data-lw-month="-1" aria-label="Previous month">‹</button><b>'+safe(view.toLocaleDateString([],{month:'long',year:'numeric'}))+'</b><button type="button" data-lw-month="1" aria-label="Next month">›</button></div>'+grid+'</div>';
+ }
+ function notesMarkup(){return '<textarea class="lw-note" data-lw-note aria-label="Sticky note" maxlength="10000" placeholder="Write something to remember…">'+safe(data.note)+'</textarea><p class="lw-hint">Auto-saved locally · not shared with other devices</p>'}
+ function shortcutsMarkup(){
+  return '<div class="lw-quick-grid">'+[['files','▤','Files'],['games','▣','Games'],['appstore','✦','App Store'],['settings','⚙','Settings']].map(a=>
+   '<button type="button" data-lw-app="'+a[0]+'"><span>'+a[1]+'</span>'+a[2]+'</button>').join('')+'</div>';
+ }
+ function systemMarkup(){
+  const rows=[
+   ['Connection',navigator.onLine?'Online':'Offline'],
+   ['CPU threads',navigator.hardwareConcurrency?String(navigator.hardwareConcurrency)+' reported':'Not available'],
+   ['Device memory',navigator.deviceMemory?String(navigator.deviceMemory)+' GB (approx.)':'Not available'],
+   ['Platform',navigator.userAgentData?.platform||navigator.platform||'Not available']
+  ];
+  return rows.map(([k,v],i)=>'<div class="lw-system-line"><span>'+safe(k)+'</span><b'+(i===0&&navigator.onLine?' class="lw-positive"':'')+'>'+safe(v)+'</b></div>').join('')+
+   '<p class="lw-hint">Browser-reported specs, not live CPU or RAM usage.</p>';
+ }
+ function weatherMarkup(){
+  const city=data.weatherCity,stored=weatherCache.get(city.toLowerCase());
+  const display=stored?'<div class="lw-weather-main"><span class="lw-weather-icon">'+stored.icon+'</span><div><div class="lw-weather-temp">'+safe(stored.temp)+'°C</div><div class="lw-weather-sub">'+safe(stored.condition)+'</div></div></div><div class="lw-weather-city">'+safe(stored.city)+'</div><div class="lw-weather-sub">Feels like '+safe(stored.feels)+'°C · Humidity '+safe(stored.humidity)+'%</div>':
+   '<div class="lw-weather-sub" data-lw-weather-status>'+ (city?'Loading weather for '+safe(city)+'…':'Choose a city to see its weather. No location tracking or ads.')+'</div>';
+  return display+'<form class="lw-weather-set" data-lw-weather-form><input type="search" name="city" aria-label="Weather city" autocomplete="off" maxlength="70" placeholder="City (e.g. Adelaide)" value="'+safe(city)+'"><button type="submit">Go</button></form>';
+ }
+ function timerState(id){
+  if(!timers.has(id))timers.set(id,{seconds:300,until:0,running:false});
+  return timers.get(id);
+ }
+ function fmtTimer(seconds){const s=Math.max(0,Math.ceil(seconds));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+ function timerMarkup(id){
+  const s=timerState(id);
+  return '<div class="lw-timer-time" data-lw-timer-time>'+fmtTimer(s.seconds)+'</div>'+
+   '<div class="lw-timer-actions"><label>Minutes <input data-lw-timer-minutes type="number" min="1" max="180" step="1" value="'+Math.max(1,Math.ceil(s.seconds/60))+'"></label>'+
+   '<button type="button" data-lw-timer-toggle>'+(s.running?'Pause':'Start')+'</button><button type="button" data-lw-timer-reset>Reset</button></div>'+
+   '<p class="lw-hint" data-lw-timer-status>Timer works while Lolite stays open.</p>';
+ }
+ function body(type,id){
+  if(type==='clock')return clockMarkup();
+  if(type==='calendar')return calendarMarkup(id);
+  if(type==='notes')return notesMarkup();
+  if(type==='shortcuts')return shortcutsMarkup();
+  if(type==='system')return systemMarkup();
+  if(type==='weather')return weatherMarkup();
+  if(type==='timer')return timerMarkup(id);
+  return '';
+ }
+ function paint(){
+  if(!layer)return;
+  layer.replaceChildren();
+  for(const w of data.items){
+   const el=document.createElement('section');el.className='lw-card';el.dataset.lwId=w.id;el.dataset.lwType=w.type;
+   el.setAttribute('role','region');el.setAttribute('aria-label',TYPES[w.type].title+' widget');
+   el.innerHTML='<div class="lw-header"><span class="lw-symbol" aria-hidden="true">'+TYPES[w.type].icon+'</span><strong>'+TYPES[w.type].title+'</strong>'+
+     '<button class="lw-remove" type="button" data-lw-remove title="Remove widget" aria-label="Remove '+TYPES[w.type].title+' widget">×</button></div>'+
+     '<div class="lw-body">'+body(w.type,w.id)+'</div>';
+   layer.append(el);position(w,el);
+  }
+  if(data.weatherCity&&data.items.some(w=>w.type==='weather'))refreshWeather(data.weatherCity);
+  updateTicks();
+  updatePicker();
+ }
+ function pickerMarkup(){
+  return '<div class="lw-picker-head"><div><strong>Desktop widgets</strong><small>Add, drag and personalise your desktop.</small></div>'+
+   '<button type="button" data-lw-close aria-label="Close widget picker">×</button></div><div class="lw-picker-list">'+
+   Object.entries(TYPES).map(([type,o])=>{
+    const present=data.items.some(w=>w.type===type);
+    return '<button type="button" data-lw-add="'+type+'" '+(present?'disabled':'')+'><span class="lw-picker-icon">'+o.icon+'</span><span class="lw-picker-copy"><b>'+o.title+'</b><small>'+o.description+'</small></span><span class="lw-picker-add">'+(present?'✓':'+')+'</span></button>';
+   }).join('')+'</div>';
+ }
+ function updatePicker(){if(picker&&!picker.hidden)picker.innerHTML=pickerMarkup()}
+ function togglePicker(force){
+  if(!picker)return;
+  const show=typeof force==='boolean'?force:picker.hidden;
+  picker.hidden=!show;
+  button?.setAttribute('aria-expanded',String(show));
+  if(show){updatePicker();picker.querySelector('[data-lw-close]')?.focus()}
+ }
+ function add(type){
+  if(!TYPES[type]||data.items.some(w=>w.type===type))return;
+  const step=data.items.length;
+  data.items.push({id:type+'-'+Date.now(),type,x:-1,y:22+step*38});
+  save();paint();togglePicker(false);
+ }
+ function remove(id){
+  data.items=data.items.filter(w=>w.id!==id);
+  months.delete(id);timers.delete(id);
+  save();paint();
+ }
+ function conditions(code){
+  if(code===0)return ['☀️','Clear'];
+  if([1,2,3].includes(code))return ['⛅','Partly cloudy'];
+  if([45,48].includes(code))return ['🌫️','Fog'];
+  if(code>=51&&code<=57)return ['🌦️','Drizzle'];
+  if(code>=61&&code<=67)return ['🌧️','Rain'];
+  if(code>=71&&code<=77)return ['❄️','Snow'];
+  if(code>=80&&code<=82)return ['🌦️','Showers'];
+  if(code>=95)return ['⛈️','Thunderstorms'];
+  return ['☁️','Cloudy'];
+ }
+ async function refreshWeather(city){
+  const query=String(city||'').trim().slice(0,70);
+  if(!query)return;
+  const key=query.toLowerCase(),cached=weatherCache.get(key);
+  if(cached&&Date.now()-cached.at<15*60*1000){updateWeatherBody();return}
+  if(weatherPending===key)return;
+  weatherPending=key;
+  try{
+   const geocode=await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(query)+'&count=1&language=en&format=json');
+   if(!geocode.ok)throw Error('City lookup failed');
+   const place=(await geocode.json()).results?.[0];if(!place)throw Error('City not found');
+   const endpoint='https://api.open-meteo.com/v1/forecast?latitude='+encodeURIComponent(place.latitude)+'&longitude='+encodeURIComponent(place.longitude)+
+    '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code&timezone=auto';
+   const response=await fetch(endpoint);if(!response.ok)throw Error('Forecast unavailable');
+   const current=(await response.json()).current;if(!current||!Number.isFinite(current.temperature_2m))throw Error('No weather available');
+   const [icon,condition]=conditions(current.weather_code);
+   weatherCache.set(key,{at:Date.now(),city:place.name+(place.country?', '+place.country:''),temp:Math.round(current.temperature_2m),
+    feels:Math.round(current.apparent_temperature),humidity:Math.round(current.relative_humidity_2m),icon,condition});
+   if(data.weatherCity.toLowerCase()===key)updateWeatherBody();
+  }catch(e){
+   const message=layer?.querySelector('[data-lw-weather-status]');
+   if(message&&data.weatherCity.toLowerCase()===key)message.textContent='Weather unavailable: '+e.message+'. Try another city.';
+  }finally{if(weatherPending===key)weatherPending=null}
+ }
+ function updateWeatherBody(){
+  const node=layer?.querySelector('[data-lw-type="weather"] .lw-body');
+  if(node){node.innerHTML=weatherMarkup();const item=data.items.find(w=>w.type==='weather');if(item)position(item,node.parentElement)}
+ }
+ function updateTicks(){
+  const now=new Date(),clock=layer?.querySelector('[data-lw-clock]'),date=layer?.querySelector('[data-lw-date]');
+  if(clock)clock.textContent=now.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  if(date)date.textContent=now.toLocaleDateString([],{weekday:'long',day:'numeric',month:'long'});
+  for(const [id,state] of timers){
+   if(state.running){
+    state.seconds=Math.max(0,(state.until-Date.now())/1000);
+    if(state.seconds===0){state.running=false;const status=layer?.querySelector('[data-lw-id="'+id+'"] [data-lw-timer-status]');if(status)status.textContent='Time is up!'}
+   }
+   const card=Array.from(layer?.querySelectorAll('.lw-card')||[]).find(el=>el.dataset.lwId===id);
+   const text=card?.querySelector('[data-lw-timer-time]');if(text)text.textContent=fmtTimer(state.seconds);
+   const toggle=card?.querySelector('[data-lw-timer-toggle]');if(toggle)toggle.textContent=state.running?'Pause':'Start';
+  }
+ }
+ function beginDrag(event,header){
+  if(event.button!==0||event.target.closest('button'))return;
+  const card=header.closest('.lw-card'),w=data.items.find(item=>item.id===card?.dataset.lwId);
+  if(!w)return;
+  const box=card.getBoundingClientRect(),origin=layer.getBoundingClientRect();
+  drag={id:w.id,pointer:event.pointerId,dx:event.clientX-box.left,dy:event.clientY-box.top};
+  try{header.setPointerCapture(event.pointerId)}catch(_){}
+  event.preventDefault();
+  header.addEventListener('pointermove',moveDrag);
+  header.addEventListener('pointerup',endDrag,{once:true});
+  header.addEventListener('pointercancel',endDrag,{once:true});
+  function moveDrag(e){
+   if(!drag||e.pointerId!==drag.pointer)return;
+   w.x=bounded(e.clientX-origin.left-drag.dx,0,Math.max(0,desktopWidth()-card.offsetWidth-10));
+   w.y=bounded(e.clientY-origin.top-drag.dy,0,Math.max(0,desktopHeight()-card.offsetHeight-10));
+   position(w,card);
+  }
+  function endDrag(e){
+   header.removeEventListener('pointermove',moveDrag);header.removeEventListener('pointerup',endDrag);header.removeEventListener('pointercancel',endDrag);
+   if(!drag||e.pointerId!==drag.pointer)return;
+   drag=null;try{header.releasePointerCapture(e.pointerId)}catch(_){}
+   save();
+  }
+ }
+ function launch(id){
+  if(typeof window.LoliteDesktopShell?.launch==='function')window.LoliteDesktopShell.launch(id);
+  else window.openApp?.(id,({files:'Files',games:'Game Store',appstore:'App Store',settings:'Settings'})[id]||id);
+ }
+ function handleClick(e){
+  if(e.target.closest('#loliteWidgetButton')){e.preventDefault();togglePicker();return}
+  if(e.target.closest('[data-lw-close]')){togglePicker(false);return}
+  const addButton=e.target.closest('[data-lw-add]');if(addButton){add(addButton.dataset.lwAdd);return}
+  const rem=e.target.closest('[data-lw-remove]');if(rem){remove(rem.closest('.lw-card').dataset.lwId);return}
+  const quick=e.target.closest('[data-lw-app]');if(quick){launch(quick.dataset.lwApp);return}
+  const month=e.target.closest('[data-lw-month]');if(month){
+   const w=month.closest('.lw-card');const id=w.dataset.lwId;
+   months.set(id,(months.get(id)||0)+Number(month.dataset.lwMonth));
+   w.querySelector('.lw-body').innerHTML=calendarMarkup(id);position(data.items.find(i=>i.id===id),w);return;
+  }
+  const toggle=e.target.closest('[data-lw-timer-toggle]');
+  if(toggle){
+   const id=toggle.closest('.lw-card').dataset.lwId,s=timerState(id);
+   if(s.running){s.seconds=Math.max(0,(s.until-Date.now())/1000);s.running=false}
+   else{if(s.seconds<=0)s.seconds=300;s.until=Date.now()+s.seconds*1000;s.running=true}
+   updateTicks();return;
+  }
+  const reset=e.target.closest('[data-lw-timer-reset]');
+  if(reset){
+   const card=reset.closest('.lw-card'),id=card.dataset.lwId,s=timerState(id),input=card.querySelector('[data-lw-timer-minutes]');
+   s.seconds=bounded(Number(input?.value)||5,1,180)*60;s.running=false;
+   const status=card.querySelector('[data-lw-timer-status]');if(status)status.textContent='Timer ready.';
+   updateTicks();return;
+  }
+  if(picker&&!picker.hidden&&!picker.contains(e.target)&&!button.contains(e.target))togglePicker(false);
+ }
+ function handleSubmit(e){
+  const form=e.target.closest('[data-lw-weather-form]');if(!form)return;
+  e.preventDefault();const city=form.elements.city.value.trim().slice(0,70);
+  if(!city)return;
+  data.weatherCity=city;save();
+  const body=form.closest('.lw-body');if(body)body.innerHTML=weatherMarkup();
+  refreshWeather(city);
+ }
+ function fitAll(){for(const w of data.items){const el=Array.from(layer?.children||[]).find(e=>e.dataset.lwId===w.id);position(w,el)}}
+ function init(){
+  const desktop=$('#desktop'),bar=$('#taskbar'),tray=bar?.querySelector('.tray');
+  if(!desktop||!tray||$('#lolite-widget-layer'))return;
+  layer=document.createElement('div');layer.id='lolite-widget-layer';layer.setAttribute('aria-label','Desktop widgets');
+  desktop.insertBefore(layer,$('#windows')||null);
+  button=document.createElement('button');button.id='loliteWidgetButton';button.className='task';button.type='button';
+  button.setAttribute('title','Desktop widgets');button.setAttribute('aria-label','Add desktop widgets');button.setAttribute('aria-controls','loliteWidgetPicker');
+  button.setAttribute('aria-expanded','false');button.innerHTML='<span class="lw-task-glyph" aria-hidden="true">▦</span>';
+  tray.insertBefore(button,tray.querySelector('#settingsBtn')||tray.firstChild);
+  picker=document.createElement('div');picker.id='loliteWidgetPicker';picker.className='lw-picker';picker.hidden=true;
+  picker.setAttribute('role','dialog');picker.setAttribute('aria-label','Add desktop widgets');
+  document.body.appendChild(picker);
+  paint();
+  document.addEventListener('click',handleClick);
+  layer.addEventListener('pointerdown',e=>{const h=e.target.closest('.lw-header');if(h)beginDrag(e,h)});
+  document.addEventListener('submit',handleSubmit);
+  document.addEventListener('input',e=>{if(e.target.matches('[data-lw-note]')){data.note=e.target.value.slice(0,10000);save()}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!picker.hidden)togglePicker(false)});
+  window.addEventListener('resize',fitAll,{passive:true});
+  window.addEventListener('online',()=>{const node=layer?.querySelector('[data-lw-type="system"] .lw-body');if(node)node.innerHTML=systemMarkup()});
+  window.addEventListener('offline',()=>{const node=layer?.querySelector('[data-lw-type="system"] .lw-body');if(node)node.innerHTML=systemMarkup()});
+  window.addEventListener('lolite:modechange',()=>togglePicker(false));
+  setInterval(updateTicks,1000);
+  window.LoliteWidgets={open:()=>togglePicker(true),add,remove,list:()=>data.items.map(w=>w.type),reset:()=>{data=JSON.parse(JSON.stringify(initial));save();paint()}};
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
