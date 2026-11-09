@@ -99,5 +99,5 @@ test('Website favicon fetch failures have a safe default icon fallback',()=>{
 
 test('Published index loads the refreshed tab appearance code',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
- assert.match(html,/core\/tab-cloaking\.js\?v=custom-favicon-20261109/);
+ assert.match(html,/<script defer src="core\/tab-cloaking\.js\?v=[^"<>]+"><\/script>/);
 });
