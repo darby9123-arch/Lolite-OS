@@ -49,6 +49,13 @@ This panel checks versions; it does not secretly deploy new builds. Deploying ea
 - **Ctrl + Alt + Shift + Arrow**: snap to a corner. Left is top-left; Right is top-right; Down is bottom-left; Up is bottom-right.
 - Saved normal rectangles and snap positions are stored locally under `loliteWindowLayoutsV4`. Each app restores its geometry when reopened, fitted safely to the current screen size. No window content is stored in layout preferences.
 
+### Virtual desktops
+
+- Lolite now has **three independent desktops**. The Windows-style taskbar's **Desk 1 / Desk 2 / Desk 3** button cycles between them.
+- Press **Ctrl + Alt + 1 / 2 / 3** to jump to a specific desktop. The selected desktop persists in localStorage under `loliteCurrentDesktopV4`.
+- Apps remain open when switching desktops; off-desktop windows and their taskbar buttons are hidden, not closed.
+- When an existing app is launched from another desktop, it moves to the active desktop and is restored there.
+
 ## 6. Spotlight Search
 
 Press **Ctrl + Space** or click Search on the taskbar. Search across:
