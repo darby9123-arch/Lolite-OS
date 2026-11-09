@@ -37,13 +37,26 @@ test('Every HTML page in the Lolite game folders is listed exactly once',()=>{
  }
 });
 
-test('Game Store only loads repository HTML games, not remote catalog entries',()=>{
- assert.doesNotMatch(source,/^\s*loadGenizyCatalog\(\);\s*$/m);
- assert.doesNotMatch(source,/^\s*loadAdditionalServers\(\);\s*$/m);
- assert.doesNotMatch(source,/^\s*void syncGamefilesCollection\(\)/m);
- assert.match(source,/const raw=\[\{name:baseName,url:g\.url\},\.\.\.\(Array\.isArray\(g\.servers\)\?g\.servers:\[\]\)\];/);
+test('Restore published HTML game catalogs without replacing local repository games',()=>{
+ const catalogs=[
+  ['core/genizymath-catalog.js','GenizyMath'],
+  ['core/mountain-games-catalog.js','Mountain Games'],
+  ['core/chickenkings-catalog.js',"Chicken King's Vault"],
+  ['core/additional-game-servers.js','DAKNUX']
+ ];
+ for(const [file] of catalogs)assert.ok(fs.existsSync(path.join(root,file)),'Missing catalog '+file);
+ assert.match(source,/^\s*loadGenizyCatalog\(\);\s*$/m);
+ assert.match(source,/^\s*loadAdditionalServers\(\);\s*$/m);
+ assert.match(source,/await syncGamefilesCollection\(\)/);
  assert.match(source,/local:true,external:false,source:'Lolite OS · repository HTML'/);
  assert.match(source,/local:true,external:false,source:'Lolite OS · built-in HTML'/);
+ assert.match(source,/if\(game\.local\|\|\(!game\.external&&/);
+ assert.match(source,/\(existing\.servers\|\|\(existing\.servers=\[\]\)\)\.push\(\{name:'Mountain Games',url\}\)/);
+ assert.match(source,/const raw=\[\{name:baseName,url:g\.url\},\.\.\.\(Array\.isArray\(g\.servers\)\?g\.servers:\[\]\)\];/);
+ for(const [,label] of catalogs){
+  const shown=label==="Chicken King's Vault"?'Chicken King’s Vault':label;
+  assert.ok(source.includes('"'+shown+'"'),'Restored provider missing in game store: '+shown);
+ }
  assert.doesNotMatch(mainSource,/<script[^>]*\bsrc="core\/game-store\.js[^"]*"[^>]*>\s*<\/script>\s*<script[^>]*\bsrc="https?:\/\/[^"]+\.html"/i);
 });
 
