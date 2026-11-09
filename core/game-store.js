@@ -628,7 +628,8 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   const root=document.querySelector('.store-main');if(!root)return;
   requestHealth();
   const healthStatus=window.LoliteGameHealth?.summary?.();
-  const healthText=healthStatus?.missing?healthStatus.missing+' unavailable hidden':'Check game files';
+  const hiddenCount=games.length-healthy(games).length;
+  const healthText=hiddenCount?hiddenCount+' missing hidden':'Check game files';
   const totalGames=healthy(games),totalPlayable=playableVersionCount(totalGames);
   const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" aria-label="Search games" placeholder="Search games…" value="'+encodeLabel(query)+'" oninput="window.loliteStoreSearch(this.value)"></div><button class="store-health-check" type="button" onclick="window.loliteStoreCheckFiles()" title="Check local game paths">'+encodeLabel(healthText)+'</button><span class="store-count-pill" title="Every distinct server counts as one playable version">'+totalPlayable.toLocaleString()+' games incl. servers ('+totalGames.length+' titles)</span></div>';
   let list;
