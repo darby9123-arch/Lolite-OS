@@ -3,7 +3,7 @@
  const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const settings=[
   {id:'settings',name:'Settings',hint:'Personalisation and preferences',term:'preferences theme settings',go:()=>launch('settings')},
-  {id:'wallpapers',name:'Wallpapers & Live Effects',hint:'Change the desktop wallpaper',term:'wallpapers background interactive',go:()=>window.LoliteCrimson?.openSettings?.('wallpapers')||launch('settings')},
+  {id:'wallpapers',name:'Wallpapers & Live Effects',hint:'Change the desktop wallpaper',term:'wallpapers background interactive',go:()=>{if(window.LoliteCrimson?.openSettings)window.LoliteCrimson.openSettings('wallpapers');else launch('settings')}},
   {id:'hosts',name:'Hosting Status',hint:'Check GitHub Pages, Vercel and Railway',term:'hosting servers versions status uptime',go:()=>window.LoliteHostStatus?.openPanel?.()},
   {id:'games-health',name:'Check Game Files',hint:'Scan for missing repository HTML games',term:'broken game files missing check',go:()=>{launch('games');window.loliteStoreCheckFiles?.()}},
   {id:'taskbar',name:'Taskbar & Pinned Apps',hint:'Right-click a taskbar icon to pin or unpin it',term:'taskbar pinned app preview',go:()=>launch('settings')}
@@ -11,7 +11,7 @@
  const favorites=()=>{try{return JSON.parse(localStorage.getItem('loliteRecentAppsV2')||'[]')}catch{return []}};
  let modal=null,input=null,results=null,active=0,items=[],files=[],opened=false,seq=0;
  const appList=()=>Array.isArray(window.LoliteDesktopShell?.apps)?window.LoliteDesktopShell.apps:[];
- const launch=id=>window.LoliteDesktopShell?.launch?.(id)||window.openApp?.(id,id);
+ const launch=id=>{if(window.LoliteDesktopShell?.launch)window.LoliteDesktopShell.launch(id);else window.openApp?.(id,id)};
  const score=(name,detail,q)=>{
   const n=String(name).toLowerCase(),d=String(detail||'').toLowerCase();
   if(n===q)return 100;
