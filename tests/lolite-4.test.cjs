@@ -58,6 +58,26 @@ test('4.0 Spotlight ranks installed apps and repository games with text search',
  assert.equal(list[0].id,'app:files');
  assert.equal(list[0].label,'Files');
 });
+test('Spotlight actually opens IndexedDB files with the native viewer',async()=>{
+ const opened=[],launched=[],notices=[];
+ const win={
+  addEventListener(){},
+  LoliteDesktopShell:{apps:[['files','Files','Browse files']],launch:id=>launched.push(id)},
+  LoliteViewers:{open:async row=>opened.push(row.path)},
+  toast:msg=>notices.push(msg)
+ };
+ const document={readyState:'loading',addEventListener(){}};
+ vm.runInNewContext(read('core/spotlight.js'),{
+  window:win,document,localStorage:{getItem:()=>null},console,Date,Array,Blob
+ });
+ const row={path:'Documents/homework.txt',data:new Blob(['hello'])};
+ assert.equal(await win.LoliteSpotlight.openFile(row),true);
+ assert.deepEqual(opened,['Documents/homework.txt']);
+ assert.deepEqual(launched,['files']);
+ assert.deepEqual(notices,[]);
+ assert.equal(await win.LoliteSpotlight.openFile({path:'Documents/',data:new Blob([])}),true);
+ assert.deepEqual(opened,['Documents/homework.txt']);
+});
 test('Host status distinguishes current, outdated and unverifiable deployments',async()=>{
  const sha='a'.repeat(40),stale='b'.repeat(40),win={},urls=[];
  const fetch=async(url)=>{
