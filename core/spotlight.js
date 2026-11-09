@@ -12,6 +12,18 @@
  let modal=null,input=null,results=null,active=0,items=[],files=[],opened=false,seq=0;
  const appList=()=>Array.isArray(window.LoliteDesktopShell?.apps)?window.LoliteDesktopShell.apps:[];
  const launch=id=>{if(window.LoliteDesktopShell?.launch)window.LoliteDesktopShell.launch(id);else window.openApp?.(id,id)};
+ async function openFile(row){
+  if(!row||typeof row.path!=='string')return false;
+  launch('files');
+  if(row.path.endsWith('/')){window.toast?.('Folder: '+row.path);return true}
+  if(row.data instanceof Blob&&window.LoliteViewers?.open){
+   try{await window.LoliteViewers.open(row);return true}
+   catch(error){window.toast?.(error?.message||'Could not open that file');return false}
+  }
+  window.toast?.('Open '+row.path+' from Files');
+  return false;
+ }
+
  const score=(name,detail,q)=>{
   const n=String(name).toLowerCase(),d=String(detail||'').toLowerCase();
   if(n===q)return 100;
@@ -40,12 +52,7 @@
     if(points<0)continue;
     out.push({kind:'file',id:'file:'+row.path,label:row.path.split('/').filter(Boolean).pop()||row.path,
      detail:'My files · '+row.path,points,icon:'▤',
-     go:()=>{launch('files');
-      if(row.path.endsWith('/')){window.toast?.('Folder: '+row.path);return}
-      if(row.data instanceof Blob&&window.LoliteViewers?.open){
-       Promise.resolve(window.LoliteViewers.open(row)).catch(err=>window.toast?.(err.message||'Could not open that file'));
-      }else window.toast?.('Open '+row.path+' from Files');
-     }});
+     go:()=>{void openFile(row)}});
    }
   }
   for(const s of settings){
@@ -148,5 +155,5 @@
   window.openSearch=()=>open();
  };
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
- window.LoliteSpotlight=Object.freeze({open,close,search:build,get isOpen(){return opened}});
+ window.LoliteSpotlight=Object.freeze({open,close,search:build,openFile,get isOpen(){return opened}});
 })();
