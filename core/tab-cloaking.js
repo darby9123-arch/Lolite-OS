@@ -186,5 +186,16 @@
  const olderReset=window.loliteResetSettings;
  if(typeof olderReset==='function')window.loliteResetSettings=function(){try{localStorage.removeItem(KEY)}catch{}return olderReset.apply(this,arguments)};
  apply();
- window.LoliteTabCloak={markup,reset,apply};
+ // Shared website shortcuts can set a clearly labelled tab title and favicon.
+ // This never changes or masks the browser's real URL.
+ function useWebsite(url,title=''){
+  const link=normaliseWebsite(url);
+  if(!link)return false;
+  const name=cleanTitle(title);
+  state.websiteUrl=link;
+  state.websiteTitle='Lolite OS · '+(name||new URL(link).hostname);
+  setMode('website');
+  return true;
+ }
+ window.LoliteTabCloak={markup,reset,apply,useWebsite};
 })();
