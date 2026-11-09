@@ -23,6 +23,17 @@ A Lolite-branded browser desktop with the original Cosmos space interface, apps,
 
 ## Update Log
 
+### Lolite OS 4.0 — 2026-11-10
+- **Game Store health checks:** verify hosted game files, hide confirmed missing entries without treating CORS or offline issues as missing.
+- **Spotlight Search (Ctrl + Space):** apps, unlocked games, file names and settings, with keyboard navigation.
+- **Taskbar:** context-menu pinning, live window-state previews, and notification-badge support.
+- **Windows:** persistent layout memory and four-corner snapping with Ctrl + Alt + Shift + Arrow.
+- **Hosting Status:** check exact deployed commits on GitHub Pages, Vercel and Railway.
+- **Windows installer release:** verified duplicate releases now finish safely without overwriting published installer bytes.
+- [Read Lolite OS 4.0 controls and details](docs/LOLITE-4.md).
+
+
+
 ### What’s New is back — 2026-11-10
 - Restored the **What’s New** release notes app as a desktop shortcut and a searchable Start menu app, including in the Lolite Cosmos workspace.
 - The latest release cards are shown directly on the Home screen, instead of being hidden inside a collapsed panel.
