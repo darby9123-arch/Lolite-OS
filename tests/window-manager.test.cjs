@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const plain=value=>JSON.parse(JSON.stringify(value));
-function desktop(){
+function desktop(savedData=new Map()){
  const nodes=new Map(),events={},docEvents={},animations=[],observers=[];
  class Element{
   constructor(tag='div'){this.tagName=tag.toUpperCase();this.style={};this.dataset={};this.children=[];this.listeners={};this.attrs={};this.isConnected=true;const classes=new Set();this.classList={contains:n=>classes.has(n),add:(...n)=>n.forEach(x=>classes.add(x)),remove:(...n)=>n.forEach(x=>classes.delete(x)),toggle:(n,v)=>{if(v??!classes.has(n)){classes.add(n);return true}classes.delete(n);return false}}}
@@ -25,7 +25,7 @@ function desktop(){
  Object.assign(nodes.get('taskbar').style,{left:'0px',top:'744px',width:'1280px',height:'56px'});
  const document={documentElement:root,body,getElementById:id=>nodes.get(id),querySelector:()=>null,createElement:tag=>new Element(tag),addEventListener:(name,fn)=>(docEvents[name]??=[]).push(fn)};
  const media={matches:false,addEventListener(name,fn){this.change=fn}};
- const c={state:{windows:{},z:100},document,innerWidth:1280,innerHeight:800,matchMedia:()=>media,CSS:{escape:s=>s},renderPageSafely:id=>'<p>'+id+'</p>',CustomEvent:class{constructor(type,opts){this.type=type;this.detail=opts?.detail}},MutationObserver:class{constructor(fn){observers.push(fn)}observe(){}},addEventListener:(name,fn)=>(events[name]??=[]).push(fn),dispatchEvent:event=>(events[event.type]||[]).forEach(fn=>fn(event))};c.window=c;vm.createContext(c);
+ const c={state:{windows:{},z:100},document,innerWidth:1280,innerHeight:800,matchMedia:()=>media,CSS:{escape:s=>s},renderPageSafely:id=>'<p>'+id+'</p>',CustomEvent:class{constructor(type,opts){this.type=type;this.detail=opts?.detail}},MutationObserver:class{constructor(fn){observers.push(fn)}observe(){}},addEventListener:(name,fn)=>(events[name]??=[]).push(fn),dispatchEvent:event=>(events[event.type]||[]).forEach(fn=>fn(event))};c.window=c;c.localStorage={getItem:k=>savedData.get(k)||null,setItem:(k,v)=>savedData.set(k,v)};vm.createContext(c);
  for(const name of ['window-manager','motion'])vm.runInContext(fs.readFileSync('core/'+name+'.js','utf8'),c);
  const settle=async()=>{for(const a of animations)a.finish();await Promise.resolve();await Promise.resolve()};
  return {c,root,nodes,media,animations,settle,mutate:()=>observers.forEach(f=>f()),resize:(w,h)=>{root.clientWidth=c.innerWidth=w;root.clientHeight=c.innerHeight=h;Object.assign(nodes.get('taskbar').style,{top:(h-56)+'px',width:w+'px'});c.LoliteWindowManager.resizeToViewport()},key:event=>(docEvents.keydown||[]).forEach(fn=>fn(event))};
@@ -40,3 +40,32 @@ test('Show desktop restores only windows it hid',async()=>{const e=desktop();e.c
 test('titlebar buttons never drag; a top-edge drag snaps and cancelling drag clears the preview',async()=>{const e=desktop(),el=e.c.openApp('files','Files');await e.settle();const bar=el.querySelector('.titlebar'),start={button:0,pointerId:1,clientX:400,clientY:100,target:{closest:()=>({})}};bar.onpointerdown(start);assert.equal(bar.listeners.pointermove,undefined);start.target.closest=()=>null;bar.onpointerdown(start);bar.dispatch('pointermove',{clientX:500,clientY:8});bar.dispatch('pointerup',{type:'pointerup'});assert.equal(el.dataset.snap,'max');assert.equal(e.nodes.has('winSnapPreview'),false);assert.equal(e.c.document.body.classList.contains('win-dragging'),false);bar.onpointerdown({...start,clientY:20});bar.dispatch('pointermove',{clientX:1,clientY:60});bar.dispatch('pointercancel',{type:'pointercancel'});assert.equal(e.nodes.has('winSnapPreview'),false);assert.equal(el.dataset.snap,undefined)});
 test('reduced motion completes pending transitions and prevents new animations',async()=>{const e=desktop(),el=e.c.openApp('files','Files');await e.settle();e.c.minWin('files');e.root.classList.add('reduce');e.mutate();assert.equal(el.style.display,'none');const count=e.animations.length;e.c.restoreWin('files');assert.equal(el.style.display,'');assert.equal(e.animations.length,count);e.root.classList.remove('reduce');e.media.matches=true;e.media.change();e.c.closeWin('files');assert.equal(e.c.state.windows.files,undefined)});
 test('Alt+Tab cycles all apps and reverse cycling is consistent',async()=>{const e=desktop();for(const id of ['files','notes','settings'])e.c.openApp(id,id);await e.settle();const event={key:'Tab',altKey:true,preventDefault(){}};e.key(event);assert.equal(e.c.state.activeId,'files');e.key(event);assert.equal(e.c.state.activeId,'notes');e.key({...event,shiftKey:true});assert.equal(e.c.state.activeId,'files')});
+
+test('saved window geometry and snap position survive closing and reopening the desktop',async()=>{
+ const saved=new Map(),first=desktop(saved);
+ first.c.openApp('files','Files');await first.settle();
+ first.c.snapWin('files','right');await first.settle();
+ const record=JSON.parse(saved.get('loliteWindowLayoutsV4'));
+ assert.equal(record.files.snap,'right');
+ assert.ok(record.files.normal.width>=320);
+ first.c.closeWin('files');await first.settle();
+ const second=desktop(saved),reopened=second.c.openApp('files','Files');
+ assert.equal(reopened.dataset.snap,'right');
+ const bounds=reopened.getBoundingClientRect();
+ assert.equal(bounds.left,648);
+ assert.equal(bounds.width,628);
+ second.c.LoliteWindowManager.forgetLayout('files');
+ assert.equal(JSON.parse(saved.get('loliteWindowLayoutsV4')).files,undefined);
+});
+test('keyboard shortcuts snap to all four corners without intercepting plain arrow keys',async()=>{
+ const e=desktop();e.c.openApp('notes','Notes');await e.settle();
+ const calls=[],event={ctrlKey:true,altKey:true,shiftKey:true,preventDefault:()=>calls.push('prevented')};
+ for(const [key,want] of [['ArrowLeft','top-left'],['ArrowRight','top-right'],['ArrowDown','bottom-left'],['ArrowUp','bottom-right']]){
+  e.key({...event,key});await e.settle();
+  assert.equal(e.c.state.windows.notes.el.dataset.snap,want);
+ }
+ assert.equal(calls.length,4);
+ const previous=e.c.state.windows.notes.el.dataset.snap;
+ e.key({key:'ArrowLeft',ctrlKey:false,altKey:false,shiftKey:false,preventDefault(){throw Error('Plain arrows should not be captured')}});
+ assert.equal(e.c.state.windows.notes.el.dataset.snap,previous);
+});
