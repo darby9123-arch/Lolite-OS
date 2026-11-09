@@ -27,7 +27,7 @@ A Lolite-branded browser desktop with the original Cosmos space interface, apps,
 - **Game Store health checks:** verify hosted game files, hide confirmed missing entries without treating CORS or offline issues as missing.
 - **Spotlight Search (Ctrl + Space):** apps, unlocked games, file names and settings, with keyboard navigation.
 - **Taskbar:** context-menu pinning, live window-state previews, and notification-badge support.
-- **Windows:** persistent layout memory and four-corner snapping with Ctrl + Alt + Shift + Arrow.
+- **Windows:** persistent layout memory, four-corner snapping, and three virtual desktops with a taskbar switcher (Ctrl + Alt + 1–3).
 - **Hosting Status:** check exact deployed commits on GitHub Pages, Vercel and Railway.
 - **Windows installer release:** verified duplicate releases now finish safely without overwriting published installer bytes.
 - [Read Lolite OS 4.0 controls and details](docs/LOLITE-4.md).
