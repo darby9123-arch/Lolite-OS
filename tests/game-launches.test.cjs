@@ -39,7 +39,7 @@ test('Geometry Dash Play does not open a file picker',async()=>{
  await flush();
  assert.equal(h.opened.length,1);
  assert.equal(h.opened[0].title,'Geometry Dash Full');
- assert.equal(h.opened[0].url,'html%20games/Geometry%20Dash%20webport.html');
+ assert.equal(h.opened[0].url,'html%20games/Geometry%20Dash%20webport.html?v=gd-gamepad-policy-fix-20261110');
  assert.equal(h.forwarded.length,0);
  assert.match(h.toasts.join(' '),/Geometry Dash Full/);
  assert.doesNotMatch(read('core/gd-loading-fix.js'),/chooseZip|zipInput\.click/);
@@ -127,4 +127,23 @@ test('Text/plain game HTML is rendered as an executable sandboxed document',asyn
  assert.equal(frame.dataset.gameRender,'raw-html');
  assert.match(attrs.sandbox,/allow-scripts/);
  assert.doesNotMatch(attrs.sandbox,/allow-same-origin|allow-top-navigation/);
+});
+
+test('Geometry Dash webport handles denied gamepad access without crashing',()=>{
+ const html=read('html games/Geometry Dash webport.html');
+ const script=html.match(/<script id="lolite-gd-gamepad-compat">([\\s\\S]*?)<\\/script>/);
+ assert.ok(script,'Gamepad compatibility shim must load before game engine');
+ assert.ok(html.indexOf('lolite-gd-gamepad-compat')<html.indexOf('googletagmanager'),'Shim must run before other webport scripts');
+ const blocked={
+  getGamepads(){
+   const error=new Error("Document's Permissions Policy does not allow calling getGamepads()");
+   error.name='SecurityError';
+   throw error;
+  }
+ };
+ vm.runInNewContext(script[1],{navigator:blocked,console:{warn(){}},Object,Array});
+ assert.equal(blocked.getGamepads().length,0);
+ const allowed={getGamepads(){return [{id:'connected-controller'}]}};
+ vm.runInNewContext(script[1],{navigator:allowed,console:{warn(){}},Object,Array});
+ assert.equal(allowed.getGamepads()[0].id,'connected-controller');
 });
