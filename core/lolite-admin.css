@@ -28,3 +28,22 @@
 .la-item-copy small{text-transform:capitalize}
 .lc-admin-badge{display:inline-block;padding:2px 6px;background:#235473;border:1px solid #397ba1;border-radius:5px;color:#e4f6ff!important;font-size:9px!important;font-weight:850;letter-spacing:.6px;margin:0 4px}
 @media(max-width:700px){.la-form{grid-template-columns:1fr}.la-form h2,.la-form .la-note,.la-form .la-primary{grid-column:auto}.la-item{flex-wrap:wrap}.la-head{flex-wrap:wrap}}
+
+/* Admin wallpaper ZIP review */
+.la-zip-review{grid-column:1/-1;min-width:0}
+.la-zip-review[hidden]{display:none!important}
+.la-zip-head{display:flex;justify-content:space-between;gap:14px;align-items:center;margin:4px 0 12px}
+.la-zip-head strong{font-size:14px}
+.la-zip-head p{margin:3px 0}
+.la-zip-head>span{color:#8fd2e7;font-size:12px;text-align:right}
+.la-zip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:10px;max-height:380px;overflow:auto;padding:3px}
+.la-zip-card{display:flex!important;flex-direction:column;gap:7px;background:#0b1723;border:1px solid #344d62;border-radius:10px;overflow:hidden;padding:7px;min-width:0}
+.la-zip-card>video{width:100%;aspect-ratio:16/9;background:#02060b;border-radius:6px;object-fit:contain}
+.la-zip-meta{display:flex;align-items:flex-start;gap:7px}
+.la-zip-meta>input{flex:0 0 17px;width:17px;min-height:17px;margin-top:3px;accent-color:#46a2e5}
+.la-zip-meta>span{display:flex;flex-direction:column;min-width:0;overflow-wrap:anywhere}
+.la-zip-meta strong{font-size:12px}
+.la-zip-meta small{font-size:11px}
+.la-zip-error{color:#ffc0c7!important}
+.la-zip-invalid{border-color:#8c4258;opacity:.75}
+@media(max-width:700px){.la-zip-head{align-items:flex-start;flex-direction:column}.la-zip-grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}}
