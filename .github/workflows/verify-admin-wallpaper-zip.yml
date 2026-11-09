@@ -1,0 +1,33 @@
+name: Verify admin wallpaper ZIP uploads
+on:
+  push:
+    paths:
+      - 'core/wallpaper-zip.js'
+      - 'core/lolite-admin.js'
+      - 'core/lolite-admin.css'
+      - 'index.html'
+      - 'tests/admin-wallpaper-zip.test.cjs'
+      - '.github/workflows/verify-admin-wallpaper-zip.yml'
+  pull_request:
+    paths:
+      - 'core/wallpaper-zip.js'
+      - 'core/lolite-admin.js'
+      - 'core/lolite-admin.css'
+      - 'index.html'
+      - 'tests/admin-wallpaper-zip.test.cjs'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check core/wallpaper-zip.js
+          node --check core/lolite-admin.js
+      - name: Test ZIP security, MP4 metadata and Admin Center wiring
+        run: node --test tests/admin-wallpaper-zip.test.cjs
