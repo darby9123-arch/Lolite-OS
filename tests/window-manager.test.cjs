@@ -69,3 +69,50 @@ test('keyboard shortcuts snap to all four corners without intercepting plain arr
  e.key({key:'ArrowLeft',ctrlKey:false,altKey:false,shiftKey:false,preventDefault(){throw Error('Plain arrows should not be captured')}});
  assert.equal(e.c.state.windows.notes.el.dataset.snap,previous);
 });
+
+test('three virtual desktops isolate windows and taskbar state without losing app data',async()=>{
+ const e=desktop(),a=e.c.openApp('files','Files');
+ e.c.openApp('notes','Notes');await e.settle();
+ assert.equal(e.c.LoliteWindowManager.desktopIndex(),0);
+ assert.equal(e.c.LoliteWindowManager.desktopCount,3);
+ assert.equal(e.c.LoliteWindowManager.switchDesktop(1),true);
+ assert.equal(a.style.display,'none');
+ assert.equal(e.c.state.activeId,null);
+ assert.equal(e.nodes.get('task-files').hidden,true);
+ const b=e.c.openApp('settings','Settings');await e.settle();
+ assert.equal(b.style.display,'');
+ assert.equal(e.nodes.get('task-settings').hidden,false);
+ e.c.LoliteWindowManager.switchDesktop(0);
+ assert.equal(a.style.display,'');
+ assert.equal(b.style.display,'none');
+ assert.equal(e.nodes.get('task-files').hidden,false);
+ e.c.LoliteWindowManager.switchDesktop(1);
+ e.c.openApp('files','Files');
+ assert.equal(e.c.LoliteWindowManager.getWindow('files').desktopIndex,1);
+ assert.equal(a.style.display,'');
+ assert.equal(e.c.LoliteWindowManager.switchDesktop(-1),false);
+ assert.equal(e.c.LoliteWindowManager.switchDesktop(3),false);
+});
+test('Ctrl+Alt+1–3 changes virtual desktop and selected desk survives restart',async()=>{
+ const storage=new Map(),first=desktop(storage);
+ first.c.openApp('files','Files');await first.settle();
+ let count=0;
+ first.key({key:'2',ctrlKey:true,altKey:true,shiftKey:false,preventDefault(){count++}});
+ assert.equal(first.c.LoliteWindowManager.desktopIndex(),1);
+ assert.equal(storage.get('loliteCurrentDesktopV4'),'1');
+ assert.equal(count,1);
+ const next=desktop(storage);
+ assert.equal(next.c.LoliteWindowManager.desktopIndex(),1);
+ next.key({key:'3',ctrlKey:true,altKey:true,shiftKey:false,preventDefault(){count++}});
+ assert.equal(next.c.LoliteWindowManager.desktopIndex(),2);
+ next.key({key:'1',ctrlKey:true,altKey:true,shiftKey:false,preventDefault(){count++}});
+ assert.equal(next.c.LoliteWindowManager.desktopIndex(),0);
+ assert.equal(count,3);
+});
+test('virtual desktop switcher is wired to a visible taskbar button',()=>{
+ const shell=fs.readFileSync('core/interface.js','utf8');
+ const css=fs.readFileSync('core/lolite-4.css','utf8');
+ assert.match(shell,/id='winDesktopSwitch'/);
+ assert.match(shell,/lolite:desktopchange/);
+ assert.match(css,/#taskbar #winDesktopSwitch/);
+});
