@@ -27,7 +27,7 @@
    if(!window.LoliteGamePlayer?.open({
      title:'Geometry Dash Full',
      file:'Geometry Dash webport.html',
-     url:'html%20games/Geometry%20Dash%20webport.html',
+     url:'html%20games/Geometry%20Dash%20webport.html?v=gd-gamepad-policy-fix-20261110',
      source:'Lolite OS · included HTML game'
    }))throw new Error('Could not start Geometry Dash Full.');
   }catch(error){
