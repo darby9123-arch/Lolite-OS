@@ -13,7 +13,15 @@
   const imported=url.pathname.includes('/core/local-games/');
   // Imported ZIP/HTML scripts must never gain Lolite's origin or account storage.
   if(imported)return 'allow-scripts allow-forms allow-pointer-lock allow-downloads';
-  if(url.origin===location.origin)return url.pathname.startsWith('/games/')?'allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads':'allow-scripts allow-forms allow-pointer-lock allow-downloads';
+  if(url.origin===location.origin){
+   // Built-in games are trusted first-party files, unlike third-party HTML.
+   // Resolve the folder against the deployment path (e.g. /Lolite-OS/games/).
+   const builtInPrefix=new URL('games/',document.baseURI).pathname;
+   const trustedBuiltIn=url.pathname.startsWith(builtInPrefix);
+   return trustedBuiltIn
+    ?'allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads'
+    :'allow-scripts allow-forms allow-pointer-lock allow-downloads';
+  }
   return 'allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads allow-popups';
  };
  // Record only when the actual game iframe finishes loading.
