@@ -5,6 +5,14 @@
 - **[Launch Lolite OS on GitHub Pages](https://darby9123-arch.github.io/Lolite-OS/)** — play and use Lolite OS in your browser
 - **[Open Lolite OS on Vercel](https://lolite-os.vercel.app/)** — alternate hosted version
 
+- **[Lolite Play](https://lolite-play.vercel.app/)** — alternate Vercel address
+- **[Lolite Desktop](https://lolite-desktop.vercel.app/)** — alternate Vercel address
+- **[Lolite Web](https://lolite-web.vercel.app/)** — alternate Vercel address
+- **[Play Lolite OS](https://play-lolite-os.vercel.app/)** — alternate Vercel address
+
+These four addresses point to the same Vercel project as `lolite-os.vercel.app`; they are not independent hosting providers. GitHub Pages may have a newer release until Vercel is redeployed.
+
+
 # Lolite OS
 
 **Browser hosting note:** GitHub Pages is a static preview and cannot run the proxy backend. Scramjet also needs a persistent WebSocket-capable Node host. See [Browser Hosting Requirements](docs/BROWSER-HOSTING.md); the repository now includes a `Dockerfile` and `render.yaml` for that host.
