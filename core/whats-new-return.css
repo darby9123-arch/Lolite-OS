@@ -1,0 +1,9 @@
+/* What’s New return: visible release cards, desktop icon and a Settings entry. */
+details.win-home-updates>summary{display:none}
+.win-home-updates{display:block;margin-top:22px}
+.wn-settings-card{margin-top:12px}
+.wn-open-button{background:var(--accent,#8272de);border:0;border-radius:8px;color:#fff;padding:10px 14px;font:600 12px inherit;cursor:pointer}
+.wn-open-button:hover{filter:brightness(1.15)}
+.wn-pref{display:flex;align-items:center;gap:9px;margin-top:15px;font-size:12px;color:inherit;cursor:pointer}
+.wn-pref input{accent-color:var(--accent,#8272de)}
+@media(prefers-reduced-motion:reduce){.wn-open-button{transition:none}}

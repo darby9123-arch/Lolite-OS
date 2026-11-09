@@ -23,6 +23,12 @@ A Lolite-branded browser desktop with the original Cosmos space interface, apps,
 
 ## Update Log
 
+### What’s New is back — 2026-11-10
+- Restored the **What’s New** release notes app as a desktop shortcut and a searchable Start menu app, including in the Lolite Cosmos workspace.
+- The latest release cards are shown directly on the Home screen, instead of being hidden inside a collapsed panel.
+- Added an **Open What’s New** shortcut under Settings and an optional notification window after a new published release. The last viewed update is remembered locally, so users are only shown each release once.
+- The existing update history remains sourced from the README and keeps the original release-note details and feature links.
+
 ### Cosmos logo and app icon library — 2026-11-09
 - Introduced **34 original multicolour SVG app icons** in `core/app-icon-art.js` without emojis, stock icon fonts or remotely hosted artwork.
 - Includes distinct icons for Files, Browser, Scramjet, Games, App Store, Chat, AI, Settings, Paint, Notes, Calculator, Terminal, Clock, Capture, Wallpapers, Academy, Quests, Life RP, Cloud Gaming, Minecraft and utility apps.
