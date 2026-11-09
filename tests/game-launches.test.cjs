@@ -79,7 +79,7 @@ test('External game HTML checks show a friendly error instead of raw code or 404
 test('Existing local HTML takes precedence over a matching external game source',()=>{
  const source=read('core/game-store.js');
  assert.match(source,/Keep already-hosted HTML as the default game/);
- assert.match(source,/if\(!game\.external&&game\.url\.startsWith\('html games\/'\)\)/);
+ assert.match(source,/if\(game\.local\|\|\(!game\.external&&/);
  assert.match(source,/game\.genizy&&!game\.local&&!game\.url\.startsWith\('html games\/'\)/);
 });
 
