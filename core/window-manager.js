@@ -2,6 +2,28 @@
 (()=>{'use strict';
  const workspace=state,root=document.documentElement,$=id=>document.getElementById(id);
  const browser=()=>root.classList.contains('browsing-mode'),clamp=(n,min,max)=>Math.max(min,Math.min(n,max));
+ const LAYOUT_KEY='loliteWindowLayoutsV4';
+ function readSaved(){
+   try{const value=JSON.parse(localStorage.getItem(LAYOUT_KEY)||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value:{}}
+   catch{return {}}
+ }
+ const savedLayouts=readSaved();
+ function validRect(rect){
+   if(!rect||typeof rect!=='object'||!['left','top','width','height'].every(k=>Number.isFinite(rect[k])))return null;
+   if(rect.width<180||rect.height<120||rect.width>8000||rect.height>8000)return null;
+   return {left:rect.left,top:rect.top,width:rect.width,height:rect.height};
+ }
+ function remember(id,record){
+   if(!/^[a-z0-9_-]{1,80}$/i.test(id)||!record)return;
+   const rect=validRect(record.normal)||validRect(rectOf(record.el));if(!rect)return;
+   savedLayouts[id]={normal:rect,snap:record.el.dataset.snap||''};
+   const ids=Object.keys(savedLayouts);if(ids.length>80)for(const key of ids.slice(0,ids.length-80))delete savedLayouts[key];
+   try{localStorage.setItem(LAYOUT_KEY,JSON.stringify(savedLayouts))}catch{}
+ }
+ function forgetLayout(id){
+   delete savedLayouts[id];
+   try{localStorage.setItem(LAYOUT_KEY,JSON.stringify(savedLayouts))}catch{}
+ }
  function fit(rect,area){const width=clamp(rect.width,Math.min(320,area.width),area.width),height=clamp(rect.height,Math.min(220,area.height),area.height);return {left:clamp(rect.left,area.left,area.left+area.width-width),top:clamp(rect.top,area.top,area.top+area.height-height),width,height}}
  function snapRect(kind,area){if(area.width<648)return {...area};const gap=8,half=(area.width-gap)/2,h=(area.height-gap)/2;return {left:area.left+(kind.includes('right')?half+gap:0),top:area.top+(kind.startsWith('bottom')?h+gap:0),width:kind==='max'?area.width:half,height:kind.includes('-')?h:area.height}}
  function bounds(){const width=root.clientWidth||innerWidth,height=root.clientHeight||innerHeight,bar=$('taskbar')?.getBoundingClientRect();let top=8,bottom=height-8;if(bar&&bar.height&&bar.width){if(bar.top<height/2)top=bar.bottom+8;else bottom=bar.top-8}return {left:8,top,width:Math.max(240,width-16),height:Math.max(180,bottom-top)}}
@@ -18,23 +40,27 @@
   if(workspace.windows[id]?.closing)workspace.windows[id].finishClose();
   if(workspace.windows[id]){window.restoreWin(id);return workspace.windows[id].el}
   const sizes={home:[900,660],settings:[1000,720],files:[1000,680],games:[1140,760],appstore:[980,700],chatroom:[1100,740],calculator:[420,610],notes:[680,560]},size=sizes[id]||[920,650],area=bounds(),offset=(Object.keys(workspace.windows).length%5)*24;
-  const frame=fit({left:area.left+(area.width-(w||size[0]))/2+offset,top:area.top+(area.height-(h||size[1]))/2+offset,width:w||size[0],height:h||size[1]},area);
-  const el=document.createElement('section');el.className='window';el.dataset.windowId=id;el.setAttribute('role','region');el.setAttribute('aria-label',title||id);el.tabIndex=-1;setRect(el,frame);el.style.zIndex=++workspace.z;
+  const stored=savedLayouts[id],storedNormal=!w&&!h?validRect(stored?.normal):null;
+  const normal=storedNormal?fit(storedNormal,area):fit({left:area.left+(area.width-(w||size[0]))/2+offset,top:area.top+(area.height-(h||size[1]))/2+offset,width:w||size[0],height:h||size[1]},area);
+  const oldSnap=!w&&!h&&['left','right','max','top-left','top-right','bottom-left','bottom-right'].includes(stored?.snap)?stored.snap:'';
+  const frame=oldSnap?snapRect(oldSnap,area):normal;
+  const el=document.createElement('section');el.className='window';el.dataset.windowId=id;
+  if(oldSnap)el.dataset.snap=oldSnap;el.setAttribute('role','region');el.setAttribute('aria-label',title||id);el.tabIndex=-1;setRect(el,frame);el.style.zIndex=++workspace.z;
   el.innerHTML='<header class="titlebar"><span class="window-app-icon" aria-hidden="true">'+(window.LoliteIcons?.tile(id)||'')+'</span><strong></strong><div class="controls">'+[['min','Minimise'],['snap','Snap layouts'],['max','Maximise'],['close','Close']].map(([cls,label])=>`<button type="button" class="${cls}" aria-label="${label}" title="${label}"><svg viewBox="0 0 16 16" aria-hidden="true">${glyphs[cls]}</svg></button>`).join('')+'</div></header><div class="content"></div>';
-  el.querySelector('.titlebar strong').textContent=title||id;workspace.windows[id]={el,title:title||id,minimised:false,closing:false,normal:frame};el.querySelector('.content').innerHTML=renderPageSafely(id);
+  el.querySelector('.titlebar strong').textContent=title||id;workspace.windows[id]={el,title:title||id,minimised:false,closing:false,normal};el.querySelector('.content').innerHTML=renderPageSafely(id);
   el.querySelector('.min').onclick=()=>window.minWin(id);el.querySelector('.max').onclick=()=>window.maxWin(id);el.querySelector('.close').onclick=()=>window.closeWin(id);el.querySelector('.snap').onclick=event=>{event.stopPropagation();showSnapMenu(id,event.currentTarget)};
   el.addEventListener('pointerdown',()=>focus(id),{capture:true});el.querySelector('.titlebar').ondblclick=event=>{if(!event.target.closest('button')&&!browser())window.maxWin(id)};
-  $('windows').appendChild(el);drag(el);
+  $('windows').appendChild(el);drag(el);syncControls(el);
   const task=document.createElement('button');task.type='button';task.id='task-'+id;task.className='taskwin';task.dataset.appId=id;task.title=title||id;task.setAttribute('aria-label',title||id);task.innerHTML=(window.LoliteIcons?.tile(id)||'')+'<span class="task-title"></span>';task.querySelector('.task-title').textContent=title||id;task.onclick=()=>toggleTask(id);$('tasks').appendChild(task);
   setActiveTask(id);emit('open',id);if(!browser())motion(el,[{opacity:0,transform:'translateY(14px) scale(.96)'},{opacity:1,transform:'none'}],{duration:220});return el;
  }
- function closeWin(id){const record=workspace.windows[id];if(!record||record.closing)return;record.closing=true;closeSnapMenu();$('task-'+id)?.remove();const remove=()=>{record.el.remove();if(workspace.windows[id]===record)delete workspace.windows[id];emit('close',id)};record.finishClose=()=>{window.LoliteMotion?.cancel(record.el);remove()};if(workspace.activeId===id)focusNext();record.el.style.pointerEvents='none';if(browser()||record.minimised)record.finishClose();else motion(record.el,[{opacity:1,transform:'none'},{opacity:0,transform:'translateY(8px) scale(.97)'}],{duration:130},remove)}
+ function closeWin(id){const record=workspace.windows[id];if(!record||record.closing)return;remember(id,record);record.closing=true;closeSnapMenu();$('task-'+id)?.remove();const remove=()=>{record.el.remove();if(workspace.windows[id]===record)delete workspace.windows[id];emit('close',id)};record.finishClose=()=>{window.LoliteMotion?.cancel(record.el);remove()};if(workspace.activeId===id)focusNext();record.el.style.pointerEvents='none';if(browser()||record.minimised)record.finishClose();else motion(record.el,[{opacity:1,transform:'none'},{opacity:0,transform:'translateY(8px) scale(.97)'}],{duration:130},remove)}
  function minWin(id){const record=workspace.windows[id];if(!record||record.minimised||record.closing)return;closeSnapMenu();record.minimised=true;if(workspace.activeId===id)focusNext();emit('minimise',id);const hide=()=>{if(record.minimised)record.el.style.display='none'};if(browser())hide();else motion(record.el,[{opacity:1,transform:'none'},{opacity:0,transform:taskTransform(id,record.el)}],{duration:180},hide)}
  function restoreWin(id){const record=workspace.windows[id];if(!record||record.closing)return;const wasMinimised=record.minimised;window.LoliteMotion?.cancel(record.el);record.minimised=false;record.el.style.display='';focus(id);emit('restore',id);if(wasMinimised&&!browser())motion(record.el,[{opacity:0,transform:taskTransform(id,record.el)},{opacity:1,transform:'none'}],{duration:200})}
  function toggleTask(id){const record=workspace.windows[id];if(record&&!record.minimised&&workspace.activeId===id)window.minWin(id);else window.restoreWin(id)}
  function syncControls(el){const max=el.querySelector('.max'),on=!!el.dataset.snap;max?.setAttribute('aria-label',on?'Restore window':'Maximise');if(max)max.title=on?'Restore window':'Maximise';el.classList.toggle('is-maximised',el.dataset.snap==='max')}
  function layout(id,kind){const record=workspace.windows[id];if(!record||record.closing||browser())return;window.LoliteMotion?.cancel(record.el);const before=rectOf(record.el);if(!record.el.dataset.snap){record.normal=before;record.el.dataset.old=[before.left,before.top,before.width,before.height].map(n=>n+'px').join('|')}
-  const target=kind?snapRect(kind,bounds()):fit(record.normal,bounds());if(kind)record.el.dataset.snap=kind;else{delete record.el.dataset.snap;delete record.el.dataset.old}setRect(record.el,target);record.minimised=false;record.el.style.display='';focus(id);syncControls(record.el);emit('layout',id,{kind});closeSnapMenu();
+  const target=kind?snapRect(kind,bounds()):fit(record.normal,bounds());if(kind)record.el.dataset.snap=kind;else{delete record.el.dataset.snap;delete record.el.dataset.old}setRect(record.el,target);if(!kind)record.normal=target;remember(id,record);record.minimised=false;record.el.style.display='';focus(id);syncControls(record.el);emit('layout',id,{kind});closeSnapMenu();
   const dx=before.left-target.left,dy=before.top-target.top,sx=before.width/target.width,sy=before.height/target.height;motion(record.el,[{transformOrigin:'top left',transform:`translate(${dx}px,${dy}px) scale(${sx},${sy})`},{transformOrigin:'top left',transform:'none'}],{duration:220});
  }
  const maxWin=id=>layout(id,workspace.windows[id]?.el.dataset.snap?'':'max');
@@ -46,16 +72,29 @@
  function drag(el){const bar=el.querySelector('.titlebar');bar.onpointerdown=start=>{
   if(start.button!==0||start.target.closest('button')||browser())return;const id=el.dataset.windowId,record=workspace.windows[id];if(!record||record.closing)return;focus(id);const origin={x:start.clientX,y:start.clientY},initial=rectOf(el);let moving=false,base=initial,drop='';try{bar.setPointerCapture(start.pointerId)}catch{}
   const move=e=>{if(!moving&&Math.hypot(e.clientX-origin.x,e.clientY-origin.y)<4)return;if(!moving){moving=true;window.LoliteMotion?.cancel(el);document.body.classList.add('win-dragging');el.classList.add('is-dragging');if(el.dataset.snap){const fraction=clamp((origin.x-initial.left)/initial.width,.1,.9);base=fit({...record.normal,left:e.clientX-record.normal.width*fraction,top:e.clientY-20},bounds());setRect(el,base);delete el.dataset.snap;delete el.dataset.old;syncControls(el);origin.x=e.clientX;origin.y=e.clientY}}
-   const area=bounds();el.style.left=clamp(base.left+e.clientX-origin.x,-el.offsetWidth+100,innerWidth-100)+'px';el.style.top=clamp(base.top+e.clientY-origin.y,area.top,area.top+area.height-44)+'px';drop=e.clientY<area.top+16?'max':e.clientX<18?'left':e.clientX>innerWidth-18?'right':'';previewSnap(drop);
+   const area=bounds();el.style.left=clamp(base.left+e.clientX-origin.x,-el.offsetWidth+100,innerWidth-100)+'px';el.style.top=clamp(base.top+e.clientY-origin.y,area.top,area.top+area.height-44)+'px';const nearTop=e.clientY<area.top+28,nearBottom=e.clientY>area.top+area.height-28;
+   const nearLeft=e.clientX<36,nearRight=e.clientX>innerWidth-36;
+   drop=nearTop&&nearLeft?'top-left':nearTop&&nearRight?'top-right':
+    nearBottom&&nearLeft?'bottom-left':nearBottom&&nearRight?'bottom-right':
+    nearTop?'max':nearLeft?'left':nearRight?'right':'';
+   previewSnap(drop);
   };
-  const stop=e=>{bar.removeEventListener('pointermove',move);bar.removeEventListener('pointerup',stop);bar.removeEventListener('pointercancel',stop);document.body.classList.remove('win-dragging');el.classList.remove('is-dragging');previewSnap('');try{bar.releasePointerCapture(start.pointerId)}catch{}if(moving&&e.type!=='pointercancel'&&drop)snapWin(id,drop);else if(moving){setRect(el,fit(rectOf(el),bounds()));record.normal=rectOf(el);if(e.type!=='pointercancel')emit('move',id)}};
+  const stop=e=>{bar.removeEventListener('pointermove',move);bar.removeEventListener('pointerup',stop);bar.removeEventListener('pointercancel',stop);document.body.classList.remove('win-dragging');el.classList.remove('is-dragging');previewSnap('');try{bar.releasePointerCapture(start.pointerId)}catch{}if(moving&&e.type!=='pointercancel'&&drop)snapWin(id,drop);else if(moving){setRect(el,fit(rectOf(el),bounds()));record.normal=rectOf(el);if(e.type!=='pointercancel'){remember(id,record);emit('move',id)}}};
   bar.addEventListener('pointermove',move);bar.addEventListener('pointerup',stop);bar.addEventListener('pointercancel',stop);
  }}
  function resizeToViewport(){if(browser())return;for(const record of Object.values(workspace.windows)){if(record.closing)continue;window.LoliteMotion?.cancel(record.el);if(record.minimised)record.el.style.display='none';setRect(record.el,record.el.dataset.snap?snapRect(record.el.dataset.snap,bounds()):fit(rectOf(record.el),bounds()))}}
  let desktopHidden=[];function showDesktop(){if(desktopHidden.length){for(const id of desktopHidden)window.restoreWin(id);desktopHidden=[]}else{desktopHidden=Object.keys(workspace.windows).filter(id=>!workspace.windows[id].minimised&&!workspace.windows[id].closing);for(const id of desktopHidden)window.minWin(id)}}
  document.addEventListener('pointerdown',e=>{if(snapMenu&&!snapMenu.contains(e.target)&&!e.target.closest('.controls'))closeSnapMenu()});
- document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSnapMenu();previewSnap('')}if(browser())return;if(e.ctrlKey&&e.altKey&&e.key.startsWith('Arrow')&&workspace.activeId){e.preventDefault();const id=workspace.activeId;if(e.key==='ArrowDown')window.minWin(id);else snapWin(id,e.key==='ArrowLeft'?'left':e.key==='ArrowRight'?'right':'max')}if(e.altKey&&e.key==='Tab'){e.preventDefault();const list=Object.keys(workspace.windows).filter(id=>!workspace.windows[id].closing);if(list.length)window.restoreWin(list[(list.indexOf(workspace.activeId)+(e.shiftKey?list.length-1:1))%list.length])}});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSnapMenu();previewSnap('')}if(browser())return;if(e.ctrlKey&&e.altKey&&!e.metaKey&&e.key.startsWith('Arrow')&&workspace.activeId){
+ e.preventDefault();const id=workspace.activeId;
+ if(e.shiftKey){
+  const corner=e.key==='ArrowLeft'?'top-left':e.key==='ArrowRight'?'top-right':e.key==='ArrowDown'?'bottom-left':'bottom-right';
+  snapWin(id,corner);
+ }else if(e.key==='ArrowDown')window.minWin(id);
+ else snapWin(id,e.key==='ArrowLeft'?'left':e.key==='ArrowRight'?'right':'max');
+}if(e.altKey&&e.key==='Tab'){e.preventDefault();const list=Object.keys(workspace.windows).filter(id=>!workspace.windows[id].closing);if(list.length)window.restoreWin(list[(list.indexOf(workspace.activeId)+(e.shiftKey?list.length-1:1))%list.length])}});
  window.addEventListener('resize',resizeToViewport);window.addEventListener('lolite:desktopthemechange',resizeToViewport);window.addEventListener('lolite:modechange',()=>{closeSnapMenu();resizeToViewport()});
  Object.assign(window,{openApp,closeWin,minWin,restoreWin,maxWin,snapWin,drag,setActiveTask});
- window.LoliteWindowManager={focus,toggleTask,showDesktop,bounds,fit,resizeToViewport,showSnapMenu};window.LoliteWindowGeometry={fit,snapRect};
+ window.LoliteWindowManager={focus,toggleTask,showDesktop,bounds,fit,resizeToViewport,showSnapMenu,
+  savedLayouts:()=>({...savedLayouts}),forgetLayout};window.LoliteWindowGeometry={fit,snapRect};
 })();
