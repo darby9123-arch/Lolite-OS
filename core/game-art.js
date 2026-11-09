@@ -3,6 +3,7 @@
  * Fallback for specialty mods without verified logos: the title's own generated poster.
  */
 window.loliteGameArt=Object.freeze({
+  "Geometry Dash webport.html": {"src":"assets/games/geometry-dash-full-logo.svg", "title":"Geometry Dash Full"},
   "clangrybirds2.html": {
     "src": "https://www5.minijuegosgratis.com/v3/games/thumbnails/210455_1.jpg",
     "title": "Angry Birds 2"
