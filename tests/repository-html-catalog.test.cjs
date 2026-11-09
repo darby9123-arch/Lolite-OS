@@ -58,3 +58,22 @@ test('Featured games are all present as local HTML',()=>{
   assert.ok(available.has(item.file),'Featured title missing from repository: '+item.file);
  }
 });
+
+test('Geometry Dash Full webport has matching featured art and playable local HTML',()=>{
+ const webport='Geometry Dash webport.html';
+ const {files}=catalog();
+ assert.ok(files.includes(webport),'Webport must be in the HTML game manifest');
+ assert.ok(fs.existsSync(path.join(root,'html games',webport)),'Playable local HTML must exist');
+ const g=JSON.parse(source.match(/const featuredGames=(\[[^\n]+\]);/)[1]);
+ const entry=g.find(x=>x.file===webport);
+ assert.ok(entry,'Geometry Dash Full should replace GD Breeze on Featured');
+ assert.equal(entry.title,'Geometry Dash Full');
+ assert.ok(!g.some(x=>x.file==='clgdbreeze.html'),'Old GD Breeze card must not remain Featured');
+ assert.ok(fs.existsSync(path.join(root,entry.background)),'Featured gameplay background must exist');
+ const art=fs.readFileSync(path.join(root,'core/game-art.js'),'utf8');
+ assert.match(art,/"Geometry Dash webport\.html"\s*:\s*\{\s*"src"\s*:\s*"assets\/games\/geometry-dash-full-logo\.svg"/);
+ assert.ok(fs.existsSync(path.join(root,'assets/games/geometry-dash-full-logo.svg')));
+ const fallback=fs.readFileSync(path.join(root,'core/gd-loading-fix.js'),'utf8');
+ assert.match(fallback,/file:'Geometry Dash webport\.html'/);
+ assert.doesNotMatch(fallback,/file:'clgdbreeze\.html'/);
+});
