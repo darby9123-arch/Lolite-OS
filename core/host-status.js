@@ -9,7 +9,7 @@
   {id:'railway-mirror',name:'Railway Mirror',url:'https://lolite-os-mirror-production.up.railway.app/',status:'https://lolite-os-mirror-production.up.railway.app/healthz'}
  ]);
  const head='https://api.github.com/repos/darby9123-arch/Lolite-OS/commits/main';
- const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;':'&quot;',"'":'&#39;'}[c]));
+ const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  let panel=null,running=null,entries=[],latest=null,lastAt=0;
  const withTimeout=async(url,ms=7000)=>{
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),ms);
