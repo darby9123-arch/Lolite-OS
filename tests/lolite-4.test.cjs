@@ -44,6 +44,7 @@ test('Failed HEAD checks are never reported as missing; game-player 404s can be 
 });
 test('4.0 Spotlight ranks installed apps and repository games with text search',()=>{
  const win={
+  addEventListener(){},
   LoliteDesktopShell:{apps:[['files','Files','Folders and documents'],['games','Game Store','Play games'],['settings','Settings','Preferences']]},
   LoliteGameSearch:q=>q.includes('slope')?[{file:'slope.html',title:'Slope',category:'Arcade',unlocked:true}]:[]
  };
