@@ -41,7 +41,7 @@ test('Game Store only loads repository HTML games, not remote catalog entries',(
  assert.doesNotMatch(source,/^\s*loadGenizyCatalog\(\);\s*$/m);
  assert.doesNotMatch(source,/^\s*loadAdditionalServers\(\);\s*$/m);
  assert.doesNotMatch(source,/^\s*void syncGamefilesCollection\(\)/m);
- assert.match(source,/const raw=\[\{name:baseName,url:g\.url\}\];/);
+ assert.match(source,/const raw=\[\{name:baseName,url:g\.url\},\.\.\.\(Array\.isArray\(g\.servers\)\?g\.servers:\[\]\)\];/);
  assert.match(source,/local:true,external:false,source:'Lolite OS · repository HTML'/);
  assert.match(source,/local:true,external:false,source:'Lolite OS · built-in HTML'/);
  assert.doesNotMatch(mainSource,/<script[^>]*\bsrc="core\/game-store\.js[^"]*"[^>]*>\s*<\/script>\s*<script[^>]*\bsrc="https?:\/\/[^"]+\.html"/i);
