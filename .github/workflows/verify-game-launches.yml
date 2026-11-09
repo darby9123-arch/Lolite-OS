@@ -8,6 +8,7 @@ on:
       - 'index.html'
       - 'core/game-store.js'
       - 'tests/game-launches.test.cjs'
+      - 'tests/game-server-count.test.cjs'
       - 'tests/raw-html-games.test.cjs'
       - 'tests/repository-html-catalog.test.cjs'
       - 'html games/**'
@@ -20,6 +21,7 @@ on:
       - 'index.html'
       - 'core/game-store.js'
       - 'tests/game-launches.test.cjs'
+      - 'tests/game-server-count.test.cjs'
       - 'tests/raw-html-games.test.cjs'
       - 'tests/repository-html-catalog.test.cjs'
 jobs:
@@ -39,4 +41,4 @@ jobs:
           node --check core/game-store.js
           node --check core/integration.js
       - name: Test game launching, fallbacks and file paths
-        run: node --test tests/game-launches.test.cjs tests/raw-html-games.test.cjs tests/repository-html-catalog.test.cjs
+        run: node --test tests/game-launches.test.cjs tests/raw-html-games.test.cjs tests/repository-html-catalog.test.cjs tests/game-server-count.test.cjs
