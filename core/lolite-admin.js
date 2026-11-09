@@ -31,7 +31,7 @@
     '<div class="la-zip-grid">'+entries.map((entry,i)=>'<label class="la-zip-card '+(entry.error?'la-zip-invalid':'')+'">'+
       '<video src="'+safe(entry.preview)+'" muted playsinline loop controls preload="none"></video>'+
       '<span class="la-zip-meta"><input type="checkbox" data-la-zip-entry="'+i+'" '+(entry.selected?'checked ':'')+(entry.error||entry.published||state.busy?'disabled ':'')+'>'+
-      '<span><strong>'+safe(entry.name)+'</strong><small>'+safe(entry.error||entry.published?'Published':entry.width+' × '+entry.height+' · '+Math.round(entry.duration)+'s · '+(entry.size/1024/1024).toFixed(1)+' MB')+'</small>'+
+      '<span><strong>'+safe(entry.name)+'</strong><small>'+safe(entry.error|| (entry.published?'Published':entry.width+' × '+entry.height+' · '+Math.round(entry.duration)+'s · '+(entry.size/1024/1024).toFixed(1)+' MB'))+'</small>'+
       (entry.error?'<small class="la-zip-error">'+safe(entry.error)+'</small>':'')+'</span></span></label>').join('')+'</div>'+
     '<p class="la-note">The title above is an optional pack prefix; each video keeps its filename as its wallpaper name. Any previously published files are skipped if you retry.</p>';
  }
