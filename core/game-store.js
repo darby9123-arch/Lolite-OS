@@ -102,6 +102,8 @@
  .store-featured-hero .store-primary{border-color:#fff;background:#fff;color:#10131b;padding:11px 18px}
  .store-featured-hero .store-primary:hover{background:#e7e9ff}
  .store-featured-hero .store-hero-side{align-self:flex-start}
+ .store-hero-game-logo{display:block;width:72px;height:72px;object-fit:contain;border-radius:16px;box-shadow:0 6px 20px #0008;margin-bottom:11px;filter:drop-shadow(0 3px 7px #0006)}
+ @media(max-width:760px){.store-hero-game-logo{width:54px;height:54px;border-radius:12px}}
  .store-hero-dots{display:flex;align-items:center;gap:8px;margin-top:25px}
  .store-hero-dots button{width:7px;height:7px;padding:0;border:0;border-radius:99px;background:#ffffff66;cursor:pointer;transition:width .2s ease,background .2s ease}
  .store-hero-dots button.active{width:25px;background:#fff}
@@ -193,7 +195,9 @@
  let games=manifest.map(file=>({
   file,title:window.loliteGameArt?.[file]?.title||pretty(file),
   url:'html%20games/'+encodeURIComponent(file),
-  category:categorize({file}),local:true,external:false,source:'Lolite OS · repository HTML'
+  category:categorize({file}),local:true,external:false,source:'Lolite OS · repository HTML',
+  recentlyAdded:file==='Geometry Dash webport.html',
+  addedAt:file==='Geometry Dash webport.html'?'2026-11-10T00:00:00+10:30':undefined
  })).concat(builtInHtmlGames.map(item=>({
   file:item.file,title:item.title,url:item.url,
   category:categorize({file:item.file,title:item.title}),
@@ -520,7 +524,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  const playCount=g=>popularity()?.countFor(g.file)||0;
  const isRanked=g=>playCount(g)>0&&!!popularity()?.isEligible(g);
  const ranked=list=>list.filter(isRanked).sort((a,b)=>playCount(b)-playCount(a)||a.title.localeCompare(b.title));
- const matchesCategory=g=>franchiseNames.has(active)?g.franchise===active:active==='All Games'||active==='Featured'||active==='Popular Games'?true:active==='Recently Added'?!!g.adminSharedGame||g.file.startsWith('local-'):active==='My Library'?hasGame(g):active==='Built-in HTML'?g.url.startsWith('games/'):active==='Free to Play'?gamePrice(g)===0:g.category===active;
+ const matchesCategory=g=>franchiseNames.has(active)?g.franchise===active:active==='All Games'||active==='Featured'||active==='Popular Games'?true:active==='Recently Added'?!!g.adminSharedGame||g.recentlyAdded||g.file.startsWith('local-'):active==='My Library'?hasGame(g):active==='Built-in HTML'?g.url.startsWith('games/'):active==='Free to Play'?gamePrice(g)===0:g.category===active;
  const filtered=()=>{
   const found=games.filter(g=>matchesCategory(g)&&(!query||g.title.toLowerCase().includes(query.toLowerCase())||g.category.toLowerCase().includes(query.toLowerCase())||(g.franchise||'').toLowerCase().includes(query.toLowerCase())||availableServers(g).some(x=>x.name.toLowerCase().includes(query.toLowerCase()))));
   return active==='Popular Games'?ranked(found):active==='Recently Added'?found.sort((a,b)=>Date.parse(b.addedAt||0)-Date.parse(a.addedAt||0)||a.title.localeCompare(b.title)):found;
@@ -589,7 +593,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  };
   const featuredGames=[{"file":"Geometry Dash webport.html","title":"Geometry Dash Full","description":"Play the browser-based Geometry Dash webport in Lolite OS.","background":"assets/games/geometry-dash-full-background.svg"},{"file":"clminecraftpocketedition.html","title":"Minecraft: Pocket Edition","description":"Explore the included Minecraft HTML game."},{"file":"clangrybirds2.html","title":"Angry Birds 2","description":"Launch birds and topple structures in this included HTML game."},{"file":"clbaldisbasics.html","title":"Baldi’s Basics","description":"Explore the classic schoolhouse game from Lolite's HTML collection."},{"file":"slope.html","title":"Slope","description":"Stay on the track and test your reflexes."},{"file":"clcookieclicker.html","title":"Cookie Clicker","description":"Keep clicking and build your cookie collection."}];
  let heroIndex=0;
- function heroMarkup(){const g=featuredGames[heroIndex%featuredGames.length];return '<section class="store-hero store-featured-hero" id="store-featured-hero" data-feature-file="'+g.file+'"><div class="store-hero-art" aria-hidden="true"></div><div class="store-hero-copy"><span class="store-eyebrow">'+'FEATURED GAME'+'</span><h1>'+g.title+'</h1><p>'+g.description+'</p><button class="store-primary" type="button" onclick=\'window.loliteStoreAction("'+g.file+'")\'>'+(gamePrice(g)===0?'▶ &nbsp; Play':hasGame(g)?'▶ &nbsp; Play now':'◆ &nbsp; Buy for '+priceLabel(g))+'</button><div class="store-hero-dots" role="tablist" aria-label="Featured games">'+featuredGames.map((item,i)=>'<button type="button" class="'+(i===heroIndex?'active':'')+'" aria-label="Show '+item.title.replace(/"/g,'&quot;')+'" aria-selected="'+(i===heroIndex)+'" onclick="window.loliteStoreHeroSelect('+i+')" title="'+item.title.replace(/"/g,'&quot;')+'"></button>').join('')+'</div></div><div class="store-hero-side"><strong>'+String(heroIndex+1).padStart(2,'0')+'</strong><span>FEATURED</span></div></section>'}
+ function heroMarkup(){const g=featuredGames[heroIndex%featuredGames.length];return '<section class="store-hero store-featured-hero" id="store-featured-hero" data-feature-file="'+g.file+'"><div class="store-hero-art" aria-hidden="true"></div><div class="store-hero-copy"><span class="store-eyebrow">'+'FEATURED GAME'+'</span>'+(g.file==='Geometry Dash webport.html'?'<img class="store-hero-game-logo" alt="" src="assets/games/geometry-dash-full-logo.svg" loading="lazy">':'')+'<h1>'+g.title+'</h1><p>'+g.description+'</p><button class="store-primary" type="button" onclick=\'window.loliteStoreAction("'+g.file+'")\'>'+(gamePrice(g)===0?'▶ &nbsp; Play':hasGame(g)?'▶ &nbsp; Play now':'◆ &nbsp; Buy for '+priceLabel(g))+'</button><div class="store-hero-dots" role="tablist" aria-label="Featured games">'+featuredGames.map((item,i)=>'<button type="button" class="'+(i===heroIndex?'active':'')+'" aria-label="Show '+item.title.replace(/"/g,'&quot;')+'" aria-selected="'+(i===heroIndex)+'" onclick="window.loliteStoreHeroSelect('+i+')" title="'+item.title.replace(/"/g,'&quot;')+'"></button>').join('')+'</div></div><div class="store-hero-side"><strong>'+String(heroIndex+1).padStart(2,'0')+'</strong><span>FEATURED</span></div></section>'}
  async function loadHeroArt(){const hero=document.getElementById('store-featured-hero');if(!hero)return;const g=featuredGames[heroIndex%featuredGames.length];const poster=lolitePosterArt(g.title,g.file);hero.style.setProperty('--hero-art','url(\"'+poster+'\")');hero.classList.add('has-feature-art');try{const art=g.background||coverFor(g.file);if(!art||!hero.isConnected||hero.dataset.featureFile!==g.file)return;const img=new Image();img.onload=()=>{if(hero.isConnected&&hero.dataset.featureFile===g.file){hero.style.setProperty('--hero-art','url("'+art.replace(/"/g,'%22')+'")');hero.classList.add('has-feature-art');hero.classList.toggle('store-featured-square',img.naturalWidth/img.naturalHeight<1.25)}};img.src=art}catch(_){}}
  window.loliteStoreHeroSelect=index=>{heroIndex=(Number(index)+featuredGames.length)%featuredGames.length;const hero=document.getElementById('store-featured-hero');if(!hero)return;hero.outerHTML=heroMarkup();loadHeroArt()};
  setInterval(()=>{if(document.getElementById('store-featured-hero'))window.loliteStoreHeroSelect(heroIndex+1)},20000);
