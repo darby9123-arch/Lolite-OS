@@ -101,6 +101,7 @@
      return;
     }
    }
+   if(/(?:HTTP 404\b|404 Not Found|HTTP 410\b)/i.test(String(reason)))window.LoliteGameHealth?.markHttpError?.(url.href,/410/.test(String(reason))?410:404);
    const notice=document.createElement('div');notice.className='store-load-error';
    notice.dataset.gameUrl=url.href;
    notice.dataset.popularityFile=frame.dataset.popularityFile||'';
