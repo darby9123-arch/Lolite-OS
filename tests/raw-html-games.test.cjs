@@ -162,6 +162,21 @@ test('Verified HTML sites that restrict GET still open in an iframe',async()=>{
  assert.equal(h.frame.srcdoc,'');
  assert.equal(h.frame.replacedBy,undefined);
 });
+test('GitHub Pages default soft-404 is not displayed as a game',async()=>{
+ const h=harness({mime:'text/html',
+  html:'<!doctype html><html><head><title>Site not found · GitHub Pages</title></head><body>This site is unavailable</body></html>'});
+ await flush();
+ assert.equal(h.frame.replacedBy?.className,'store-load-error');
+ assert.equal(h.marked[0]?.status,404);
+});
+test('Large bundled HTML files open directly after same-origin HEAD succeeds',async()=>{
+ const url='https://lolite.example/Lolite-OS/html%20games/slope.html';
+ const h=harness({gameURL:url,mime:'text/html'});
+ await flush();
+ assert.equal(h.frame.src,url);
+ assert.equal(h.frame.replacedBy,undefined);
+ assert.deepEqual(h.calls.map(x=>x.method),['HEAD']);
+});
 test('Missing HTML pages are not shown as 404 inside the game',async()=>{
  const h=harness({httpStatus:404});
  await flush();
