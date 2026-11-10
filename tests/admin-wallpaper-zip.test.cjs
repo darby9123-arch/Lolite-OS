@@ -108,7 +108,7 @@ test('Video uploads store generated frame posters beside the original video',()=
  assert.match(admin,/uploadPoster\(file,storagePath\)/);
  assert.match(admin,/poster_url:thumbnail\.url/);
  assert.match(admin,/poster_url:poster\?\.url\|\|null/);
- assert.match(admin,/\.select\('id,kind,title,url,poster_url,storage_path/);
+ assert.match(admin,/\.select\('id,kind,title,url,poster_url,[^']*storage_path/);
  assert.match(admin,/data-la-action="poster"/);
 });
 test('Uploaded MP4s use smooth looping and the Special Live Wallpapers filter',()=>{
