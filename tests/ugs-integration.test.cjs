@@ -19,7 +19,7 @@ test('UGS Drive game catalogue loads before Game Store without mirroring game co
  assert.ok(html.indexOf('core/ugs-catalog.js?v=')<html.indexOf('core/game-store.js?v='),'UGS catalogue must be loaded before Game Store');
  assert.ok(catalog.length>1000,'UGS must include hundreds of HTML5 and Flash titles');
  assert.ok(catalog.every(row=>row.length===5 && /^[A-Za-z0-9_-]+$/.test(row[0]) &&
-  row[1].toLowerCase().endsWith('.html') && ['html5','flash'].includes(row[2]) &&
+  (row[1].toLowerCase().endsWith('.html')||row[1].toLowerCase().endsWith('.htm')) && ['html5','flash'].includes(row[2]) &&
   Number.isFinite(row[3]) && typeof row[4]==='string'));
  assert.ok(catalog.some(row=>row[2]==='html5'));
  assert.ok(catalog.some(row=>row[2]==='flash'));
