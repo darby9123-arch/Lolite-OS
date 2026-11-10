@@ -1,0 +1,77 @@
+/* Lolite OS Feature Requests — scoped, responsive community board. */
+.lfr-shell{--lfr-accent:#b8a1ff;--lfr-muted:#9cacc6;box-sizing:border-box;margin:-18px;height:calc(100% + 36px);min-height:340px;overflow:auto;background:#101522;color:#f2f5ff;font:13px/1.5 var(--lolite-font,"Segoe UI",system-ui,sans-serif)}
+.lfr-shell *{box-sizing:border-box}
+.lfr-shell button,.lfr-shell input,.lfr-shell textarea,.lfr-shell select{font:inherit}
+.lfr-shell button{cursor:pointer}
+.lfr-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:26px 27px 18px;background:radial-gradient(ellipse at 95% 10%,#49366f66,transparent 52%),#171729;border-bottom:1px solid #ffffff13}
+.lfr-kicker{color:#bdafff;font-size:10px;letter-spacing:2px;font-weight:800}
+.lfr-header h1{margin:7px 0 5px;font-size:29px;line-height:1.15;letter-spacing:-.8px}
+.lfr-header p{margin:0;color:#b1b5cb;font-size:13px}
+.lfr-summary{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;padding:13px 18px;border:1px solid #8c70be55;background:#322b4b88;border-radius:11px}
+.lfr-summary strong{font-size:24px;font-weight:800}
+.lfr-summary span{font-size:10px;color:#c4b5df;white-space:nowrap}
+.lfr-nav{display:flex;align-items:center;gap:6px;padding:10px 21px;overflow-x:auto;background:#171729;border-bottom:1px solid #ffffff12}
+.lfr-nav button{white-space:nowrap;background:transparent;border:1px solid transparent;border-radius:8px;color:#b4aec9;padding:9px 13px;font-size:12px;font-weight:700}
+.lfr-nav button:hover{background:#ffffff11;color:#fff}
+.lfr-nav button.active{background:#6b51ac57;border-color:#a487e777;color:#f6efff}
+.lfr-nav button b{background:#b56b68;color:#fff;padding:2px 6px;border-radius:99px;font-size:10px}
+.lfr-nav .lfr-refresh{margin-left:auto;border-color:#ffffff17}
+.lfr-main{padding:22px 26px 40px;min-width:0}
+.lfr-tools{display:flex;align-items:end;flex-wrap:wrap;gap:10px}
+.lfr-tools label{display:flex;flex-direction:column;gap:6px;min-width:120px;font-size:11px;color:#b8c5d9}
+.lfr-tools .lfr-search{position:relative;flex:1 1 200px}
+.lfr-search span{position:absolute;left:12px;bottom:3px;font-size:24px;color:#a89fbd}
+.lfr-tools input,.lfr-tools select,.lfr-form input,.lfr-form select,.lfr-form textarea,.lfr-admin-tools select,.lfr-admin-tools textarea{min-width:0;width:100%;color:#eef3ff;background:#1a2332;border:1px solid #42516d;border-radius:8px;padding:9px 10px;outline:none}
+.lfr-tools input:focus,.lfr-tools select:focus,.lfr-form input:focus,.lfr-form textarea:focus,.lfr-admin-tools :is(select,textarea):focus{border-color:#b7a0f1;box-shadow:0 0 0 2px #aa91f525}
+.lfr-search input{padding-left:37px}
+.lfr-results{margin:17px 0 12px;color:#a7afc4;font-size:11px}
+.lfr-list{display:grid;gap:10px}
+.lfr-item{display:grid;grid-template-columns:65px minmax(0,1fr);gap:16px;background:#192131;border:1px solid #344059;border-radius:12px;padding:17px}
+.lfr-item:hover{border-color:#735d94}
+.lfr-votes{display:flex;flex-direction:column;align-items:center;gap:4px}
+.lfr-vote{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:54px;min-height:58px;border:1px solid #6a6287;background:#2a2a43;color:#d9d2f2;border-radius:10px}
+.lfr-vote span{font-size:12px}.lfr-vote b{font-size:17px}.lfr-vote:not(:disabled):hover{border-color:#b8a1ff;background:#514275}
+.lfr-vote.lfr-voted{background:#5b488a;border-color:#cbb9ff;color:white}
+.lfr-vote:disabled{opacity:.62;cursor:not-allowed}
+.lfr-votes small{color:#9ba8c1;font-size:10px}
+.lfr-item-main{min-width:0}
+.lfr-item-top{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.lfr-badge,.lfr-category,.lfr-owned{padding:3px 8px;font-size:10px;border-radius:99px;border:1px solid #ffffff25;color:#dbe5ff;background:#293348;white-space:nowrap}
+.lfr-category{color:#bda8f0;background:#3b2b5266}
+.lfr-owned{color:#b5f6da;background:#26544f77}
+.lfr-status-pending{background:#554226;color:#ffe0aa}
+.lfr-status-open{background:#294957;color:#a6ecff}
+.lfr-status-planned{background:#403d67;color:#dbccff}
+.lfr-status-in_progress{background:#29513e;color:#c5f9db}
+.lfr-status-shipped{background:#2c5f49;color:#ceffe2}
+.lfr-status-declined{background:#473641;color:#ecc9d5}
+.lfr-item h3{font-size:16px;line-height:1.3;overflow-wrap:anywhere;margin:10px 0 7px}
+.lfr-description{color:#ccd4e5;line-height:1.6;margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
+.lfr-date{margin-top:12px;color:#8594ad;font-size:10px}
+.lfr-admin-message{margin-top:13px;padding:12px;border-radius:8px;background:#312747;border:1px solid #614a7c}
+.lfr-admin-message strong{font-size:11px;color:#ddcaff}
+.lfr-admin-message p{white-space:pre-wrap;margin:4px 0 0;color:#e1d9f0;overflow-wrap:anywhere}
+.lfr-admin-tools{display:grid;grid-template-columns:minmax(150px,210px) minmax(0,1fr) auto;align-items:end;gap:10px;margin-top:14px;border-top:1px solid #ffffff1c;padding-top:13px}
+.lfr-admin-tools label{display:flex;flex-direction:column;gap:6px;min-width:0;font-size:11px;color:#b4c5db}
+.lfr-admin-tools textarea{resize:vertical;min-height:57px}
+.lfr-primary{border:0;border-radius:8px;background:#8d6fdf;color:white;font-weight:750;padding:10px 16px}
+.lfr-primary:not(:disabled):hover{background:#a288ef}
+.lfr-primary:disabled{opacity:.56;cursor:wait}
+.lfr-suggest{max-width:760px}
+.lfr-panel-heading h2{margin:0 0 6px;font-size:22px}
+.lfr-panel-heading p{margin:0 0 19px;color:#b6c4d8;line-height:1.6}
+.lfr-form{display:grid;gap:16px;padding:22px;border-radius:12px;border:1px solid #35435c;background:#192131}
+.lfr-form label{display:grid;gap:7px;font-size:12px;font-weight:750;color:#ccd5e6}
+.lfr-form textarea{resize:vertical;min-height:135px;line-height:1.5}
+.lfr-form .lfr-primary{justify-self:start}
+.lfr-note{margin:0;font-size:11px;line-height:1.5;color:#a4b2c8}
+.lfr-feedback{min-height:17px;color:#b1f2d7;font-size:12px;margin:14px 0}
+.lfr-empty,.lfr-loading,.lfr-login{padding:36px;max-width:620px;margin:22px auto;text-align:center;border:1px dashed #52627e;border-radius:13px;background:#1a2433;color:#c3d1e5}
+.lfr-login h1,.lfr-loading h2{color:#fff}
+.lfr-login p,.lfr-loading p{color:#b7c6da;line-height:1.7}
+.lfr-login button,.lfr-loading button{margin:7px 5px;padding:10px 15px;border:1px solid #4b5d79;border-radius:8px;background:#293c56;color:#eaf6ff}
+.lfr-login .lfr-primary{background:#8d6fdf}
+@media(max-width:750px){.lfr-header{padding:20px 16px}.lfr-header h1{font-size:23px}.lfr-main{padding:16px}.lfr-nav{padding:9px 12px}.lfr-admin-tools{grid-template-columns:1fr}.lfr-admin-tools .lfr-primary{justify-self:start}}
+@media(max-width:460px){.lfr-summary{display:none}.lfr-item{grid-template-columns:50px minmax(0,1fr);gap:10px;padding:12px}.lfr-vote{width:45px}.lfr-tools label{flex:1 1 42%}.lfr-tools .lfr-search{flex:1 1 100%}.lfr-form{padding:15px}}
+@media(prefers-reduced-motion:reduce){.lfr-shell *{transition:none!important;animation:none!important}}
+html.reduce .lfr-shell *,html.lolite-lite-mode .lfr-shell *{transition:none!important;animation:none!important}
