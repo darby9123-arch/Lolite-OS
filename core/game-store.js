@@ -143,8 +143,8 @@
    if(has(/pac.?man|donkey kong|\btetris\b|\bsnake\b|breakout|space invaders|\bpong\b|atari|\bnes\b|classic arcade|retro|old school|198[0-9]|199[0-9]|emulator|asteroids|arkanoid|frogger|galaga|pinball|\bsimon\b/))return 'Retro & Classics';
    return 'Arcade & Action';
  };
- const categoryNames=["All Games","My Library","Featured","Recently Added","Popular Games","Built-in HTML","GenizyMath","Mountain Games","Chicken King’s Vault","DAKNUX","Gamefiles ZIP","Free to Play","Baldi’s Basics","Sandbox & Building","Adventure & RPG","Platformers","Puzzle & Brain","Racing & Driving","Arcade & Action","Horror & Survival","Sports","Strategy","Simulation & Life","Multiplayer & .io","Music & Rhythm","Casual & Idle","Retro & Classics"];
- const navMarks={"All Games":"ALL","My Library":"OWN","Featured":"★","Recently Added":"NEW","Popular Games":"TOP","Built-in HTML":"HTML","GenizyMath":"GN","Mountain Games":"MG","Chicken King’s Vault":"CK","DAKNUX":"DK","Gamefiles ZIP":"ZIP","Free to Play":"FREE","Baldi’s Basics":"BB","Sandbox & Building":"BUILD","Adventure & RPG":"RPG","Platformers":"JUMP","Puzzle & Brain":"PUZ","Racing & Driving":"RACE","Arcade & Action":"PLAY","Horror & Survival":"HR","Sports":"SPORT","Strategy":"STRAT","Simulation & Life":"SIM","Multiplayer & .io":"IO","Music & Rhythm":"BEAT","Casual & Idle":"IDLE","Retro & Classics":"RETRO"};
+ const categoryNames=["All Games","My Library","Favorites","Recently Played","Featured","Recently Added","Popular Games","Built-in HTML","GenizyMath","Mountain Games","Chicken King’s Vault","DAKNUX","Gamefiles ZIP","Free to Play","Baldi’s Basics","Sandbox & Building","Adventure & RPG","Platformers","Puzzle & Brain","Racing & Driving","Arcade & Action","Horror & Survival","Sports","Strategy","Simulation & Life","Multiplayer & .io","Music & Rhythm","Casual & Idle","Retro & Classics"];
+ const navMarks={"All Games":"ALL","My Library":"OWN","Favorites":"♥","Recently Played":"↺","Featured":"★","Recently Added":"NEW","Popular Games":"TOP","Built-in HTML":"HTML","GenizyMath":"GN","Mountain Games":"MG","Chicken King’s Vault":"CK","DAKNUX":"DK","Gamefiles ZIP":"ZIP","Free to Play":"FREE","Baldi’s Basics":"BB","Sandbox & Building":"BUILD","Adventure & RPG":"RPG","Platformers":"JUMP","Puzzle & Brain":"PUZ","Racing & Driving":"RACE","Arcade & Action":"PLAY","Horror & Survival":"HR","Sports":"SPORT","Strategy":"STRAT","Simulation & Life":"SIM","Multiplayer & .io":"IO","Music & Rhythm":"BEAT","Casual & Idle":"IDLE","Retro & Classics":"RETRO"};
  // Group popular series without removing games from their existing genre categories.
  // A series appears in the sidebar only if the merged library contains 3+ titles.
  const franchiseRules=[
@@ -551,7 +551,64 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   const game=games.find(x=>x.file===file),source=game&&selectedSource(game);
   if(source)window.LoliteGamePlayer?.open({file,title:game.title,url:source.url,source:source.name,fallbackSources:fallbackSourcesFor(game,source)});
  };
- let active='Featured',query='',visibleCount=60;
+ let active='All Games',query='',visibleCount=60;
+ // Local-only favourites and recent activity: never invent online friends or play counts.
+ const FAV_KEY='loliteGameFavoritesV1',RECENT_KEY='loliteGameRecentlyPlayedV1';
+ const getStored=key=>{try{const data=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(data)?data:[]}catch{return []}};
+ const storeSaved=(key,list)=>{try{localStorage.setItem(key,JSON.stringify(list))}catch{}};
+ const favouriteIds=new Set(getStored(FAV_KEY).filter(s=>typeof s==='string'&&s.length<150).slice(0,250));
+ let recentSessions=getStored(RECENT_KEY).filter(row=>row&&typeof row.file==='string'&&Number.isFinite(row.at)).slice(0,18);
+ const isFavourite=file=>favouriteIds.has(file);
+ const recentGames=()=>recentSessions.map(item=>games.find(g=>g.file===item.file)).filter(Boolean);
+ function refreshActivity(){
+  const target=document.querySelector('.store-social-inner');
+  if(target)target.innerHTML=activityMarkup();
+ }
+ function toggleFavourite(file){
+  if(!games.some(g=>g.file===file))return false;
+  if(isFavourite(file))favouriteIds.delete(file);
+  else{if(favouriteIds.size>=250){window.toast?.('Favorites are limited to 250 games.');return false}favouriteIds.add(file)}
+  storeSaved(FAV_KEY,[...favouriteIds]);
+  if(active==='Favorites')render();
+  else document.querySelectorAll('.store-favourite').forEach(button=>{
+   if(button.dataset.storeFavorite!==file)return;
+   const fav=isFavourite(file);
+   button.classList.toggle('is-favourite',fav);
+   button.setAttribute('aria-pressed',String(fav));
+   button.setAttribute('aria-label',(fav?'Remove from':'Add to')+' Favorites');
+  });
+  refreshActivity();return isFavourite(file);
+ }
+ function markRecent(file){
+  if(!games.some(g=>g.file===file))return;
+  recentSessions=[{file,at:Date.now()},...recentSessions.filter(row=>row.file!==file)].slice(0,18);
+  storeSaved(RECENT_KEY,recentSessions);
+  if(active==='Recently Played')render();else refreshActivity();
+ }
+ function activityMarkup(){
+  const recent=recentGames().slice(0,5),favCount=games.filter(g=>isFavourite(g.file)).length;
+  const relTime=stamp=>{
+   const diff=Math.max(0,Date.now()-stamp);
+   return diff<60000?'Just now':diff<3600000?Math.max(1,Math.floor(diff/60000))+'m ago':
+    diff<86400000?Math.floor(diff/3600000)+'h ago':new Date(stamp).toLocaleDateString();
+  };
+  return '<h2 class="store-activity-title">Activity <span class="store-activity-status">LOLITE</span></h2>'+
+   '<div class="store-activity-heading">RECENTLY PLAYED <span>'+recent.length+'</span></div>'+
+   (recent.length?recent.map(g=>{
+    const session=recentSessions.find(item=>item.file===g.file);
+    const image=encodeLabel(coverFor(g.file)||lolitePosterArt(g.title,g.file));
+    return '<div class="store-activity-row"><img class="store-activity-cover" alt="" src="'+image+'" loading="lazy">'+
+     '<div class="store-activity-copy"><strong title="'+encodeLabel(g.title)+'">'+encodeLabel(g.title)+'</strong>'+
+     '<small>'+encodeLabel(relTime(session?.at||Date.now()))+'</small></div></div>';
+   }).join(''):'<p class="store-activity-empty">No games played yet. Launch one to see it here.</p>')+
+   '<div class="store-activity-section"><div class="store-activity-heading">YOUR LIBRARY</div>'+
+   '<div class="store-social-stats"><div><strong>'+games.length+'</strong><small>Game titles</small></div>'+
+   '<div><strong>'+favCount+'</strong><small>Favorites</small></div></div></div>'+
+   '<div class="store-activity-section"><div class="store-activity-heading">FRIENDS & CHAT</div>'+
+   '<p class="store-activity-empty">Friend presence isn’t connected here yet. Lolite Chat is available separately.</p>'+
+   '<button type="button" class="store-social-button" data-store-open-chat>Open Lolite Chat ↗</button></div>'+
+   '<div class="store-social-footer">Favorites and recently played games are saved in this browser.</div>';
+ }
  const economy=()=>window.LoliteEconomy;
  const gamePrice=g=>economy()?.gamePrice?.(g)??0;
  const hasGame=g=>!!economy()?.hasGame?.(g);
@@ -562,7 +619,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  const playCount=g=>popularity()?.countFor(g.file)||0;
  const isRanked=g=>playCount(g)>0&&!!popularity()?.isEligible(g);
  const ranked=list=>list.filter(isRanked).sort((a,b)=>playCount(b)-playCount(a)||a.title.localeCompare(b.title));
- const matchesCategory=g=>franchiseNames.has(active)?g.franchise===active:active==='All Games'||active==='Featured'||active==='Popular Games'?true:active==='Recently Added'?!!g.adminSharedGame||g.recentlyAdded||g.file.startsWith('local-'):active==='My Library'?hasGame(g):active==='Built-in HTML'?g.url.startsWith('games/'):active==='GenizyMath'?!!g.genizy:active==='Mountain Games'?!!g.mountain:active==='Chicken King’s Vault'?availableServers(g).some(server=>server.name==="Chicken King's Vault"):active==='DAKNUX'?availableServers(g).some(server=>server.name==='DAKNUX'):active==='Gamefiles ZIP'?!!g.gamefilesRecord||!!g.bundledGameFile:active==='Free to Play'?gamePrice(g)===0:g.category===active;
+ const matchesCategory=g=>franchiseNames.has(active)?g.franchise===active:active==='All Games'||active==='Featured'||active==='Popular Games'?true:active==='Favorites'?isFavourite(g.file):active==='Recently Played'?recentSessions.some(row=>row.file===g.file):active==='Recently Added'?!!g.adminSharedGame||g.recentlyAdded||g.file.startsWith('local-'):active==='My Library'?hasGame(g):active==='Built-in HTML'?g.url.startsWith('games/'):active==='GenizyMath'?!!g.genizy:active==='Mountain Games'?!!g.mountain:active==='Chicken King’s Vault'?availableServers(g).some(server=>server.name==="Chicken King's Vault"):active==='DAKNUX'?availableServers(g).some(server=>server.name==='DAKNUX'):active==='Gamefiles ZIP'?!!g.gamefilesRecord||!!g.bundledGameFile:active==='Free to Play'?gamePrice(g)===0:g.category===active;
  const broken=g=>{
   const versions=availableServers(g);
   if(!versions.length)return true;
@@ -584,7 +641,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  };
  const filtered=()=>{
   const found=healthy(games).filter(g=>matchesCategory(g)&&(!query||g.title.toLowerCase().includes(query.toLowerCase())||g.category.toLowerCase().includes(query.toLowerCase())||(g.franchise||'').toLowerCase().includes(query.toLowerCase())||availableServers(g).some(x=>x.name.toLowerCase().includes(query.toLowerCase()))));
-  return active==='Popular Games'?ranked(found):active==='Recently Added'?found.sort((a,b)=>Date.parse(b.addedAt||0)-Date.parse(a.addedAt||0)||a.title.localeCompare(b.title)):found;
+  return active==='Popular Games'?ranked(found):active==='Recently Played'?found.sort((a,b)=>(recentSessions.find(row=>row.file===b.file)?.at||0)-(recentSessions.find(row=>row.file===a.file)?.at||0)):active==='Recently Added'?found.sort((a,b)=>Date.parse(b.addedAt||0)-Date.parse(a.addedAt||0)||a.title.localeCompare(b.title)):found;
  };
  const coverPalette=g=>{let hash=0;for(const ch of g.file)hash=(Math.imul(hash,31)+ch.charCodeAt(0))>>>0;const hue=hash%360,hue2=(hue+48+(hash%73))%360;return [`hsl(${hue} 62% 28%)`,`hsl(${hue2} 48% 13%)`,`${12+(hash%13)}s`,String(hash%6),`-${hash%17000}ms`]};
  const card=g=>{const colors=coverPalette(g),poster=lolitePosterArt(g.title,g.file),file=encodeLabel(g.file),title=encodeLabel(g.title),plays=active==='Popular Games'?'<small class="store-play-count">'+playCount(g).toLocaleString()+' launches in 30 days</small>':'';
