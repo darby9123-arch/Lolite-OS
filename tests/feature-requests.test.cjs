@@ -96,10 +96,11 @@ test('Admin moderation controls are only rendered for an authorised admin',async
  assert.match(moderator.element.innerHTML,/Save status/);
 });
 test('App is registered with desktop, Cosmos, App Store and matching generated icon',()=>{
- const main=read('app.js'),cosmos=read('core/cosmos.js'),store=read('core/app-store.js');
+ const main=read('app.js'),cosmos=read('core/cosmos.js'),store=read('core/app-store.js'),shell=read('core/interface.js');
  const png=read('core/app-icon-pngs.js'),html=read('index.html');
  assert.match(main,/app-feature-requests','Feature Requests','feature-requests'/);
  assert.match(cosmos,/feature-requests','Feature Requests'/);
+ assert.match(shell,/feature-requests','Feature Requests','Suggest new Lolite OS features/);
  assert.match(store,/id:'feature-requests',name:'Feature Requests'/);
  assert.match(store,/basics=new Set\(\['academy','life-rp','lolite-quests','music','feature-requests'\]\)/);
  assert.match(png,/"feature-requests":"feedback"/);
