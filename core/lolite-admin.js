@@ -263,6 +263,7 @@
   if(isZip)return publishZip(form,file,title);
   let url=validateURL(form.elements.url?.value),storagePath=null,poster=null;
   const createdPaths=[];
+  let committed=false;
   const gameArtwork={icon_url:null,background_url:null};
   state.busy=true;
   try{
@@ -309,12 +310,13 @@
      icon_url:gameArtwork.icon_url,background_url:gameArtwork.background_url,
      storage_path:storagePath,created_by:state.user.id}).select('id').single();
    if(result.error)throw Error('Publishing failed: '+result.error.message);
+   committed=true;
    // Once the record is committed, artwork becomes part of the shared game listing.
    form.reset();clearArtworkPreviews();
    notify('Published '+title+' to the shared '+kind+' library.');
    await loadItems();
   }catch(error){
-   if(createdPaths.length){
+   if(!committed&&createdPaths.length){
     const cleanup=await sb.storage.from(BUCKET).remove(createdPaths);
     if(cleanup.error)console.warn('Could not clean up failed game upload:',cleanup.error.message);
    }
