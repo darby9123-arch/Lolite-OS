@@ -15,6 +15,57 @@
   }catch{return ''}
  };
  const getAdmin=()=>state.admin;
+ const artPreviewUrls={icon:'',background:''};
+ const imageTypes={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp'};
+ function clearArtworkPreviews(){
+  for(const field of ['icon','background']){
+   if(artPreviewUrls[field])URL.revokeObjectURL(artPreviewUrls[field]);
+   artPreviewUrls[field]='';
+  }
+ }
+ function showArtworkPreview(input){
+  const field=input?.dataset?.laGameArtwork;
+  if(!['icon','background'].includes(field))return;
+  if(artPreviewUrls[field])URL.revokeObjectURL(artPreviewUrls[field]);
+  artPreviewUrls[field]='';
+  const preview=input.closest('label')?.querySelector('[data-la-art-preview]');
+  if(!preview)return;
+  const file=input.files?.[0];
+  if(!file){preview.hidden=true;preview.removeAttribute('src');return}
+  artPreviewUrls[field]=URL.createObjectURL(file);
+  preview.src=artPreviewUrls[field];
+  preview.hidden=false;
+ }
+ async function uploadGameArtwork(file,role){
+  const ext=(file.name.split('.').pop()||'').toLowerCase(),type=imageTypes[ext];
+  const limit=role==='icon'?5:12;
+  if(!type||!file.size||file.size>limit*1024*1024)
+   throw Error('Game '+role+' must be PNG, JPG or WebP and no larger than '+limit+' MB.');
+  if(file.type&&file.type!==type&&!(type==='image/jpeg'&&file.type==='image/jpg'))
+   throw Error('Game '+role+' file type does not match its extension.');
+  const data=new Uint8Array(await file.slice(0,12).arrayBuffer());
+  const chars=(from,len)=>String.fromCharCode(...data.slice(from,from+len));
+  const valid=type==='image/png'?data.length>=8&&chars(1,3)==='PNG'&&data[0]===137:
+   type==='image/jpeg'?data.length>=3&&data[0]===255&&data[1]===216&&data[2]===255:
+   data.length>=12&&chars(0,4)==='RIFF'&&chars(8,4)==='WEBP';
+  if(!valid)throw Error('Game '+role+' does not contain a valid '+ext.toUpperCase()+' image header.');
+  const name='games/'+crypto.randomUUID()+'-'+role+'.'+ext;
+  const {error}=await sb.storage.from(BUCKET).upload(name,file,{contentType:type,upsert:false});
+  if(error)throw Error('Game '+role+' upload failed: '+error.message);
+  const url=validateURL(sb.storage.from(BUCKET).getPublicUrl(name).data?.publicUrl);
+  if(!url){await sb.storage.from(BUCKET).remove([name]);throw Error('Game '+role+' URL could not be created.')}
+  return {url,path:name};
+ }
+ function gameArtworkPath(url){
+  if(!url||!sb)return '';
+  try{
+   const publicDir=new URL(sb.storage.from(BUCKET).getPublicUrl('games/').data.publicUrl);
+   const image=new URL(url);
+   if(image.origin!==publicDir.origin||!image.pathname.startsWith(publicDir.pathname))return '';
+   const filename=decodeURIComponent(image.pathname.slice(publicDir.pathname.length));
+   return /^[0-9a-f-]{36}-(?:icon|background)\.(?:png|jpg|jpeg|webp)$/i.test(filename)?'games/'+filename:'';
+  }catch{return ''}
+ }
  async function uploadPoster(source,videoPath){
   if(!window.LoliteWallpaperThumbnails?.capture)throw Error('Video thumbnail generator is unavailable. Reload Lolite OS.');
   const image=await window.LoliteWallpaperThumbnails.capture(source);
@@ -129,7 +180,7 @@
  async function loadItems(){
   if(!sb)return;
   const {data,error}=await sb.from('lolite_library_items')
-   .select('id,kind,title,url,poster_url,storage_path,created_by,created_at')
+   .select('id,kind,title,url,poster_url,icon_url,background_url,storage_path,created_by,created_at')
    .order('created_at',{ascending:false}).limit(500);
   if(error){state.error=error.message;console.warn('Shared Lolite library:',error.message);return}
   state.items=(data||[]).filter(item=>['game','wallpaper','website'].includes(item.kind)&&validateURL(item.url));
@@ -170,6 +221,9 @@
    '<label>Title<input name="title" required maxlength="90" minlength="2" placeholder="Name to display (optional ZIP prefix)"></label>'+
    '<label>HTTPS website or file URL<input name="url" type="url" placeholder="https://example.com/game.html" autocomplete="url"></label>'+
    '<label data-la-upload-box>Or upload a file / MP4 wallpaper ZIP<input type="file" name="file" data-la-file accept=".html,.htm,text/html"></label>'+
+   '<div class="la-game-art" data-la-game-art><label>Upload game icon (optional · up to 5 MB)<input type="file" name="icon" data-la-game-artwork="icon" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"><img data-la-art-preview class="la-art-preview la-art-icon" alt="Selected game icon preview" hidden></label>'+
+   '<label>Upload game background (optional · up to 12 MB)<input type="file" name="background" data-la-game-artwork="background" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"><img data-la-art-preview class="la-art-preview la-art-background" alt="Selected game background preview" hidden></label>'+
+   '<p class="la-note">The background fills the Game Store cover and the icon appears on top. If you skip either image, Lolite will use its usual artwork.</p></div>'+
    '<p class="la-note">Wallpapers: upload an image, MP4, WebM, or ZIP containing up to 24 MP4s. ZIPs are checked and reviewed before publishing. HTML games should be self-contained; website shortcuts require HTTPS.</p>'+   '<div data-la-zip-preview class="la-zip-review" hidden></div>'+
    '<button class="la-primary" type="submit" '+(state.busy?'disabled':'')+'>'+(state.busy?'Publishing…':'Publish to Lolite')+'</button></form>'+
    '<div class="la-list-head"><h2>Published items</h2><span>'+state.items.length+' total</span></div>'+
@@ -208,47 +262,64 @@
   if(!['game','wallpaper','website'].includes(kind)||(!isZip&&title.length<2))throw Error('Choose a type and enter a title.');
   if(isZip)return publishZip(form,file,title);
   let url=validateURL(form.elements.url?.value),storagePath=null,poster=null;
-  if(file){
-   if(kind==='website')throw Error('Website shortcuts require an HTTPS link, not a file.');
-   const ext=(file.name.split('.').pop()||'').toLowerCase();
-   const type=kind==='game'?'text/html':file.type||({png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp',mp4:'video/mp4',webm:'video/webm'}[ext]||'');
-   if(kind==='game'&&!['html','htm'].includes(ext))throw Error('Upload a standalone .html or .htm game.');
-   if(kind==='wallpaper'&&!['image/png','image/jpeg','image/webp','video/mp4','video/webm'].includes(type))throw Error('Choose a PNG, JPG, WebP, MP4 or WebM wallpaper.');
-   const maxSize=(kind==='wallpaper'?50:25)*1024*1024;
-   if(file.size===0||file.size>maxSize)throw Error('Files must be between 1 byte and '+(maxSize/1024/1024)+' MB.');
-   if(kind==='game'){
-    const html=await file.text();
-    if(!/<(?:html|head|body|script|canvas|div)\b/i.test(html))throw Error('This file does not contain an HTML game.');
-    if(/<iframe\b/i.test(html))throw Error('Please upload an actual HTML game, not an iframe wrapper.');
-   }
-   if(kind==='wallpaper'&&type==='video/mp4'){
-    const signature=new Uint8Array(await file.slice(0,12).arrayBuffer());
-    if(String.fromCharCode(...signature.slice(4,8))!=='ftyp')throw Error('The selected file is not a valid MP4.');
-   }
-   const suffix=kind==='game'?'html':ext;
-   const unique=typeof crypto?.randomUUID==='function'?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2);
-   storagePath=(kind==='game'?'games/':'wallpapers/')+unique+'.'+suffix;
-   state.busy=true;
-   const uploaded=await sb.storage.from(BUCKET).upload(storagePath,file,{contentType:type,upsert:false});
-   if(uploaded.error)throw Error('Upload failed: '+uploaded.error.message);
-   try{
-    if(kind==='wallpaper'&&type.startsWith('video/'))poster=await uploadPoster(file,storagePath);
+  const createdPaths=[];
+  const gameArtwork={icon_url:null,background_url:null};
+  state.busy=true;
+  try{
+   if(file){
+    if(kind==='website')throw Error('Website shortcuts require an HTTPS link, not a file.');
+    const ext=(file.name.split('.').pop()||'').toLowerCase();
+    const type=kind==='game'?'text/html':file.type||({png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp',mp4:'video/mp4',webm:'video/webm'}[ext]||'');
+    if(kind==='game'&&!['html','htm'].includes(ext))throw Error('Upload a standalone .html or .htm game.');
+    if(kind==='wallpaper'&&!['image/png','image/jpeg','image/webp','video/mp4','video/webm'].includes(type))throw Error('Choose a PNG, JPG, WebP, MP4 or WebM wallpaper.');
+    const maxSize=(kind==='wallpaper'?50:25)*1024*1024;
+    if(file.size===0||file.size>maxSize)throw Error('Files must be between 1 byte and '+(maxSize/1024/1024)+' MB.');
+    if(kind==='game'){
+     const html=await file.text();
+     if(!/<(?:html|head|body|script|canvas|div)\b/i.test(html))throw Error('This file does not contain an HTML game.');
+     if(/<iframe\b/i.test(html))throw Error('Please upload an actual HTML game, not an iframe wrapper.');
+    }
+    if(kind==='wallpaper'&&type==='video/mp4'){
+     const signature=new Uint8Array(await file.slice(0,12).arrayBuffer());
+     if(String.fromCharCode(...signature.slice(4,8))!=='ftyp')throw Error('The selected file is not a valid MP4.');
+    }
+    const suffix=kind==='game'?'html':ext;
+    storagePath=(kind==='game'?'games/':'wallpapers/')+crypto.randomUUID()+'.'+suffix;
+    const uploaded=await sb.storage.from(BUCKET).upload(storagePath,file,{contentType:type,upsert:false});
+    if(uploaded.error)throw Error('Upload failed: '+uploaded.error.message);
+    createdPaths.push(storagePath);
+    if(kind==='wallpaper'&&type.startsWith('video/')){
+     poster=await uploadPoster(file,storagePath);
+     createdPaths.push(poster.path);
+    }
     url=validateURL(sb.storage.from(BUCKET).getPublicUrl(storagePath).data?.publicUrl);
-    if(!url)throw Error('Could not create a public file URL.');
-   }catch(error){
-    await sb.storage.from(BUCKET).remove([storagePath,...(poster?[poster.path]:[])]);
-    throw error;
    }
-  }
-  if(!url)throw Error('Enter a valid HTTPS URL or choose a supported file.');
-  const result=await sb.from('lolite_library_items')
-    .insert({kind,title,url,poster_url:poster?.url||null,storage_path:storagePath,created_by:state.user.id}).select('id').single();
-  if(result.error){
-   if(storagePath)await sb.storage.from(BUCKET).remove([storagePath,...(poster?[poster.path]:[])]);
-   throw Error('Publishing failed: '+result.error.message);
-  }
-  form.reset();notify('Published '+title+' to the shared '+kind+' library.');
-  await loadItems();
+   if(!url)throw Error('Enter a valid HTTPS URL or choose a supported file.');
+   if(kind==='game'){
+    for(const role of ['icon','background']){
+     const artwork=form.elements[role]?.files?.[0];
+     if(!artwork)continue;
+     const image=await uploadGameArtwork(artwork,role);
+     createdPaths.push(image.path);
+     gameArtwork[role+'_url']=image.url;
+    }
+   }
+   const result=await sb.from('lolite_library_items')
+    .insert({kind,title,url,poster_url:poster?.url||null,
+     icon_url:gameArtwork.icon_url,background_url:gameArtwork.background_url,
+     storage_path:storagePath,created_by:state.user.id}).select('id').single();
+   if(result.error)throw Error('Publishing failed: '+result.error.message);
+   // Once the record is committed, artwork becomes part of the shared game listing.
+   form.reset();clearArtworkPreviews();
+   notify('Published '+title+' to the shared '+kind+' library.');
+   await loadItems();
+  }catch(error){
+   if(createdPaths.length){
+    const cleanup=await sb.storage.from(BUCKET).remove(createdPaths);
+    if(cleanup.error)console.warn('Could not clean up failed game upload:',cleanup.error.message);
+   }
+   throw error;
+  }finally{state.busy=false}
  }
  async function removeItem(item){
   if(!state.admin)throw Error('Admin permission is required.');
@@ -256,8 +327,11 @@
   const {data,error}=await sb.from('lolite_library_items').delete().eq('id',item.id).select('id');
   if(error)throw error;
   if(!data?.length)throw Error('No item was removed. Check your admin permissions.');
-  if(item.storage_path){
-   const cleanup=await sb.storage.from(BUCKET).remove([item.storage_path,...(posterStoragePath(item)?[posterStoragePath(item)]:[])]);
+  const files=[...(item.storage_path?[item.storage_path]:[]),
+   ...(posterStoragePath(item)?[posterStoragePath(item)]:[]),
+   ...[item.icon_url,item.background_url].map(gameArtworkPath).filter(Boolean)];
+  if(files.length){
+   const cleanup=await sb.storage.from(BUCKET).remove([...new Set(files)]);
    if(cleanup.error)console.warn('Removed listing, but could not delete uploaded file:',cleanup.error.message);
   }
   notify('Removed '+item.title+'.');await loadItems();
@@ -282,13 +356,17 @@
   if(kind){
    const form=kind.closest('form'),file=form?.querySelector('input[type=file]');
    if(!file)return;
-   clearZip();
+   clearZip();clearArtworkPreviews();
    const website=kind.value==='website';
    file.disabled=website;file.value='';
    file.accept=kind.value==='game'?'.html,.htm,text/html':'.png,.jpg,.jpeg,.webp,.mp4,.webm,.zip,image/png,image/jpeg,image/webp,video/mp4,video/webm,application/zip';
    form.querySelector('[data-la-upload-box]')?.classList.toggle('la-hidden',website);
+   form.querySelector('[data-la-game-art]')?.classList.toggle('la-hidden',kind.value!=='game');
+   for(const image of form.querySelectorAll('[data-la-art-preview]')){image.hidden=true;image.removeAttribute('src')}
    showZipPreview();return;
   }
+  const artwork=event.target.closest('[data-la-game-artwork]');
+  if(artwork){showArtworkPreview(artwork);return}
   const file=event.target.closest('[data-la-file]');
   if(file){
    if(file.closest('form')?.elements.kind?.value==='wallpaper'&&/\.zip$/i.test(file.files?.[0]?.name||'')){
