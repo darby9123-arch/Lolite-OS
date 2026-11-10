@@ -99,9 +99,9 @@
     '<div class="la-zip-grid">'+entries.map((entry,i)=>'<label class="la-zip-card '+(entry.error?'la-zip-invalid':'')+'">'+
       '<video src="'+safe(entry.preview)+'" muted playsinline loop controls preload="none"></video>'+
       '<span class="la-zip-meta"><input type="checkbox" data-la-zip-entry="'+i+'" '+(entry.selected?'checked ':'')+(entry.error||entry.published||state.busy?'disabled ':'')+'>'+
-      '<span><strong>'+safe(entry.name)+'</strong><small>'+safe(entry.error|| (entry.published?'Published':entry.width+' × '+entry.height+' · '+Math.round(entry.duration)+'s · '+(entry.size/1024/1024).toFixed(1)+' MB'))+'</small>'+
+      '<span><strong>'+safe(entry.name)+'</strong><small>Original: '+safe(entry.path.split('/').pop())+'</small><small>'+safe(entry.error|| (entry.published?'Published':entry.width+' × '+entry.height+' · '+Math.round(entry.duration)+'s · '+(entry.size/1024/1024).toFixed(1)+' MB'))+'</small>'+
       (entry.error?'<small class="la-zip-error">'+safe(entry.error)+'</small>':'')+'</span></span></label>').join('')+'</div>'+
-    '<p class="la-note">The title above is an optional pack prefix; each video keeps its filename as its wallpaper name. Any previously published files are skipped if you retry.</p>';
+    '<p class="la-note">The title above is an optional pack prefix. Names are cleaned automatically: extensions, trailing numbers and hyphens/underscores are removed, and words are capitalized (e.g. sunset-beach-003.mp4 becomes Sunset Beach). Previously published files are skipped if you retry.</p>';
  }
  function showZipPreview(){
   const form=zipForm(),box=form?.querySelector('[data-la-zip-preview]');
@@ -224,7 +224,7 @@
    '<div class="la-game-art" data-la-game-art><label>Upload game icon (optional · up to 5 MB)<input type="file" name="icon" data-la-game-artwork="icon" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"><img data-la-art-preview class="la-art-preview la-art-icon" alt="Selected game icon preview" hidden></label>'+
    '<label>Upload game background (optional · up to 12 MB)<input type="file" name="background" data-la-game-artwork="background" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"><img data-la-art-preview class="la-art-preview la-art-background" alt="Selected game background preview" hidden></label>'+
    '<p class="la-note">The background fills the Game Store cover and the icon appears on top. If you skip either image, Lolite will use its usual artwork.</p></div>'+
-   '<p class="la-note">Wallpapers: upload an image, MP4, WebM, or ZIP containing up to 24 MP4s. ZIPs are checked and reviewed before publishing. HTML games should be self-contained; website shortcuts require HTTPS.</p>'+   '<div data-la-zip-preview class="la-zip-review" hidden></div>'+
+   '<p class="la-note">Wallpapers: upload an image, MP4, WebM, or ZIP up to 300 MB with up to 24 MP4s (50 MB each, 300 MB unpacked total). MP4 titles are formatted automatically. ZIPs are checked and reviewed before publishing. HTML games should be self-contained; website shortcuts require HTTPS.</p>'+   '<div data-la-zip-preview class="la-zip-review" hidden></div>'+
    '<button class="la-primary" type="submit" '+(state.busy?'disabled':'')+'>'+(state.busy?'Publishing…':'Publish to Lolite')+'</button></form>'+
    '<div class="la-list-head"><h2>Published items</h2><span>'+state.items.length+' total</span></div>'+
    '<div class="la-items">'+(state.items.length?state.items.map(row).join(''):'<p class="la-note">No shared items yet. Publish your first game, wallpaper or website.</p>')+'</div></section>';
