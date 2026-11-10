@@ -82,3 +82,40 @@ test('Blue and purple icon pack has two complete ten-app batches',()=>{
  assert.match(style,/place-items:center!important/);
  assert.match(style,/#taskbar/);
 });
+test('Complete brand pack covers every bundled app icon while preserving fallbacks',()=>{
+ const vm=require('node:vm');
+ const styles=new Map(),document={
+  head:{appendChild(node){styles.set(node.id,node)}},
+  getElementById(id){return styles.get(id)||null},
+  createElement(name){assert.equal(name,'style');return {id:'',textContent:''}}
+ };
+ const fallback={
+  names:Object.keys(manifest.selected_source_files),
+  resolve(id){return id},
+  tile(id){return '<old-icon data-id="'+id+'"></old-icon>'}
+ };
+ const window={LoliteIcons:fallback};
+ vm.runInNewContext(read('core/app-icon-brand-pack.js'),{window,document});
+ vm.runInNewContext(read('core/app-icon-brand-rest.js'),{window,document});
+ const api=window.LoliteIcons;
+ const all=Object.keys(manifest.selected_source_files);
+ for(const key of all){
+  assert.match(api.tile(key),/lolite-icon--brand-real/,'Missing blue-purple icon for '+key);
+  assert.match(api.tile(key),/<svg\b/,'No native vector for '+key);
+ }
+ for(const extra of ['steam','autoclick','arcade','feature-request','sandstone-browser']){
+  assert.match(api.tile(extra),/lolite-icon--brand-real/,'Missing icon for '+extra);
+ }
+ for(const alias of ['app-home','app-scramjet','app-quests','lolite-quests','app-autoclicker']){
+  assert.match(api.tile(alias),/lolite-icon--brand-real/,'Missing alias for '+alias);
+ }
+ assert.match(api.tile('completely-unknown-app'),/old-icon/);
+ assert.ok(styles.get('lolite-brand-real-icons-style')?.textContent.includes('place-items:center!important'));
+});
+test('Extended brand pack loads after its base and before consumers',()=>{
+ for(const page of ['index.html','icons.html']){
+  const html=read(page),first=html.indexOf('core/app-icon-brand-pack.js'),rest=html.indexOf('core/app-icon-brand-rest.js');
+  const consumer=html.indexOf(page==='index.html'?'src="app.js':'src="core/icon-preview.js');
+  assert.ok(first!==-1 && rest>first && consumer>rest,page+' icon order broken');
+ }
+});
