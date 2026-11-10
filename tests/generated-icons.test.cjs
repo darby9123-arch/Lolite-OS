@@ -27,6 +27,15 @@ test('PNG icon loader is correctly ordered in desktop and gallery',()=>{
  for(const page of ['index.html','icons.html']){
   const html=read(page);
   assert.ok(html.indexOf('core/app-icon-art.js')<html.indexOf('core/app-icon-pngs.js'));
-  assert.match(html,/core\/app-icon-pngs\.js\?v=cosmos-png-20261110/);
+  assert.match(html,/core\/app-icon-pngs\.js\?v=cosmos-png-centered-20261110/);
  }
+});
+
+test('Generated icon artwork is centred without changing app icon hit areas',()=>{
+ const loader=read('core/app-icon-pngs.js');
+ assert.match(loader,/\.lolite-icon\.lolite-icon--generated\{display:inline-grid!important;place-items:center!important/);
+ assert.match(loader,/object-position:center center!important/);
+ assert.match(loader,/#icons \.desktop-icon > \.lolite-icon--generated/);
+ assert.match(loader,/\.lm-app-icon > \.lolite-icon--generated/);
+ assert.match(loader,/\.appstore-icon > \.lolite-icon--generated/);
 });
