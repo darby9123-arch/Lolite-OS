@@ -1,0 +1,35 @@
+name: Verify Lolite Music ZIP imports
+on:
+  push:
+    paths:
+      - 'core/music.js'
+      - 'core/music-zip.js'
+      - 'core/music.css'
+      - 'tests/music*.test.cjs'
+      - 'index.html'
+      - 'supabase/migrations/*music*.sql'
+      - '.github/workflows/verify-music-zip.yml'
+  pull_request:
+    paths:
+      - 'core/music.js'
+      - 'core/music-zip.js'
+      - 'core/music.css'
+      - 'tests/music*.test.cjs'
+      - 'index.html'
+      - 'supabase/migrations/*music*.sql'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check core/music.js
+          node --check core/music-zip.js
+      - name: Test ZIP reading and Music integration
+        run: node --test tests/music.test.cjs tests/music-zip.test.cjs
