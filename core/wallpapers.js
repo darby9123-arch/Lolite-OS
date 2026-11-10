@@ -67,7 +67,7 @@
  const find=id=>collection.find(w=>w.id===id)||collection.find(w=>w.id===legacy[id]);
  const media=matchMedia('(prefers-reduced-motion: reduce)');
  const paused=()=>read('loliteWallpaperPaused')==='true'||media.matches||
-   root.classList.contains('reduce')||root.classList.contains('reduce-motion');
+   root.classList.contains('reduce')||root.classList.contains('reduce-motion')||root.classList.contains('lolite-lite-mode');
  const visible=()=>!document.hidden&&!root.classList.contains('browsing-mode');
  const validQuality=new Set(['max','balanced','lite']);
  const initialQuality=read('loliteWallpaperQuality','max');

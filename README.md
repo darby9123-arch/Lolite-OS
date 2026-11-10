@@ -23,6 +23,16 @@ A Lolite-branded browser desktop with the original Cosmos space interface, apps,
 
 ## Update Log
 
+### Lolite OS 4.1 — polish and everyday apps — 2026-11-10
+- **Desktop icon alignment:** consistent centering for Cosmos PNG app icons, labels and taskbar icons.
+- **Game checks:** HEAD method fallback to bounded GET Range, cache freshness fixes and uncertainty-safe handling.
+- **Widgets 2.0:** drag to resize widgets, saved sizes and a shared Lolite Music mini-controller.
+- **Music 2.0:** locally saved liked songs, shuffle, repeat and playback widget integration.
+- **Game Store 3.0:** Info panels with known server health and new sort modes.
+- **Lite Mode:** opt-in shell animation reduction and paused live wallpapers, without changing game or audio behavior.
+- [Read 4.1 details and verification notes](docs/LOLITE-4-1.md).
+
+
 ### Generated Cosmos PNG app icons installed — 2026-11-10
 - Installed **64 selected app PNG icons** and **108 alternative generated designs** in `assets/icons/cosmos/{selected,primary,alternate,space-extra}/`.
 - The original generated artwork is optimized to local 128×128 PNG files for desktop, Start menu, taskbar, App Store and mobile launcher speed.
