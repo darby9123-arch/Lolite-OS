@@ -23,6 +23,16 @@ A Lolite-branded browser desktop with the original Cosmos space interface, apps,
 
 ## Update Log
 
+### Game Store UI cleanup — 2026-11-11
+- Reworked existing Game Store cards into a consistent cover + details layout: Play, Info and server selector are always visible, even without hover.
+- Fixed layout conflicts between the older compact Store, the 4.1 feature stylesheet and the gallery skin; cards respond to the app window's actual width.
+- Restored access to every collection when the window is narrow using a responsive Collection selector.
+- Search now updates results without replacing the focused search input for every keystroke; IME composition is handled safely.
+- Preserves scrolling during sorting and Load more, while category switches and new searches return to the top.
+- Server selection uses a delegated change listener rather than injecting filenames into inline handlers.
+- Existing game files, local imports, alternate servers, favourites, purchases and launch functions are unchanged. See `tests/game-store-ui-cleanup.test.cjs`.
+
+
 ### Lolite OS 4.1 — polish and everyday apps — 2026-11-10
 - **Desktop icon alignment:** consistent centering for Cosmos PNG app icons, labels and taskbar icons.
 - **Game checks:** HEAD method fallback to bounded GET Range, cache freshness fixes and uncertainty-safe handling.
