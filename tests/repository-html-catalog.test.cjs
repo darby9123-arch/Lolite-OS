@@ -37,27 +37,20 @@ test('Every HTML page in the Lolite game folders is listed exactly once',()=>{
  }
 });
 
-test('Restore published HTML game catalogs without replacing local repository games',()=>{
- const catalogs=[
-  ['core/genizymath-catalog.js','GenizyMath'],
-  ['core/mountain-games-catalog.js','Mountain Games'],
-  ['core/chickenkings-catalog.js',"Chicken King's Vault"],
-  ['core/additional-game-servers.js','DAKNUX']
- ];
- for(const [file] of catalogs)assert.ok(fs.existsSync(path.join(root,file)),'Missing catalog '+file);
- assert.match(source,/^\s*loadGenizyCatalog\(\);\s*$/m);
- assert.match(source,/^\s*loadAdditionalServers\(\);\s*$/m);
+test('Retired provider catalogues are absent while local HTML and DAKNUX remain',()=>{
+ const retired=['genizymath-catalog.js','mountain-games-catalog.js','chickenkings-catalog.js'];
+ for(const file of retired){
+  assert.equal(fs.existsSync(path.join(root,'core',file)),false,'Retired catalog still exists: '+file);
+  assert.ok(!mainSource.includes('core/'+file),'Retired catalog still loads: '+file);
+ }
+ assert.ok(fs.existsSync(path.join(root,'core/additional-game-servers.js')));
+ assert.match(source,/loadAdditionalServers\(\)/);
  assert.match(source,/await syncGamefilesCollection\(\)/);
  assert.match(source,/local:true,external:false,source:'Lolite OS · repository HTML'/);
  assert.match(source,/local:true,external:false,source:'Lolite OS · built-in HTML'/);
- assert.match(source,/if\(game\.local\|\|\(!game\.external&&/);
- assert.match(source,/\(existing\.servers\|\|\(existing\.servers=\[\]\)\)\.push\(\{name:'Mountain Games',url\}\)/);
- assert.match(source,/const raw=\[\{name:baseName,url:g\.url\},\.\.\.\(Array\.isArray\(g\.servers\)\?g\.servers:\[\]\)\];/);
- for(const [,label] of catalogs){
-  const shown=label==="Chicken King's Vault"?'Chicken King’s Vault':label;
-  assert.ok(source.includes('"'+shown+'"'),'Restored provider missing in game store: '+shown);
- }
- assert.doesNotMatch(mainSource,/<script[^>]*\bsrc="core\/game-store\.js[^"]*"[^>]*>\s*<\/script>\s*<script[^>]*\bsrc="https?:\/\/[^"]+\.html"/i);
+ assert.match(source,/const raw=\[\{name:baseName,url:g\.url\}/);
+ assert.doesNotMatch(source,/GenizyMath|Mountain Games|Chicken King/);
+ assert.match(source,/"DAKNUX"/);
 });
 
 test('Featured games are all present as local HTML',()=>{
@@ -86,7 +79,6 @@ test('Geometry Dash Full webport has matching featured art and playable local HT
  const art=fs.readFileSync(path.join(root,'core/game-art.js'),'utf8');
  assert.match(art,/"Geometry Dash webport\.html"\s*:\s*\{\s*"src"\s*:\s*"assets\/games\/geometry-dash-full-logo\.svg"/);
  assert.ok(fs.existsSync(path.join(root,'assets/games/geometry-dash-full-logo.svg')));
- const fallback=fs.readFileSync(path.join(root,'core/gd-loading-fix.js'),'utf8');
- assert.match(fallback,/file:'Geometry Dash webport\.html'/);
- assert.doesNotMatch(fallback,/file:'clgdbreeze\.html'/);
+ assert.doesNotMatch(mainSource,/gd-loading-fix\.js/);
+ assert.match(source,/Geometry Dash webport\.html/);
 });

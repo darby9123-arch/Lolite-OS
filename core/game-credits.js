@@ -5,9 +5,6 @@
  const button=document.getElementById("loliteCreditsButton");
  if(!button)return;
  const links=[
-  {label:"GenizyMath",url:"https://github.com/genizymath/genizymath.github.io",description:"Game catalogue and original hosted pages"},
-  {label:"Chicken King's Vault",url:"https://github.com/WanoCapy/ChickenKingsVault",description:"Game catalogue and original hosted pages"},
-  {label:"Mountain Game Games",url:"https://github.com/mountain658/mountain658.github.io",description:"Game catalogue and original hosted pages"},
   {label:"DAKNUX",url:"https://github.com/daknux",description:"Alternate game listings and cover resources"}
  ];
  const style=document.createElement("style");
@@ -35,7 +32,7 @@
  panel.tabIndex=-1;
  panel.setAttribute("role","dialog");
  panel.setAttribute("aria-label","Game source credits");
- panel.innerHTML='<div class="credits-head"><div><h2>Game credits</h2><p>Thanks to the people and projects behind these game collections.</p></div><button class="credits-close" type="button" aria-label="Close credits">✕</button></div>';
+ panel.innerHTML='<div class="credits-head"><div><h2>Game credits</h2><p>Thanks to the people and projects behind the listed game collection.</p></div><button class="credits-close" type="button" aria-label="Close credits">✕</button></div>';
  for(const item of links){
   const section=document.createElement("div");section.className="credits-source";
   const a=document.createElement("a");a.href=item.url;a.target="_blank";a.rel="noopener noreferrer";a.textContent=item.label+" ↗";

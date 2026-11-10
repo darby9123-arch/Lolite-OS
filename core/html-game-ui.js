@@ -7,7 +7,6 @@
 const storage=window.LoliteHTMLGameFiles,packages=window.LoliteLocalGamePackages;
 if(!storage)return;
 const titleKey=value=>String(value||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]/g,"");
-const genizyTitles=new Set((Array.isArray(window.LoliteGenizyCatalog)?window.LoliteGenizyCatalog:[]).map(entry=>titleKey(entry.title)));
 let saved=[],installed=[],scheduled=false,loading=false;
 const notify=msg=>typeof window.toast==="function"?window.toast(msg):console.info(msg);
 function button(label,action){
@@ -53,68 +52,6 @@ async function openHtml(record){
   openPackage(installedGame);
  }catch(error){notify(error?.message||"Could not migrate this saved HTML game")}
 }
-// Game Store can prefer a locally installed package when the matching
-// GenizyMath title's normal Play button is pressed.
-window.LoliteInstalledGameByTitle=title=>{
- const key=titleKey(title);
- return key&&genizyTitles.has(key)?installed.find(game=>titleKey(game.title)===key)||null:null;
-};
-window.LoliteOpenInstalledGame=openPackage;
-
-/* Launch the real upstream HTML in a sandboxed Lolite game window.
- * Fetches only on an explicit Play click and stores nothing in the public
- * Lolite repository. The local-game service worker enforces an opaque-origin
- * CSP sandbox keeps third-party game scripts away from Lolite account data.
- */
-const installingGenizy=new Set();
-window.LolitePlayGenizyHTML=async title=>{
- if(!packages){notify("Local HTML game support is unavailable");return}
- const key=titleKey(title);
- // Don't automatically install age-restricted casino/wagering game content.
- if(/(?:casino|poker|blackjack|roulette|slot\s?machine|lottery|gambl|wager|betting|baccarat|sportsbook)/i.test(String(title||""))){
-  notify("This title isn't available for direct local installation.");return
- }
- const item=(window.LoliteGenizyCatalog||[]).find(x=>titleKey(x.title)===key);
- if(!item||typeof item.path!=="string"||!/^iframe\/[A-Za-z0-9_.-]+\.html$/.test(item.path)){
-  notify("This game has no supported HTML launch file");return
- }
- if(installingGenizy.has(key))return;
- installingGenizy.add(key);
- try{
-  const already=installed.find(record=>titleKey(record.title)===key);
-  if(already){openPackage(already);return}
-  notify("Loading "+item.title+" HTML…");
-  const source="https://raw.githubusercontent.com/genizymath/genizymath.github.io/main/"+item.path;
-  const response=await fetch(source,{cache:"no-store"});
-  if(!response.ok)throw new Error("Could not get this game's source HTML ("+response.status+")");
-  if(Number(response.headers.get("content-length")||0)>40*1024*1024)throw new Error("Game HTML exceeds the 40 MB safety limit");
-  let html=await response.text();
-  if(new Blob([html]).size>40*1024*1024)throw new Error("Game HTML exceeds the 40 MB safety limit");
-  if(!/<(?:html|script|canvas|div|body|head)\b/i.test(html))throw new Error("The source did not return a usable HTML document");
-  if(/<iframe\b/i.test(html))throw new Error("This game is an external iframe wrapper rather than direct playable HTML");
-  // Relative asset paths resolve to the upstream game's iframe directory.
-  // External assets can still need internet; they are not silently mirrored.
-  if(!/<base(?:\s|>)/i.test(html)){
-   const base='<base href="https://genizymath.github.io/iframe/">';
-   if(/<head(?:\s[^>]*)?>/i.test(html))html=html.replace(/<head(?:\s[^>]*)?>/i,match=>match+base);
-   else html=base+html;
-  }
-  // A CSP sandbox applied by the local game service worker makes the game
-  // an opaque-origin page with no access to the Lolite OS account/session.
-  const record=await packages.importSavedHtml({title:item.title,html});
-  installed.unshift(record);
-  openPackage(record);
- }catch(error){
-  console.warn("GenizyMath HTML installation failed",item.path,error);
-  if(window.loliteStoreTryBackupForTitle?.(title)){
-   notify("Trying the game's other available servers inside Lolite.");
-  }else{
-   notify((error?.message||"Could not load this game's HTML")+
-     ". No working source could be confirmed.");
-  }
- }finally{installingGenizy.delete(key)}
-};
-
 function fileInput(accept,change,folder=false){
  const input=document.createElement("input");input.type="file";input.hidden=true;input.accept=accept;
  if(folder){input.setAttribute("webkitdirectory","");input.setAttribute("directory","");input.multiple=true}
@@ -153,19 +90,6 @@ function ensureTop(root){
   }finally{zipBtn.disabled=false;zipBtn.textContent="Import game ZIP"}
  });
 
- const genizyInput=fileInput(".zip,application/zip",async files=>{
-  if(!files.length)return;
-  if(typeof packages.importGenizyZip!=="function")throw new Error("GenizyMath ZIP importer is unavailable");
-  genizyBtn.disabled=true;genizyBtn.textContent="Reading ZIP…";
-  try{
-   const result=await packages.importGenizyZip(files[0],status=>{genizyBtn.textContent=status});
-   notify(result.imported+" GenizyMath HTML games installed locally. "+
-     result.skippedEmbeds+" iframe-only games skipped; "+result.alreadyInstalled+" already installed."+
-     " Games requiring external assets still need internet.");
-  }finally{genizyBtn.disabled=false;genizyBtn.textContent="Import GenizyMath ZIP"}
- });
- const genizyBtn=button("Import GenizyMath ZIP",()=>genizyInput.click());
- genizyBtn.style.flex="0 0 auto";
  const folderBtn=button("Import game folder",()=>folderInput.click());
  folderBtn.style.flex="0 0 auto";
  const folderInput=fileInput("",async files=>{
@@ -194,43 +118,8 @@ function ensureTop(root){
  });
  const tools=document.createElement("details");tools.className="store-import-tools";
  const summary=document.createElement("summary");summary.textContent="Import games";
- tools.append(summary,collectionBtn,collectionInput,removeCollectionBtn,htmlBtn,htmlInput,zipBtn,zipInput,genizyBtn,genizyInput,folderBtn,folderInput);
+ tools.append(summary,collectionBtn,collectionInput,removeCollectionBtn,htmlBtn,htmlInput,zipBtn,zipInput,folderBtn,folderInput);
  top.append(tools);
-}
-function enhanceGenizyCards(root){
- if(!packages||!genizyTitles.size)return;
- const installedByTitle=new Map();
- for(const game of installed){
-  const key=titleKey(game.title);
-  if(key&&!installedByTitle.has(key))installedByTitle.set(key,game);
- }
- for(const card of root.querySelectorAll(".store-card")){
-  if(card.dataset.localSourceEnhanced==="1"||card.closest("#lolite-saved-html-section"))continue;
-  const body=card.querySelector(".store-card-body");
-  const title=body?.querySelector("h3")?.textContent?.trim();
-  if(!title||!genizyTitles.has(titleKey(title)))continue;
-  card.dataset.localSourceEnhanced="1";
-  const controls=actions();controls.classList.add("lolite-local-source-actions");
-  const installedGame=installedByTitle.get(titleKey(title));
-  if(installedGame)controls.append(button("Play installed HTML",()=>openPackage(installedGame)));
-  async function replaceWith(importGame){
-   // Keep the old package if the new import fails; remove only after success.
-   const record=await importGame();
-   if(installedGame&&installedGame.id!==record.id)await packages.remove(installedGame.id);
-   notify(record.title+" installed locally ("+record.files+" files). Play now uses the replacement HTML.");
-  }
-  const input=fileInput(".zip,application/zip",async files=>{
-   if(!files.length)return;
-   await replaceWith(()=>packages.importZip(files[0],title));
-  });
-  const install=button(installedGame?"Replace local ZIP":"Install game ZIP",()=>input.click());
-  const folderInput=fileInput("",async files=>{
-   if(!files.length)return;
-   await replaceWith(()=>packages.importFolder(files,title));
-  },true);
-  const folderButton=button(installedGame?"Replace with folder":"Install game folder",()=>folderInput.click());
-  controls.append(install,input,folderButton,folderInput);body.append(controls);
- }
 }
 function buildSection(root,id,label,description,records,openFn,removeFn){
  let section=root.querySelector("#"+id);
@@ -270,16 +159,6 @@ function buildSection(root,id,label,description,records,openFn,removeFn){
 function enhance(){
  const root=document.querySelector(".store-main");if(!root)return;
  ensureTop(root);
- const genizyImported=installed.filter(record=>record.source==="genizymath-zip");
- let summary=root.querySelector("#lolite-genizy-import-summary");
- if(genizyImported.length){
-  if(!summary){
-   summary=document.createElement("p");summary.id="lolite-genizy-import-summary";summary.className="store-external-note";
-   summary.style.cssText="padding:10px 12px;margin:12px 0;border:1px solid #394559;border-radius:9px;";
-   root.querySelector(".store-top")?.after(summary);
-  }
-  summary.textContent=genizyImported.length+" GenizyMath HTML games installed on this device. Select a GenizyMath game and press Play to open its HTML inside Lolite. Some games need internet for external assets; source-site iframe wrappers are excluded.";
- }else summary?.remove();
  // Installed packages remain playable from their normal Game Store cards, without a separate listing.
  root.querySelector("#lolite-local-package-section")?.remove();
  buildSection(root,"lolite-saved-html-section","Saved Standalone HTML Games",

@@ -72,9 +72,6 @@
    // Raw GitHub returns relative scripts/styles as text/plain. For game HTML
    // source backups, point relative assets to the original published website.
    const origins={
-    '/genizymath/genizymath.github.io/main/':'https://genizymath.github.io/',
-    '/mountain658/mountain658.github.io/main/':'https://mountain658.github.io/',
-    '/WanoCapy/ChickenKingsVault/main/':'https://wanocapy.github.io/ChickenKingsVault/',
     '/daknux/html/main/':'https://cdn.jsdelivr.net/gh/daknux/html@main/'
    };
    let baseURL=url.href;

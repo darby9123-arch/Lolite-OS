@@ -12,8 +12,11 @@ test('Game Store no longer shows Installed HTML Game Packages',()=>{
 });
 
 test('Removing the section preserves imported game launch and upload tools',()=>{
- for(const marker of ['window.LoliteInstalledGameByTitle','window.LoliteOpenInstalledGame=openPackage',
-  'packages.launchUrl(record)','button("Import HTML"','button("Import game ZIP"',
-  'button("Import game folder"','button("Import GenizyMath ZIP"','button("Import gamefiles.zip"'])
+ for(const marker of ['packages.launchUrl(record)','button("Import HTML"','button("Import game ZIP"',
+  'button("Import game folder"','button("Import gamefiles.zip"'])
   assert.ok(js.includes(marker),'Missing game functionality: '+marker);
+});
+
+test('Retired provider ZIP import controls are gone',()=>{
+ assert.doesNotMatch(js,/GenizyMath|importGenizyZip|LoliteGenizyCatalog/);
 });

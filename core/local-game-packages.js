@@ -168,41 +168,6 @@ async function storeEntries(entries,title){
  return record;
 }
 
-/* Install one actual HTML document selected from the user's ZIP. The archive
- * remains on their own device; no game code is mirrored to GitHub. */
-async function importGenizyGameFromZip(file,gamePath,title){
- if(!file||!/\.zip$/i.test(file.name||""))throw new Error("Select the GenizyMath ZIP file");
- const catalog=Array.isArray(window.LoliteGenizyCatalog)?window.LoliteGenizyCatalog:[];
- const match=catalog.find(entry=>entry.path===gamePath&&entry.title===title);
- if(!match||!/^[a-z0-9_./-]+\.html$/i.test(gamePath))throw new Error("Unrecognised game in GenizyMath collection");
- const getPath=raw=>{
-  const normalized=raw.replace(/\\/g,"/");
-  const segment=normalized.indexOf("/iframe/");
-  return segment>=0?normalized.slice(segment+1):normalized;
- };
- const entries=await unzip(file,5000,path=>getPath(path)===gamePath);
- if(entries.length!==1)throw new Error("The selected ZIP does not contain "+gamePath);
- const html=await entries[0].blob.text();
- if(/<iframe\b/i.test(html))throw new Error("This game is a website iframe, not a standalone HTML game");
- const entry={path:"index.html",blob:new Blob([html],{type:"text/html;charset=utf-8"}),size:entries[0].size,type:"text/html;charset=utf-8"};
- const record=await storeEntries([entry],title);
- record.source="genizymath-user-zip";
- // Update source information for local library and selective cache clearance.
- const db=await database();
- await new Promise((resolve,reject)=>{
-  const tx=db.transaction(PKGS,"readwrite");
-  tx.objectStore(PKGS).put(record);
-  tx.oncomplete=resolve;
-  tx.onerror=()=>reject(tx.error||new Error("Could not save game source"));
- });
- return record;
-}
-async function clearAutoGameCache(){
- const all=await getAll();
- const auto=all.filter(record=>record.source==="genizymath-auto");
- for(const item of auto)await erase(item.id);
- return auto.length;
-}
 async function importStandaloneHtml(file,displayTitle){
  if(!(file instanceof Blob)||!file.name||!/\.html?$/i.test(file.name))throw new Error("Choose a standalone HTML game file");
  if(file.size>MAX_ENTRY)throw new Error("HTML file exceeds the 40 MB per-file limit");
@@ -214,71 +179,7 @@ async function importSavedHtml(record){
  const blob=new Blob([record.html],{type:"text/html;charset=utf-8"});
  if(blob.size>MAX_ENTRY)throw new Error("HTML file exceeds the 40 MB per-file limit");
  const entry=await storeEntries([{path:"index.html",blob,size:blob.size,type:"text/html;charset=utf-8"}],record.title||"HTML Game");
- if(record.source==="genizymath-auto"){
-  entry.source="genizymath-auto";
-  const db=await database();
-  await new Promise((resolve,reject)=>{
-   const tx=db.transaction(PKGS,"readwrite");tx.objectStore(PKGS).put(entry);
-   tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error("Could not save game cache status"));
-  });
- }
  return entry;
-}
-
-/* Import only the 850 chosen HTML launch documents from a user-supplied
- * GenizyMath source ZIP. Nothing is copied into Lolite's public repository.
- * Ignore the upstream game-list wrappers and any pages that embed another site.
- */
-async function importGenizyZip(file,onProgress){
- if(!file||!/\.zip$/i.test(file.name||""))throw new Error("Choose the GenizyMath source ZIP");
- const catalog=Array.isArray(window.LoliteGenizyCatalog)?window.LoliteGenizyCatalog:[];
- const wanted=new Set(catalog.filter(x=>x&&typeof x.path==="string"&&/^iframe\/[a-zA-Z0-9_.-]+\.html$/.test(x.path)).map(x=>x.path));
- if(!wanted.size)throw new Error("The GenizyMath game list is not loaded");
- const sourcePath=raw=>{
-  const path=raw.replace(/\\/g,"/");
-  const i=path.indexOf("/iframe/");
-  return i>=0?path.slice(i+1):path;
- };
- onProgress?.("Reading game files…");
- const extracted=await unzip(file,5000,raw=>wanted.has(sourcePath(raw)));
- const byPath=new Map(extracted.map(entry=>[sourcePath(entry.path),entry]));
- if(!byPath.size)throw new Error("No matching GenizyMath games found. Select genizymath.github.io-main.zip");
- const existing=await getAll();
- const normalize=x=>String(x||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]/g,"");
- const installedTitles=new Set(existing.map(game=>normalize(game.title)));
- const ready=[];
- let skippedEmbeds=0,missing=0,alreadyInstalled=0;
- for(const item of catalog){
-  if(!item||!wanted.has(item.path))continue;
-  const entry=byPath.get(item.path);
-  if(!entry){missing++;continue}
-  const title=String(item.title||"").replace(/[<>]/g,"").trim().slice(0,90);
-  const key=normalize(title);
-  if(!key)continue;
-  if(installedTitles.has(key)){alreadyInstalled++;continue}
-  const html=await entry.blob.text();
-  if(/<iframe\b/i.test(html)){skippedEmbeds++;continue}
-  ready.push({title,entry});
-  installedTitles.add(key);
- }
- if(!ready.length)return {imported:0,skippedEmbeds,missing,alreadyInstalled};
- onProgress?.("Installing "+ready.length+" games…");
- const db=await database();
- await new Promise((resolve,reject)=>{
-  const tx=db.transaction([PKGS,ASSETS],"readwrite");
-  const pkgs=tx.objectStore(PKGS),assets=tx.objectStore(ASSETS);
-  const now=Date.now();
-  for(const {title,entry} of ready){
-   const id="pkg-"+(crypto.randomUUID?crypto.randomUUID():Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,"0")).join(""));
-   pkgs.put({id,title,root:"index.html",files:1,bytes:entry.size,savedAt:now,source:"genizymath-zip"});
-   assets.put({key:id+"/index.html",packageId:id,path:"index.html",data:entry.blob,type:"text/html;charset=utf-8"});
-  }
-  tx.oncomplete=resolve;
-  tx.onerror=()=>reject(tx.error||new Error("Not enough browser storage for the game collection"));
-  tx.onabort=()=>reject(tx.error||new Error("Game collection install was cancelled"));
- });
- window.dispatchEvent(new CustomEvent("lolite-local-packages-changed"));
- return {imported:ready.length,skippedEmbeds,missing,alreadyInstalled};
 }
 
 async function importZip(file,displayTitle){
@@ -402,5 +303,5 @@ async function launchUrl(record){
  const id=record.packId&&safeId(record.packId)?record.packId:record.id;
  return new URL("local-games/"+id+"/"+record.root.split("/").map(encodeURIComponent).join("/"),scope).href;
 }
-window.LoliteLocalGamePackages=Object.freeze({importZip,importGenizyZip,importGenizyGameFromZip,clearAutoGameCache,importFolder,importStandaloneHtml,importSavedHtml,importGamefilesZip,removeGamefilesZip,list:getAll,remove:erase,ensureWorker,launchUrl});
+window.LoliteLocalGamePackages=Object.freeze({importZip,importFolder,importStandaloneHtml,importSavedHtml,importGamefilesZip,removeGamefilesZip,list:getAll,remove:erase,ensureWorker,launchUrl});
 })();

@@ -1,3 +1,5 @@
+> **Game Store update (11 November 2026):** The GenizyMath, Mountain Games and Chicken King's Vault collections have been retired. Their catalogue entries, alternative servers and import shortcuts are no longer loaded. Lolite's own HTML games, user-provided games and DAKNUX remain. Previous notes below are historical.
+
 ## Launch Lolite OS
 
 - **[Download Lolite OS for Windows](https://github.com/darby9123-arch/Lolite-OS/releases)** — install `LoliteOS-Setup.exe` from a desktop release; includes the app and dedicated launcher

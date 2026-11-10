@@ -103,11 +103,11 @@ test('HTML served as text/plain renders as a playable srcdoc page',async()=>{
 });
 test('Raw GitHub HTML source uses the original game asset host for relative files',async()=>{
  const h=harness({
-  gameURL:'https://raw.githubusercontent.com/mountain658/mountain658.github.io/main/puzzle.html',
+  gameURL:'https://raw.githubusercontent.com/daknux/html/main/puzzle.html',
   html:'<!doctype html><html><head><script src="js/game.js"></script></head><body><canvas></canvas></body></html>'
  });
  await flush();
- assert.match(h.frame.srcdoc,/<base href="https:\/\/mountain658\.github\.io\/puzzle\.html">/);
+ assert.match(h.frame.srcdoc,/<base href="https:\/\/cdn\.jsdelivr\.net\/gh\/daknux\/html@main\/puzzle\.html">/);
  assert.match(h.frame.srcdoc,/<script src="js\/game\.js">/);
 });
 test('Existing game base href is preserved',async()=>{

@@ -174,10 +174,8 @@
   function filteredGames(){
     const q=searchQuery.toLowerCase();
     if(q.length<2)return [];
-    const genizy=Array.isArray(window.LoliteGenizyCatalog)?window.LoliteGenizyCatalog:[];
-    const additional=Array.isArray(window.LoliteAdditionalGameServers)?window.LoliteAdditionalGameServers:[];
-    const catalog=[...genizy,...additional];
-    const seen=new Set();
+    const catalog=Array.isArray(window.LoliteAdditionalGameServers)?window.LoliteAdditionalGameServers:[];
+     const seen=new Set();
     const found=catalog.filter(entry=>{
       if(!entry?.title||!entry.title.toLowerCase().includes(q))return false;
       const key=entry.title.toLowerCase().replace(/[^a-z0-9]/g,'');

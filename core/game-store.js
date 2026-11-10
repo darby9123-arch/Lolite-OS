@@ -143,8 +143,8 @@
    if(has(/pac.?man|donkey kong|\btetris\b|\bsnake\b|breakout|space invaders|\bpong\b|atari|\bnes\b|classic arcade|retro|old school|198[0-9]|199[0-9]|emulator|asteroids|arkanoid|frogger|galaga|pinball|\bsimon\b/))return 'Retro & Classics';
    return 'Arcade & Action';
  };
- const categoryNames=["All Games","My Library","Favorites","Recently Played","Featured","Recently Added","Popular Games","Built-in HTML","GenizyMath","Mountain Games","Chicken King’s Vault","DAKNUX","Gamefiles ZIP","Free to Play","Baldi’s Basics","Sandbox & Building","Adventure & RPG","Platformers","Puzzle & Brain","Racing & Driving","Arcade & Action","Horror & Survival","Sports","Strategy","Simulation & Life","Multiplayer & .io","Music & Rhythm","Casual & Idle","Retro & Classics"];
- const navMarks={"All Games":"ALL","My Library":"OWN","Favorites":"♥","Recently Played":"↺","Featured":"★","Recently Added":"NEW","Popular Games":"TOP","Built-in HTML":"HTML","GenizyMath":"GN","Mountain Games":"MG","Chicken King’s Vault":"CK","DAKNUX":"DK","Gamefiles ZIP":"ZIP","Free to Play":"FREE","Baldi’s Basics":"BB","Sandbox & Building":"BUILD","Adventure & RPG":"RPG","Platformers":"JUMP","Puzzle & Brain":"PUZ","Racing & Driving":"RACE","Arcade & Action":"PLAY","Horror & Survival":"HR","Sports":"SPORT","Strategy":"STRAT","Simulation & Life":"SIM","Multiplayer & .io":"IO","Music & Rhythm":"BEAT","Casual & Idle":"IDLE","Retro & Classics":"RETRO"};
+ const categoryNames=["All Games","My Library","Favorites","Recently Played","Featured","Recently Added","Popular Games","Built-in HTML","DAKNUX","Gamefiles ZIP","Free to Play","Baldi’s Basics","Sandbox & Building","Adventure & RPG","Platformers","Puzzle & Brain","Racing & Driving","Arcade & Action","Horror & Survival","Sports","Strategy","Simulation & Life","Multiplayer & .io","Music & Rhythm","Casual & Idle","Retro & Classics"];
+ const navMarks={"All Games":"ALL","My Library":"OWN","Favorites":"♥","Recently Played":"↺","Featured":"★","Recently Added":"NEW","Popular Games":"TOP","Built-in HTML":"HTML","DAKNUX":"DK","Gamefiles ZIP":"ZIP","Free to Play":"FREE","Baldi’s Basics":"BB","Sandbox & Building":"BUILD","Adventure & RPG":"RPG","Platformers":"JUMP","Puzzle & Brain":"PUZ","Racing & Driving":"RACE","Arcade & Action":"PLAY","Horror & Survival":"HR","Sports":"SPORT","Strategy":"STRAT","Simulation & Life":"SIM","Multiplayer & .io":"IO","Music & Rhythm":"BEAT","Casual & Idle":"IDLE","Retro & Classics":"RETRO"};
  // Group popular series without removing games from their existing genre categories.
  // A series appears in the sidebar only if the merged library contains 3+ titles.
  const franchiseRules=[
@@ -215,82 +215,11 @@
  // Exclude adult/gambling titles from the restored public catalog.
  const unsuitableRemoteTitle=title=>/(?:porn|hentai|naked|nudity|\bxxx\b|\bnsfw\b|sexual|erotic|strip\s*club|stripper|casino|roulette|blackjack|slot\s*machine|gambling|sports\s*bet|betting|gamble)/i.test(String(title||''));
  const gameNameKey=value=>String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
- // Mountain Game Games: original published metadata only (no HTML games copied).
-// Its old /mnt/ links were broken; upstream files live at the site root.
-const mountainCovers=new Map();
-if(Array.isArray(window.LoliteMountainCatalog)){
- for(const entry of window.LoliteMountainCatalog){
-  if(!entry||typeof entry.title!=='string'||typeof entry.path!=='string')continue;
-  if(!/^(?:[a-zA-Z0-9_.-]+\/)*[a-zA-Z0-9_.-]+(?:\.html|\/$)/.test(entry.path))continue;
-  const title=entry.title.replace(/[<>&"'\x60]/g,'').trim().slice(0,100);
-  if(!title||unsuitableRemoteTitle(title))continue;
-  const file='mnt-'+entry.path.replace(/[^a-zA-Z0-9]/g,'-');
-  const url='https://mountain658.github.io/'+entry.path.split('/').map(encodeURIComponent).join('/');
-  // Preserve first-party game URLs, adding remote versions to Server instead.
-  const existing=games.find(item=>gameNameKey(item.title)===gameNameKey(title));
-  const targetFile=existing?.file||file;
-  if(existing){
-   if(existing.url!==url&&!(existing.servers||[]).some(server=>server.url===url))
-    (existing.servers||(existing.servers=[])).push({name:'Mountain Games',url});
-   existing.mountain=true;
-  }else games.push({file,title,url,category:categorize({file:entry.path}),external:true,mountain:true,source:'Mountain Games'});
-  if(typeof entry.cover==='string' && /^https:\/\/mountain658\.github\.io\/[a-zA-Z0-9%_.\/-]+\.(?:png|jpe?g|webp)$/i.test(entry.cover))mountainCovers.set(targetFile,entry.cover);
- }
-}
- // External game catalog: store only names and links, never copy third-party game bundles.
- // The source HTML runs from the original game site. Open separately if a game disallows embeds.
- const genizyCovers=new Map();
- const genizyKey=name=>String(name||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
- function loadGenizyCatalog(){
-   try {
-     const catalog=window.LoliteGenizyCatalog;
-     if(!Array.isArray(catalog))throw new Error('Bundled game catalog did not load');
-     const current=new Map();games.forEach((game,index)=>{const key=genizyKey(game.title);if(!current.has(key))current.set(key,index)});
-     let added=0,replaced=0;
-     for(const item of catalog){
-       if(!Number.isInteger(item.id)||item.id<0||typeof item.title!=='string'||typeof item.path!=='string'||!/^iframe\/[a-zA-Z0-9_.-]+\.html(?:-a)?$/.test(item.path))continue;
-       const title=item.title.replace(/[<>&"'\x60]/g,'').slice(0,90).trim(),key=genizyKey(title);
-       if(!key||unsuitableRemoteTitle(title))continue;
-       const url='https://genizymath.github.io/'+item.path;
-       const cover='https://cdn.jsdelivr.net/gh/freebuisness/covers@main/'+item.id+'.png';
-       const existingIndex=current.get(key);
-       if(existingIndex!==undefined){
-         const game=games[existingIndex];
-         if(game.mountain&&game.url!==url&&!(game.servers||[]).some(s=>s.url===game.url)){
-           (game.servers||(game.servers=[])).push({name:'Mountain Games',url:game.url});
-         }
-         // Keep already-hosted HTML as the default game; an external source
-         // may instead be a plain-text file or a removed URL.
-         if(game.local||(!game.external&&/^(?:html(?:%20| )games\/|games\/)/i.test(game.url))){
-           if(game.url!==url&&!(game.servers||[]).some(s=>s.url===url))
-             (game.servers||(game.servers=[])).push({name:'GenizyMath',url});
-           games[existingIndex]={...game,genizy:true,source:'Lolite OS (existing HTML)'};
-         }else{
-           games[existingIndex]={...game,url,external:true,genizy:true,source:'GenizyMath'};
-         }
-         genizyCovers.set(game.file,cover);
-         replaced++;
-       }else{
-         const file='genizy-'+item.id+'.html';
-         games.push({file,title,url,category:categorize({file:genizyKey(title)}),external:true,genizy:true,source:'GenizyMath'});
-         genizyCovers.set(file,cover);
-         current.set(key,games.length-1);
-         added++;
-       }
-     }
-     const seen=new Set();
-     games=games.filter(g=>{const k=genizyKey(g.title);if(seen.has(k))return false;seen.add(k);return true});
-     games.forEach(game=>{game.category=categorize(game)});
-     games.sort((a,b)=>a.title.localeCompare(b.title,undefined,{numeric:true,sensitivity:'base'}));
-     window.loliteGenizyImport={added,replaced,total:added+replaced};
-     if(document.querySelector('.store-main'))render();
-   }catch(err){
-     console.warn('GenizyMath catalog unavailable; Lolite existing games are still accessible.',err);
-   }
- }
-
+ // Covers for the remaining external provider and shared title matching.
+ const externalCovers=new Map();
+ const gameTitleKey=name=>String(name||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
  const serverNameKey=title=>{
-   let text=genizyKey(title);
+   let text=gameTitleKey(title);
    if(text==='3minus3')text='3';
    if(text==='bminusb')text='b';
    if(/^fnaf(\d|world)?$/.test(text))text=text.replace(/^fnaf/,'fivenightsatfreddys');
@@ -299,20 +228,17 @@ if(Array.isArray(window.LoliteMountainCatalog)){
    return text;
  };
  function loadAdditionalServers(){
-   const incoming=[...(Array.isArray(window.LoliteAdditionalGameServers)?window.LoliteAdditionalGameServers:[]),
-     ...(Array.isArray(window.LoliteChickenKingsCatalog)?window.LoliteChickenKingsCatalog:[])];
-   if(!incoming.length)return;
+   const incoming=Array.isArray(window.LoliteAdditionalGameServers)?window.LoliteAdditionalGameServers:[];
+    if(!incoming.length)return;
    const lookup=new Map();
    games.forEach(g=>{const key=serverNameKey(g.title);if(!lookup.has(key))lookup.set(key,g)});
    let added=0,alternatives=0;
    for(let i=0;i<incoming.length;i++){
      const e=incoming[i];
      if(!e||typeof e.title!=='string'||typeof e.url!=='string')continue;
-     if(e.provider!=='DAKNUX'&&e.provider!=="Chicken King's Vault")continue;
-     const valid=e.provider==='DAKNUX'
-       ? /^https:\/\/cdn\.jsdelivr\.net\/gh\/daknux\/html@main\/[A-Za-z0-9._-]+\.html$/.test(e.url)
-       : /^https:\/\/wanocapy\.github\.io\/ChickenKingsVault\/gamefiles\/[A-Za-z0-9%._()!'~-]+\.html$/i.test(e.url);
-     if(!valid)continue;
+     if(e.provider!=='DAKNUX')continue;
+     const valid=/^https:\/\/cdn\.jsdelivr\.net\/gh\/daknux\/html@main\/[A-Za-z0-9._-]+\.html$/.test(e.url);
+      if(!valid)continue;
      const title=e.title.replace(/[<>&"'\x60]/g,'').trim().slice(0,95);
      if(unsuitableRemoteTitle(title))continue;
      const key=serverNameKey(title);
@@ -324,24 +250,19 @@ if(Array.isArray(window.LoliteMountainCatalog)){
          (existing.servers||(existing.servers=[])).push(server);
          alternatives++;
        }
-       if(e.provider==="Chicken King's Vault"&&typeof e.cover==='string'&&
-         /^https:\/\/wanocapy\.github\.io\/ChickenKingsVault\/gameimages\/[A-Za-z0-9%._()!'~-]+\.(?:png|jpe?g|webp|gif|avif)$/i.test(e.cover)&&
-         !genizyCovers.has(existing.file))genizyCovers.set(existing.file,e.cover);
      }else{
        const file='remote-'+e.provider.replace(/[^a-z]/gi,'').toLowerCase()+'-'+i+'.html';
        const game={file,title,url:e.url,source:e.provider,external:true,category:'Arcade & Action'};
        game.category=categorize(game);
        games.push(game);lookup.set(key,game);added++;
-       if(e.provider==='DAKNUX'&&/^https:\/\/cdn\.jsdelivr\.net\/gh\/daknux\/covers@main\/\d+\.png$/.test(e.cover||''))genizyCovers.set(file,e.cover);
-       if(e.provider==="Chicken King's Vault"&&typeof e.cover==='string'&&
-         /^https:\/\/wanocapy\.github\.io\/ChickenKingsVault\/gameimages\/[A-Za-z0-9%._()!'~-]+\.(?:png|jpe?g|webp|gif|avif)$/i.test(e.cover))genizyCovers.set(file,e.cover);
+       if(e.provider==='DAKNUX'&&/^https:\/\/cdn\.jsdelivr\.net\/gh\/daknux\/covers@main\/\d+\.png$/.test(e.cover||''))externalCovers.set(file,e.cover);
      }
    }
    // The DAKNUX jsDelivr entry for Neon Tide points to HTML deliberately served
    // as text/plain, so it cannot be launched as an iframe document.
    // Use the original creator's official, playable itch.io page instead.
    // Do not mirror the author's unlicensed source code in the Lolite repo.
-   const neonTide=games.find(g=>genizyKey(g.title)==='neontide');
+   const neonTide=games.find(g=>gameTitleKey(g.title)==='neontide');
    if(neonTide){
      // The raw HTML host is now playable using the isolated HTML renderer.
      // Keep the official creator's page first, with the raw HTML as a choice.
@@ -367,19 +288,18 @@ if(Array.isArray(window.LoliteMountainCatalog)){
      const manifest=await response.json();
      if(manifest.version!==1||!Array.isArray(manifest.games))throw new Error('Invalid local game manifest');
      let added=0,replaced=0;
-     const catalogKeys=new Set((window.LoliteGenizyCatalog||[]).map(item=>genizyKey(item.title)));
-     const existing=new Map(games.map((game,i)=>[genizyKey(game.title),i]));
+     const existing=new Map(games.map((game,i)=>[gameTitleKey(game.title),i]));
      for(const entry of manifest.games){
        if(!entry||typeof entry.title!=='string'||typeof entry.slug!=='string'||typeof entry.entry!=='string')continue;
        if(!/^[a-z0-9][a-z0-9-]{0,79}$/.test(entry.slug)||
           !entry.entry.toLowerCase().endsWith('.html')||
           entry.entry.split('/').some(segment=>!segment||segment==='.'||segment==='..'||!/^[a-zA-Z0-9._-]+$/.test(segment)))continue;
-       const title=entry.title.replace(/[<>&"'\x60]/g,'').slice(0,100).trim(),key=genizyKey(title);
+       const title=entry.title.replace(/[<>&"'\x60]/g,'').slice(0,100).trim(),key=gameTitleKey(title);
        if(!key)continue;
        const url='html%20games/authorized/'+entry.slug+'/'+entry.entry.split('/').map(encodeURIComponent).join('/');
        const n=existing.get(key);
        const local={title,url,source:'Lolite OS (local HTML)',local:true,external:false,hosted:false,
-         genizy:catalogKeys.has(key),servers:[]};
+         servers:[]};
        if(n!==undefined){games[n]={...games[n],...local};replaced++;}
        else{
          games.push({...local,file:'authorized-'+entry.slug+'.html',category:categorize({file:entry.slug})});
@@ -454,21 +374,16 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  window.addEventListener('lolite-local-packages-changed',()=>{void syncGamefilesCollection()});
  // Shared admin entries are added only after being published through Supabase RLS.
  // The 97 original games remain actual HTML files in this repository.
- const adminGameArtwork=new Map();
  function syncAdminGameLibrary(items){
   games=games.filter(game=>!game.adminSharedGame);
-  adminGameArtwork.clear();
   const published=(Array.isArray(items)?items:[]).filter(item=>item.kind==='game'&&
     /^[0-9a-f-]{36}$/i.test(item.id)&&typeof item.title==='string'&&
     /^https:\/\/[^\s]+$/i.test(item.url));
   for(const item of published){
-   const artworkURL=value=>{try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password?u.href:''}catch{return ''}};
-   const iconUrl=artworkURL(item.icon_url),backgroundUrl=artworkURL(item.background_url);
    const game={file:'admin-'+item.id,title:item.title.slice(0,90),url:item.url,
     adminSharedGame:true,external:true,local:false,source:'Admin library',
-    iconUrl,backgroundUrl,addedAt:item.created_at||'',category:categorize({title:item.title})};
+    addedAt:item.created_at||'',category:categorize({title:item.title})};
    games.push(game);
-   adminGameArtwork.set(game.file,{icon:iconUrl,background:backgroundUrl});
   }
   games.sort((a,b)=>a.title.localeCompare(b.title,undefined,{numeric:true,sensitivity:'base'}));
   if(document.querySelector('.store-main'))render();
@@ -476,7 +391,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  window.addEventListener('lolite:library-updated',event=>syncAdminGameLibrary(event.detail?.items));
  const serverSelections=new Map();
  const availableServers=g=>{
-   const baseName=g.adminSharedGame?'Admin library':g.gamefilesRecord?'Gamefiles ZIP · Local':g.bundledGameFile?'Gamefiles ZIP · GitHub HTML':(g.local||g.url.startsWith('html games/'))?'Lolite OS (local HTML)':g.openExternally?'Official creator':g.genizy?'GenizyMath':g.source==="Chicken King's Vault"?"Chicken King's Vault":g.source==='DAKNUX'?'DAKNUX':g.mountain?'Mountain Games':'Lolite OS';
+   const baseName=g.adminSharedGame?'Admin library':g.gamefilesRecord?'Gamefiles ZIP · Local':g.bundledGameFile?'Gamefiles ZIP · GitHub HTML':(g.local||g.url.startsWith('html games/'))?'Lolite OS (local HTML)':g.openExternally?'Official creator':g.source==='DAKNUX'?'DAKNUX':'Lolite OS';
    // Offer each alternate server as its own playable version; skip duplicate URLs.
    const raw=[{name:baseName,url:g.url},...(Array.isArray(g.servers)?g.servers:[])];
    const seen=new Set();
@@ -494,9 +409,6 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  // This never imports or publishes third-party code to Lolite's repository.
  const sourceBackup=url=>{
   const routes=[
-   [/^https:\/\/genizymath\.github\.io\/(iframe\/[a-z0-9._-]+\.html(?:-a)?)$/i,'https://raw.githubusercontent.com/genizymath/genizymath.github.io/main/'],
-   [/^https:\/\/mountain658\.github\.io\/([a-z0-9._/-]+\.html)$/i,'https://raw.githubusercontent.com/mountain658/mountain658.github.io/main/'],
-   [/^https:\/\/wanocapy\.github\.io\/ChickenKingsVault\/(gamefiles\/[^?#]+\.html)$/i,'https://raw.githubusercontent.com/WanoCapy/ChickenKingsVault/main/'],
    [/^https:\/\/cdn\.jsdelivr\.net\/gh\/daknux\/html@main\/([a-z0-9._-]+\.html)$/i,'https://raw.githubusercontent.com/daknux/html/main/']
   ];
   for(const [pattern,root] of routes){const match=String(url||'').match(pattern);if(match)return {name:'Original HTML backup',url:root+match[1]}}
@@ -626,7 +538,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  const playCount=g=>popularity()?.countFor(g.file)||0;
  const isRanked=g=>playCount(g)>0&&!!popularity()?.isEligible(g);
  const ranked=list=>list.filter(isRanked).sort((a,b)=>playCount(b)-playCount(a)||a.title.localeCompare(b.title));
- const matchesCategory=g=>franchiseNames.has(active)?g.franchise===active:active==='All Games'||active==='Featured'||active==='Popular Games'?true:active==='Favorites'?isFavourite(g.file):active==='Recently Played'?recentSessions.some(row=>row.file===g.file):active==='Recently Added'?!!g.adminSharedGame||g.recentlyAdded||g.file.startsWith('local-'):active==='My Library'?hasGame(g):active==='Built-in HTML'?g.url.startsWith('games/'):active==='GenizyMath'?!!g.genizy:active==='Mountain Games'?!!g.mountain:active==='Chicken King’s Vault'?availableServers(g).some(server=>server.name==="Chicken King's Vault"):active==='DAKNUX'?availableServers(g).some(server=>server.name==='DAKNUX'):active==='Gamefiles ZIP'?!!g.gamefilesRecord||!!g.bundledGameFile:active==='Free to Play'?gamePrice(g)===0:g.category===active;
+ const matchesCategory=g=>franchiseNames.has(active)?g.franchise===active:active==='All Games'||active==='Featured'||active==='Popular Games'?true:active==='Favorites'?isFavourite(g.file):active==='Recently Played'?recentSessions.some(row=>row.file===g.file):active==='Recently Added'?!!g.adminSharedGame||g.recentlyAdded||g.file.startsWith('local-'):active==='My Library'?hasGame(g):active==='Built-in HTML'?g.url.startsWith('games/'):active==='DAKNUX'?availableServers(g).some(server=>server.name==='DAKNUX'):active==='Gamefiles ZIP'?!!g.gamefilesRecord||!!g.bundledGameFile:active==='Free to Play'?gamePrice(g)===0:g.category===active;
  const broken=g=>{
   const versions=availableServers(g);
   if(!versions.length)return true;
@@ -658,8 +570,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   }).join('');
   panel.innerHTML='<section class="lolite-game-detail-panel"><div class="lolite-game-detail-top"><div><h2>'+encodeLabel(game.title)+'</h2><div class="lolite-game-detail-stat">'+encodeLabel(game.category)+' · '+servers.length+' server'+(servers.length===1?'':'s')+'</div></div>'+
    '<button type="button" class="lolite-game-detail-close" data-game-detail-close aria-label="Close game details">×</button></div>'+
-   '<div class="store-detail-artwork"><img class="lolite-game-detail-image" src="'+encodeLabel(game.backgroundUrl||game.iconUrl||lolitePosterArt(game.title,game.file))+'" alt="Game artwork">'+
-   (game.iconUrl?'<img class="store-detail-icon" src="'+encodeLabel(game.iconUrl)+'" alt="Game icon">':'')+'</div>'+
+   '<img class="lolite-game-detail-image" src="'+encodeLabel(lolitePosterArt(game.title,game.file))+'" alt="Game artwork">'+
    '<div class="lolite-game-detail-stat">Source: '+encodeLabel(game.source||'Lolite OS')+'</div>'+
    '<div class="lolite-game-detail-stat">Recent launches: '+playCount(game).toLocaleString()+' in the last 30 days (when available)</div>'+
    '<strong>Available servers</strong><ul>'+desc+'</ul>'+
@@ -695,11 +606,10 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   const colors=coverPalette(g),poster=lolitePosterArt(g.title,g.file),file=encodeLabel(g.file),
    title=encodeLabel(g.title),fav=isFavourite(g.file);
   const plays=active==='Popular Games'?'<small class="store-play-count">'+playCount(g).toLocaleString()+' launches in 30 days</small>':'';
-  const mark=g.genizy?'◈':g.mountain?'◆':g.source==="Chicken King's Vault"?'✦':g.gamefilesRecord?'▣':'✧';
+  const mark=g.gamefilesRecord?'▣':'✧';
   return '<article class="store-card store-gallery-card" data-game-file="'+file+'">'+
    '<div class="store-cover has-game-art" data-game-file="'+file+'" data-skin="'+colors[3]+'" style="--cover-a:'+colors[0]+';--cover-b:'+colors[1]+';--cover-speed:'+colors[2]+';--cover-delay:'+colors[4]+'">'+
    '<div class="store-cover-art" aria-hidden="true"><img class="store-cover-picture" src="'+poster+'" alt="" loading="lazy" decoding="async"></div>'+
-   (g.iconUrl?'<img class="store-uploaded-game-icon" src="'+encodeLabel(g.iconUrl)+'" alt="" loading="lazy" decoding="async">':'')+
    '<button type="button" class="store-cover-launch" data-store-launch="'+file+'" aria-label="Play '+title+'" title="Play '+title+'"></button>'+
    '<span class="store-cover-origin" aria-hidden="true">'+mark+'</span>'+
    '<button type="button" class="store-favourite'+(fav?' is-favourite':'')+'" data-store-favorite="'+file+
@@ -709,7 +619,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
    '<div class="store-card-actions"><button class="store-play" type="button" data-store-launch="'+file+'" aria-label="Play '+title+'">▶ Play</button>'+
    serverPickerMarkup(g)+'<button class="store-details" type="button" data-store-details="'+file+'" aria-label="Details for '+title+'">Info</button></div></div></article>';
  };
- const coverFor=file=>file.startsWith('native-')?null:(adminGameArtwork.get(file)?.background||adminGameArtwork.get(file)?.icon||genizyCovers.get(file)||mountainCovers.get(file)||window.loliteGameArt?.[file]?.src||null);
+ const coverFor=file=>file.startsWith('native-')?null:(externalCovers.get(file)||window.loliteGameArt?.[file]?.src||null);
  // Local, title-specific artwork is always present; remote images only enhance it.
  const artCache=new Map();
  window.loliteStorePreview=(el,file,title)=>{
@@ -895,11 +805,6 @@ if(Array.isArray(window.LoliteMountainCatalog)){
    }).catch(error=>window.toast?.(error?.message||'Could not open installed HTML game'));
    return;
   }
-  if(game.genizy&&!game.local&&!game.url.startsWith('html games/')&&chosen===0){
-   const installed=window.LoliteInstalledGameByTitle?.(game.title);
-   if(installed&&typeof window.LoliteOpenInstalledGame==='function'){window.LoliteOpenInstalledGame(installed);markRecent(file);return}
-   if(typeof window.LolitePlayGenizyHTML==='function'){window.LolitePlayGenizyHTML(game.title);markRecent(file);return}
-  }
   if(!hasGame(game)){window.toast?.('This game is not unlocked.');return}
   const source=selectedSource(game);if(!source)return;
   if(!window.LoliteGamePlayer?.open({title:game.title,file:game.file,url:source.url,source:source.name,fallbackSources:fallbackSourcesFor(game,source)})){
@@ -980,9 +885,8 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  window.addEventListener('lolite-store-purchase',()=>render());
  window.addEventListener('lolite-wallet-updated',()=>render());
  const oldPage=window.page;window.page=function(id){if(id==='games'){setTimeout(render,0);return shell()}return oldPage(id)};
- // Restore verified provider HTML sources while retaining first-party game URLs.
- loadGenizyCatalog();
- loadAdditionalServers();
+ // Keep the remaining provider's alternative HTML servers.
+  loadAdditionalServers();
  buildFranchiseCategories();
  void loadAuthorizedGames().finally(async()=>{
   loadBundledGamefiles();
