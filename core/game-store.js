@@ -374,16 +374,21 @@
  window.addEventListener('lolite-local-packages-changed',()=>{void syncGamefilesCollection()});
  // Shared admin entries are added only after being published through Supabase RLS.
  // The 97 original games remain actual HTML files in this repository.
+ const adminGameArtwork=new Map();
  function syncAdminGameLibrary(items){
   games=games.filter(game=>!game.adminSharedGame);
+  adminGameArtwork.clear();
   const published=(Array.isArray(items)?items:[]).filter(item=>item.kind==='game'&&
     /^[0-9a-f-]{36}$/i.test(item.id)&&typeof item.title==='string'&&
     /^https:\/\/[^\s]+$/i.test(item.url));
   for(const item of published){
+   const artworkURL=value=>{try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password?u.href:''}catch{return ''}};
+   const iconUrl=artworkURL(item.icon_url),backgroundUrl=artworkURL(item.background_url);
    const game={file:'admin-'+item.id,title:item.title.slice(0,90),url:item.url,
     adminSharedGame:true,external:true,local:false,source:'Admin library',
-    addedAt:item.created_at||'',category:categorize({title:item.title})};
+    iconUrl,backgroundUrl,addedAt:item.created_at||'',category:categorize({title:item.title})};
    games.push(game);
+   adminGameArtwork.set(game.file,{icon:iconUrl,background:backgroundUrl});
   }
   games.sort((a,b)=>a.title.localeCompare(b.title,undefined,{numeric:true,sensitivity:'base'}));
   if(document.querySelector('.store-main'))render();
@@ -570,7 +575,8 @@
   }).join('');
   panel.innerHTML='<section class="lolite-game-detail-panel"><div class="lolite-game-detail-top"><div><h2>'+encodeLabel(game.title)+'</h2><div class="lolite-game-detail-stat">'+encodeLabel(game.category)+' · '+servers.length+' server'+(servers.length===1?'':'s')+'</div></div>'+
    '<button type="button" class="lolite-game-detail-close" data-game-detail-close aria-label="Close game details">×</button></div>'+
-   '<img class="lolite-game-detail-image" src="'+encodeLabel(lolitePosterArt(game.title,game.file))+'" alt="Game artwork">'+
+   '<div class="store-detail-artwork"><img class="lolite-game-detail-image" src="'+encodeLabel(game.backgroundUrl||game.iconUrl||lolitePosterArt(game.title,game.file))+'" alt="Game artwork">'+
+   (game.iconUrl?'<img class="store-detail-icon" src="'+encodeLabel(game.iconUrl)+'" alt="Game icon">':'')+'</div>'+
    '<div class="lolite-game-detail-stat">Source: '+encodeLabel(game.source||'Lolite OS')+'</div>'+
    '<div class="lolite-game-detail-stat">Recent launches: '+playCount(game).toLocaleString()+' in the last 30 days (when available)</div>'+
    '<strong>Available servers</strong><ul>'+desc+'</ul>'+
@@ -610,6 +616,7 @@
   return '<article class="store-card store-gallery-card" data-game-file="'+file+'">'+
    '<div class="store-cover has-game-art" data-game-file="'+file+'" data-skin="'+colors[3]+'" style="--cover-a:'+colors[0]+';--cover-b:'+colors[1]+';--cover-speed:'+colors[2]+';--cover-delay:'+colors[4]+'">'+
    '<div class="store-cover-art" aria-hidden="true"><img class="store-cover-picture" src="'+poster+'" alt="" loading="lazy" decoding="async"></div>'+
+   (g.iconUrl?'<img class="store-uploaded-game-icon" src="'+encodeLabel(g.iconUrl)+'" alt="" loading="lazy" decoding="async">':'')+
    '<button type="button" class="store-cover-launch" data-store-launch="'+file+'" aria-label="Play '+title+'" title="Play '+title+'"></button>'+
    '<span class="store-cover-origin" aria-hidden="true">'+mark+'</span>'+
    '<button type="button" class="store-favourite'+(fav?' is-favourite':'')+'" data-store-favorite="'+file+
@@ -619,7 +626,7 @@
    '<div class="store-card-actions"><button class="store-play" type="button" data-store-launch="'+file+'" aria-label="Play '+title+'">▶ Play</button>'+
    serverPickerMarkup(g)+'<button class="store-details" type="button" data-store-details="'+file+'" aria-label="Details for '+title+'">Info</button></div></div></article>';
  };
- const coverFor=file=>file.startsWith('native-')?null:(externalCovers.get(file)||window.loliteGameArt?.[file]?.src||null);
+ const coverFor=file=>file.startsWith('native-')?null:(adminGameArtwork.get(file)?.background||adminGameArtwork.get(file)?.icon||externalCovers.get(file)||window.loliteGameArt?.[file]?.src||null);
  // Local, title-specific artwork is always present; remote images only enhance it.
  const artCache=new Map();
  window.loliteStorePreview=(el,file,title)=>{
