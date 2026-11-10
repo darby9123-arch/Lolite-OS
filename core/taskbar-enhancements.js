@@ -16,10 +16,17 @@
  function closePreview(){if(hideTimer){clearTimeout(hideTimer);hideTimer=null}if(pop){pop.remove();pop=null}activeId=null}
  function closeMenu(){menu?.remove();menu=null}
  function locate(target,popup){
-  const rect=target.getBoundingClientRect(),width=popup.offsetWidth||250;
+  const rect=target.getBoundingClientRect(),width=Math.min(popup.offsetWidth||250,Math.max(1,innerWidth-16)),height=Math.min(popup.offsetHeight||160,Math.max(1,innerHeight-16));
   popup.style.left=Math.max(8,Math.min(innerWidth-width-8,rect.left+(rect.width-width)/2))+'px';
-  const taskbar=document.getElementById('taskbar')?.getBoundingClientRect();
-  popup.style.bottom=Math.max(58,innerHeight-(taskbar?.top??innerHeight-56)+12)+'px';
+  const bar=document.getElementById('taskbar')?.getBoundingClientRect();
+  const topMounted=bar&&bar.top<innerHeight/2&&bar.bottom<=innerHeight/2;
+  if(topMounted){
+   popup.style.bottom='auto';
+   popup.style.top=Math.max(8,Math.min(innerHeight-height-8,bar.bottom+10))+'px';
+  }else{
+   popup.style.top='auto';
+   popup.style.bottom=Math.max(8,Math.min(innerHeight-height-8,innerHeight-(bar?.top??innerHeight-56)+10))+'px';
+  }
  }
  function preview(target){
   const id=getId(target);if(!id){closePreview();return}
@@ -72,7 +79,9 @@
     '<button type="button" role="menuitem" data-task-action="close">Close window</button>':'');
   document.body.appendChild(menu);
   menu.style.left=Math.max(8,Math.min(innerWidth-(menu.offsetWidth||215)-8,x))+'px';
-  menu.style.top=Math.max(8,Math.min(innerHeight-(menu.offsetHeight||154)-8,y-(menu.offsetHeight||154)))+'px';
+  const bar=document.getElementById('taskbar')?.getBoundingClientRect(),height=Math.min(menu.offsetHeight||154,Math.max(1,innerHeight-16));
+  const topMounted=bar&&bar.top<innerHeight/2&&bar.bottom<=innerHeight/2;
+  menu.style.top=Math.max(8,Math.min(innerHeight-height-8,topMounted?bar.bottom+8:y-height))+'px';
   menu.querySelector('button')?.focus();
  }
  const init=()=>{
