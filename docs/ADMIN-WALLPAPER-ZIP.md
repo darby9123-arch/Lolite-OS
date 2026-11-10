@@ -25,4 +25,7 @@ The original ZIP is **not** published or uploaded. Non-MP4 files are ignored. Ba
 - Published files are served from Supabase Storage, not committed to GitHub.
 - The existing public shared-library feed allows other users to discover new wallpapers without a code deployment.
 - Use media you own or are allowed to distribute.
-- For uploaded videos, the wallpaper picker currently uses a generic fallback image on its card; opening the wallpaper plays the actual original MP4.
+- New uploaded videos get a **560 × 315 thumbnail extracted from an actual video frame**, stored as a WebP/PNG beside the original video. The full MP4 remains untouched and keeps its original resolution.
+- Existing videos without a saved poster attempt to extract a real frame in the viewer's browser. Admins can use **Make thumbnail** in the Admin Center to save a persistent shared thumbnail for an older uploaded video.
+- Uploaded videos are shown in **Special Live Wallpapers** (and still appear in Videos and Admin Uploads).
+- MP4 playback uses two overlapping, preloaded video elements with a short crossfade before the native loop boundary. This avoids brief black decoder resets. If the video itself contains intentionally black footage, those frames may still be visible; source trimming or exporting a clean looping file can improve that.
