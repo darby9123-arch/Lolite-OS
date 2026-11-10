@@ -521,7 +521,7 @@
  const availableServers=g=>{
    const baseName=g.ugsInstalled?'UGS':g.adminSharedGame?'Admin library':g.gamefilesRecord?'Gamefiles ZIP · Local':g.bundledGameFile?'Gamefiles ZIP · GitHub HTML':(g.local||g.url.startsWith('html games/'))?'Lolite OS (local HTML)':g.openExternally?'Official creator':g.source==='DAKNUX'?'DAKNUX':'Lolite OS';
    // Offer each alternate server as its own playable version; skip duplicate URLs.
-   const raw=[...(g.url?[{name:baseName,url:g.url}]:[]),...(Array.isArray(g.servers)?g.servers:[])];
+   const raw=[{name:baseName,url:g.url},...(Array.isArray(g.servers)?g.servers:[])];
    const seen=new Set();
    return raw.filter(x=>{
     if(!x||typeof x.url!=='string')return false;
