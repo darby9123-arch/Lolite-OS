@@ -11,6 +11,8 @@ on:
       - 'tests/game-server-count.test.cjs'
       - 'tests/raw-html-games.test.cjs'
       - 'tests/repository-html-catalog.test.cjs'
+      - 'tests/game-health.test.cjs'
+      - 'core/game-health.js'
       - 'html games/**'
       - '.github/workflows/verify-game-launches.yml'
   pull_request:
@@ -24,6 +26,8 @@ on:
       - 'tests/game-server-count.test.cjs'
       - 'tests/raw-html-games.test.cjs'
       - 'tests/repository-html-catalog.test.cjs'
+      - 'tests/game-health.test.cjs'
+      - 'core/game-health.js'
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -38,7 +42,8 @@ jobs:
         run: |
           node --check core/gd-loading-fix.js
           node --check core/game-player.js
+          node --check core/game-health.js
           node --check core/game-store.js
           node --check core/integration.js
       - name: Test game launching, fallbacks and file paths
-        run: node --test tests/game-launches.test.cjs tests/raw-html-games.test.cjs tests/repository-html-catalog.test.cjs tests/game-server-count.test.cjs
+        run: node --test tests/game-launches.test.cjs tests/raw-html-games.test.cjs tests/repository-html-catalog.test.cjs tests/game-server-count.test.cjs tests/game-health.test.cjs
