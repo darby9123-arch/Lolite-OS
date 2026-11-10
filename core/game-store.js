@@ -807,20 +807,20 @@ if(Array.isArray(window.LoliteMountainCatalog)){
    const packages=window.LoliteLocalGamePackages;
    if(!packages?.launchUrl){window.toast?.('Local HTML game support is unavailable.');return}
    void packages.launchUrl(game.gamefilesRecord).then(url=>{
-    window.LoliteGamePlayer?.open({file:game.file,title:game.title,url,source:'gamefiles.zip · Local HTML'});
+    if(window.LoliteGamePlayer?.open({file:game.file,title:game.title,url,source:'gamefiles.zip · Local HTML'}))markRecent(file);
    }).catch(error=>window.toast?.(error?.message||'Could not open installed HTML game'));
    return;
   }
   if(game.genizy&&!game.local&&!game.url.startsWith('html games/')&&chosen===0){
    const installed=window.LoliteInstalledGameByTitle?.(game.title);
-   if(installed&&typeof window.LoliteOpenInstalledGame==='function'){window.LoliteOpenInstalledGame(installed);return}
-   if(typeof window.LolitePlayGenizyHTML==='function'){window.LolitePlayGenizyHTML(game.title);return}
+   if(installed&&typeof window.LoliteOpenInstalledGame==='function'){window.LoliteOpenInstalledGame(installed);markRecent(file);return}
+   if(typeof window.LolitePlayGenizyHTML==='function'){window.LolitePlayGenizyHTML(game.title);markRecent(file);return}
   }
   if(!hasGame(game)){window.toast?.('This game is not unlocked.');return}
   const source=selectedSource(game);if(!source)return;
   if(!window.LoliteGamePlayer?.open({title:game.title,file:game.file,url:source.url,source:source.name,fallbackSources:fallbackSourcesFor(game,source)})){
    window.toast?.('Could not start this game inside Lolite.');
-  }
+  }else markRecent(file);
  };
 
  window.loliteOpenAccelerationGuide=()=>{const id='browser-acceleration-guide';openApp(id,'Hardware Acceleration Guide',760,650);let tries=0;const fill=()=>{const c=state.windows[id]?.el.querySelector('.content');if(!c){if(++tries<40)setTimeout(fill,25);return}c.innerHTML='<div style="height:100%;overflow:auto;padding:24px;background:#0c1018;color:#eef2f8;font:14px/1.6 Segoe UI,Arial,sans-serif;border-radius:10px"><div style="color:#a9a3ff;font-size:11px;font-weight:700;letter-spacing:2px">LOLITE HELP</div><h1 style="margin:8px 0;font-size:27px">Hardware acceleration</h1><p style="color:#b5c0d0;margin:0 0 18px">Choose the browser you use to see the right steps. Hardware acceleration lets the browser use your graphics hardware for supported tasks and may improve game performance.</p><div id="accel-browser-list" style="display:flex;flex-wrap:wrap;gap:8px;margin:18px 0">'+['Brave','Opera GX','Firefox','Chrome','Safari'].map(b=>'<button type="button" data-browser="'+b+'" onclick=\'window.loliteShowAccelerationSteps("'+b+'")\' style="padding:10px 14px;border:1px solid #38445a;border-radius:8px;background:#171f2d;color:#eef2f8;cursor:pointer">'+b+'</button>').join('')+'</div><section id="accel-steps" style="padding:18px;border:1px solid #2c3749;border-radius:10px;background:#111823"><h2 style="margin:0 0 8px;font-size:18px">Select your browser</h2><p style="margin:0;color:#9daabd">The instructions will appear here.</p></section><p style="margin-top:18px;color:#8c99ac;font-size:12px">Tip: restart the browser after changing a setting. The exact wording can vary by version. Hardware acceleration may not be available on managed devices.</p></div>'};fill()};
@@ -855,6 +855,23 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  window.loliteStoreOpenSeparate=url=>window.open(url,'_blank','noopener,noreferrer');
  window.lolitePlayMinecraft=()=>window.loliteStorePlay('clminecraftpocketedition.html');
  window.loliteStoreCheckFiles=()=>window.LoliteGameHealth?.scan?.(games,{force:true});
+ document.addEventListener('click',event=>{
+  const node=event.target.closest?.('.store-v41 [data-store-favorite],.store-v41 [data-store-launch],.store-v41 [data-store-open-chat],.store-v41 [data-category]');
+  if(!node)return;
+  if(node.dataset.storeFavorite){toggleFavourite(node.dataset.storeFavorite);event.preventDefault();return}
+  if(node.dataset.storeLaunch){window.loliteStoreAction(node.dataset.storeLaunch);event.preventDefault();return}
+  if(node.hasAttribute('data-store-open-chat')){
+   if(window.LoliteDesktopShell?.launch)window.LoliteDesktopShell.launch('chatroom');
+   else window.openApp?.('chatroom','Lolite Chat');
+   event.preventDefault();return;
+  }
+  if(node.dataset.category){window.loliteStoreCategory(node.dataset.category);event.preventDefault()}
+ });
+ window.LoliteGameStoreGallery=Object.freeze({
+  isFavorite:isFavourite,toggleFavorite:toggleFavourite,
+  getFavorites:()=>[...favouriteIds],getRecent:()=>recentSessions.map(row=>({...row})),
+  recordRecent:markRecent,getActivityMarkup:activityMarkup
+ });
  window.addEventListener('lolite:gamehealthchange',()=>{if(document.querySelector('.store-main'))render()});
  window.addEventListener('lolite:popular-games',()=>{if((active==='Popular Games'||active==='Featured')&&document.querySelector('.store-main'))render()});
  window.addEventListener('lolite-store-purchase',()=>render());
