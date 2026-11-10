@@ -301,7 +301,7 @@ async function importUGSFolder(files,onProgress){
      if(start>=0&&end>start)html=html.slice(start,end+7);
     }
     if(/<(?:html|head|body|canvas|script|div)\b/i.test(html)){
-     const preferred=/(^|\/)flash\//i.test(path)?"flash":"html5";
+     const preferred=/(^|\/)flash\//i.test(path)||root.toLowerCase()==="flash"?"flash":"html5";
      const entry=options.find(x=>x.kind===preferred)||options[0];
      const key=entry.kind+":"+entry.title.toLowerCase().replace(/[^a-z0-9]/g,"");
      const previous=matches.get(key);
