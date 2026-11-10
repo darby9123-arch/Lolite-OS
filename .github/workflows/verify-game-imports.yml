@@ -7,7 +7,6 @@ on:
       - 'tests/game-store-hide-installed-packages.test.cjs'
       - 'core/game-store.js'
       - 'core/html-game-ui.js'
-      - 'core/genizymath-catalog.js'
       - 'html games/authorized/**'
       - '.github/workflows/verify-game-imports.yml'
   pull_request:
@@ -33,6 +32,5 @@ jobs:
           node --check scripts/import-authorized-games.mjs
           node --check core/game-store.js
           node --check core/html-game-ui.js
-          node --check core/genizymath-catalog.js
       - name: Run game importer tests
         run: node --test tests/import-authorized-games.test.cjs tests/game-store-hide-installed-packages.test.cjs

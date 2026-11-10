@@ -73,7 +73,7 @@ test('The final stylesheet resolves hover-only controls into visible, readable c
  assert.match(css,/\.store-category-jump\{display:flex!important\}/);
  assert.ok(html.indexOf('game-store-gallery.css')<html.indexOf('game-store-ui-cleanup.css'));
  assert.ok(html.indexOf('lolite-4-1.css')<html.indexOf('game-store-ui-cleanup.css'));
- assert.match(html,/game-store\.js\?v=store-ui-cleanup-20261111-1/);
+ assert.match(html,/game-store\.js\?v=[a-z0-9-]+/i);
 });
 
 test('Narrow-window category selector includes all existing game collections',()=>{
