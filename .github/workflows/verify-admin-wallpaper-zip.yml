@@ -8,8 +8,11 @@ on:
       - 'core/wallpaper-loop.js'
       - 'core/wallpapers.js'
       - 'core/lolite-admin.css'
+      - 'core/game-store.js'
+      - 'core/game-store-gallery.css'
       - 'index.html'
       - 'tests/admin-wallpaper-zip.test.cjs'
+      - 'tests/admin-game-artwork.test.cjs'
       - '.github/workflows/verify-admin-wallpaper-zip.yml'
   pull_request:
     paths:
@@ -38,5 +41,5 @@ jobs:
           node --check core/wallpaper-thumbnails.js
           node --check core/wallpaper-loop.js
           node --check core/wallpapers.js
-      - name: Test ZIP security, MP4 metadata and Admin Center wiring
-        run: node --test tests/admin-wallpaper-zip.test.cjs
+      - name: Test ZIP safety and admin game artwork publishing
+        run: node --test tests/admin-wallpaper-zip.test.cjs tests/admin-game-artwork.test.cjs
