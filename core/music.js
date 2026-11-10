@@ -2,6 +2,8 @@
 (()=>{
  'use strict';
  const BUCKET='lolite-music';
+ const MAX_TRACK_BYTES=50*1024*1024;
+ const MIME={mp3:'audio/mpeg',m4a:'audio/mp4',ogg:'audio/ogg',wav:'audio/wav',webm:'audio/webm',aac:'audio/aac'};
  const sb=window.LoliteBrowserAccounts?.getClient?.();
  const audio=new Audio();
  audio.preload='metadata';
@@ -40,6 +42,18 @@
  function setMessage(message){const el=root()?.querySelector('[data-lm-message]');if(el)el.textContent=message||''}
  const ensure=r=>{if(r?.error)throw Error(r.error.message||'Music service error');return r?.data||[]};
  let ticket=0;
+ async function fetchTracks(){
+  // Supabase limits each response; archive imports must not disappear after 500 songs.
+  const all=[];
+  for(let offset=0;offset<10000;offset+=500){
+   const rows=ensure(await sb.from('lolite_music_tracks')
+    .select('id,uploader_id,title,artist,album,storage_path,mime_type,file_bytes,status,created_at')
+    .order('created_at',{ascending:false}).range(offset,offset+499));
+   all.push(...rows);
+   if(rows.length<500)break;
+  }
+  return {data:all};
+ }
  async function load(){
   const n=++ticket;
   if(!sb){S.error='Music needs the Lolite account service. Reload Lolite and try again.';S.loading=false;render();return}
@@ -55,7 +69,7 @@
    if(admin.error)throw admin.error;
    S.admin=admin.data?.user_id===S.user.id;
    const results=await Promise.all([
-    sb.from('lolite_music_tracks').select('id,uploader_id,title,artist,album,storage_path,mime_type,file_bytes,status,created_at').order('created_at',{ascending:false}).limit(500),
+    fetchTracks(),
     sb.from('lolite_music_playlists').select('id,owner_id,name,created_at').order('created_at',{ascending:false}).limit(100),
     sb.from('lolite_music_playlist_tracks').select('playlist_id,track_id,added_at').order('added_at',{ascending:true}).limit(1000),
     sb.from('lolite_music_requests').select('id,requested_by,title,artist,note,status,created_at').order('created_at',{ascending:false}).limit(300)
@@ -117,10 +131,18 @@
    '<form data-lm-form="upload" class="lm-form"><label>Song title<input name="title" minlength="1" maxlength="120" placeholder="Song name" required></label>'+
    '<label>Artist<input name="artist" minlength="1" maxlength="80" placeholder="Artist name" required></label>'+
    '<label>Album (optional)<input name="album" maxlength="80" placeholder="Album or EP"></label>'+
-   '<label>Audio file · max 20 MB<input type="file" name="audio" accept=".mp3,.m4a,.ogg,.wav,.webm,.aac,audio/*" required></label>'+
+   '<label>Audio file · max 50 MB<input type="file" name="audio" accept=".mp3,.m4a,.ogg,.wav,.webm,.aac,audio/*" required></label>'+
    '<p class="lm-hint">MP3, M4A, OGG, WAV, WebM and AAC. Your upload stays private until approved. Admin uploads publish straight away.</p>'+
    '<label class="lm-agree"><input type="checkbox" name="rights" required> I made this music or have permission to share it publicly.</label>'+
    '<button class="lm-primary" type="submit"> '+(S.admin?'Upload and publish':'Send for approval')+'</button></form>'+
+   '<section class="lm-subsection lm-zip-section"><h3>Import a music ZIP</h3><p class="lm-hint">Upload a ZIP containing songs, even inside folders. MP3, M4A, OGG, WAV, WebM and AAC are supported. The ZIP is unpacked on your device; only the music files are uploaded. Each song can be up to 50 MB; the ZIP itself has no fixed size cap.</p>'+
+   '<form class="lm-form" data-lm-form="zip"><label>Choose ZIP archive<input type="file" name="archive" accept=".zip,application/zip,application/x-zip-compressed" required></label>'+
+   '<label>Default artist (optional)<input name="artist" maxlength="80" placeholder="Use names from filenames"></label>'+
+   '<label>Default album (optional)<input name="album" maxlength="80" placeholder="Use folder names"></label>'+
+   '<p class="lm-hint">Titles come from filenames. For Artist - Song.mp3, Lolite detects the artist automatically. Large ZIPs are processed one song at a time.</p>'+
+   '<label class="lm-agree"><input type="checkbox" name="rights" required> I created these songs or have permission to distribute every song in this ZIP.</label>'+
+   '<button class="lm-primary" type="submit">'+(S.admin?'Import and publish songs':'Import songs for approval')+'</button>'+
+   '<div class="lm-zip-progress" role="status" aria-live="polite"><progress max="100" value="0" data-lm-zip-progress></progress><span data-lm-zip-status>Ready to import</span></div></form></section>'+
    '<section class="lm-subsection"><h3>My uploads</h3><div class="lm-track-list">'+(mine().length?mine().map(t=>row(t,{manage:true})).join(''):'<div class="lm-empty">You haven’t submitted any tracks yet.</div>')+'</div></section>';
  }
  function requests(){
@@ -195,20 +217,103 @@
  for(const name of ['timeupdate','loadedmetadata','play','pause','durationchange'])audio.addEventListener(name,updatePlayer);
  for(const name of ['loadedmetadata','play','pause'])audio.addEventListener(name,publishState);
  audio.addEventListener('ended',()=>{void next(1,true).catch(e=>notify(e?.message||'Cannot play next track'))});
+ function audioSignatureOK(bytes,ext){
+  const ascii=(start,len)=>String.fromCharCode(...bytes.slice(start,start+len));
+  if(ext==='mp3')return ascii(0,3)==='ID3'||(bytes[0]===0xff&&(bytes[1]&0xe0)===0xe0);
+  if(ext==='m4a')return ascii(4,4)==='ftyp';
+  if(ext==='wav')return ascii(0,4)==='RIFF'&&ascii(8,4)==='WAVE';
+  if(ext==='ogg')return ascii(0,4)==='OggS';
+  if(ext==='webm')return bytes[0]===0x1a&&bytes[1]===0x45&&bytes[2]===0xdf&&bytes[3]===0xa3;
+  if(ext==='aac')return bytes[0]===0xff&&(bytes[1]&0xf6)===0xf0;
+  return false;
+ }
+ async function sendAudio(blob,path,type,onProgress){
+  // TUS chunks large files into 6 MB requests instead of risking timeout on a 50 MB POST.
+  if(blob.size>6*1024*1024&&window.tus?.Upload){
+   const session=ensureSession(await sb.auth.getSession());
+   const host=new URL(sb.supabaseUrl).hostname.replace(/\.supabase\.co$/,'.storage.supabase.co');
+   return new Promise((resolve,reject)=>{
+    const upload=new window.tus.Upload(blob,{
+     endpoint:'https://'+host+'/storage/v1/upload/resumable',
+     retryDelays:[0,1000,3000,5000,10000],chunkSize:6*1024*1024,
+     uploadDataDuringCreation:true,removeFingerprintOnSuccess:true,
+     headers:{authorization:'Bearer '+session.access_token,'x-upsert':'false'},
+     metadata:{bucketName:BUCKET,objectName:path,contentType:type,cacheControl:'3600'},
+     onProgress:(sent,total)=>onProgress?.(sent,total),
+     onError:error=>reject(Error('Upload failed: '+(error.message||error))),
+     onSuccess:()=>resolve()
+    });
+    upload.start();
+   });
+  }
+  const uploaded=await sb.storage.from(BUCKET).upload(path,blob,{contentType:type,upsert:false,cacheControl:'3600'});
+  if(uploaded.error)throw Error('Upload failed: '+uploaded.error.message);
+  onProgress?.(blob.size,blob.size);
+ }
+ function ensureSession(result){
+  if(result.error||!result.data?.session?.access_token)throw Error('Sign in again to upload music.');
+  return result.data.session;
+ }
+ async function saveAudio(blob,ext,details,onProgress){
+  if(!MIME[ext]||!blob.size||blob.size>MAX_TRACK_BYTES)throw Error('Each song must be supported audio no larger than 50 MB.');
+  const {title,artist,album}=details;
+  if(!title||!artist||title.length>120||artist.length>80||album.length>80)throw Error('A song needs a title and artist.');
+  const bytes=new Uint8Array(await blob.slice(0,16).arrayBuffer());
+  if(!audioSignatureOK(bytes,ext))throw Error('Not a valid '+ext.toUpperCase()+' audio file.');
+  const path=S.user.id+'/'+crypto.randomUUID()+'.'+ext;
+  await sendAudio(blob,path,MIME[ext],onProgress);
+  const record=await sb.from('lolite_music_tracks').insert({
+   uploader_id:S.user.id,title,artist,album,storage_path:path,mime_type:MIME[ext],file_bytes:blob.size,
+   status:S.admin?'approved':'pending'
+  }).select('id').single();
+  if(record.error){
+   await sb.storage.from(BUCKET).remove([path]);
+   throw Error('Could not save the song: '+record.error.message);
+  }
+ }
  async function uploadSong(form){
   const f=form.elements.audio.files?.[0],title=form.elements.title.value.trim(),artist=form.elements.artist.value.trim(),album=form.elements.album.value.trim();
   const ext=(f?.name.split('.').pop()||'').toLowerCase();
-  const types={mp3:'audio/mpeg',m4a:'audio/mp4',ogg:'audio/ogg',wav:'audio/wav',webm:'audio/webm',aac:'audio/aac'};
-  if(!f||!types[ext]||!f.size||f.size>20971520)throw Error('Choose a supported audio file smaller than 20 MB.');
-  if(!title||!artist||title.length>120||artist.length>80||album.length>80)throw Error('Enter a song title and artist.');
-  if(!form.elements.rights.checked)throw Error('Confirm you own the music or have permission to share it.');
-  const path=S.user.id+'/'+crypto.randomUUID()+'.'+ext;
-  setMessage('Uploading audio…');
-  const uploaded=await sb.storage.from(BUCKET).upload(path,f,{contentType:types[ext],upsert:false,cacheControl:'3600'});
-  if(uploaded.error)throw Error('Upload failed: '+uploaded.error.message);
-  const record=await sb.from('lolite_music_tracks').insert({uploader_id:S.user.id,title,artist,album,storage_path:path,mime_type:types[ext],file_bytes:f.size,status:S.admin?'approved':'pending'}).select('id').single();
-  if(record.error){await sb.storage.from(BUCKET).remove([path]);throw Error('Could not save the upload: '+record.error.message)}
+  if(!f)throw Error('Choose an audio file.');
+  if(!form.elements.rights.checked)throw Error('Confirm you have permission to share this music.');
+  setMessage('Uploading song…');
+  await saveAudio(f,ext,{title,artist,album});
   notify(S.admin?'Song published to the library.':'Song sent for admin approval.');
+  await load();
+ }
+ async function uploadZip(form){
+  if(!window.LoliteMusicZip)throw Error('ZIP importer did not load. Reload Lolite Music.');
+  const file=form.elements.archive.files?.[0];
+  if(!file)throw Error('Choose a ZIP archive of music.');
+  if(!form.elements.rights.checked)throw Error('Confirm you have permission to distribute every song.');
+  const entries=await window.LoliteMusicZip.inspect(file);
+  const defaultArtist=form.elements.artist.value.trim(),defaultAlbum=form.elements.album.value.trim();
+  const progress=form.querySelector('[data-lm-zip-progress]'),status=form.querySelector('[data-lm-zip-status]');
+  const setProgress=(index,name,ratio)=>{
+   const pct=Math.min(100,Math.round((index+ratio)/entries.length*100));
+   if(progress)progress.value=pct;
+   if(status)status.textContent='Song '+(index+1)+' of '+entries.length+' · '+name+' · '+pct+'%';
+   setMessage('Importing '+(index+1)+' / '+entries.length+' songs… '+pct+'%');
+  };
+  let succeeded=0;const failures=[];
+  for(let i=0;i<entries.length;i++){
+   const entry=entries[i];
+   setProgress(i,entry.path,0);
+   try{
+    const blob=await window.LoliteMusicZip.extract(file,entry);
+    const details=window.LoliteMusicZip.guess(entry.path,defaultArtist,defaultAlbum);
+    await saveAudio(blob,entry.ext,details,(sent,total)=>setProgress(i,entry.path,total?sent/total:0));
+    succeeded++;
+   }catch(e){
+    failures.push(entry.path+': '+(e.message||e));
+   }
+   setProgress(i,entry.path,1);
+  }
+  if(status)status.textContent='Finished · '+succeeded+' imported, '+failures.length+' failed.';
+  if(!succeeded)throw Error('No songs could be imported. '+failures.slice(0,2).join(' | '));
+  const summary=succeeded+' song'+(succeeded===1?'':'s')+(S.admin?' published.':' sent for approval.')+
+   (failures.length?' '+failures.length+' failed: '+failures.slice(0,2).join(' | '):'');
+  notify(summary);
   await load();
  }
  async function submit(form){
@@ -216,6 +321,7 @@
   const btn=form.querySelector('[type="submit"]');if(btn)btn.disabled=true;
   try{
    if(form.dataset.lmForm==='upload'){await uploadSong(form);return}
+   if(form.dataset.lmForm==='zip'){await uploadZip(form);return}
    if(form.dataset.lmForm==='playlist'){
     const name=form.elements.name.value.trim();if(!name||name.length>80)throw Error('Enter a playlist name.');
     const r=await sb.from('lolite_music_playlists').insert({owner_id:S.user.id,name}).select('id').single();
