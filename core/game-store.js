@@ -828,7 +828,7 @@
   const popularityStatus=popularity()?.getStatus()?.status||'loading';
   const summary=livePopularity
     ?'Most launched in Lolite · Last 30 days · Anonymous totals'
-    :active==='UGS'?list.length.toLocaleString()+' indexed UGS titles · '+(window.LoliteUGSStatus?.installed||0).toLocaleString()+' HTML games installed locally · Import HTML or ZIP to play'
+    :active==='UGS'?list.length.toLocaleString()+' UGS HTML games included in Lolite · Choose Play to launch'
     :playableVersionCount(list).toLocaleString()+' playable versions · '+list.length+' unique titles';
   const empty=livePopularity
     ?(popularityStatus==='loading'||popularityStatus==='refreshing'
