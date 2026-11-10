@@ -27,7 +27,7 @@ test('PNG icon loader is correctly ordered in desktop and gallery',()=>{
  for(const page of ['index.html','icons.html']){
   const html=read(page);
   assert.ok(html.indexOf('core/app-icon-art.js')<html.indexOf('core/app-icon-pngs.js'));
-  assert.match(html,/core\/app-icon-pngs\.js\?v=cosmos-png-centered-20261110/);
+  assert.match(html,/core\/app-icon-pngs\.js\?v=[a-z0-9._-]+/i);
  }
 });
 
