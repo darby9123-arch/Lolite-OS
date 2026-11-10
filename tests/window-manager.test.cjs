@@ -116,3 +116,23 @@ test('virtual desktop switcher is wired to a visible taskbar button',()=>{
  assert.match(shell,/lolite:desktopchange/);
  assert.match(css,/#taskbar #winDesktopSwitch/);
 });
+
+
+test('windows stay entirely onscreen on narrow and short viewports',async()=>{
+ const e=desktop(),el=e.c.openApp('files','Files');await e.settle();
+ e.resize(240,400);
+ assert.deepEqual(el.getBoundingClientRect(),{left:8,top:8,width:224,height:328,right:232,bottom:336});
+ e.resize(220,180);
+ assert.deepEqual(el.getBoundingClientRect(),{left:8,top:8,width:204,height:108,right:212,bottom:116});
+ e.c.snapWin('files','max');await e.settle();
+ assert.equal(el.getBoundingClientRect().right,212);
+ assert.equal(el.getBoundingClientRect().bottom,116);
+});
+test('top-mounted GNOME taskbar is excluded from maximised window bounds',async()=>{
+ const e=desktop(),el=e.c.openApp('settings','Settings');await e.settle();
+ e.nodes.get('taskbar').style.top='0px';
+ e.c.maxWin('settings');await e.settle();
+ const r=el.getBoundingClientRect();
+ assert.equal(r.top,64);
+ assert.equal(r.bottom,792);
+});
