@@ -4,6 +4,7 @@ on:
     paths:
       - 'scripts/import-authorized-games.mjs'
       - 'tests/import-authorized-games.test.cjs'
+      - 'tests/game-store-hide-installed-packages.test.cjs'
       - 'core/game-store.js'
       - 'core/html-game-ui.js'
       - 'core/genizymath-catalog.js'
@@ -13,6 +14,7 @@ on:
     paths:
       - 'scripts/import-authorized-games.mjs'
       - 'tests/import-authorized-games.test.cjs'
+      - 'tests/game-store-hide-installed-packages.test.cjs'
       - 'core/game-store.js'
       - 'core/html-game-ui.js'
       - 'html games/authorized/**'
@@ -33,4 +35,4 @@ jobs:
           node --check core/html-game-ui.js
           node --check core/genizymath-catalog.js
       - name: Run game importer tests
-        run: node --test tests/import-authorized-games.test.cjs
+        run: node --test tests/import-authorized-games.test.cjs tests/game-store-hide-installed-packages.test.cjs
