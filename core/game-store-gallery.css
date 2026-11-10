@@ -254,3 +254,11 @@ html[data-lolite-design] .window .store.store-v41 .store-card-actions .store-pla
  background:#8b64d5e8!important;color:#fff!important;border-color:#a78cdb88!important
 }
 html[data-lolite-design] .window .store.store-v41 .store-card-actions .store-play:hover{background:#a67cec!important}
+
+
+/* Admin-uploaded game art: full card background with a separate official icon. */
+.store.store-v41 .store-uploaded-game-icon{position:absolute;z-index:3;left:11px;bottom:10px;width:46px;height:46px;object-fit:contain;pointer-events:none;border-radius:10px;border:1px solid #ffffff77;background:#171625e0;box-shadow:0 3px 11px #000b}
+.store-detail-artwork{position:relative;max-width:100%;margin:11px 0 17px;isolation:isolate}
+.store-detail-artwork .lolite-game-detail-image{display:block;width:100%;margin:0;object-fit:cover;border-radius:10px}
+.store-detail-icon{position:absolute;z-index:2;left:13px;bottom:13px;width:64px;height:64px;object-fit:contain;background:#171625e8;border-radius:14px;border:1px solid #ffffff80;box-shadow:0 4px 14px #0009;pointer-events:none}
+@media(max-width:670px){.store.store-v41 .store-uploaded-game-icon{width:34px;height:34px;left:8px;bottom:8px}.store-detail-icon{width:48px;height:48px}}
