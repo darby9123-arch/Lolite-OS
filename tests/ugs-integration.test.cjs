@@ -43,7 +43,12 @@ test('UGS is discoverable and only uses installed HTML as an actual game server'
 test('UGS ZIP and individual HTML games are browser-local user-initiated imports',()=>{
  assert.match(packageStore,/async function importUGSZip\(file,onProgress\)/);
  assert.match(packageStore,/source:"ugs-collection"/);
- assert.ok(packageStore.includes('importUGSZip,removeGamefilesZip,list:getAll'));
+ assert.ok(packageStore.includes('importUGSZip,importUGSFolder,removeGamefilesZip,list:getAll'));
+ assert.match(packageStore,/async function importUGSFolder\(files,onProgress\)/);
+ assert.match(packageStore,/source:"ugs-collection-assets"/);
+ assert.match(store,/window\.loliteUGSImportFolder/);
+ assert.match(store,/data-ugs-import-folder/);
+ assert.match(store,/const hasLocalInstall=!!record/);
  assert.ok(packageStore.includes('Choose a ZIP containing UGS HTML5 games'));
  assert.match(store,/input\.type='file'/);
  assert.doesNotMatch(store,/fetch\(['"]https:\/\/drive\.google\.com/);
@@ -70,6 +75,7 @@ test('Repository hosts actual licensed UGS HTML files, not Drive redirects',()=>
  }
  assert.ok(fs.existsSync(path.join(root,'html games/ugs/LICENSE-antimatter-dimensions.txt')));
  assert.ok(fs.existsSync(path.join(root,'html games/ugs/LICENSE-hextris.md')));
+ assert.ok(fs.existsSync(path.join(root,'html games/ugs/LICENSE-we-become-what-we-behold.md')));
  assert.match(store,/const hosted=window\.LoliteUGSHosted/);
  assert.match(store,/const preferredURL=hasLocalInstall\?ugsFileURL\(record\):hostedURL/);
 });
