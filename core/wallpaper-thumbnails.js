@@ -54,7 +54,7 @@
   }
  }
  async function thumbnailFromURL(url){
-  if(typeof url!=='string'||!/^https:\/\//.test(url))throw Error('Invalid video URL.');
+  if(typeof url!=='string'||!(/^(https:\/\/|assets\/wallpapers\/videos\/)/.test(url)))throw Error('Invalid wallpaper video URL.');
   if(cache.has(url))return cache.get(url);
   const task=capture(url).then(blob=>new Promise((resolve,reject)=>{
    const reader=new FileReader();
