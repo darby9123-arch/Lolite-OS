@@ -144,7 +144,30 @@
    return 'Arcade & Action';
  };
  const categoryNames=["All Games","My Library","Favorites","Recently Played","Featured","Recently Added","Popular Games","Built-in HTML","DAKNUX","Gamefiles ZIP","Free to Play","Baldi’s Basics","Sandbox & Building","Adventure & RPG","Platformers","Puzzle & Brain","Racing & Driving","Arcade & Action","Horror & Survival","Sports","Strategy","Simulation & Life","Multiplayer & .io","Music & Rhythm","Casual & Idle","Retro & Classics"];
- const navMarks={"All Games":"ALL","My Library":"OWN","Favorites":"♥","Recently Played":"↺","Featured":"★","Recently Added":"NEW","Popular Games":"TOP","Built-in HTML":"HTML","DAKNUX":"DK","Gamefiles ZIP":"ZIP","Free to Play":"FREE","Baldi’s Basics":"BB","Sandbox & Building":"BUILD","Adventure & RPG":"RPG","Platformers":"JUMP","Puzzle & Brain":"PUZ","Racing & Driving":"RACE","Arcade & Action":"PLAY","Horror & Survival":"HR","Sports":"SPORT","Strategy":"STRAT","Simulation & Life":"SIM","Multiplayer & .io":"IO","Music & Rhythm":"BEAT","Casual & Idle":"IDLE","Retro & Classics":"RETRO"};
+ const sidebarGamePicks={
+  'All Games':['clminecraftpocketedition.html'],
+  'My Library':['clminecraftpocketedition.html'],
+  'Featured':['Geometry Dash webport.html'],
+  'Popular Games':['clblockblast.html','clminecraftpocketedition.html'],
+  'Recently Added':['Grand Theft Auto Vice City.html'],
+  'Built-in HTML':['local-tetris-index.html','local-world-sandbox-index.html'],
+  'Free to Play':['clminecraftpocketedition.html'],
+  'Baldi’s Basics':['clbaldisbasics.html'],
+  'Sandbox & Building':['clminecraftpocketedition.html'],
+  'Adventure & RPG':['cldungeonsanddegenerategambler.html'],
+  'Platformers':['clsupermariobros.html','clRedBall4.html'],
+  'Puzzle & Brain':['clblockblast.html'],
+  'Racing & Driving':['Drift-Hunters.html'],
+  'Arcade & Action':['clragollhit.html'],
+  'Horror & Survival':['clFNAF.html'],
+  'Sports':['wrestle-bros.html'],
+  'Strategy':['clpvz2gardenless.html','PVZM.html'],
+  'Simulation & Life':['clbitlife.html'],
+  'Multiplayer & .io':['clpaperio.html'],
+  'Music & Rhythm':['closu.html'],
+  'Casual & Idle':['clcookieclicker.html'],
+  'Retro & Classics':['local-snake-index.html']
+ };
  // Group popular series without removing games from their existing genre categories.
  // A series appears in the sidebar only if the merged library contains 3+ titles.
  const franchiseRules=[
@@ -181,7 +204,6 @@
    for(const name of franchiseNames){
     const index=categoryNames.indexOf(name);
     if(index>=0)categoryNames.splice(index,1);
-    delete navMarks[name];
    }
    franchiseNames.clear();
    // Run after all external catalogues have been merged and deduplicated.
@@ -193,7 +215,7 @@
    const enabled=franchiseRules.filter(rule=>(counts.get(rule.name)||0)>=3);
    const start=categoryNames.indexOf('Baldi’s Basics')+1;
    categoryNames.splice(start,0,...enabled.map(rule=>rule.name));
-   enabled.forEach(rule=>{navMarks[rule.name]=rule.mark;franchiseNames.add(rule.name)});
+   enabled.forEach(rule=>franchiseNames.add(rule.name));
    window.loliteFranchiseCategories=Object.freeze(enabled.map(rule=>({
      name:rule.name,count:counts.get(rule.name)
    })));
