@@ -233,7 +233,9 @@
    const session=ensureSession(await sb.auth.getSession());
    const host=new URL(sb.supabaseUrl).hostname.replace(/\.supabase\.co$/,'.storage.supabase.co');
    return new Promise((resolve,reject)=>{
-    const upload=new window.tus.Upload(blob,{
+    // Unique filename avoids resuming a different archive entry with an identical size.
+    const transfer=new File([blob],path.split('/').pop(),{type,lastModified:Date.now()});
+    const upload=new window.tus.Upload(transfer,{
      endpoint:'https://'+host+'/storage/v1/upload/resumable',
      retryDelays:[0,1000,3000,5000,10000],chunkSize:6*1024*1024,
      uploadDataDuringCreation:true,removeFingerprintOnSuccess:true,
