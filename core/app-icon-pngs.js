@@ -12,9 +12,15 @@
   // Artwork already contains its own rounded-square background and should
   // not get another glossy tile behind it.
   const css=`
-    .lolite-icon.lolite-icon--generated{background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible!important;isolation:isolate;padding:0!important}
+    /* Centre the rendered artwork inside the actual icon box, not its surrounding text/line box. */
+    .lolite-icon.lolite-icon--generated{display:inline-grid!important;place-items:center!important;flex:0 0 auto!important;vertical-align:middle;line-height:0!important;text-align:center!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible!important;isolation:isolate;padding:0!important}
     .lolite-icon.lolite-icon--generated::before{display:none!important}
-    .lolite-icon--generated .lolite-generated-png{display:block;width:100%!important;height:100%!important;object-fit:contain;border-radius:inherit;filter:none!important}
+    .lolite-icon--generated .lolite-generated-png{display:block!important;position:static!important;justify-self:center!important;align-self:center!important;width:100%!important;height:100%!important;max-width:100%;max-height:100%;margin:0!important;padding:0!important;object-fit:contain!important;object-position:center center!important;border-radius:inherit;filter:none!important;transform:none!important}
+    /* A centred icon keeps its own horizontal axis in desktop, mobile and gallery layouts. */
+    #icons .desktop-icon > .lolite-icon--generated,
+    .lm-app-icon > .lolite-icon--generated,
+    .appstore-icon > .lolite-icon--generated{align-self:center!important;margin-inline:auto!important}
+    #icons .desktop-icon{align-items:center!important;text-align:center!important}
     html[data-lolite-design="cosmos"] #icons .desktop-icon .lolite-icon--generated{background:transparent!important;border:0!important;box-shadow:none!important}
     html[data-lolite-design="cosmos"] #taskbar .lolite-icon--generated{background:transparent!important;border:0!important;box-shadow:none!important}
     html[data-lolite-design="cosmos"] .cosmos-tile .lolite-icon--generated{background:transparent!important;border:0!important;box-shadow:none!important}
