@@ -26,32 +26,28 @@ test('UGS Drive game catalogue loads before Game Store without mirroring game co
  assert.doesNotMatch(catalogScript,/<iframe|<html|<script src/i);
 });
 
-test('UGS is discoverable and only uses installed HTML as an actual game server',()=>{
+test('UGS appears as playable built-in HTML only; no import or Drive source controls',()=>{
  assert.match(store,/"UGS"/);
  assert.match(store,/active==='UGS'\?!!g\.ugsEntry/);
- assert.match(store,/g\.ugsPending\)return false/);
+ assert.match(store,/if\(!hasInstall\)continue/);
  assert.match(store,/const baseName=g\.ugsInstalled\?'UGS'/);
- assert.match(store,/if\(game\.ugsPending\)/);
  assert.match(store,/syncUGSCollection/);
  assert.match(store,/ugsFileURL\(record\)/);
- assert.match(store,/window\.loliteUGSImportHTML/);
- assert.match(store,/window\.loliteUGSImportZip/);
- assert.match(store,/data-ugs-source/);
- assert.match(store,/data-ugs-import-zip/);
+ assert.match(store,/const hasLocalInstall=!!record/);
+ assert.doesNotMatch(store,/ugsPending|ugsHasOther/);
+ assert.doesNotMatch(store,/data-ugs-source|data-ugs-install|data-ugs-import-zip|data-ugs-import-folder/);
+ assert.doesNotMatch(store,/window\.loliteUGSImport|window\.loliteUGSViewSource/);
+ assert.doesNotMatch(store,/Import UGS ZIP|Import UGS Folder|View UGS Drive file|View source|Import HTML/);
+ assert.doesNotMatch(store,/https:\/\/drive\.google\.com\/file\/d\//);
 });
 
-test('UGS ZIP and individual HTML games are browser-local user-initiated imports',()=>{
+test('Existing local UGS game storage remains compatible but is not required to play bundled games',()=>{
  assert.match(packageStore,/async function importUGSZip\(file,onProgress\)/);
  assert.match(packageStore,/source:"ugs-collection"/);
  assert.ok(packageStore.includes('importUGSZip,importUGSFolder,removeGamefilesZip,list:getAll'));
  assert.match(packageStore,/async function importUGSFolder\(files,onProgress\)/);
- assert.match(packageStore,/source:"ugs-collection-assets"/);
- assert.match(store,/window\.loliteUGSImportFolder/);
- assert.match(store,/data-ugs-import-folder/);
- assert.match(store,/const hasLocalInstall=!!record/);
- assert.ok(packageStore.includes('Choose a ZIP containing UGS HTML5 games'));
- assert.match(store,/input\.type='file'/);
- assert.doesNotMatch(store,/fetch\(['"]https:\/\/drive\.google\.com/);
+ assert.match(store,/const hasInstall=hasLocalInstall\|\|hasHosted/);
+ assert.match(store,/const preferredURL=hasLocalInstall\?ugsFileURL\(record\):hostedURL/);
 });
 
 test('Repository hosts actual licensed UGS HTML files, not Drive redirects',()=>{
@@ -60,7 +56,7 @@ test('Repository hosts actual licensed UGS HTML files, not Drive redirects',()=>
  vm.runInNewContext(hostedScript,env,{timeout:2000});
  const hosted=env.window.LoliteUGSHosted||{};
  const entries=Object.entries(hosted);
- assert.ok(entries.length>=2,'At least two actual HTML games should be hosted');
+ assert.ok(entries.length>=6,'The UGS category should include at least six repository-hosted HTML games');
  assert.ok(html.indexOf('core/ugs-hosted-catalog.js?v=')>html.indexOf('core/ugs-catalog.js?v='));
  assert.ok(html.indexOf('core/ugs-hosted-catalog.js?v=')<html.indexOf('core/game-store.js?v='));
  for(const [id,url] of entries){
@@ -76,6 +72,9 @@ test('Repository hosts actual licensed UGS HTML files, not Drive redirects',()=>
  assert.ok(fs.existsSync(path.join(root,'html games/ugs/LICENSE-antimatter-dimensions.txt')));
  assert.ok(fs.existsSync(path.join(root,'html games/ugs/LICENSE-hextris.md')));
  assert.ok(fs.existsSync(path.join(root,'html games/ugs/LICENSE-we-become-what-we-behold.md')));
+ assert.ok(fs.existsSync(path.join(root,'html games/ugs/LICENSE-space-company.txt')));
+ assert.ok(fs.existsSync(path.join(root,'html games/ugs/LICENSE-google-dino.txt')));
  assert.match(store,/const hosted=window\.LoliteUGSHosted/);
+ assert.ok(entries.some(([id])=>id==='1HckIkpHaaVIrOMJUuh7YaXcBfBF9m7L5'),'Chrome Dino HTML is mapped to UGS');
  assert.match(store,/const preferredURL=hasLocalInstall\?ugsFileURL\(record\):hostedURL/);
 });
