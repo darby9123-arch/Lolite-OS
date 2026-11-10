@@ -45,6 +45,7 @@ jobs:
           node --check core/window-manager.js
           node --check core/interface.js
           node --check core/app-icon-pngs.js
+          node --check core/app-icon-brand-pack.js
           node --check core/widgets.js
           node --check core/music.js
           node --check core/performance-mode.js
