@@ -30,7 +30,7 @@
  }
  function fit(rect,area){const width=clamp(rect.width,Math.min(320,area.width),area.width),height=clamp(rect.height,Math.min(220,area.height),area.height);return {left:clamp(rect.left,area.left,area.left+area.width-width),top:clamp(rect.top,area.top,area.top+area.height-height),width,height}}
  function snapRect(kind,area){if(area.width<648)return {...area};const gap=8,half=(area.width-gap)/2,h=(area.height-gap)/2;return {left:area.left+(kind.includes('right')?half+gap:0),top:area.top+(kind.startsWith('bottom')?h+gap:0),width:kind==='max'?area.width:half,height:kind.includes('-')?h:area.height}}
- function bounds(){const width=root.clientWidth||innerWidth,height=root.clientHeight||innerHeight,bar=$('taskbar')?.getBoundingClientRect();let top=8,bottom=height-8;if(bar&&bar.height&&bar.width){if(bar.top<height/2)top=bar.bottom+8;else bottom=bar.top-8}return {left:8,top,width:Math.max(240,width-16),height:Math.max(180,bottom-top)}}
+ function bounds(){const width=root.clientWidth||innerWidth,height=root.clientHeight||innerHeight,bar=$('taskbar')?.getBoundingClientRect();let top=8,bottom=height-8;if(bar&&bar.height&&bar.width){if(bar.top<height/2)top=bar.bottom+8;else bottom=bar.top-8}return {left:8,top,width:Math.max(1,width-16),height:Math.max(1,bottom-top)}}
  const rectOf=el=>el.style.display==='none'?Object.fromEntries(['left','top','width','height'].map(k=>[k,parseFloat(el.style[k])||0])):({left:el.offsetLeft,top:el.offsetTop,width:el.offsetWidth,height:el.offsetHeight});
  function setRect(el,rect){for(const k of ['left','top','width','height'])el.style[k]=Math.round(rect[k])+'px'}
  function emit(type,id,extra={}){window.dispatchEvent(new CustomEvent('lolite:windowchange',{detail:{type,id,...extra}}))}
@@ -110,7 +110,7 @@
  }else if(e.key==='ArrowDown')window.minWin(id);
  else snapWin(id,e.key==='ArrowLeft'?'left':e.key==='ArrowRight'?'right':'max');
 }if(e.altKey&&e.key==='Tab'){e.preventDefault();const list=Object.keys(workspace.windows).filter(id=>!workspace.windows[id].closing);if(list.length)window.restoreWin(list[(list.indexOf(workspace.activeId)+(e.shiftKey?list.length-1:1))%list.length])}});
- window.addEventListener('resize',resizeToViewport);window.addEventListener('lolite:desktopthemechange',resizeToViewport);window.addEventListener('lolite:modechange',()=>{closeSnapMenu();resizeToViewport()});
+ window.addEventListener('resize',resizeToViewport);window.addEventListener('orientationchange',resizeToViewport);document.addEventListener('fullscreenchange',resizeToViewport);document.addEventListener('webkitfullscreenchange',resizeToViewport);window.visualViewport?.addEventListener?.('resize',resizeToViewport);window.addEventListener('lolite:desktopthemechange',resizeToViewport);window.addEventListener('lolite:modechange',()=>{closeSnapMenu();resizeToViewport()});
  Object.assign(window,{openApp,closeWin,minWin,restoreWin,maxWin,snapWin,drag,setActiveTask});
  window.LoliteWindowManager={focus,toggleTask,showDesktop,bounds,fit,resizeToViewport,showSnapMenu,
   savedLayouts:()=>({...savedLayouts}),forgetLayout,
