@@ -225,3 +225,32 @@
 @media(prefers-reduced-motion:reduce){
  .store.store-v41 .store-card,.store.store-v41 .store-card-actions,.store.store-v41 .store-cover-art{animation:none!important;transition:none!important}
 }
+
+/* The Store is a resizable app window: respond to its real width, not only browser width. */
+.store.store.store-v41[data-size="compact"]{grid-template-columns:142px minmax(0,1fr)!important}
+.store.store-v41[data-size="compact"] .store-social{display:none!important}
+.store.store-v41[data-size="compact"] .store-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.store.store.store-v41[data-size="small"]{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto minmax(0,1fr)!important}
+.store.store-v41[data-size="small"] .store-social,.store.store-v41[data-size="small"] .store-categories,.store.store-v41[data-size="small"] .store-profile{display:none!important}
+.store.store-v41[data-size="small"] .store-side{display:flex!important;flex-direction:row;align-items:center;gap:10px;overflow-x:auto;overflow-y:hidden;padding:8px 10px!important;border-right:0!important;border-bottom:1px solid #ffffff13!important}
+.store.store-v41[data-size="small"] .store-brand{margin:0;padding:0!important;border:0;flex:none}
+.store.store-v41[data-size="small"] .store-brand-copy,.store.store-v41[data-size="small"] .store-nav-label{display:none}
+.store.store-v41[data-size="small"] .store-nav{flex-direction:row;white-space:nowrap;gap:3px!important}
+.store.store-v41[data-size="small"] .store-nav button{padding:8px!important}
+.store.store-v41[data-size="small"] .store-main{padding:14px 12px 32px!important;min-height:0}
+.store.store-v41[data-size="small"] .store-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+.store.store-v41[data-size="small"] .store-top{top:-14px!important}
+.store.store-v41[data-size="small"] .store-count-pill{display:none}
+@media(max-width:450px){.store.store-v41[data-size="small"] .store-brand{display:none!important}}
+
+/* Cosmos and other global desktop themes previously forced blue cards and buttons. */
+html[data-lolite-design] .window .store.store-v41 .store-card{
+ background:#282239!important;border-color:#ffffff17!important;border-radius:12px!important
+}
+html[data-lolite-design] .window .store.store-v41 .store-card:hover{
+ background:#31263e!important;border-color:#b693f6b0!important
+}
+html[data-lolite-design] .window .store.store-v41 .store-card-actions .store-play{
+ background:#8b64d5e8!important;color:#fff!important;border-color:#a78cdb88!important
+}
+html[data-lolite-design] .window .store.store-v41 .store-card-actions .store-play:hover{background:#a67cec!important}
