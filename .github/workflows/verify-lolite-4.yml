@@ -44,7 +44,8 @@ jobs:
           node --check core/host-status.js
           node --check core/window-manager.js
           node --check core/interface.js
+          node --check core/app-icon-pngs.js
           node --check server.mjs
       - name: Test game library, host version, taskbar, Spotlight and snapping
         run: |
-          node --test tests/lolite-4.test.cjs tests/window-manager.test.cjs tests/game-launches.test.cjs tests/game-popularity.test.cjs tests/tab-cloaking.test.cjs
+          node --test tests/lolite-4.test.cjs tests/window-manager.test.cjs tests/game-launches.test.cjs tests/game-popularity.test.cjs tests/tab-cloaking.test.cjs tests/generated-icons.test.cjs
