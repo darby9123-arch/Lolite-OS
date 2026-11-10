@@ -19,7 +19,17 @@
    path.split('/').every(part=>part&&part!=='.'&&part!=='..'&&!part.includes(':'));
  }
  function titleFromPath(path){
-  return path.split('/').pop().replace(/\.mp4$/i,'').replace(/[_-]+/g,' ').trim().slice(0,90)||'Live wallpaper';
+  const file=path.split('/').pop()||'';
+  // Remove the extension and trailing numeric download/copy suffixes.
+  // E.g. sunset-beach-003.mp4, SUNSET_BEACH (12).MP4 -> Sunset Beach.
+  const stem=file.replace(/\.mp4$/i,'').replace(/(?:[\s._-]*[\[(]?\d+[\])]?)+$/u,'');
+  const words=stem.replace(/[-_]+/g,' ').replace(/\s+/g,' ').trim();
+  const acronyms={gta:'GTA',hd:'HD',fhd:'FHD',uhd:'UHD',hdr:'HDR','4k':'4K','8k':'8K'};
+  const title=words.split(' ').filter(Boolean).map(word=>{
+   const lower=word.toLocaleLowerCase();
+   return acronyms[lower]||lower.charAt(0).toLocaleUpperCase()+lower.slice(1);
+  }).join(' ');
+  return (title||'Live Wallpaper').slice(0,90);
  }
  async function inflate(data,expected){
   if(typeof DecompressionStream!=='function')throw Error('ZIP extraction is not supported by this browser.');
