@@ -194,6 +194,10 @@
        }
        const mime=String(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase();
        if(mime==='text/html'){
+         // A successful same-origin HEAD confirms the repository file exists.
+         // Don't download large bundled games twice just to preview the HTML.
+         if(local){run();return}
+         // On third-party sites, also inspect GET for soft 404 error pages.
          frame.dataset.headHTML='1';
          void renderSource();return;
        }
