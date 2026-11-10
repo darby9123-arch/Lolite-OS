@@ -432,6 +432,7 @@
    let stored=[];
    try{stored=await (packages?.list?.()||Promise.resolve([]))}catch(error){console.warn("UGS local game database unavailable",error)}
    const byId=new Map(stored.map(rec=>[rec.id,rec]));
+   const hosted=window.LoliteUGSHosted&&typeof window.LoliteUGSHosted==='object'?window.LoliteUGSHosted:{};
    const saved=ugsSavedSingles();
    const installedByTitle=new Map();
    for(const rec of stored){
@@ -452,7 +453,11 @@
      const key=ugsTitleKey(title);if(!key||taken.has(key))continue;
      taken.add(key);listed++;
      const record=byId.get(saved[id])||installedByTitle.get(key);
-     const hasInstall=kind==='html5'&&!!record&&typeof record.root==='string'&&/^pkg-[a-f0-9-]{16,60}$/.test(record.packId||record.id);
+     const hasLocalInstall=kind==='html5'&&!!record&&typeof record.root==='string'&&/^pkg-[a-f0-9-]{16,60}$/.test(record.packId||record.id);
+     const hostedURL=typeof hosted[id]==='string'&&/^html%20games\/ugs\/[a-z0-9._-]+\.html?$/i.test(hosted[id])?hosted[id]:'';
+     const hasHosted=kind==='html5'&&!!hostedURL;
+     const hasInstall=hasLocalInstall||hasHosted;
+     const preferredURL=hasLocalInstall?ugsFileURL(record):hostedURL;
      const entry={id,filename,kind,title,bytes:Number(bytes)||0};
      const index=existing.get(key);
      if(index!==undefined){
@@ -460,22 +465,22 @@
        if(hasInstall){
          const old={...previous},fallback={name:previous.source||'Lolite OS',url:previous.url};
          games[index]={...previous,ugsBackup:old,ugsEntry:entry,ugsInstalled:true,ugsRecord:record,
-           url:ugsFileURL(record),source:'UGS',local:true,external:false,
+           url:preferredURL,source:'UGS',local:true,external:false,ugsHosted:!hasLocalInstall,
            servers:[...(fallback.url?[fallback]:[]),...(previous.servers||[])]};
          serverSelections.set(games[index].file,0);installed++;alternatives++;
        }else games[index]={...previous,ugsBackup:{...previous},ugsEntry:entry,ugsHasOther:true};
      }else{
        const file='ugs-'+id.replace(/[^a-z0-9-]/gi,'-')+'.html';
-       const game={file,title,url:hasInstall?ugsFileURL(record):'',source:'UGS',
+       const game={file,title,url:preferredURL||'',source:'UGS',
          local:!!hasInstall,external:false,ugsEntry:entry,ugsCreated:true,
-         ugsPending:!hasInstall,ugsInstalled:!!hasInstall,ugsRecord:hasInstall?record:null,
+         ugsPending:!hasInstall,ugsInstalled:!!hasInstall,ugsHosted:!!hasHosted&&!hasLocalInstall,ugsRecord:hasLocalInstall?record:null,
          category:categorize({file:filename,title})};
        games.push(game);existing.set(key,games.length-1);
        if(hasInstall)installed++;
      }
    }
    games.sort((a,b)=>a.title.localeCompare(b.title,undefined,{numeric:true,sensitivity:'base'}));
-   window.LoliteUGSStatus=Object.freeze({listed,installed,alternatives,html5:rows.filter(x=>x[2]==='html5').length,flash:rows.filter(x=>x[2]==='flash').length});
+   window.LoliteUGSStatus=Object.freeze({listed,installed,alternatives,hosted:Object.keys(hosted).length,html5:rows.filter(x=>x[2]==='html5').length,flash:rows.filter(x=>x[2]==='flash').length});
    buildFranchiseCategories();
    if(document.querySelector('.store-main'))render();
  }
