@@ -7,7 +7,7 @@ Lolite OS admins can publish wallpapers to the shared **Settings → Wallpapers*
 2. Select a **.zip** file containing MP4 videos (folders within the ZIP are supported).
 3. Lolite checks archive structure, paths, decompression sizes, CRC32 checksums, MP4 container signatures, and whether the browser can read video metadata.
 4. Review the videos, play previews, and uncheck anything you do not want to publish.
-5. Optionally enter a title prefix; each wallpaper otherwise uses its MP4 filename.
+5. Optionally enter a title prefix. Lolite automatically turns the MP4 filename into a clean wallpaper title: it removes the `.mp4` extension, any ending numeric suffix (`-003`, `_01`, ` (12)`, etc.), replaces hyphens/underscores with spaces, and capitalizes words. For example, `sunset-beach-003.mp4` becomes **Sunset Beach**, while `gta-vice-city-4.mp4` becomes **GTA Vice City**. The original filename is shown alongside the clean title during review, and the ZIP/MP4 data is never renamed or modified. A typed pack prefix is preserved exactly as entered.
 6. Click **Publish to Lolite**. Each selected MP4 is uploaded individually to the shared Supabase storage bucket, and its library row is added after a successful upload.
 
 The original ZIP is **not** published or uploaded. Non-MP4 files are ignored. Bad, unplayable, unsafe, or unsupported archives show an error or mark affected videos unavailable. If part of a pack publishes successfully before an upload fails, published entries are marked complete and retries process only the remaining selections.
