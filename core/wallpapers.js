@@ -531,8 +531,7 @@
   posterRequests.set(url,task);
   task.then(data=>{
    posterRequests.set(url,data);
-   for(const item of collection)if(item.video===url&&
-     (!item.poster||item.poster==='assets/wallpapers/cosmos-orbit.svg'))applyPoster(item,data);
+   for(const item of collection)if(item.video===url)applyPoster(item,data);
   }).catch(()=>posterRequests.delete(url));
  }
  function applyPoster(wall,data){
