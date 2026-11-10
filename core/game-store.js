@@ -514,12 +514,20 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  const selectedSource=g=>{
    const sources=availableServers(g);
    const i=Math.max(0,Math.min(sources.length-1,Number(serverSelections.get(g.file)||0)));
-   return sources[i]||sources[0];
+   const selected=sources[i]||sources[0];
+   if(!selected||!window.LoliteGameHealth?.isUnavailable?.({url:selected.url}))return selected;
+   const next=sources.find(item=>!window.LoliteGameHealth?.isUnavailable?.({url:item.url}));
+   if(next)serverSelections.set(g.file,sources.indexOf(next));
+   return next||selected;
  };
  const encodeLabel=t=>String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const serverPickerMarkup=g=>{
-  const servers=availableServers(g),chosen=Math.max(0,Math.min(servers.length-1,Number(serverSelections.get(g.file)||0)));
-  return '<label class="store-server-picker"><span>Server</span><select class="store-server-select" data-source-game="'+encodeLabel(g.file)+'" aria-label="Server for '+encodeLabel(g.title)+'" onchange=\'window.loliteStorePickServer("'+g.file+'",this.value)\' '+(servers.length<2?'disabled':'')+'>'+servers.map((v,i)=>'<option value="'+i+'"'+(chosen===i?' selected':'')+'>'+encodeLabel(v.name)+'</option>').join('')+'</select></label>';
+  const servers=availableServers(g),chosenServer=selectedSource(g);
+  const chosen=Math.max(0,servers.indexOf(chosenServer));
+  return '<label class="store-server-picker"><span>Server</span><select class="store-server-select" data-source-game="'+encodeLabel(g.file)+'" aria-label="Server for '+encodeLabel(g.title)+'" onchange=\'window.loliteStorePickServer("'+g.file+'",this.value)\' '+(servers.length<2?'disabled':'')+'>'+servers.map((v,i)=>{
+   const missing=!!window.LoliteGameHealth?.isUnavailable?.({url:v.url});
+   return '<option value="'+i+'"'+(chosen===i?' selected':'')+(missing?' disabled':'')+'>'+encodeLabel(v.name)+(missing?' · 404 unavailable':'')+'</option>';
+  }).join('')+'</select></label>';
  };
  window.loliteStoreSelectedIndex=file=>Number(serverSelections.get(file)||0);
  window.loliteStoreFileForTitle=title=>games.find(game=>game.title===title)?.file||null;
