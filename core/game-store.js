@@ -644,11 +644,23 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   return active==='Popular Games'?ranked(found):active==='Recently Played'?found.sort((a,b)=>(recentSessions.find(row=>row.file===b.file)?.at||0)-(recentSessions.find(row=>row.file===a.file)?.at||0)):active==='Recently Added'?found.sort((a,b)=>Date.parse(b.addedAt||0)-Date.parse(a.addedAt||0)||a.title.localeCompare(b.title)):found;
  };
  const coverPalette=g=>{let hash=0;for(const ch of g.file)hash=(Math.imul(hash,31)+ch.charCodeAt(0))>>>0;const hue=hash%360,hue2=(hue+48+(hash%73))%360;return [`hsl(${hue} 62% 28%)`,`hsl(${hue2} 48% 13%)`,`${12+(hash%13)}s`,String(hash%6),`-${hash%17000}ms`]};
- const card=g=>{const colors=coverPalette(g),poster=lolitePosterArt(g.title,g.file),file=encodeLabel(g.file),title=encodeLabel(g.title),plays=active==='Popular Games'?'<small class="store-play-count">'+playCount(g).toLocaleString()+' launches in 30 days</small>':'';
-  return '<article class="store-card" data-game-file="'+file+'"><div class="store-cover has-game-art" data-game-file="'+file+'" data-skin="'+colors[3]+'" style="--cover-a:'+colors[0]+';--cover-b:'+colors[1]+';--cover-speed:'+colors[2]+';--cover-delay:'+colors[4]+'"><div class="store-cover-art" aria-hidden="true"><img class="store-cover-picture" src="'+poster+'" alt="" loading="lazy" decoding="async"></div></div><div class="store-card-body"><h3 title="'+title+'">'+title+'</h3>'+plays+'<div class="store-card-actions"><button class="store-play" type="button" onclick=\'window.loliteStoreAction("'+g.file+'")\' aria-label="Play '+title+'">▶ Play</button>'+serverPickerMarkup(g)+'</div></div></article>';
+ const card=g=>{
+  const colors=coverPalette(g),poster=lolitePosterArt(g.title,g.file),file=encodeLabel(g.file),
+   title=encodeLabel(g.title),fav=isFavourite(g.file);
+  const plays=active==='Popular Games'?'<small class="store-play-count">'+playCount(g).toLocaleString()+' launches in 30 days</small>':'';
+  const mark=g.genizy?'◈':g.mountain?'◆':g.source==="Chicken King's Vault"?'✦':g.gamefilesRecord?'▣':'✧';
+  return '<article class="store-card store-gallery-card" data-game-file="'+file+'">'+
+   '<div class="store-cover has-game-art" data-game-file="'+file+'" data-skin="'+colors[3]+'" style="--cover-a:'+colors[0]+';--cover-b:'+colors[1]+';--cover-speed:'+colors[2]+';--cover-delay:'+colors[4]+'">'+
+   '<div class="store-cover-art" aria-hidden="true"><img class="store-cover-picture" src="'+poster+'" alt="" loading="lazy" decoding="async"></div>'+
+   '<button type="button" class="store-cover-launch" data-store-launch="'+file+'" aria-label="Play '+title+'" title="Play '+title+'"></button>'+
+   '<span class="store-cover-origin" aria-hidden="true">'+mark+'</span>'+
+   '<button type="button" class="store-favourite'+(fav?' is-favourite':'')+'" data-store-favorite="'+file+
+   '" aria-label="'+(fav?'Remove from':'Add to')+' Favorites" aria-pressed="'+fav+'" title="'+(fav?'Remove favorite':'Add favorite')+'">'+
+   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4.5L5 21V4.5a1 1 0 0 1 1-1Z"/></svg></button></div>'+
+   '<div class="store-card-body"><h3 title="'+title+'">'+title+'</h3>'+plays+
+   '<div class="store-card-actions"><button class="store-play" type="button" data-store-launch="'+file+'" aria-label="Play '+title+'">▶ Play</button>'+
+   serverPickerMarkup(g)+'</div></div></article>';
  };
- /* Game artwork: individually curated image URLs keyed to the actual game file.
-    No Wikipedia fuzzy searches, no stale localStorage art cache, no cross-title borrowing. */
  const coverFor=file=>file.startsWith('native-')?null:(genizyCovers.get(file)||mountainCovers.get(file)||window.loliteGameArt?.[file]?.src||null);
  // Local, title-specific artwork is always present; remote images only enhance it.
  const artCache=new Map();
@@ -757,8 +769,26 @@ if(Array.isArray(window.LoliteMountainCatalog)){
     privacy+(list.length?listCards(list):'<div class="store-empty">'+empty+'</div>')+
     '</section>';
   if(showFeatured)loadHeroArt();
+  refreshActivity();
  }
- function shell(){return '<div class="store"><aside class="store-side"><div class="store-brand">lolite<span>GAME LIBRARY</span></div><div><div class="store-nav-label">Browse library</div><nav class="store-nav">'+categoryNames.map(c=>'<button type="button" class="'+(active===c?'active':'')+'" data-category="'+c+'" aria-pressed="'+(active===c)+'" onclick=\'window.loliteStoreCategory("'+c+'")\'><span class="nav-mark" aria-hidden="true">'+navMarks[c]+'</span><span>'+c+'</span></button>').join('')+'</nav></div></aside><main class="store-main"><div class="store-empty">Loading your library…</div></main></div>'}
+ function shell(){
+  const quick=['All Games','My Library','Favorites','Recently Played','Featured','Popular Games'];
+  const navButton=cat=>'<button type="button" class="'+(active===cat?'active':'')+'" data-category="'+encodeLabel(cat)+
+    '" aria-pressed="'+(active===cat)+'"><span class="nav-mark" aria-hidden="true">'+(navMarks[cat]||'◈')+'</span>'+
+    '<span class="store-nav-title">'+encodeLabel(cat)+'</span></button>';
+  const other=categoryNames.filter(cat=>!quick.includes(cat));
+  return '<div class="store store-v41"><aside class="store-side" aria-label="Game library navigation">'+
+   '<div class="store-brand"><span class="store-logo-symbol" aria-hidden="true"><i></i><i></i><i></i></span>'+
+   '<span class="store-brand-copy">Lolite <span>GAME LIBRARY</span></span></div>'+
+   '<div class="store-nav-group"><div class="store-nav-label">MY GAMES</div>'+
+   '<nav class="store-nav" aria-label="Main game sections">'+quick.map(navButton).join('')+'</nav></div>'+
+   '<details class="store-categories"><summary>MORE COLLECTIONS</summary>'+
+   '<nav class="store-nav store-nav-extra" aria-label="Game categories">'+other.map(navButton).join('')+'</nav></details>'+
+   '<div class="store-profile"><span class="store-profile-avatar" aria-hidden="true">L</span>'+
+   '<div><strong>Lolite Player</strong><small>Local game library</small></div></div></aside>'+
+   '<main class="store-main"><div class="store-empty">Loading your library…</div></main>'+
+   '<aside class="store-social" aria-label="Recent game activity"><div class="store-social-inner">'+activityMarkup()+'</div></aside></div>';
+ }
  window.loliteStoreCategory=c=>{if(!categoryNames.includes(c)&&!['IO Games','Arcade','IO & Casual'].includes(c))return;active=c;query='';visibleCount=60;document.querySelectorAll('.store-nav button').forEach(b=>{const on=b.dataset.category===c;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on))});if(c==='Popular Games')void popularity()?.refresh();render()};
  window.loliteStoreSearch=q=>{const el=document.activeElement;const start=el?.selectionStart,end=el?.selectionEnd;if(query!==q)visibleCount=60;query=q;render();const next=document.querySelector('.store-search');if(next){next.focus({preventScroll:true});if(Number.isInteger(start)&&Number.isInteger(end))next.setSelectionRange(start,end)}};
  window.loliteStoreMore=()=>{const root=document.querySelector('.store-main'),scroll=root?.scrollTop||0;visibleCount+=60;render();if(root)root.scrollTop=scroll};
