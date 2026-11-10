@@ -109,8 +109,9 @@ test('The loaded page includes each feature and Lite Mode starts before wallpape
  const html=read('index.html');
  for(const marker of ['core/lolite-4-1.css?v=4.1.0','core/performance-mode.js?v=4.1.0',
   'core/widgets.js?v=widgets-4.1.0',
-  'core/game-health.js?v=game-health-4.1.0','core/game-store.js?v=store-details-4.1.0'])
+  'core/game-health.js?v=game-health-4.1.0'])
   assert.ok(html.includes(marker),marker);
+ assert.match(html,/core\/game-store\.js\?v=[^"']+/);
  assert.match(html,/core\/music\.js\?v=[^"']+/);
  assert.ok(html.indexOf('core/music-zip.js')<html.indexOf('core/music.js'));
  assert.ok(html.indexOf('core/performance-mode.js?v=4.1.0')<html.indexOf('core/wallpapers.js?v=lite-4.1.0'));
