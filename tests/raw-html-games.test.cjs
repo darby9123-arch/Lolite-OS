@@ -48,7 +48,7 @@ class MockElement {
  focus(){}
 }
 function harness({mime='text/plain',html='<!doctype html><html><head><title>Game</title></head><body><canvas></canvas></body></html>',httpStatus=200,corsBlocked=false,fallbackSources=[],gameURL='https://cdn.example/games/demo.html'}={}){
- const calls=[],opened=[],head=new MockElement('head'),content=new MockElement('main');
+ const calls=[],opened=[],marked=[],head=new MockElement('head'),content=new MockElement('main');
  content.connect();head.connect();
  const doc={
   baseURI:'https://lolite.example/Lolite-OS/',
@@ -59,7 +59,8 @@ function harness({mime='text/plain',html='<!doctype html><html><head><title>Game
  const root=new MockElement('section');
  const win={
   openApp(){return {querySelector:()=>content,focus(){}}},
-  toast(msg){opened.push(msg)}
+  toast(msg){opened.push(msg)},
+  LoliteGameHealth:{markHttpError:(url,status)=>marked.push({url,status})}
  };
  const fetch=async (url,opts)=>{
   calls.push({url,method:opts.method});
@@ -69,7 +70,7 @@ function harness({mime='text/plain',html='<!doctype html><html><head><title>Game
      headers:{get:key=>key==='content-type'?mime:null}};
   }
   if(corsBlocked)throw new TypeError('Failed to fetch');
-  return {ok:true,status:200,headers:{get:key=>key==='content-length'?String(Buffer.byteLength(html)):null},
+  return {ok:true,status:200,headers:{get:key=>key==='content-length'?String(Buffer.byteLength(html)):key==='content-type'?mime:null},
     text:async()=>html};
  };
  vm.runInNewContext(source,{
@@ -83,7 +84,7 @@ function harness({mime='text/plain',html='<!doctype html><html><head><title>Game
  assert.equal(success,true);
  const player=content.querySelector('.store-player');
  const frame=player.querySelector('.store-frame');
- return {win,player,frame,content,calls,opened};
+ return {win,player,frame,content,calls,opened,marked};
 }
 async function flush(){
  await new Promise(resolve=>setTimeout(resolve,5));
@@ -133,7 +134,7 @@ test('Proper HTML sources continue opening normally without downloading',async()
  await flush();
  assert.equal(h.frame.src,'https://cdn.example/games/demo.html');
  assert.equal(h.frame.srcdoc,'');
- assert.deepEqual(h.calls.map(x=>x.method),['HEAD']);
+ assert.deepEqual(h.calls.map(x=>x.method),['HEAD','GET']);
 });
 test('Soft 404 HTML is rejected even when HTTP status reports success',async()=>{
  const html='<!doctype html><html><head><title>404 Not Found</title></head><body><h1>404 Not Found</h1></body></html>';
@@ -142,6 +143,24 @@ test('Soft 404 HTML is rejected even when HTTP status reports success',async()=>
  assert.equal(h.frame.replacedBy?.className,'store-load-error');
  assert.match(h.frame.replacedBy.children[1].textContent,/404/);
  assert.equal(h.frame.srcdoc,'');
+});
+test('An HTML soft-404 is caught before the game is opened in an iframe',async()=>{
+ const h=harness({
+  mime:'text/html',
+  html:'<!doctype html><html><head><title>404 Not Found</title></head><body><h1>Missing</h1></body></html>'
+ });
+ await flush();
+ assert.equal(h.frame.replacedBy?.className,'store-load-error');
+ assert.match(h.frame.replacedBy.children[1].textContent,/404/);
+ assert.deepEqual(h.marked.map(x=>x.status),[404]);
+ assert.deepEqual(h.calls.map(x=>x.method),['HEAD','GET']);
+});
+test('Verified HTML sites that restrict GET still open in an iframe',async()=>{
+ const h=harness({mime:'text/html',corsBlocked:true});
+ await flush();
+ assert.equal(h.frame.src,'https://cdn.example/games/demo.html');
+ assert.equal(h.frame.srcdoc,'');
+ assert.equal(h.frame.replacedBy,undefined);
 });
 test('Missing HTML pages are not shown as 404 inside the game',async()=>{
  const h=harness({httpStatus:404});
@@ -163,6 +182,7 @@ test('When the first server returns 404, its HTML backup loads in the same Lolit
  assert.match(recovered.srcdoc,/<canvas>/);
  assert.match(h.player.querySelector('.store-player-server').textContent,/Backup source/);
  assert.deepEqual(h.calls.map(x=>x.method),['HEAD','HEAD','GET']);
+ assert.deepEqual(h.marked,[{url:'https://cdn.example/games/demo.html',status:404}]);
  assert.equal(h.content.querySelector('.store-player'),h.player,'the game window is preserved');
 });
 test('Neon Tide makes its original raw HTML server selectable again',()=>{
