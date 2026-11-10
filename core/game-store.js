@@ -751,7 +751,7 @@
    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4.5L5 21V4.5a1 1 0 0 1 1-1Z"/></svg></button></div>'+
    '<div class="store-card-body"><h3 title="'+title+'">'+title+'</h3>'+plays+
    '<div class="store-card-actions"><button class="store-play" type="button" data-store-launch="'+file+'" aria-label="'+(g.ugsPending?'Open UGS game source for '+title:'Play '+title)+'">'+launchText+'</button>'+
-   (g.ugsEntry?'<button class="store-details" type="button" data-ugs-source="'+file+'" aria-label="View UGS Drive file for '+title+'">Drive</button>':'')+serverPickerMarkup(g)+'<button class="store-details" type="button" data-store-details="'+file+'" aria-label="Details for '+title+'">Info</button></div></div></article>';
+   (g.ugsEntry?'<button class="store-details" type="button" data-ugs-source="'+file+'" aria-label="View UGS Drive file for '+title+'">Drive</button>':'')+(g.ugsHasOther&&g.ugsEntry.kind==='html5'?'<button class="store-details" type="button" data-ugs-install="'+file+'" aria-label="Import UGS HTML for '+title+'">Import UGS</button>':'')+serverPickerMarkup(g)+'<button class="store-details" type="button" data-store-details="'+file+'" aria-label="Details for '+title+'">Info</button></div></div></article>';
  };
  const coverFor=file=>file.startsWith('native-')?null:(adminGameArtwork.get(file)?.background||adminGameArtwork.get(file)?.icon||externalCovers.get(file)||window.loliteGameArt?.[file]?.src||null);
  // Local, title-specific artwork is always present; remote images only enhance it.
@@ -862,6 +862,7 @@
   const popularityStatus=popularity()?.getStatus()?.status||'loading';
   const summary=livePopularity
     ?'Most launched in Lolite · Last 30 days · Anonymous totals'
+    :active==='UGS'?list.length.toLocaleString()+' indexed UGS titles · '+(window.LoliteUGSStatus?.installed||0).toLocaleString()+' HTML games installed locally · Import HTML or ZIP to play'
     :playableVersionCount(list).toLocaleString()+' playable versions · '+list.length+' unique titles';
   const empty=livePopularity
     ?(popularityStatus==='loading'||popularityStatus==='refreshing'
@@ -1047,10 +1048,11 @@
  window.lolitePlayMinecraft=()=>window.loliteStorePlay('clminecraftpocketedition.html');
  window.loliteStoreCheckFiles=()=>window.LoliteGameHealth?.scan?.(games,{force:true});
  document.addEventListener('click',event=>{
-  const node=event.target.closest?.('.store-v41 [data-store-favorite],.store-v41 [data-store-launch],.store-v41 [data-store-details],.store-v41 [data-store-open-chat],.store-v41 [data-category],.store-v41 [data-ugs-source],.store-v41 [data-ugs-import-zip]');
+  const node=event.target.closest?.('.store-v41 [data-store-favorite],.store-v41 [data-store-launch],.store-v41 [data-store-details],.store-v41 [data-store-open-chat],.store-v41 [data-category],.store-v41 [data-ugs-source],.store-v41 [data-ugs-install],.store-v41 [data-ugs-import-zip]');
   if(!node)return;
   if(node.hasAttribute('data-ugs-import-zip')){window.loliteUGSImportZip();event.preventDefault();return}
   if(node.dataset.ugsSource){window.loliteUGSViewSource(node.dataset.ugsSource);event.preventDefault();return}
+  if(node.dataset.ugsInstall){window.loliteUGSImportHTML(node.dataset.ugsInstall);event.preventDefault();return}
   if(node.dataset.storeFavorite){toggleFavourite(node.dataset.storeFavorite);event.preventDefault();return}
   if(node.dataset.storeLaunch){window.loliteStoreAction(node.dataset.storeLaunch);event.preventDefault();return}
   if(node.dataset.storeDetails){openGameDetail(node.dataset.storeDetails,node);event.preventDefault();return}
