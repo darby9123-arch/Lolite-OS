@@ -88,6 +88,10 @@
  function buildError(frame,url,reason){
    if(!frame.isConnected||frame.dataset.gameUrl!==url.href)return;
    const player=typeof frame.closest==='function'?frame.closest('.store-player'):null;
+   // Record confirmed missing HTTP sources before trying another server.
+   // This includes remote hosts and prevents revisiting dead URLs.
+   if(/(?:HTTP 404\b|404 Not Found|HTTP 410\b)/i.test(String(reason)))
+     window.LoliteGameHealth?.markHttpError?.(url.href,/410/.test(String(reason))?410:404);
    const next=player?._loliteFallbackSources?.shift();
    if(next){
     const fallback=safeURL(next.url);
@@ -101,7 +105,6 @@
      return;
     }
    }
-   if(/(?:HTTP 404\b|404 Not Found|HTTP 410\b)/i.test(String(reason)))window.LoliteGameHealth?.markHttpError?.(url.href,/410/.test(String(reason))?410:404);
    const notice=document.createElement('div');notice.className='store-load-error';
    notice.dataset.gameUrl=url.href;
    notice.dataset.popularityFile=frame.dataset.popularityFile||'';
@@ -137,7 +140,6 @@
        });
        if(!response.ok)throw new Error('The game HTML returned HTTP '+response.status+'.');
        const mime=String(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase();
-       if(mime==='text/html'&&allowNormalHTML&&!local){run();return}
        if(mime&&!rawTypes.has(mime)&&mime!=='text/html'){
          throw new Error('The game server returned '+mime+' instead of an HTML page.');
        }
@@ -157,6 +159,12 @@
        frame.srcdoc=htmlWithBase(html,url);
      }catch(error){
        if(!live())return;
+       // A confirmed HTML response from HEAD can still be embedded when the
+       // publisher allows iframes but blocks cross-origin GET inspection.
+       // Never navigate directly for unverified raw-code hosting.
+       if(error?.name==='TypeError'&&!local&&frame.dataset.headHTML==='1'){
+         run();return;
+       }
        const reason=error?.name==='TypeError'
          ?'This server blocks cross-origin access (CORS), so Lolite cannot turn its source into a playable page.'
          :error?.name==='AbortError'
@@ -185,7 +193,10 @@
          buildError(frame,url,'The selected game returned HTTP '+response.status+'.');return;
        }
        const mime=String(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase();
-       if(mime==='text/html'&&local){void renderSource();return}
+       if(mime==='text/html'){
+         frame.dataset.headHTML='1';
+         void renderSource();return;
+       }
        if(rawTypes.has(mime)||!mime){void renderSource();return}
        if(['application/json','application/javascript','text/javascript'].includes(mime)){
          buildError(frame,url,'This server returned JavaScript or data rather than an HTML game.');return;
