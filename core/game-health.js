@@ -33,8 +33,8 @@
    const url=observedURL(game);
    if(!url)return 'unverified';
    const entry=records.get(url);
-   if(entry?.status==='missing'&&Date.now()-entry.at>FAILED_TTL){
-     records.delete(url);return 'unchecked';
+   if(entry&&Date.now()-entry.at>(entry.status==='missing'?FAILED_TTL:TTL)){
+     records.delete(url);return isHosted(game)?'unchecked':'unverified';
    }
    return entry?.status||(isHosted(game)?'unchecked':'unverified');
  };
@@ -48,9 +48,16 @@
    const timeout=setTimeout(()=>ctl.abort(),6500);
    let status='unknown',code=null;
    try{
-     const response=await fetch(url,{method:'HEAD',credentials:'same-origin',cache:'no-store',signal:ctl.signal});
+     let response=await fetch(url,{method:'HEAD',credentials:'same-origin',cache:'no-store',signal:ctl.signal});
+     // A HEAD 405/501 means unsupported method, not a missing game.
+     // Ask for one byte and cancel the stream to avoid downloading a huge HTML game.
+     if(response.status===405||response.status===501){
+       response=await fetch(url,{method:'GET',headers:{Range:'bytes=0-0'},
+         credentials:'same-origin',cache:'no-store',signal:ctl.signal});
+       try{await response.body?.cancel?.()}catch{}
+     }
      code=response.status;
-     if(response.status===404||response.status===410)status='missing';
+     if(code===404||code===410)status='missing';
      else if(response.ok)status='ok';
    }catch{status='unknown'}finally{clearTimeout(timeout)}
    const result={status,code,at:Date.now(),url};
@@ -61,7 +68,7 @@
    if(scanning)return scanning;
    const list=Array.isArray(games)?games:[];
    const targets=[...new Map(list.map(game=>[isHosted(game),game]).filter(x=>x[0])).values()];
-   if(!force&&Date.now()-lastScan<TTL&&targets.every(g=>records.has(isHosted(g))))return summary();
+   if(!force&&Date.now()-lastScan<TTL&&targets.every(g=>{const rec=records.get(isHosted(g));return rec&&Date.now()-rec.at<TTL}))return summary();
    scanning=(async()=>{
      let cursor=0;
      const worker=async()=>{while(cursor<targets.length)await probe(targets[cursor++],{force})};
