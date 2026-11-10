@@ -48,3 +48,28 @@ test('UGS ZIP and individual HTML games are browser-local user-initiated imports
  assert.match(store,/input\.type='file'/);
  assert.doesNotMatch(store,/fetch\(['"]https:\/\/drive\.google\.com/);
 });
+
+test('Repository hosts actual licensed UGS HTML files, not Drive redirects',()=>{
+ const hostedScript=read('core/ugs-hosted-catalog.js');
+ const env={window:{}};
+ vm.runInNewContext(hostedScript,env,{timeout:2000});
+ const hosted=env.window.LoliteUGSHosted||{};
+ const entries=Object.entries(hosted);
+ assert.ok(entries.length>=2,'At least two actual HTML games should be hosted');
+ assert.ok(html.indexOf('core/ugs-hosted-catalog.js?v=')>html.indexOf('core/ugs-catalog.js?v='));
+ assert.ok(html.indexOf('core/ugs-hosted-catalog.js?v=')<html.indexOf('core/game-store.js?v='));
+ for(const [id,url] of entries){
+  assert.ok(catalog.some(row=>row[0]===id&&row[2]==='html5'),'Hosted games must come from UGS index');
+  assert.match(url,/^html%20games\/ugs\/[a-z0-9._-]+\.html?$/i);
+  const file=decodeURIComponent(url);
+  const source=read(file);
+  assert.ok(source.length>600,'Actual game HTML must be committed, not an empty launcher');
+  assert.match(source,/<html\b/i);
+  assert.doesNotMatch(source,/^\s*<Module>/i,'UGS module wrappers must not precede HTML');
+  assert.doesNotMatch(source,/https:\/\/drive\.google\.com\/file\/d\//i,'Hosted game must not be a Drive preview redirect');
+ }
+ assert.ok(fs.existsSync(path.join(root,'html games/ugs/LICENSE-antimatter-dimensions.txt')));
+ assert.ok(fs.existsSync(path.join(root,'html games/ugs/LICENSE-hextris.md')));
+ assert.match(store,/const hosted=window\.LoliteUGSHosted/);
+ assert.match(store,/const preferredURL=hasLocalInstall\?ugsFileURL\(record\):hostedURL/);
+});
