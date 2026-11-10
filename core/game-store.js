@@ -781,10 +781,65 @@
   if(showFeatured)loadHeroArt();
   refreshActivity();
  }
+ // The art shown in the left navigation is a real member of the named collection.
+ // Empty collections use the existing Games app image, never a text abbreviation.
+ const sidebarFallback='assets/icons/cosmos/selected/games.png';
+ function sidebarCandidates(category){
+  if(franchiseNames.has(category))return games.filter(g=>g.franchise===category&&!broken(g));
+  return games.filter(g=>{
+   if(broken(g))return false;
+   if(category==='Favorites')return isFavourite(g.file);
+   if(category==='Recently Played')return recentSessions.some(row=>row.file===g.file);
+   if(category==='Recently Added')return !!g.adminSharedGame||g.recentlyAdded||g.file.startsWith('local-');
+   if(category==='My Library')return hasGame(g);
+   if(category==='Built-in HTML')return g.url.startsWith('games/');
+   if(category==='DAKNUX')return availableServers(g).some(server=>server.name==='DAKNUX');
+   if(category==='Gamefiles ZIP')return !!g.gamefilesRecord||!!g.bundledGameFile;
+   if(category==='Free to Play')return gamePrice(g)===0;
+   if(category==='Featured')return featuredGames.some(item=>item.file===g.file);
+   if(category==='All Games'||category==='Popular Games')return true;
+   return g.category===category;
+  });
+ }
+ function sidebarRepresentative(category){
+  const candidates=sidebarCandidates(category);
+  if(!candidates.length)return null;
+  if(category==='Recently Played'){
+   return candidates.sort((a,b)=>(recentSessions.find(x=>x.file===b.file)?.at||0)-(recentSessions.find(x=>x.file===a.file)?.at||0))[0];
+  }
+  const popular=candidates.filter(isRanked).sort((a,b)=>playCount(b)-playCount(a))[0];
+  if(popular)return popular;
+  const preferred=sidebarGamePicks[category]||[];
+  const known=preferred.map(file=>candidates.find(g=>g.file===file)).find(Boolean);
+  return known||candidates.find(g=>!!coverFor(g.file))||candidates[0];
+ }
+ function sidebarImage(category){
+  const game=sidebarRepresentative(category);
+  return game?(coverFor(game.file)||lolitePosterArt(game.title,game.file)):sidebarFallback;
+ }
+ function sidebarIcon(category){
+  return '<span class="nav-mark nav-game-art" aria-hidden="true">'+
+   '<img class="nav-game-thumb" src="'+encodeLabel(sidebarImage(category))+'" alt="" loading="lazy" decoding="async"></span>';
+ }
+ function refreshSidebarIcons(){
+  const store=document.querySelector('.store-v41');
+  if(!store)return;
+  store.querySelectorAll?.('.store-nav button[data-category]').forEach(button=>{
+   const image=button.querySelector('.nav-game-thumb');
+   if(!image)return;
+   const url=sidebarImage(button.dataset.category);
+   if(image.getAttribute('src')!==url)image.setAttribute('src',url);
+  });
+ }
+ document.addEventListener('error',event=>{
+  const image=event.target;
+  if(!image?.classList?.contains('nav-game-thumb'))return;
+  if(image.getAttribute('src')!==sidebarFallback)image.setAttribute('src',sidebarFallback);
+ },true);
  function shell(){
   const quick=['All Games','My Library','Favorites','Recently Played','Featured','Popular Games'];
   const navButton=cat=>'<button type="button" class="'+(active===cat?'active':'')+'" data-category="'+encodeLabel(cat)+
-    '" aria-pressed="'+(active===cat)+'"><span class="nav-mark" aria-hidden="true">'+(navMarks[cat]||'◈')+'</span>'+
+    '" aria-pressed="'+(active===cat)+'" title="'+encodeLabel(cat)+'">'+sidebarIcon(cat)+
     '<span class="store-nav-title">'+encodeLabel(cat)+'</span></button>';
   const other=categoryNames.filter(cat=>!quick.includes(cat));
   return '<div class="store store-v41"><aside class="store-side" aria-label="Game library navigation">'+
