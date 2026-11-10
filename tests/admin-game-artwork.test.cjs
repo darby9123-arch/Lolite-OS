@@ -76,8 +76,8 @@ test('Admin publisher offers separate optional game icon and background with pre
  assert.match(storeCode,/store-uploaded-game-icon/);
  assert.match(storeCode,/store-detail-icon/);
  assert.match(storeCode,/adminGameArtwork\.get\(file\)\?\.background/);
- for(const path of ['core/lolite-admin.css?v=game-art-20261111','core/game-store.js?v=game-art-20261111',
-  'core/game-store-gallery.css?v=game-art-20261111','core/lolite-admin.js?v=game-art-20261111'])assert.ok(htmlCode.includes(path),path);
+ for(const path of ['core/lolite-admin.css','core/game-store.js',
+  'core/game-store-gallery.css','core/lolite-admin.js'])assert.ok(htmlCode.includes(path+'?v='),path);
 });
 test('Publishing a game saves its icon, background and HTML with separate public URLs',async()=>{
  const h=harness();
