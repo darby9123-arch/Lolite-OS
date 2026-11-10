@@ -524,7 +524,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  const serverPickerMarkup=g=>{
   const servers=availableServers(g),chosenServer=selectedSource(g);
   const chosen=Math.max(0,servers.indexOf(chosenServer));
-  return '<label class="store-server-picker"><span>Server</span><select class="store-server-select" data-source-game="'+encodeLabel(g.file)+'" aria-label="Server for '+encodeLabel(g.title)+'" onchange=\'window.loliteStorePickServer("'+g.file+'",this.value)\' '+(servers.length<2?'disabled':'')+'>'+servers.map((v,i)=>{
+  return '<label class="store-server-picker"><span>Server</span><select class="store-server-select" data-source-game="'+encodeLabel(g.file)+'" aria-label="Server for '+encodeLabel(g.title)+'"  '+(servers.length<2?'disabled':'')+'>'+servers.map((v,i)=>{
    const missing=!!window.LoliteGameHealth?.isUnavailable?.({url:v.url});
    return '<option value="'+i+'"'+(chosen===i?' selected':'')+(missing?' disabled':'')+'>'+encodeLabel(v.name)+(missing?' · 404 unavailable':'')+'</option>';
   }).join('')+'</select></label>';
@@ -545,7 +545,9 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   const sources=availableServers(game),n=Math.max(0,Math.min(sources.length-1,Number(index)||0));
   serverSelections.set(file,n);
   document.querySelectorAll('.store-server-select').forEach(el=>{if(el.dataset.sourceGame===file)el.value=String(n)});
-  window.LoliteGamePlayer?.switchServer(file,sources[n].url,sources[n].name,fallbackSourcesFor(game,sources[n]));
+  const selected=sources[n];
+  if(selected&&!window.LoliteGameHealth?.isUnavailable?.({url:selected.url}))
+   window.LoliteGamePlayer?.switchServer?.(file,selected.url,selected.name,fallbackSourcesFor(game,selected));
  };
  window.loliteStoreOpenSelected=file=>{
   const game=games.find(x=>x.file===file),source=game&&selectedSource(game);
@@ -777,8 +779,10 @@ if(Array.isArray(window.LoliteMountainCatalog)){
    if(entry.target.dataset.size!==mode)entry.target.dataset.size=mode;
   }
  }):null;
- function render(){
+ // Search/sort rerenders update results without destroying the focused toolbar.
+ function render({keepToolbar=false,resetScroll=false}={}){
   const root=document.querySelector('.store-main');if(!root)return;
+  const previousScroll=root.scrollTop||0;
   const store=root.closest('.store-v41');
   if(store&&gallerySizer&&!store.dataset.galleryObserved){
    store.dataset.galleryObserved='1';gallerySizer.observe(store);
@@ -789,7 +793,10 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   const healthText=hiddenCount?hiddenCount+' missing hidden':'Check game files';
   const totalGames=healthy(games),totalPlayable=playableVersionCount(totalGames);
   const sortMenu='<label class="store-sort-label">Sort <select data-store-sort aria-label="Sort games"><option value="az"'+(sortOrder==='az'?' selected':'')+'>A–Z</option><option value="za"'+(sortOrder==='za'?' selected':'')+'>Z–A</option><option value="servers"'+(sortOrder==='servers'?' selected':'')+'>Most servers</option><option value="popular"'+(sortOrder==='popular'?' selected':'')+'>Most launched</option></select></label>';
-  const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" aria-label="Search games" placeholder="Search games…" value="'+encodeLabel(query)+'" oninput="window.loliteStoreSearch(this.value)"></div>'+sortMenu+'<button class="store-health-check" type="button" onclick="window.loliteStoreCheckFiles()" aria-label="Check game files" title="'+encodeLabel(healthText)+'">⚙</button><span class="store-count-pill" title="Every distinct server counts as one playable version">'+totalPlayable.toLocaleString()+' games incl. servers ('+totalGames.length+' titles)</span></div>';
+  const categoryJump='<label class="store-category-jump">Collection <select data-store-category-jump aria-label="Choose game collection">'+
+    categoryNames.map(name=>'<option value="'+encodeLabel(name)+'"'+(active===name?' selected':'')+'>'+encodeLabel(name)+'</option>').join('')+
+    '</select></label>';
+  const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" type="search" aria-label="Search games" placeholder="Search games…" value="'+encodeLabel(query)+'"></div>'+sortMenu+'<button class="store-health-check" type="button" onclick="window.loliteStoreCheckFiles()" aria-label="Check game files" title="'+encodeLabel(healthText)+'">⚙</button><span class="store-count-pill" title="Every distinct server counts as one playable version">'+totalPlayable.toLocaleString()+' games incl. servers ('+totalGames.length+' titles)</span>'+categoryJump+'</div>';
   let list;
   if(query)list=filtered();
   else if(active==='Featured'){
@@ -815,11 +822,16 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   const privacy=livePopularity
     ?'<div class="store-popularity-privacy"><label><input type="checkbox" onchange="window.LoliteGamePopularity?.setSharingEnabled(this.checked)" '+(popularity()?.shareEnabled()?'checked':'')+'> Count my game launches anonymously</label><small>Only game launch totals are kept, not player accounts or profiles.</small></div>'
     :'';
-  root.innerHTML=top+(showFeatured?heroMarkup():'')+
+  const content=(showFeatured?heroMarkup():'')+
     '<section class="store-section"><div class="store-section-head"><div><h2>'+
     (query?'Search results':encodeLabel(active))+'</h2><p>'+summary+'</p></div></div>'+
     privacy+(list.length?listCards(list):'<div class="store-empty">'+empty+'</div>')+
     '</section>';
+  const existing=keepToolbar&&root.querySelector('.store-top')&&root.querySelector('.store-results');
+  if(existing){
+   existing.innerHTML=content;
+  }else root.innerHTML=top+'<div class="store-results">'+content+'</div>';
+  root.scrollTop=resetScroll?0:previousScroll;
   if(showFeatured)loadHeroArt();
   refreshActivity();
  }
@@ -841,9 +853,22 @@ if(Array.isArray(window.LoliteMountainCatalog)){
    '<main class="store-main"><div class="store-empty">Loading your library…</div></main>'+
    '<aside class="store-social" aria-label="Recent game activity"><div class="store-social-inner">'+activityMarkup()+'</div></aside></div>';
  }
- window.loliteStoreCategory=c=>{if(!categoryNames.includes(c)&&!['IO Games','Arcade','IO & Casual'].includes(c))return;active=c;query='';visibleCount=60;document.querySelectorAll('.store-nav button').forEach(b=>{const on=b.dataset.category===c;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on))});if(c==='Popular Games')void popularity()?.refresh();render()};
- window.loliteStoreSearch=q=>{const el=document.activeElement;const start=el?.selectionStart,end=el?.selectionEnd;if(query!==q)visibleCount=60;query=q;render();const next=document.querySelector('.store-search');if(next){next.focus({preventScroll:true});if(Number.isInteger(start)&&Number.isInteger(end))next.setSelectionRange(start,end)}};
- window.loliteStoreMore=()=>{const root=document.querySelector('.store-main'),scroll=root?.scrollTop||0;visibleCount+=60;render();if(root)root.scrollTop=scroll};
+ window.loliteStoreCategory=c=>{
+  if(!categoryNames.includes(c)&&!['IO Games','Arcade','IO & Casual'].includes(c))return;
+  active=c;query='';visibleCount=60;
+  document.querySelectorAll('.store-v41 .store-nav button').forEach(b=>{
+   const on=b.dataset.category===c;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on));
+  });
+  if(c==='Popular Games')void popularity()?.refresh();
+  render({resetScroll:true});
+ };
+ window.loliteStoreSearch=q=>{
+  const next=String(q||'');
+  if(query===next)return;
+  query=next;visibleCount=60;
+  render({keepToolbar:true,resetScroll:true});
+ };
+ window.loliteStoreMore=()=>{visibleCount+=60;render({keepToolbar:true})};
  window.loliteStoreAction=file=>{
   const g=games.find(g=>g.file===file);if(!g)return;
   if(hasGame(g)){window.loliteStorePlay(file);return}
@@ -920,14 +945,31 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   }
   if(node.dataset.category){window.loliteStoreCategory(node.dataset.category);event.preventDefault()}
  });
- document.addEventListener('change',event=>{const select=event.target.closest?.('.store-v41 [data-store-sort]');if(select&&['az','za','servers','popular'].includes(select.value)){sortOrder=select.value;render()}});
+ document.addEventListener('input',event=>{
+  const input=event.target.closest?.('.store-v41 .store-search');
+  if(input&&!event.isComposing)window.loliteStoreSearch(input.value);
+ });
+ document.addEventListener('compositionend',event=>{
+  const input=event.target.closest?.('.store-v41 .store-search');
+  if(input)window.loliteStoreSearch(input.value);
+ });
+ document.addEventListener('change',event=>{
+  const category=event.target.closest?.('.store-v41 [data-store-category-jump]');
+  if(category){window.loliteStoreCategory(category.value);return}
+  const select=event.target.closest?.('.store-v41 [data-store-sort]');
+  if(select&&['az','za','servers','popular'].includes(select.value)){
+   sortOrder=select.value;render({keepToolbar:true});
+  }
+  const source=event.target.closest?.('.store-v41 .store-server-select');
+  if(source)window.loliteStorePickServer(source.dataset.sourceGame,source.value);
+ });
  window.LoliteGameStoreGallery=Object.freeze({
   isFavorite:isFavourite,toggleFavorite:toggleFavourite,
   getFavorites:()=>[...favouriteIds],getRecent:()=>recentSessions.map(row=>({...row})),
   recordRecent:markRecent,getActivityMarkup:activityMarkup
  });
- window.addEventListener('lolite:gamehealthchange',()=>{if(document.querySelector('.store-main'))render()});
- window.addEventListener('lolite:popular-games',()=>{if((active==='Popular Games'||active==='Featured')&&document.querySelector('.store-main'))render()});
+ window.addEventListener('lolite:gamehealthchange',()=>{if(document.querySelector('.store-main'))render({keepToolbar:true})});
+ window.addEventListener('lolite:popular-games',()=>{if((active==='Popular Games'||active==='Featured')&&document.querySelector('.store-main'))render({keepToolbar:true})});
  window.addEventListener('lolite-store-purchase',()=>render());
  window.addEventListener('lolite-wallet-updated',()=>render());
  const oldPage=window.page;window.page=function(id){if(id==='games'){setTimeout(render,0);return shell()}return oldPage(id)};
