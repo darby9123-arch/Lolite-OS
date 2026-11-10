@@ -8,6 +8,7 @@ on:
       - 'core/game-store.js'
       - 'core/game-store-gallery.css'
       - 'tests/game-store-gallery.test.cjs'
+      - 'tests/game-store-sidebar-art.test.cjs'
       - 'tests/game-launches.test.cjs'
       - 'tests/game-server-count.test.cjs'
       - 'tests/raw-html-games.test.cjs'
@@ -24,6 +25,7 @@ on:
       - 'core/game-store.js'
       - 'core/game-store-gallery.css'
       - 'tests/game-store-gallery.test.cjs'
+      - 'tests/game-store-sidebar-art.test.cjs'
       - 'tests/game-launches.test.cjs'
       - 'tests/game-server-count.test.cjs'
       - 'tests/raw-html-games.test.cjs'
@@ -47,4 +49,4 @@ jobs:
           node --check core/game-store.js
           node --check core/integration.js
       - name: Test game launching, fallbacks and file paths
-        run: node --test tests/game-store-gallery.test.cjs tests/game-launches.test.cjs tests/raw-html-games.test.cjs tests/repository-html-catalog.test.cjs tests/game-server-count.test.cjs tests/game-health.test.cjs
+        run: node --test tests/game-store-sidebar-art.test.cjs tests/game-store-gallery.test.cjs tests/game-launches.test.cjs tests/raw-html-games.test.cjs tests/repository-html-catalog.test.cjs tests/game-server-count.test.cjs tests/game-health.test.cjs
