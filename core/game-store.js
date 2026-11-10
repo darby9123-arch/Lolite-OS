@@ -549,7 +549,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  };
  window.loliteStoreOpenSelected=file=>{
   const game=games.find(x=>x.file===file),source=game&&selectedSource(game);
-  if(source)window.LoliteGamePlayer?.open({file,title:game.title,url:source.url,source:source.name,fallbackSources:fallbackSourcesFor(game,source)});
+  if(source&&window.LoliteGamePlayer?.open({file,title:game.title,url:source.url,source:source.name,fallbackSources:fallbackSourcesFor(game,source)}))markRecent(file);
  };
  let active='All Games',query='',visibleCount=60;
  // Local-only favourites and recent activity: never invent online friends or play counts.
@@ -749,7 +749,7 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   const hiddenCount=games.length-healthy(games).length;
   const healthText=hiddenCount?hiddenCount+' missing hidden':'Check game files';
   const totalGames=healthy(games),totalPlayable=playableVersionCount(totalGames);
-  const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" aria-label="Search games" placeholder="Search games…" value="'+encodeLabel(query)+'" oninput="window.loliteStoreSearch(this.value)"></div><button class="store-health-check" type="button" onclick="window.loliteStoreCheckFiles()" title="Check local game paths">'+encodeLabel(healthText)+'</button><span class="store-count-pill" title="Every distinct server counts as one playable version">'+totalPlayable.toLocaleString()+' games incl. servers ('+totalGames.length+' titles)</span></div>';
+  const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" aria-label="Search games" placeholder="Search games…" value="'+encodeLabel(query)+'" oninput="window.loliteStoreSearch(this.value)"></div><button class="store-health-check" type="button" onclick="window.loliteStoreCheckFiles()" aria-label="Check game files" title="'+encodeLabel(healthText)+'">⚙</button><span class="store-count-pill" title="Every distinct server counts as one playable version">'+totalPlayable.toLocaleString()+' games incl. servers ('+totalGames.length+' titles)</span></div>';
   let list;
   if(query)list=filtered();
   else if(active==='Featured'){
