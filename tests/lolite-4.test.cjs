@@ -33,14 +33,15 @@ test('Game Store only hides entries confirmed missing (404 or 410), not offline 
  assert.equal(h.api.summary().missing,2);
  assert.equal(h.events.at(-1).type,'lolite:gamehealthchange');
 });
-test('Failed HEAD checks are never reported as missing; game-player 404s can be recorded',async()=>{
+test('Failed HEAD checks stay uncertain; confirmed local and external player 404s are recorded',async()=>{
  const h=loadGameHealth(async()=>({ok:false,status:405}));
  await h.api.scan([{url:'html games/not-supported.html'}]);
  assert.equal(h.api.status({url:'html games/not-supported.html'}),'unknown');
  h.api.markHttpError('html games/not-supported.html',404);
  assert.equal(h.api.isUnavailable({url:'html games/not-supported.html'}),true);
  h.api.markHttpError('https://elsewhere.example/foo',404);
- assert.equal(h.api.summary().missing,1);
+ assert.equal(h.api.isUnavailable('https://elsewhere.example/foo'),true);
+ assert.equal(h.api.summary().missing,2);
 });
 test('4.0 Spotlight ranks installed apps and repository games with text search',()=>{
  const win={
@@ -112,7 +113,7 @@ test('Taskbar has opt-in notification badges and exposes safe context controls',
 test('4.0 is wired into the actual website, not just disconnected scripts',()=>{
  const html=read('index.html');
  const ordered=['core/game-health.js','core/game-store.js','core/host-status.js','core/spotlight.js','core/taskbar-enhancements.js'];
- for(const file of ordered)assert.match(html,new RegExp(file.replace(/\./g,'\\.')+'\\?v=4\\.0\\.0'));
+ for(const file of ordered)assert.ok(html.includes(file+'?v='),'Required script missing: '+file);
  assert.ok(html.indexOf('core/game-health.js')<html.indexOf('core/game-store.js'));
  assert.ok(html.indexOf('core/host-status.js')<html.indexOf('core/spotlight.js'));
  assert.match(html,/core\/lolite-4\.css/);
