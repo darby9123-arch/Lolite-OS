@@ -55,7 +55,9 @@ html[data-wallpaper-colors="on"] .cosmos-widget-icon{
  background:var(--wall-icon-start)!important;
  border-color:var(--wall-border)!important;
 }
-html[data-wallpaper-colors="on"] :is(#taskbar .win-start-logo i,#taskbar :is(.win-pinned,.taskwin).active::after,.ui-home-indicator,.win-start-grid button:focus-visible::after){
+html[data-wallpaper-colors="on"] #taskbar .win-start-logo i,
+html[data-wallpaper-colors="on"] #taskbar :is(.win-pinned,.taskwin).active::after,
+html[data-wallpaper-colors="on"] .ui-home-indicator{
  background:var(--wall-accent)!important;
  box-shadow:none!important;
 }
