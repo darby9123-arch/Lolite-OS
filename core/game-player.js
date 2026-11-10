@@ -276,12 +276,32 @@
   const summary=document.createElement('summary');summary.textContent='Game not loading?';
   const text=document.createElement('span');
   text.textContent='Some external servers do not allow games inside another website. You can open that server separately without closing Lolite.';
+  const tryNext=button('Try next server','Switch to the next available game source',()=>{
+   const choices=player._loliteFallbackSources||[];
+   const existing=player.querySelector('.store-frame,.store-load-error');
+   let source=null,target=null;
+   while(choices.length){
+    source=choices.shift();target=safeURL(source?.url);
+    if(target&&target.href!==existing?.dataset.gameUrl&&
+      !window.LoliteGameHealth?.isUnavailable?.({url:target.href}))break;
+    target=null;
+   }
+   if(!target||!existing){
+    notify('No additional game servers are available for this game.');
+    return;
+   }
+   const frame=buildFrame(target,label);
+   trackFrame(frame,player.dataset.gameFile);
+   existing.replaceWith(frame);
+   server.textContent=source.name+' · another server';
+   startFrame(frame,target);
+  });
   const outside=button('Open server in new tab','Open selected game server in a new tab',()=>{
    const active=player.querySelector('iframe.store-frame');
    const link=safeURL(active?.dataset.gameUrl||active?.src);
    if(link)window.open(link.href,'_blank','noopener,noreferrer');
   });
-  help.append(summary,text,outside);
+  help.append(summary,text,tryNext,outside);
   player.append(head,frame,help);content.append(player);
   startFrame(frame,target);
   win?.focus?.({preventScroll:true});
