@@ -498,14 +498,16 @@ if(Array.isArray(window.LoliteMountainCatalog)){
   return null;
  };
  const fallbackSourcesFor=(g,chosen)=>{
-  // No automatic alternate-source retrieval for age-restricted titles.
+  // Keep unsafe titles out of automated alternate-source retrieval.
   if(/casino|poker|blackjack|roulette|slot[\s_-]*machine|sportsbook|betting|wager|porn|adult|sex/i.test(g.title||''))return [];
   const sources=availableServers(g),candidates=[];
-  const selectedBackup=sourceBackup(chosen.url);if(selectedBackup)candidates.push(selectedBackup);
-  for(const source of sources){
-   if(source.url===chosen.url)continue;
-   candidates.push(source);
-   const backup=sourceBackup(source.url);if(backup)candidates.push(backup);
+  const healthySource=item=>!window.LoliteGameHealth?.isUnavailable?.({url:item.url});
+  // Prefer other published, full game hosts to source-only backups that may
+  // have missing relative assets. Never retry already-confirmed 404 URLs.
+  for(const source of sources)if(source.url!==chosen.url&&healthySource(source))candidates.push(source);
+  for(const source of [chosen,...sources]){
+   const backup=sourceBackup(source.url);
+   if(backup&&healthySource(backup))candidates.push(backup);
   }
   return candidates.slice(0,8);
  };
@@ -553,7 +555,13 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  const isRanked=g=>playCount(g)>0&&!!popularity()?.isEligible(g);
  const ranked=list=>list.filter(isRanked).sort((a,b)=>playCount(b)-playCount(a)||a.title.localeCompare(b.title));
  const matchesCategory=g=>franchiseNames.has(active)?g.franchise===active:active==='All Games'||active==='Featured'||active==='Popular Games'?true:active==='Recently Added'?!!g.adminSharedGame||g.recentlyAdded||g.file.startsWith('local-'):active==='My Library'?hasGame(g):active==='Built-in HTML'?g.url.startsWith('games/'):active==='GenizyMath'?!!g.genizy:active==='Mountain Games'?!!g.mountain:active==='Chicken King’s Vault'?availableServers(g).some(server=>server.name==="Chicken King's Vault"):active==='DAKNUX'?availableServers(g).some(server=>server.name==='DAKNUX'):active==='Gamefiles ZIP'?!!g.gamefilesRecord||!!g.bundledGameFile:active==='Free to Play'?gamePrice(g)===0:g.category===active;
- const broken=g=>window.LoliteGameHealth?.isUnavailable?.(g)&&availableServers(g).length<=1;
+ const broken=g=>{
+  const versions=availableServers(g);
+  if(!versions.length)return true;
+  const known=[...versions,...fallbackSourcesFor(g,versions[0])];
+  // Only hide games after every possible URL has returned a real 404/410.
+  return known.every(source=>!!window.LoliteGameHealth?.isUnavailable?.({url:source.url}));
+ };
  const healthy=list=>list.filter(g=>!broken(g));
  // Avoid issuing thousands of HEAD requests every time the user opens the store.
  // The explicit Check game files action still validates the entire hosted library.
