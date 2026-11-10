@@ -523,13 +523,14 @@
    button.setAttribute('aria-pressed',String(fav));
    button.setAttribute('aria-label',(fav?'Remove from':'Add to')+' Favorites');
   });
-  refreshActivity();return isFavourite(file);
+  refreshActivity();refreshSidebarIcons();return isFavourite(file);
  }
  function markRecent(file){
   if(!games.some(g=>g.file===file))return;
   recentSessions=[{file,at:Date.now()},...recentSessions.filter(row=>row.file!==file)].slice(0,18);
   storeSaved(RECENT_KEY,recentSessions);
   if(active==='Recently Played')render();else refreshActivity();
+  refreshSidebarIcons();
  }
  function activityMarkup(){
   const recent=recentGames().slice(0,5),favCount=games.filter(g=>isFavourite(g.file)).length;
@@ -779,11 +780,12 @@
   }else root.innerHTML=top+'<div class="store-results">'+content+'</div>';
   root.scrollTop=resetScroll?0:previousScroll;
   if(showFeatured)loadHeroArt();
-  refreshActivity();
+  refreshActivity();refreshSidebarIcons();
  }
  // The art shown in the left navigation is a real member of the named collection.
  // Empty collections use the existing Games app image, never a text abbreviation.
  const sidebarFallback='assets/icons/cosmos/selected/games.png';
+ const failedSidebarImages=new Set();
  function sidebarCandidates(category){
   if(franchiseNames.has(category))return games.filter(g=>g.franchise===category&&!broken(g));
   return games.filter(g=>{
@@ -815,7 +817,9 @@
  }
  function sidebarImage(category){
   const game=sidebarRepresentative(category);
-  return game?(coverFor(game.file)||lolitePosterArt(game.title,game.file)):sidebarFallback;
+  if(!game)return sidebarFallback;
+  const candidate=coverFor(game.file)||lolitePosterArt(game.title,game.file);
+  return failedSidebarImages.has(candidate)?sidebarFallback:candidate;
  }
  function sidebarIcon(category){
   return '<span class="nav-mark nav-game-art" aria-hidden="true">'+
@@ -834,7 +838,8 @@
  document.addEventListener('error',event=>{
   const image=event.target;
   if(!image?.classList?.contains('nav-game-thumb'))return;
-  if(image.getAttribute('src')!==sidebarFallback)image.setAttribute('src',sidebarFallback);
+  const brokenImage=image.getAttribute('src');
+  if(brokenImage!==sidebarFallback){failedSidebarImages.add(brokenImage);image.setAttribute('src',sidebarFallback)}
  },true);
  function shell(){
   const quick=['All Games','My Library','Favorites','Recently Played','Featured','Popular Games'];
