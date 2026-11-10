@@ -1,0 +1,182 @@
+/* Lolite Game Store UI cleanup — resizable, keyboard/touch-friendly cards.
+ * Loaded after existing store styles to resolve conflicting legacy overrides.
+ * Does not change the catalogue, artwork, game prices or launch behavior.
+ */
+.store.store.store-v41{
+ --gallery-surface:#1c1a25;
+ --gallery-panel:#25212f;
+ --gallery-stroke:#ffffff17;
+ min-width:0;
+}
+.store.store-v41 :is(.store-side,.store-main,.store-social){min-width:0;min-height:0}
+.store.store-v41 .store-side{scrollbar-gutter:stable}
+.store.store-v41 .store-main{
+ overscroll-behavior:contain;
+ scrollbar-gutter:stable;
+ background:#1c1a25!important;
+}
+.store.store-v41 .store-results{min-width:0}
+.store.store-v41 .store-top{
+ gap:10px!important;
+ padding:5px 0 15px!important;
+ flex-wrap:wrap;
+ background:#1c1a25f5!important;
+}
+.store.store-v41 .store-search-wrap{flex:1 1 210px;min-width:0}
+.store.store-v41 .store-search{width:100%;font-size:13px!important}
+.store.store-v41 .store-sort-label{display:flex;align-items:center;gap:7px;color:#aaa2b8;font-size:11px}
+.store.store-v41 .store-sort-label select{
+ width:132px;max-width:100%;height:38px;min-height:38px;
+ background:#282337;color:#eee7ff;border:1px solid #554967;
+ border-radius:8px;padding:6px 9px;font-size:12px;
+}
+.store.store-v41 .store-count-pill{
+ max-width:none;white-space:nowrap;color:#b4a9c8;
+ font-size:11px;text-align:left;
+}
+.store.store-v41 .store-category-jump{
+ display:none;align-items:center;flex:1 1 100%;
+ min-width:0;gap:8px;color:#c3b9d5;font-size:12px;
+}
+.store.store-v41 .store-category-jump select{
+ width:100%;min-width:0;height:38px;padding:6px 10px;
+ border:1px solid #554967;border-radius:8px;
+ background:#282337;color:#f4efff;font-size:12px;
+}
+.store.store-v41 .store-section-head{margin:4px 0 15px!important}
+.store.store-v41 .store-section-head p{font-size:12px!important;color:#aaa1ba!important}
+.store.store-v41 .store-grid{
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ align-items:stretch!important;gap:14px!important;
+}
+.store.store-v41 .store-card{
+ display:flex!important;flex-direction:column!important;min-width:0!important;
+ height:auto!important;min-height:0!important;aspect-ratio:auto!important;
+ overflow:hidden!important;background:#25212f!important;
+ border:1px solid #ffffff19!important;border-radius:12px!important;
+ box-shadow:0 4px 18px #08071330!important;
+ transform:none!important;
+ transition:border-color .16s ease,background-color .16s ease!important;
+}
+.store.store-v41 .store-card:hover,.store.store-v41 .store-card:focus-within{
+ transform:none!important;background:#292536!important;
+ border-color:#9c7ed0!important;box-shadow:0 5px 20px #08071345!important;
+}
+.store.store-v41 .store-card>.store-cover{
+ position:relative!important;inset:auto!important;display:block!important;
+ flex:0 0 auto!important;width:100%;height:auto!important;
+ min-height:0!important;aspect-ratio:16/9!important;
+ border-radius:0!important;overflow:hidden!important;
+ background:#161422!important;
+}
+.store.store-v41 .store-cover-art{
+ position:absolute!important;inset:0!important;transform:none!important;
+ transition:transform .22s ease!important;
+}
+.store.store-v41 .store-card:hover .store-cover-art{transform:scale(1.025)!important}
+.store.store-v41 .store-cover-picture{object-fit:cover!important}
+.store.store-v41 .store-cover-picture.is-square{object-fit:contain!important}
+.store.store-v41 .store-cover-launch{inset:0;z-index:2}
+.store.store-v41 .store-favourite{
+ z-index:4;top:9px;right:9px;width:33px;height:33px;
+ background:#171321cf;
+}
+.store.store-v41 .store-cover-origin{top:12px;left:12px;font-size:12px}
+.store.store-v41 .store-card .store-card-body{
+ position:relative!important;inset:auto!important;z-index:1!important;
+ flex:1!important;display:flex!important;flex-direction:column!important;
+ gap:9px!important;padding:12px!important;pointer-events:auto!important;
+ background:#25212f!important;
+}
+.store.store-v41 .store-card h3{
+ display:-webkit-box!important;-webkit-box-orient:vertical!important;
+ -webkit-line-clamp:2!important;overflow:hidden!important;
+ white-space:normal!important;text-overflow:ellipsis!important;
+ min-height:2.6em!important;max-height:2.6em!important;
+ font:700 13px/1.3 'DM Sans',system-ui,sans-serif!important;
+ letter-spacing:0!important;color:#f5f0ff!important;text-shadow:none!important;
+}
+.store.store-v41 .store-card .store-play-count{
+ display:block;min-height:12px;font-size:10px;color:#ada0c6;
+}
+.store.store-v41 .store-card .store-card-actions{
+ position:relative!important;display:grid!important;
+ grid-template-columns:minmax(0,1fr) auto!important;
+ align-items:stretch!important;gap:8px!important;
+ flex:0 0 auto!important;max-height:none!important;
+ opacity:1!important;visibility:visible!important;
+ transform:none!important;pointer-events:auto!important;
+ transition:none!important;margin-top:auto!important;
+}
+.store.store-v41 .store-card-actions .store-play{
+ grid-column:1;grid-row:1;min-width:0!important;min-height:36px!important;
+ width:100%!important;padding:8px 10px!important;font-size:12px!important;
+ border-radius:8px!important;
+}
+.store.store-v41 .store-card-actions .store-details{
+ grid-column:2;grid-row:1;min-width:54px!important;min-height:36px!important;
+ display:grid!important;place-items:center!important;
+ padding:7px 10px!important;font-size:12px!important;border-radius:8px!important;
+}
+.store.store-v41 .store-card-actions .store-server-picker{
+ grid-column:1/-1;grid-row:2;display:flex!important;align-items:center!important;
+ gap:8px!important;margin:0!important;min-width:0!important;width:100%!important;
+ color:#c5bbd7!important;font-size:11px!important;
+}
+.store.store-v41 .store-card-actions .store-server-picker>span{flex:0 0 auto}
+.store.store-v41 .store-card-actions .store-server-select{
+ flex:1 1 auto!important;min-width:0!important;width:100%!important;
+ max-width:100%!important;height:34px!important;
+ padding:5px 8px!important;border:1px solid #524762!important;
+ border-radius:7px!important;background:#191622!important;
+ color:#ebe2ff!important;font-size:11px!important;
+}
+.store.store-v41 .store-card-actions .store-server-select:disabled{opacity:.65;cursor:default}
+.store.store-v41 .store-card-actions .store-details:hover{background:#524069!important;color:#fff!important}
+.store.store-v41 .store-nav button:focus-visible,
+.store.store-v41 :is(.store-search,.store-sort-label select,.store-category-jump select,.store-card-actions button,.store-server-select,.store-health-check):focus-visible{
+ outline:2px solid #cfa9ff!important;outline-offset:2px!important;
+}
+.store.store-v41 .store-empty{padding:18px!important;line-height:1.6}
+.store.store-v41 .store-section{min-width:0}
+.store.store-v41 .store-social{scrollbar-gutter:stable}
+/* Follow the real *app window* width, even in a large browser viewport. */
+.store.store-v41[data-size="compact"] .store-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.store.store-v41[data-size="small"] .store-grid{
+ grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))!important;
+}
+.store.store-v41[data-size="small"] .store-category-jump{display:flex!important}
+.store.store-v41[data-size="small"] .store-top{top:-14px!important}
+.store.store-v41[data-size="small"] .store-sort-label{flex:0 1 auto}
+.store.store-v41[data-size="small"] .store-sort-label select{width:120px}
+.store.store-v41[data-size="small"] .store-search-wrap{flex:1 1 100%}
+.store.store-v41[data-size="small"] .store-count-pill{white-space:normal}
+@media(max-width:980px){
+ .store.store-v41 .store-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:720px){
+ .store.store-v41 .store-category-jump{display:flex!important}
+ .store.store-v41 .store-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))!important}
+ .store.store-v41 .store-top{gap:8px!important}
+}
+@media(max-width:460px){
+ .store.store-v41 .store-search-wrap{flex:1 1 100%}
+ .store.store-v41 .store-top{top:-15px!important}
+ .store.store-v41 .store-grid{grid-template-columns:minmax(0,1fr)!important}
+ .store.store-v41 .store-card .store-card-body{padding:12px!important}
+}
+/* Small app-window sizing wins over viewport breakpoints. */
+.store.store-v41[data-size="small"] .store-grid{
+ grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))!important;
+}
+@media(max-width:460px){
+ .store.store-v41[data-size="small"] .store-grid{grid-template-columns:minmax(0,1fr)!important}
+}
+@media(hover:none){
+ .store.store-v41 .store-card>.store-cover{height:auto!important;aspect-ratio:16/9!important}
+ .store.store-v41 .store-card .store-card-body{position:relative!important;pointer-events:auto!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .store.store-v41 .store-card,.store.store-v41 .store-card:hover .store-cover-art{transition:none!important;transform:none!important}
+}
+html.lolite-lite-mode .store.store-v41 .store-card:hover .store-cover-art{transform:none!important}
