@@ -8,7 +8,8 @@
   weather:{title:'Weather',icon:'☁',description:'Current conditions for a city you choose'},
   shortcuts:{title:'Quick launch',icon:'✦',description:'Open your favourite Lolite apps'},
   system:{title:'System info',icon:'▤',description:'Real browser and device information'},
-  timer:{title:'Timer',icon:'⌛',description:'A simple countdown'}
+  timer:{title:'Timer',icon:'⌛',description:'A simple countdown'},
+  music:{title:'Now playing',icon:'♫',description:'Control Lolite Music from your desktop'}
  };
  const $=s=>document.querySelector(s);
  const safe=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -22,8 +23,10 @@
    const value=JSON.parse(localStorage.getItem(KEY)||'null');
    if(value&&Array.isArray(value.items)){
     const seen=new Set();
-    const items=value.items.filter(w=>w&&TYPES[w.type]&&typeof w.id==='string'&&!seen.has(w.type)&&seen.add(w.type)).slice(0,7)
-      .map(w=>({id:w.id.slice(0,80),type:w.type,x:Number.isFinite(w.x)?w.x:-1,y:Number.isFinite(w.y)?w.y:22}));
+    const items=value.items.filter(w=>w&&TYPES[w.type]&&typeof w.id==='string'&&!seen.has(w.type)&&seen.add(w.type)).slice(0,8)
+      .map(w=>({id:w.id.slice(0,80),type:w.type,x:Number.isFinite(w.x)?w.x:-1,y:Number.isFinite(w.y)?w.y:22,
+       width:Number.isFinite(w.width)?bounded(w.width,240,520):null,
+       height:Number.isFinite(w.height)?bounded(w.height,150,560):null}));
     return {items,note:typeof value.note==='string'?value.note.slice(0,10000):'',weatherCity:typeof value.weatherCity==='string'?value.weatherCity.slice(0,70):''};
    }
   }catch(e){console.warn('Lolite widgets: saved layout unavailable',e)}
@@ -36,6 +39,11 @@
  function desktopHeight(){return layer?.clientHeight||Math.max(200,window.innerHeight-60)}
  function widthFor(){return window.innerWidth<=700?240:286}
  function position(w,el){
+  if(el){
+   el.classList.toggle('lw-resized',!!(w.width||w.height));
+   el.style.width=w.width?Math.min(w.width,Math.max(240,desktopWidth()-10))+'px':'';
+   el.style.height=w.height?w.height+'px':'';
+  }
   const maxX=Math.max(0,desktopWidth()-(el?.offsetWidth||widthFor())-10);
   const maxY=Math.max(0,desktopHeight()-(el?.offsetHeight||195)-10);
   const x=w.x<0?maxX:bounded(w.x,0,maxX),y=bounded(w.y,0,maxY);
@@ -89,6 +97,20 @@
    '<button type="button" data-lw-timer-toggle>'+(s.running?'Pause':'Start')+'</button><button type="button" data-lw-timer-reset>Reset</button></div>'+
    '<p class="lw-hint" data-lw-timer-status>Timer works while Lolite stays open.</p>';
  }
+ function musicMarkup(){
+  const state=window.LoliteMusic?.getState?.()||{};
+  return '<div class="lw-music-line">'+safe(state.title||'Nothing playing')+'</div>'+
+   '<span class="lw-music-artist">'+safe(state.artist||'Open Lolite Music to choose a song')+'</span>'+
+   '<div class="lw-music-actions"><button type="button" data-lw-music="previous" aria-label="Previous song">⏮</button>'+
+   '<button type="button" data-lw-music="toggle" aria-label="Play or pause">'+(state.playing?'Pause':'Play')+'</button>'+
+   '<button type="button" data-lw-music="next" aria-label="Next song">⏭</button>'+
+   '<button type="button" data-lw-music="open">Open Music</button></div>'+
+   '<div class="lw-music-hint">Playback stays inside Lolite Music.</div>';
+ }
+ function updateMusicWidget(){
+   const node=layer?.querySelector('[data-lw-type="music"] .lw-body');
+   if(node)node.innerHTML=musicMarkup();
+ }
  function body(type,id){
   if(type==='clock')return clockMarkup();
   if(type==='calendar')return calendarMarkup(id);
@@ -97,6 +119,7 @@
   if(type==='system')return systemMarkup();
   if(type==='weather')return weatherMarkup();
   if(type==='timer')return timerMarkup(id);
+  if(type==='music')return musicMarkup();
   return '';
  }
  function paint(){
@@ -107,7 +130,8 @@
    el.setAttribute('role','region');el.setAttribute('aria-label',TYPES[w.type].title+' widget');
    el.innerHTML='<div class="lw-header"><span class="lw-symbol" aria-hidden="true">'+TYPES[w.type].icon+'</span><strong>'+TYPES[w.type].title+'</strong>'+
      '<button class="lw-remove" type="button" data-lw-remove title="Remove widget" aria-label="Remove '+TYPES[w.type].title+' widget">×</button></div>'+
-     '<div class="lw-body">'+body(w.type,w.id)+'</div>';
+     '<div class="lw-body">'+body(w.type,w.id)+'</div>'+ 
+     '<button class="lw-resize" type="button" data-lw-resize aria-label="Resize '+TYPES[w.type].title+' widget" title="Drag to resize">◢</button>';
    layer.append(el);position(w,el);
   }
   if(data.weatherCity&&data.items.some(w=>w.type==='weather'))refreshWeather(data.weatherCity);
@@ -131,7 +155,7 @@
   if(show){updatePicker();picker.querySelector('[data-lw-close]')?.focus()}
  }
  function findFreePosition(type){
-  const cardWidth=widthFor(),heights={clock:174,calendar:310,notes:250,weather:210,shortcuts:205,system:265,timer:190};
+  const cardWidth=widthFor(),heights={clock:174,calendar:310,notes:250,weather:210,shortcuts:205,system:265,timer:190,music:190};
   const height=heights[type]||210,space=desktopHeight(),width=desktopWidth();
   const occupied=data.items.map(w=>{
    const el=Array.from(layer?.children||[]).find(node=>node.dataset.lwId===w.id);
@@ -239,6 +263,42 @@
    save();
   }
  }
+ function beginResize(event,grip){
+  if(event.button!==0)return;
+  const card=grip.closest('.lw-card'),w=data.items.find(item=>item.id===card?.dataset.lwId);
+  if(!w)return;
+  event.preventDefault();event.stopPropagation();
+  const origin={x:event.clientX,y:event.clientY,width:card.offsetWidth,height:card.offsetHeight};
+  const pointer=event.pointerId;
+  card.classList.add('lw-resizing','lw-resized');
+  try{grip.setPointerCapture(pointer)}catch{}
+  const move=e=>{
+   if(e.pointerId!==pointer)return;
+   const maxWidth=Math.max(240,Math.min(520,desktopWidth()-position(w,card).x-10));
+   const maxHeight=Math.max(150,Math.min(560,desktopHeight()-position(w,card).y-10));
+   w.width=bounded(origin.width+e.clientX-origin.x,240,maxWidth);
+   w.height=bounded(origin.height+e.clientY-origin.y,150,maxHeight);
+   position(w,card);
+  };
+  const end=e=>{
+   if(e.pointerId!==pointer)return;
+   grip.removeEventListener('pointermove',move);
+   grip.removeEventListener('pointerup',end);
+   grip.removeEventListener('pointercancel',end);
+   try{grip.releasePointerCapture(pointer)}catch{}
+   card.classList.remove('lw-resizing');save();
+  };
+  grip.addEventListener('pointermove',move);
+  grip.addEventListener('pointerup',end);
+  grip.addEventListener('pointercancel',end);
+ }
+ function setSize(type,width,height){
+  const w=data.items.find(item=>item.type===type);
+  if(!w)return false;
+  w.width=bounded(Number(width)||286,240,520);
+  w.height=bounded(Number(height)||195,150,560);
+  save();paint();return true;
+ }
  function launch(id){
   if(typeof window.LoliteDesktopShell?.launch==='function')window.LoliteDesktopShell.launch(id);
   else window.openApp?.(id,({files:'Files',games:'Game Store',appstore:'App Store',settings:'Settings'})[id]||id);
@@ -248,6 +308,13 @@
   if(e.target.closest('[data-lw-close]')){togglePicker(false);return}
   const addButton=e.target.closest('[data-lw-add]');if(addButton){add(addButton.dataset.lwAdd);return}
   const rem=e.target.closest('[data-lw-remove]');if(rem){remove(rem.closest('.lw-card').dataset.lwId);return}
+  const music=e.target.closest('[data-lw-music]');
+  if(music){
+   const action=music.dataset.lwMusic;
+   if(action==='open')window.LoliteMusic?.open?.();
+   else window.LoliteMusic?.[action]?.();
+   return;
+  }
   const quick=e.target.closest('[data-lw-app]');if(quick){launch(quick.dataset.lwApp);return}
   const month=e.target.closest('[data-lw-month]');if(month){
    const w=month.closest('.lw-card');const id=w.dataset.lwId;
@@ -293,7 +360,7 @@
   document.body.appendChild(picker);
   paint();
   document.addEventListener('click',handleClick);
-  layer.addEventListener('pointerdown',e=>{const h=e.target.closest('.lw-header');if(h)beginDrag(e,h)});
+  layer.addEventListener('pointerdown',e=>{const grip=e.target.closest('[data-lw-resize]');if(grip){beginResize(e,grip);return}const h=e.target.closest('.lw-header');if(h)beginDrag(e,h)});
   document.addEventListener('submit',handleSubmit);
   document.addEventListener('input',e=>{if(e.target.matches('[data-lw-note]')){data.note=e.target.value.slice(0,10000);save()}});
   document.addEventListener('change',e=>{if(e.target.matches('[data-lw-timer-minutes]')){const card=e.target.closest('.lw-card'),timer=timerState(card.dataset.lwId);if(!timer.running){timer.seconds=bounded(Number(e.target.value)||5,1,180)*60;updateTicks()}}});
@@ -302,8 +369,9 @@
   window.addEventListener('online',()=>{const node=layer?.querySelector('[data-lw-type="system"] .lw-body');if(node)node.innerHTML=systemMarkup()});
   window.addEventListener('offline',()=>{const node=layer?.querySelector('[data-lw-type="system"] .lw-body');if(node)node.innerHTML=systemMarkup()});
   window.addEventListener('lolite:modechange',()=>togglePicker(false));
+  window.addEventListener('lolite:musicstate',updateMusicWidget);
   setInterval(updateTicks,1000);
-  window.LoliteWidgets={open:()=>togglePicker(true),add,remove,list:()=>data.items.map(w=>w.type),reset:()=>{data=JSON.parse(JSON.stringify(initial));save();paint()}};
+  window.LoliteWidgets={open:()=>togglePicker(true),add,remove,setSize,list:()=>data.items.map(w=>w.type),reset:()=>{data=JSON.parse(JSON.stringify(initial));save();paint()}};
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
