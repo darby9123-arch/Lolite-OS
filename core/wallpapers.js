@@ -543,6 +543,7 @@
   if(active?.id===wall.id){
    const target=document.getElementById('wallpaper');
    if(target)target.style.background='#07101e url("'+data+'") center / cover no-repeat';
+   window.dispatchEvent(new CustomEvent('lolite:wallpaperposter',{detail:{id:wall.id}}));
   }
  }
  function syncAdminWallpapers(items){
