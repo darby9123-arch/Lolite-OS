@@ -3,7 +3,7 @@
  * 404/410 HTTP responses; CORS, timeouts and offline are never called missing.
  */
 (()=>{'use strict';
- const records=new Map(),TTL=5*60*1000;
+ const records=new Map(),TTL=5*60*1000,FAILED_TTL=10*60*1000;
  let scanning=null,lastScan=0;
  const isHosted=game=>{
    const raw=typeof game==='string'?game:game?.url;
@@ -15,6 +15,13 @@
      return uri.href;
    }catch{return null}
  };
+ const observedURL=game=>{
+   const raw=typeof game==='string'?game:game?.url;
+   try{
+     const uri=new URL(String(raw||''),document.baseURI);
+     return uri.protocol==='https:'||uri.protocol==='http:'?uri.href:null;
+   }catch{return null}
+ };
  const notify=()=>window.dispatchEvent(new CustomEvent('lolite:gamehealthchange',{detail:summary()}));
  const summary=()=>{
    const items=[...records.values()];
@@ -23,7 +30,13 @@
      unknown:items.filter(x=>x.status==='unknown').length,lastScan,scanning:!!scanning};
  };
  const status=game=>{
-   const url=isHosted(game);return url?records.get(url)?.status||'unchecked':'unverified';
+   const url=observedURL(game);
+   if(!url)return 'unverified';
+   const entry=records.get(url);
+   if(entry?.status==='missing'&&Date.now()-entry.at>FAILED_TTL){
+     records.delete(url);return 'unchecked';
+   }
+   return entry?.status||(isHosted(game)?'unchecked':'unverified');
  };
  const isUnavailable=game=>status(game)==='missing';
  async function probe(game,{force=false}={}){
@@ -58,7 +71,9 @@
    return scanning;
  }
  function markHttpError(game,code){
-   const url=isHosted(game);
+   // The player has seen a real 404/410. Unlike background probes, this may
+   // include external servers. Do not call CORS errors or timeouts "missing".
+   const url=observedURL(game);
    if(!url||![404,410].includes(Number(code)))return;
    records.set(url,{status:'missing',code:Number(code),at:Date.now(),url});
    notify();
