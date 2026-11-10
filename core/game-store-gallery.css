@@ -262,3 +262,26 @@ html[data-lolite-design] .window .store.store-v41 .store-card-actions .store-pla
 .store-detail-artwork .lolite-game-detail-image{display:block;width:100%;margin:0;object-fit:cover;border-radius:10px}
 .store-detail-icon{position:absolute;z-index:2;left:13px;bottom:13px;width:64px;height:64px;object-fit:contain;background:#171625e8;border-radius:14px;border:1px solid #ffffff80;box-shadow:0 4px 14px #0009;pointer-events:none}
 @media(max-width:670px){.store.store-v41 .store-uploaded-game-icon{width:34px;height:34px;left:8px;bottom:8px}.store-detail-icon{width:48px;height:48px}}
+
+
+/* Real game covers in the navigation, rather than letter/word badges. */
+.store.store-v41 .store-nav .nav-mark.nav-game-art{
+ display:block!important;flex:0 0 29px!important;width:29px!important;height:29px!important;
+ padding:0!important;overflow:hidden;border-radius:8px!important;
+ border:1px solid #ffffff24!important;background:#1c1b2b!important;
+ box-shadow:0 2px 6px #0005!important;
+}
+.store.store-v41 .store-nav .nav-game-thumb{
+ display:block;width:100%;height:100%;object-fit:cover;object-position:center;
+ border-radius:7px;filter:saturate(.9);transition:filter .18s ease,transform .18s ease;
+}
+.store.store-v41 .store-nav button:hover .nav-game-thumb,
+.store.store-v41 .store-nav button.active .nav-game-thumb{filter:saturate(1.1);transform:scale(1.05)}
+.store.store-v41 .store-nav button.active .nav-mark.nav-game-art{
+ border-color:#b59aff!important;box-shadow:0 0 0 2px #9c75f528,0 3px 8px #0007!important;
+}
+@media(max-width:900px){
+ .store.store-v41 .store-nav .nav-mark.nav-game-art{flex-basis:25px!important;width:25px!important;height:25px!important;border-radius:7px!important}
+ .store.store-v41 .store-nav .nav-game-thumb{border-radius:6px}
+}
+@media(prefers-reduced-motion:reduce){.store.store-v41 .store-nav .nav-game-thumb{transition:none!important}}
