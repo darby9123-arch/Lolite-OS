@@ -47,3 +47,14 @@
 .la-zip-error{color:#ffc0c7!important}
 .la-zip-invalid{border-color:#8c4258;opacity:.75}
 @media(max-width:700px){.la-zip-head{align-items:flex-start;flex-direction:column}.la-zip-grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}}
+
+
+/* Optional artwork for new shared games. */
+.la-game-art{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;padding:13px;border:1px solid #365069;border-radius:10px;background:#0c1927}
+.la-game-art.la-hidden{display:none}
+.la-game-art>.la-note{grid-column:1/-1}
+.la-art-preview{display:block;max-width:100%;max-height:150px;object-fit:contain;object-position:left;border-radius:9px;background:#07111c;border:1px solid #304c66}
+.la-art-preview[hidden]{display:none!important}
+.la-art-icon{width:88px;height:88px;object-fit:cover}
+.la-art-background{width:100%;aspect-ratio:16/9;object-fit:cover}
+@media(max-width:700px){.la-game-art{grid-template-columns:1fr}}
