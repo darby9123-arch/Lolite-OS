@@ -15,6 +15,23 @@
   }catch{return ''}
  };
  const getAdmin=()=>state.admin;
+ async function uploadPoster(source,videoPath){
+  if(!window.LoliteWallpaperThumbnails?.capture)throw Error('Video thumbnail generator is unavailable. Reload Lolite OS.');
+  const image=await window.LoliteWallpaperThumbnails.capture(source);
+  const ext=window.LoliteWallpaperThumbnails.fileExtension(image);
+  const path=videoPath.replace(/\.[^/.]+$/,'')+'-poster.'+ext;
+  const result=await sb.storage.from(BUCKET).upload(path,image,{contentType:image.type,upsert:false});
+  if(result.error)throw Error('Wallpaper thumbnail upload failed: '+result.error.message);
+  const url=validateURL(sb.storage.from(BUCKET).getPublicUrl(path).data?.publicUrl);
+  if(!url){await sb.storage.from(BUCKET).remove([path]);throw Error('Could not create a public thumbnail URL.')}
+  return {url,path};
+ }
+ function posterStoragePath(item){
+  if(!item?.poster_url||!item.storage_path)return '';
+  const ext=/\.png(?:[?#]|$)/i.test(item.poster_url)?'png':'webp';
+  return item.storage_path.replace(/\.[^/.]+$/,'')+'-poster.'+ext;
+ }
+
  function clearZip(){
   state.zipToken++;
   for(const entry of state.zip?.entries||[])if(entry.preview)URL.revokeObjectURL(entry.preview);
@@ -75,14 +92,19 @@
     showZipPreview();
     const uploaded=await sb.storage.from(BUCKET).upload(storagePath,entry.blob,{contentType:'video/mp4',upsert:false});
     if(uploaded.error)throw Error('Upload failed for '+entry.name+': '+uploaded.error.message);
-    const url=validateURL(sb.storage.from(BUCKET).getPublicUrl(storagePath).data?.publicUrl);
-    if(!url){await sb.storage.from(BUCKET).remove([storagePath]);throw Error('Could not create a public URL for '+entry.name)}
-    const added=await sb.from('lolite_library_items').insert({
-     kind:'wallpaper',title:finalTitle,url,storage_path:storagePath,created_by:state.user.id
-    }).select('id').single();
-    if(added.error){
-     await sb.storage.from(BUCKET).remove([storagePath]);
-     throw Error('Publish failed for '+entry.name+': '+added.error.message);
+    let thumbnail=null;
+    try{
+     thumbnail=await uploadPoster(entry.blob,storagePath);
+     const url=validateURL(sb.storage.from(BUCKET).getPublicUrl(storagePath).data?.publicUrl);
+     if(!url)throw Error('Could not create a public URL for '+entry.name);
+     const added=await sb.from('lolite_library_items').insert({
+      kind:'wallpaper',title:finalTitle,url,poster_url:thumbnail.url,
+      storage_path:storagePath,created_by:state.user.id
+     }).select('id').single();
+     if(added.error)throw Error('Publish failed for '+entry.name+': '+added.error.message);
+    }catch(error){
+     await sb.storage.from(BUCKET).remove([storagePath,...(thumbnail?[thumbnail.path]:[])]);
+     throw error;
     }
     entry.published=true;entry.selected=false;published++;
    }
@@ -107,7 +129,7 @@
  async function loadItems(){
   if(!sb)return;
   const {data,error}=await sb.from('lolite_library_items')
-   .select('id,kind,title,url,storage_path,created_by,created_at')
+   .select('id,kind,title,url,poster_url,storage_path,created_by,created_at')
    .order('created_at',{ascending:false}).limit(500);
   if(error){state.error=error.message;console.warn('Shared Lolite library:',error.message);return}
   state.items=(data||[]).filter(item=>['game','wallpaper','website'].includes(item.kind)&&validateURL(item.url));
@@ -136,6 +158,8 @@
      '<button type="button" data-la-action="appearance" data-la-id="'+safe(item.id)+'">Use tab appearance</button>':
      item.kind==='game'?'<button type="button" data-la-action="play" data-la-id="'+safe(item.id)+'">Play</button>':
      '<button type="button" data-la-action="wallpaper" data-la-id="'+safe(item.id)+'">Apply</button>')+
+   (state.admin&&item.kind==='wallpaper'&&/.(?:mp4|webm)(?:[?#]|$)/i.test(item.url)&&!item.poster_url?
+      '<button type="button" data-la-action="poster" data-la-id="'+safe(item.id)+'">Make thumbnail</button>':'')+
    (state.admin?'<button class="la-danger" type="button" data-la-action="remove" data-la-id="'+safe(item.id)+'">Remove</button>':'')+'</div>';
  }
  function panel(){
@@ -183,7 +207,7 @@
   const isZip=kind==='wallpaper'&&/\.zip$/i.test(file?.name||'');
   if(!['game','wallpaper','website'].includes(kind)||(!isZip&&title.length<2))throw Error('Choose a type and enter a title.');
   if(isZip)return publishZip(form,file,title);
-  let url=validateURL(form.elements.url?.value),storagePath=null;
+  let url=validateURL(form.elements.url?.value),storagePath=null,poster=null;
   if(file){
    if(kind==='website')throw Error('Website shortcuts require an HTTPS link, not a file.');
    const ext=(file.name.split('.').pop()||'').toLowerCase();
@@ -207,13 +231,20 @@
    state.busy=true;
    const uploaded=await sb.storage.from(BUCKET).upload(storagePath,file,{contentType:type,upsert:false});
    if(uploaded.error)throw Error('Upload failed: '+uploaded.error.message);
-   url=validateURL(sb.storage.from(BUCKET).getPublicUrl(storagePath).data?.publicUrl);
+   try{
+    if(kind==='wallpaper'&&type.startsWith('video/'))poster=await uploadPoster(file,storagePath);
+    url=validateURL(sb.storage.from(BUCKET).getPublicUrl(storagePath).data?.publicUrl);
+    if(!url)throw Error('Could not create a public file URL.');
+   }catch(error){
+    await sb.storage.from(BUCKET).remove([storagePath,...(poster?[poster.path]:[])]);
+    throw error;
+   }
   }
   if(!url)throw Error('Enter a valid HTTPS URL or choose a supported file.');
   const result=await sb.from('lolite_library_items')
-    .insert({kind,title,url,storage_path:storagePath,created_by:state.user.id}).select('id').single();
+    .insert({kind,title,url,poster_url:poster?.url||null,storage_path:storagePath,created_by:state.user.id}).select('id').single();
   if(result.error){
-   if(storagePath)void sb.storage.from(BUCKET).remove([storagePath]);
+   if(storagePath)await sb.storage.from(BUCKET).remove([storagePath,...(poster?[poster.path]:[])]);
    throw Error('Publishing failed: '+result.error.message);
   }
   form.reset();notify('Published '+title+' to the shared '+kind+' library.');
@@ -226,7 +257,7 @@
   if(error)throw error;
   if(!data?.length)throw Error('No item was removed. Check your admin permissions.');
   if(item.storage_path){
-   const cleanup=await sb.storage.from(BUCKET).remove([item.storage_path]);
+   const cleanup=await sb.storage.from(BUCKET).remove([item.storage_path,...(posterStoragePath(item)?[posterStoragePath(item)]:[])]);
    if(cleanup.error)console.warn('Removed listing, but could not delete uploaded file:',cleanup.error.message);
   }
   notify('Removed '+item.title+'.');await loadItems();
@@ -275,6 +306,25 @@
    if(action==='admin'){open();return}
    if(!item)return;
    if(action==='remove'){await removeItem(item);return}
+   if(action==='poster'){
+    if(!state.admin)throw Error('Admin permission is required.');
+    if(item.kind!=='wallpaper'||!/\.(?:mp4|webm)(?:[?#]|$)/i.test(item.url))return;
+    if(!item.storage_path)throw Error('This wallpaper is hosted externally. A stored video is needed to save its thumbnail.');
+    button.disabled=true;
+    let poster;
+    try{
+     poster=await uploadPoster(item.url,item.storage_path);
+     const {error}=await sb.from('lolite_library_items').update({poster_url:poster.url}).eq('id',item.id);
+     if(error)throw error;
+     notify('Saved a real video-frame thumbnail for '+item.title);
+     await loadItems();
+    }catch(error){
+     if(poster)await sb.storage.from(BUCKET).remove([poster.path]);
+     throw error;
+    }finally{button.disabled=false}
+    return;
+   }
+
    if(action==='visit'){window.open(item.url,'_blank','noopener,noreferrer');return}
    if(action==='appearance'){
     if(!window.LoliteTabCloak?.useWebsite?.(item.url,item.title))throw Error('Tab appearance settings are unavailable.');
