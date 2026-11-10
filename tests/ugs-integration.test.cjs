@@ -19,7 +19,7 @@ test('UGS Drive game catalogue loads before Game Store without mirroring game co
  assert.ok(html.indexOf('core/ugs-catalog.js?v=')<html.indexOf('core/game-store.js?v='),'UGS catalogue must be loaded before Game Store');
  assert.ok(catalog.length>1000,'UGS must include hundreds of HTML5 and Flash titles');
  assert.ok(catalog.every(row=>row.length===5 && /^[A-Za-z0-9_-]+$/.test(row[0]) &&
-  /^[-\\w ().]+\\.html?$/i.test(row[1]) && ['html5','flash'].includes(row[2]) &&
+  row[1].toLowerCase().endsWith('.html') && ['html5','flash'].includes(row[2]) &&
   Number.isFinite(row[3]) && typeof row[4]==='string'));
  assert.ok(catalog.some(row=>row[2]==='html5'));
  assert.ok(catalog.some(row=>row[2]==='flash'));
@@ -32,7 +32,7 @@ test('UGS is discoverable and only uses installed HTML as an actual game server'
  assert.match(store,/g\.ugsPending\)return false/);
  assert.match(store,/const baseName=g\.ugsInstalled\?'UGS'/);
  assert.match(store,/if\(game\.ugsPending\)/);
- assert.match(store,/packages\.list/);
+ assert.match(store,/syncUGSCollection/);
  assert.match(store,/ugsFileURL\(record\)/);
  assert.match(store,/window\.loliteUGSImportHTML/);
  assert.match(store,/window\.loliteUGSImportZip/);
@@ -43,8 +43,8 @@ test('UGS is discoverable and only uses installed HTML as an actual game server'
 test('UGS ZIP and individual HTML games are browser-local user-initiated imports',()=>{
  assert.match(packageStore,/async function importUGSZip\(file,onProgress\)/);
  assert.match(packageStore,/source:"ugs-collection"/);
- assert.match(packageStore,/importUGSZip,list:getAll/);
- assert.match(packageStore,/if\(!file\|\|!\/\\.zip\$/i/);
+ assert.ok(packageStore.includes('importUGSZip,removeGamefilesZip,list:getAll'));
+ assert.ok(packageStore.includes('Choose a ZIP containing UGS HTML5 games'));
  assert.match(store,/input\.type='file'/);
  assert.doesNotMatch(store,/fetch\(['"]https:\/\/drive\.google\.com/);
 });
