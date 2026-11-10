@@ -6,7 +6,26 @@
  const audio=new Audio();
  audio.preload='metadata';
  audio.volume=.75;
- const S={user:null,admin:false,loading:true,tab:'discover',query:'',tracks:[],playlists:[],entries:[],requests:[],selectedPlaylist:null,current:null,queue:[],working:false,error:'',notice:''};
+ const S={user:null,admin:false,loading:true,tab:'discover',query:'',tracks:[],playlists:[],entries:[],requests:[],selectedPlaylist:null,current:null,queue:[],working:false,error:'',notice:'',shuffle:false,repeat:'off'};
+ const FAV_PREFIX='lolite.music.favourites.v2.';
+ let favourites=new Set();
+ function loadFavourites(){
+  try{const ids=JSON.parse(localStorage.getItem(FAV_PREFIX+S.user.id)||'[]');favourites=new Set(Array.isArray(ids)?ids.filter(cleanId).slice(0,500):[])}
+  catch{favourites=new Set()}
+ }
+ function toggleFavourite(id){
+  if(!cleanId(id)||!track(id)||track(id).status!=='approved')return;
+  if(favourites.has(id))favourites.delete(id);else favourites.add(id);
+  try{localStorage.setItem(FAV_PREFIX+S.user.id,JSON.stringify([...favourites]))}catch{}
+  render();
+ }
+ function publishState(){
+  const t=track(S.current);
+  window.dispatchEvent(new CustomEvent('lolite:musicstate',{detail:{
+   title:t?.title||'',artist:t?.artist||'',playing:!!t&&!audio.paused,
+   shuffle:S.shuffle,repeat:S.repeat
+  }}));
+ }
  const root=()=>document.querySelector('.window[data-window-id="music"] #lmRoot');
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&quot;',"'":'&#39;'}[c]));
  const date=v=>{const d=new Date(v);return isNaN(d)?'':d.toLocaleDateString([],{month:'short',day:'numeric'})};
@@ -30,7 +49,8 @@
    if(identity.error&&identity.error.name!=='AuthSessionMissingError')throw identity.error;
    if(n!==ticket)return;
    S.user=identity.data?.user||null;S.admin=false;
-   if(!S.user){S.tracks=[];S.playlists=[];S.entries=[];S.requests=[];return}
+   if(!S.user){S.tracks=[];S.playlists=[];S.entries=[];S.requests=[];favourites.clear();publishState();return}
+   loadFavourites();
    const admin=await sb.from('lolite_admins').select('user_id').eq('user_id',S.user.id).maybeSingle();
    if(admin.error)throw admin.error;
    S.admin=admin.data?.user_id===S.user.id;
@@ -48,7 +68,7 @@
   finally{if(n===ticket){S.loading=false;render()}}
  }
  function header(){
-  const tabs=[['discover','Discover'],['playlists','Playlists'],['upload','Upload'],['requests','Requests']];
+  const tabs=[['discover','Discover'],['favourites','Favourites'],['playlists','Playlists'],['upload','Upload'],['requests','Requests']];
   if(S.admin)tabs.push(['admin','Admin']);
   return '<header class="lm-header"><div class="lm-brand"><span class="lm-brand-icon">♫</span><div><small>LOLITE OS</small><h1>Lolite Music</h1></div></div><span class="lm-adfree">No ads. Just music.</span></header>'+
    '<nav class="lm-nav" aria-label="Music sections">'+tabs.map(([id,label])=>'<button type="button" data-lm-tab="'+id+'" class="'+(S.tab===id?'active':'')+'">'+label+(id==='admin'?' <span class="lm-count">'+S.tracks.filter(x=>x.status==='pending').length+'</span>':'')+'</button>').join('')+'</nav>';
@@ -57,12 +77,13 @@
   const current=S.current===t.id,approved=t.status==='approved';
   const options=approved&&S.playlists.length?'<select data-lm-add-track="'+esc(t.id)+'" aria-label="Save '+esc(t.title)+' to a playlist"><option value="">+ Playlist</option>'+S.playlists.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>').join('')+'</select>':'';
   const status=!approved?'<span class="lm-chip '+esc(t.status)+'">'+esc(t.status)+'</span>':'';
+  const fav=approved?'<button type="button" class="lm-favourite" data-lm-action="favourite" data-lm-id="'+esc(t.id)+'" aria-pressed="'+favourites.has(t.id)+'" aria-label="'+(favourites.has(t.id)?'Remove '+esc(t.title)+' from favourites':'Add '+esc(t.title)+' to favourites')+'" title="Save locally">'+(favourites.has(t.id)?'♥':'♡')+'</button>':'';
   const actions=(opts.moderate&&S.admin?'<button type="button" data-lm-action="approve" data-lm-id="'+esc(t.id)+'">Approve</button><button type="button" class="lm-negative" data-lm-action="reject" data-lm-id="'+esc(t.id)+'">Reject</button>':'')+
    (opts.playlist?'<button type="button" data-lm-action="remove-entry" data-lm-id="'+esc(t.id)+'" data-lm-playlist="'+esc(opts.playlist)+'">Remove</button>':'')+
    ((S.admin||t.uploader_id===S.user?.id&&t.status!=='approved')&&opts.manage?'<button type="button" class="lm-negative" data-lm-action="delete-track" data-lm-id="'+esc(t.id)+'">Delete</button>':'');
   return '<article class="lm-track '+(current?'playing':'')+'"><div class="lm-record" aria-hidden="true">♫</div>'+
    '<div class="lm-track-details"><strong>'+esc(t.title)+'</strong><span>'+esc(t.artist)+(t.album?' · '+esc(t.album):'')+'</span></div>'+status+
-   '<div class="lm-track-actions"><button type="button" class="lm-play" data-lm-action="play" data-lm-id="'+esc(t.id)+'" '+(opts.playlist?'data-lm-playlist="'+esc(opts.playlist)+'"':'')+' aria-label="Play '+esc(t.title)+'">▶</button>'+options+actions+'</div></article>';
+   '<div class="lm-track-actions">'+fav+'<button type="button" class="lm-play" data-lm-action="play" data-lm-id="'+esc(t.id)+'" '+(opts.playlist?'data-lm-playlist="'+esc(opts.playlist)+'"':'')+' aria-label="Play '+esc(t.title)+'">▶</button>'+options+actions+'</div></article>';
  }
  function discoverRows(){
   const q=S.query.toLocaleLowerCase();
@@ -72,6 +93,13 @@
  function discover(){return '<section class="lm-heading"><div><small>THE COMMUNITY LIBRARY</small><h2>Discover music</h2><p>Listen to approved tracks uploaded by Lolite members.</p></div><span class="lm-total">'+available().length+' songs</span></section>'+
   '<label class="lm-search"><span>⌕</span><input id="lmSearch" aria-label="Search songs and artists" placeholder="Search songs, artists or albums" value="'+esc(S.query)+'"></label>'+
   '<div class="lm-track-list" id="lmTracks">'+discoverRows()+'</div>';
+ }
+ function favouriteSongs(){
+  const songs=available().filter(t=>favourites.has(t.id));
+  return '<section class="lm-heading"><div><small>YOUR FAVOURITES</small><h2>Liked songs</h2><p>Your favourite approved tracks, saved on this device.</p></div><span class="lm-total">'+songs.length+' songs</span></section>'+
+   '<p class="lm-library-note">Likes are saved in this browser per Lolite account, not synced between devices.</p>'+
+   (songs.length?'<div class="lm-track-list">'+songs.map(t=>row(t)).join('')+'</div>':
+    '<div class="lm-empty">Use the ♡ button on a song in Discover to save it here.</div>');
  }
  function playlists(){
   const selected=playlist(S.selectedPlaylist);
@@ -116,7 +144,7 @@
  function player(){
   const t=track(S.current);
   return '<footer class="lm-player"><div class="lm-now"><span class="lm-record">♫</span><div><strong data-lm-now-title>'+esc(t?.title||'Nothing playing')+'</strong><small>'+esc(t?.artist||'Choose a song to start listening')+'</small></div></div>'+
-   '<div class="lm-player-middle"><div class="lm-player-buttons"><button type="button" data-lm-action="previous" aria-label="Previous track">⏮</button><button type="button" class="lm-main-play" data-lm-action="toggle" aria-label="Play or pause">'+(audio.paused?'▶':'❚❚')+'</button><button type="button" data-lm-action="next" aria-label="Next track">⏭</button></div>'+
+   '<div class="lm-player-middle"><div class="lm-player-buttons"><button type="button" data-lm-action="shuffle" aria-pressed="'+S.shuffle+'" title="Shuffle" aria-label="Toggle shuffle">⇄</button><button type="button" data-lm-action="previous" aria-label="Previous track">⏮</button><button type="button" class="lm-main-play" data-lm-action="toggle" aria-label="Play or pause">'+(audio.paused?'▶':'❚❚')+'</button><button type="button" data-lm-action="next" aria-label="Next track">⏭</button><button type="button" data-lm-action="repeat" aria-pressed="'+(S.repeat!=='off')+'" title="Repeat: '+S.repeat+'" aria-label="Change repeat mode">'+(S.repeat==='one'?'↻1':'↻')+'</button></div>'+
    '<div class="lm-timeline"><span data-lm-elapsed>'+fmt(audio.currentTime)+'</span><input type="range" data-lm-seek min="0" max="1000" value="'+(audio.duration?Math.round(audio.currentTime/audio.duration*1000):0)+'" aria-label="Seek in track"><span data-lm-duration>'+fmt(audio.duration)+'</span></div></div>'+
    '<label class="lm-volume">Vol <input type="range" min="0" max="100" value="'+Math.round(audio.volume*100)+'" data-lm-volume aria-label="Volume"></label></footer>';
  }
@@ -125,12 +153,12 @@
   if(S.loading){el.innerHTML='<div class="lm-loading">Loading Lolite Music…</div>';return}
   if(S.error){el.innerHTML='<div class="lm-loading"><h2>Music unavailable</h2><p>'+esc(S.error)+'</p><button class="lm-primary" data-lm-action="reload">Retry</button></div>';return}
   if(!S.user){el.innerHTML='<div class="lm-login"><span class="lm-login-icon">♫</span><h1>Welcome to Lolite Music</h1><p>Listen to community tracks, build playlists, upload your own music and request songs. Sign in using your Lolite Chat account.</p><button class="lm-primary" data-lm-action="signin">Sign in with Lolite Chat</button><button data-lm-action="reload">I’ve signed in — refresh</button></div>';return}
-  const contents={discover,playlists,upload,requests,admin};
+  const contents={discover,favourites:favouriteSongs,playlists,upload,requests,admin};
   el.innerHTML=header()+'<main class="lm-main">'+(contents[S.tab]||discover)()+'<p class="lm-feedback" data-lm-message role="status">'+esc(S.notice)+'</p></main>'+player();
  }
  async function play(id,queue){
-  const t=track(id);if(!t||!S.user)return;
-  const ids=Array.isArray(queue)?queue.filter(i=>track(i)):available().map(x=>x.id);
+  const t=track(id);if(!t||!S.user||t.status!=='approved')return;
+  const ids=Array.isArray(queue)?queue.filter(i=>track(i)?.status==='approved'):available().map(x=>x.id);
   try{
    if(id===S.current&&audio.src&&!audio.paused){audio.pause();return}
    if(id===S.current&&audio.src){await audio.play();return}
@@ -142,12 +170,19 @@
    render();
    await audio.play();
   }catch(e){notify(e?.message||'Unable to play audio')}
-  updatePlayer();
+  updatePlayer();publishState();
  }
- async function next(direction=1){
+ async function next(direction=1,fromEnd=false){
   if(!S.queue.length)return;
-  const index=S.queue.indexOf(S.current);
-  const nextId=S.queue[(Math.max(0,index)+direction+S.queue.length)%S.queue.length];
+  const index=Math.max(0,S.queue.indexOf(S.current));
+  if(fromEnd&&S.repeat==='one'){audio.currentTime=0;await audio.play();return}
+  if(fromEnd&&S.repeat==='off'&&index===S.queue.length-1){audio.pause();publishState();return}
+  let nextId;
+  if(S.shuffle&&S.queue.length>1){
+   const other=S.queue.filter(id=>id!==S.current);
+   nextId=other[Math.floor(Math.random()*other.length)];
+  }else nextId=S.queue[(index+direction+S.queue.length)%S.queue.length];
+  if(nextId===S.current){audio.currentTime=0;await audio.play();return}
   if(nextId)await play(nextId,S.queue);
  }
  function updatePlayer(){
@@ -158,7 +193,8 @@
   const duration=el.querySelector('[data-lm-duration]');if(duration)duration.textContent=fmt(audio.duration);
  }
  for(const name of ['timeupdate','loadedmetadata','play','pause','durationchange'])audio.addEventListener(name,updatePlayer);
- audio.addEventListener('ended',()=>{void next()});
+ for(const name of ['loadedmetadata','play','pause'])audio.addEventListener(name,publishState);
+ audio.addEventListener('ended',()=>{void next(1,true).catch(e=>notify(e?.message||'Cannot play next track'))});
  async function uploadSong(form){
   const f=form.elements.audio.files?.[0],title=form.elements.title.value.trim(),artist=form.elements.artist.value.trim(),album=form.elements.album.value.trim();
   const ext=(f?.name.split('.').pop()||'').toLowerCase();
@@ -201,6 +237,9 @@
   if(action==='reload'){await load();return}
   if(action==='toggle'){if(audio.paused){if(S.current)await play(S.current,S.queue)}else audio.pause();return}
   if(action==='next'||action==='previous'){await next(action==='next'?1:-1);return}
+  if(action==='shuffle'){S.shuffle=!S.shuffle;render();publishState();return}
+  if(action==='repeat'){S.repeat=S.repeat==='off'?'all':S.repeat==='all'?'one':'off';render();publishState();return}
+  if(action==='favourite'){if(S.user)toggleFavourite(id);return}
   if(action==='choose-playlist'){S.selectedPlaylist=id;render();return}
   if(action==='play-playlist'){const ids=playlistIds(id);if(ids.length)await play(ids[0],ids);return}
   if(action==='play'){const p=cleanId(button.dataset.lmPlaylist);await play(id,p?playlistIds(p):available().map(t=>t.id));return}
@@ -272,9 +311,13 @@
  sb?.auth.onAuthStateChange(event=>{
   if(event==='SIGNED_OUT'){
    audio.pause();audio.removeAttribute('src');audio.load();
-   S.current=null;S.queue=[];S.user=null;
+   S.current=null;S.queue=[];S.user=null;favourites.clear();publishState();
   }
   setTimeout(()=>{if(root())void load()},0);
  });
- window.LoliteMusic=Object.freeze({open:()=>window.openApp?.('music','Lolite Music',1100,760),refresh:load});
+ window.LoliteMusic=Object.freeze({
+  open:()=>window.openApp?.('music','Lolite Music',1100,760),refresh:load,
+  getState:()=>{const t=track(S.current);return{title:t?.title||'',artist:t?.artist||'',playing:!!t&&!audio.paused,shuffle:S.shuffle,repeat:S.repeat}},
+  toggle:()=>{void command('toggle')},next:()=>{void command('next')},previous:()=>{void command('previous')}
+ });
 })();
