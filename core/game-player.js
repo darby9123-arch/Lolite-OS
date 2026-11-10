@@ -60,8 +60,11 @@
    /^\s*<(?:meta|link|style|div|canvas|script|main|section|article)(?:\s|>)/i.test(text);
  const isErrorDocument=html=>{
   const start=String(html||'').slice(0,12000);
+  const title=(start.match(/<title[^>]*>([^<]{0,220})<\/title>/i)||[])[1]||'';
   return /<title[^>]*>\s*(?:(?:404|410)(?:\s*[-–:]\s*)?)?(?:not found|page not found|404 error|404 not found|site not found)\s*<\/title>/i.test(start)
    || /<title[^>]*>\s*404\s*<\/title>/i.test(start)
+   || /^(?:site|file|page)\s+not\s+found(?:\s*[·–-].*)?$/i.test(title.trim())
+   || /there isn't a github pages site here/i.test(start)
    || /<h1[^>]*>\s*(?:404(?:\s*[-–:]\s*(?:not found|file not found))?|page not found)\s*<\/h1>/i.test(start);
  };
  const htmlWithBase=(html,url)=>{
