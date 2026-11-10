@@ -49,10 +49,11 @@ jobs:
           node --check core/app-icon-brand-rest.js
           node --check core/widgets.js
           node --check core/music.js
+          node --check core/feature-requests.js
           node --check core/performance-mode.js
           node --check core/wallpapers.js
           node --check core/wallpaper-colors.js
           node --check server.mjs
       - name: Test game library, host version, taskbar, Spotlight and snapping
         run: |
-          node --test tests/lolite-4.test.cjs tests/window-manager.test.cjs tests/game-launches.test.cjs tests/game-popularity.test.cjs tests/tab-cloaking.test.cjs tests/generated-icons.test.cjs tests/lolite-4-1.test.cjs tests/game-health.test.cjs tests/game-store-gallery.test.cjs tests/game-store-ui-cleanup.test.cjs tests/wallpaper-colors.test.cjs tests/ui-shell-bugfixes.test.cjs
+          node --test tests/lolite-4.test.cjs tests/window-manager.test.cjs tests/game-launches.test.cjs tests/game-popularity.test.cjs tests/tab-cloaking.test.cjs tests/generated-icons.test.cjs tests/lolite-4-1.test.cjs tests/game-health.test.cjs tests/game-store-gallery.test.cjs tests/game-store-ui-cleanup.test.cjs tests/feature-requests.test.cjs tests/wallpaper-colors.test.cjs tests/ui-shell-bugfixes.test.cjs
