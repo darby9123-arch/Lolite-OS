@@ -25,6 +25,14 @@ A Lolite-branded browser desktop with the original Cosmos space interface, apps,
 
 ## Update Log
 
+### Feature Requests app — 2026-11-11
+- Added the **Feature Requests** app to the Lolite desktop, modern Start menu, Spotlight Search, Cosmos desktop and App Store (always free).
+- Sign in with your existing Lolite Chat account to submit ideas, vote once for an approved idea and follow development progress.
+- Admins review requests before publishing and can update statuses and leave team notes.
+- Uses live Supabase tables with Row Level Security (RLS), private voter identities and server-maintained vote totals.
+- [Read the Feature Requests guide](docs/FEATURE-REQUESTS.md).
+
+
 ### Game Store UI cleanup — 2026-11-11
 - Reworked existing Game Store cards into a consistent cover + details layout: Play, Info and server selector are always visible, even without hover.
 - Fixed layout conflicts between the older compact Store, the 4.1 feature stylesheet and the gallery skin; cards respond to the app window's actual width.
