@@ -293,7 +293,8 @@ async function importUGSFolder(files,onProgress){
   if(/\.html?$/i.test(name)){
    const options=catalog.get(name.toLowerCase());
    if(options?.length&&file.size>=100){
-    let html=await file.text();
+    const original=await file.text();
+    let html=original;
     if(/^\s*<Module(?:\s[^>]*)?>/i.test(html)){
      const start=html.search(/<!doctype\s+html\b|<html[\s>]/i);
      const end=html.toLowerCase().lastIndexOf("</html>");
@@ -305,7 +306,7 @@ async function importUGSFolder(files,onProgress){
      const key=entry.kind+":"+entry.title.toLowerCase().replace(/[^a-z0-9]/g,"");
      const previous=matches.get(key);
      if(!previous||file.size>previous.bytes)matches.set(key,{title:entry.title,kind:entry.kind,root:path,bytes:file.size});
-     if(html.length!==file.size||html!==await file.text())blob=new Blob([html],{type:"text/html;charset=utf-8"});
+     if(html!==original)blob=new Blob([html],{type:"text/html;charset=utf-8"});
     }else skipped++;
    }
   }
