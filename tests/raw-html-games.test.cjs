@@ -30,9 +30,10 @@ class MockElement {
  }
  addEventListener(name,callback){this.listeners[name]=callback}
  querySelector(selector){
-  const matches=node=>selector.startsWith('.')?
-   node.className.split(/\s+/).includes(selector.slice(1)):
-   selector===node.tagName.toLowerCase();
+  const selectors=selector.split(',').map(value=>value.trim());
+  const matches=node=>selectors.some(value=>value.startsWith('.')?
+   node.className.split(/\s+/).includes(value.slice(1)):
+   value===node.tagName.toLowerCase());
   const queue=[...this.children];
   while(queue.length){const e=queue.shift();if(matches(e))return e;queue.unshift(...e.children)}
   return null;
@@ -199,6 +200,21 @@ test('When the first server returns 404, its HTML backup loads in the same Lolit
  assert.deepEqual(h.calls.map(x=>x.method),['HEAD','HEAD','GET']);
  assert.deepEqual(h.marked,[{url:'https://cdn.example/games/demo.html',status:404}]);
  assert.equal(h.content.querySelector('.store-player'),h.player,'the game window is preserved');
+});
+test('Game not loading help can switch away from a cross-origin 404 screen',async()=>{
+ const h=harness({
+  fallbackSources:[{name:'Alternate hosted game',url:'https://cdn-backup.example/games/demo.html'}]
+ });
+ const help=h.player.querySelector('.store-player-help');
+ const next=help?.children?.find(el=>el.textContent==='Try next server');
+ assert.ok(next,'The in-app 404 recovery button should be available');
+ next.listeners.click();
+ await flush();
+ const frame=h.player.querySelector('.store-frame');
+ assert.equal(frame.dataset.gameUrl,'https://cdn-backup.example/games/demo.html');
+ assert.equal(frame.dataset.gameRender,'raw-html');
+ assert.match(h.player.querySelector('.store-player-server').textContent,/Alternate hosted game/);
+ assert.deepEqual(h.calls.map(x=>x.method),['HEAD','HEAD','GET']);
 });
 test('Neon Tide makes its original raw HTML server selectable again',()=>{
  const store=fs.readFileSync(path.join(__dirname,'../core/game-store.js'),'utf8');
