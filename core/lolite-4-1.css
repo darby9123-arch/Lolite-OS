@@ -29,7 +29,13 @@ html[data-lolite-design="cosmos"] #icons .desktop-icon:hover .lolite-icon--gener
 .lm-favourite[aria-pressed="true"]{color:#a2f5c6;border-color:#4ea983}
 .lm-library-note{font-size:11px;color:#9cbbc1;line-height:1.45;margin:0 0 14px}
 
-/* Game Store 3.0: details overlay, without touching the player's launch path. */
+/* Game Store 3.0: sorting and details, without touching the player's launch path. */
+.store-v41 .store-sort-label{display:flex;align-items:center;gap:6px;color:#bcb2d0;font-size:11px;white-space:nowrap}
+.store-v41 .store-sort-label select{max-width:132px;min-height:35px;border:1px solid #58496c;border-radius:7px;background:#282239;color:#f1e7ff;padding:5px 7px;cursor:pointer}
+@media(max-width:690px){.store-v41 .store-top{flex-wrap:wrap}.store-v41 .store-sort-label{order:3}.store-v41 .store-count-pill{white-space:normal}}
+.store-v41 .store-card-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.store-v41 .store-details{flex:0 0 auto}
+/* Game details overlay */
 .lolite-game-detail{position:fixed;inset:0;z-index:100050;display:grid;place-items:center;padding:20px;background:#050713c7}
 .lolite-game-detail[hidden]{display:none!important}
 .lolite-game-detail-panel{width:min(560px,100%);max-height:min(680px,90dvh);overflow:auto;padding:22px;background:#201b2c;border:1px solid #6f6086;border-radius:14px;color:#f4efff;box-shadow:0 22px 70px #000c;font:13px/1.6 "Segoe UI",system-ui,sans-serif}
