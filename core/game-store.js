@@ -453,7 +453,7 @@
      const key=ugsTitleKey(title);if(!key||taken.has(key))continue;
      taken.add(key);listed++;
      const record=byId.get(saved[id])||installedByTitle.get(key);
-     const hasLocalInstall=kind==='html5'&&!!record&&typeof record.root==='string'&&/^pkg-[a-f0-9-]{16,60}$/.test(record.packId||record.id);
+     const hasLocalInstall=!!record&&typeof record.root==='string'&&/^pkg-[a-f0-9-]{16,60}$/.test(record.packId||record.id);
      const hostedURL=typeof hosted[id]==='string'&&/^html%20games\/ugs\/[a-z0-9._-]+\.html?$/i.test(hosted[id])?hosted[id]:'';
      const hasHosted=kind==='html5'&&!!hostedURL;
      const hasInstall=hasLocalInstall||hasHosted;
@@ -505,6 +505,23 @@
        await syncUGSCollection();
        window.toast?.('UGS game installed locally: '+entry.title);
      }catch(err){window.toast?.(err?.message||'Could not install the UGS HTML game')}
+   },{once:true});
+   input.click();
+ };
+ window.loliteUGSImportFolder=()=>{
+   const input=document.createElement('input');
+   input.type='file';
+   input.multiple=true;
+   input.setAttribute('webkitdirectory','');
+   input.setAttribute('directory','');
+   input.addEventListener('change',async()=>{
+     const selected=input.files;
+     if(!selected?.length)return;
+     try{
+       const result=await window.LoliteLocalGamePackages.importUGSFolder(selected,message=>window.toast?.(message));
+       await syncUGSCollection();
+       window.toast?.('Installed '+result.imported+' real UGS HTML games from this folder. '+result.skipped+' unsupported files skipped.');
+     }catch(err){window.toast?.(err?.message||'UGS folder import failed')}
    },{once:true});
    input.click();
  };
@@ -852,7 +869,7 @@
   const categoryJump='<label class="store-category-jump">Collection <select data-store-category-jump aria-label="Choose game collection">'+
     categoryNames.map(name=>'<option value="'+encodeLabel(name)+'"'+(active===name?' selected':'')+'>'+encodeLabel(name)+'</option>').join('')+
     '</select></label>';
-  const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" type="search" aria-label="Search games" placeholder="Search games…" value="'+encodeLabel(query)+'"></div>'+sortMenu+(active==='UGS'?'<button class="store-health-check" type="button" data-ugs-import-zip title="Install a UGS HTML5 ZIP on this device">Import UGS ZIP</button>':'')+'<button class="store-health-check" type="button" onclick="window.loliteStoreCheckFiles()" aria-label="Check game files" title="'+encodeLabel(healthText)+'">⚙</button><span class="store-count-pill" title="Every distinct server counts as one playable version">'+totalPlayable.toLocaleString()+' games incl. servers ('+totalGames.length+' titles)</span>'+categoryJump+'</div>';
+  const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" type="search" aria-label="Search games" placeholder="Search games…" value="'+encodeLabel(query)+'"></div>'+sortMenu+(active==='UGS'?'<button class="store-health-check" type="button" data-ugs-import-folder title="Install all actual UGS HTML files from a selected downloaded folder">Import UGS Folder</button><button class="store-health-check" type="button" data-ugs-import-zip title="Install a UGS HTML5 ZIP on this device">Import UGS ZIP</button>':'')+'<button class="store-health-check" type="button" onclick="window.loliteStoreCheckFiles()" aria-label="Check game files" title="'+encodeLabel(healthText)+'">⚙</button><span class="store-count-pill" title="Every distinct server counts as one playable version">'+totalPlayable.toLocaleString()+' games incl. servers ('+totalGames.length+' titles)</span>'+categoryJump+'</div>';
   let list;
   if(query)list=filtered();
   else if(active==='Featured'){
@@ -1053,8 +1070,9 @@
  window.lolitePlayMinecraft=()=>window.loliteStorePlay('clminecraftpocketedition.html');
  window.loliteStoreCheckFiles=()=>window.LoliteGameHealth?.scan?.(games,{force:true});
  document.addEventListener('click',event=>{
-  const node=event.target.closest?.('.store-v41 [data-store-favorite],.store-v41 [data-store-launch],.store-v41 [data-store-details],.store-v41 [data-store-open-chat],.store-v41 [data-category],.store-v41 [data-ugs-source],.store-v41 [data-ugs-install],.store-v41 [data-ugs-import-zip]');
+  const node=event.target.closest?.('.store-v41 [data-store-favorite],.store-v41 [data-store-launch],.store-v41 [data-store-details],.store-v41 [data-store-open-chat],.store-v41 [data-category],.store-v41 [data-ugs-source],.store-v41 [data-ugs-install],.store-v41 [data-ugs-import-zip],.store-v41 [data-ugs-import-folder]');
   if(!node)return;
+  if(node.hasAttribute('data-ugs-import-folder')){window.loliteUGSImportFolder();event.preventDefault();return}
   if(node.hasAttribute('data-ugs-import-zip')){window.loliteUGSImportZip();event.preventDefault();return}
   if(node.dataset.ugsSource){window.loliteUGSViewSource(node.dataset.ugsSource);event.preventDefault();return}
   if(node.dataset.ugsInstall){window.loliteUGSImportHTML(node.dataset.ugsInstall);event.preventDefault();return}
