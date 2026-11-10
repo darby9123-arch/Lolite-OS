@@ -1,0 +1,69 @@
+/* UI bugfixes, November 2026. Loaded after theme sheets to preserve theme artwork. */
+#icons .desktop-icon{box-sizing:border-box!important;min-width:0!important;align-items:center!important;text-align:center!important}
+#icons .desktop-icon > :is(.lolite-icon,.app-symbol){box-sizing:border-box!important;display:grid!important;place-items:center!important;align-self:center!important;flex-shrink:0!important;margin-inline:auto!important}
+#icons .desktop-icon > span:last-child:not(.lolite-icon){align-self:center!important;max-width:100%!important;text-align:center!important;overflow-wrap:anywhere}
+#icons .desktop-icon .lolite-icon :is(svg,img),
+#taskbar .lolite-icon :is(svg,img),
+.window-app-icon .lolite-icon :is(svg,img){display:block!important;align-self:center!important;justify-self:center!important;margin:auto!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center!important}
+#taskbar .lolite-icon,.window-app-icon .lolite-icon{box-sizing:border-box!important;display:grid!important;place-items:center!important;flex-shrink:0!important}
+.window-app-icon{display:grid!important;place-items:center!important;flex-shrink:0!important}
+
+/* Windows must never be wider than the usable screen on narrow phones or split displays. */
+html:not(.browsing-mode) .window:not(:fullscreen){
+  box-sizing:border-box!important;
+  min-width:min(280px,calc(100vw - 16px))!important;
+  min-height:min(160px,22dvh)!important;
+  max-width:calc(100vw - 16px)!important;
+  max-height:calc(100dvh - 16px)!important;
+}
+html:not(.browsing-mode) .window>.titlebar{min-width:0}
+html:not(.browsing-mode) .window>.titlebar strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html:not(.browsing-mode) .window>.content{min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain}
+@media(max-width:420px){
+  html:not(.browsing-mode) .window .controls .snap{display:none!important}
+}
+
+/* Keep task buttons and notifications reachable as the bar becomes crowded. */
+#taskbar{box-sizing:border-box!important;min-width:0}
+#taskbar #tasks{min-width:0!important;overflow-x:auto!important;overflow-y:hidden!important;overscroll-behavior-x:contain;scrollbar-width:none}
+#taskbar #tasks::-webkit-scrollbar{display:none}
+#taskbar #tasks>.taskwin{flex-shrink:0!important}
+#taskbar .win-taskbar-center{box-sizing:border-box;min-width:0}
+.lolite-task-preview,.lolite-task-context{box-sizing:border-box;max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px);overflow:auto}
+
+/* Cosmos reserves a right-hand pocket for the tray at laptop widths. */
+@media(min-width:811px) and (max-width:1150px){
+  html[data-lolite-design="cosmos"][data-desktop-theme="cosmos"] #taskbar .win-taskbar-center{
+    left:calc((100vw - 270px)/2)!important;
+    transform:translateX(-50%)!important;
+    max-width:calc(100vw - 320px)!important;
+    overflow-x:auto!important;
+    justify-content:flex-start!important;
+    scrollbar-width:none;
+  }
+}
+/* On smaller screens the Cosmos tray stays at the top, while the dock scrolls below. */
+@media(max-width:810px){
+  html[data-lolite-design="cosmos"][data-desktop-theme="cosmos"] #taskbar .win-taskbar-center{
+    box-sizing:border-box!important;
+    width:calc(100vw - 16px)!important;
+    max-width:calc(100vw - 16px)!important;
+    min-width:0!important;
+    padding:5px 8px!important;
+    gap:2px!important;
+    justify-content:flex-start!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    scrollbar-width:none;
+  }
+  html[data-lolite-design="cosmos"][data-desktop-theme="cosmos"] #taskbar .win-taskbar-center::-webkit-scrollbar{display:none}
+}
+@media(max-width:560px){
+  #taskbar #clock small{display:none!important}
+  #taskbar #clock{min-width:42px!important}
+  #taskbar .tray{flex-shrink:0!important}
+  .win-snap-menu{max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px);overflow:auto}
+}
+@media(prefers-reduced-motion:reduce){
+  #taskbar .win-taskbar-center{scroll-behavior:auto!important}
+}
