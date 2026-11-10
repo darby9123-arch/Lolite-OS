@@ -23,6 +23,13 @@ A Lolite-branded browser desktop with the original Cosmos space interface, apps,
 
 ## Update Log
 
+### Generated Cosmos PNG app icons installed — 2026-11-10
+- Installed **64 selected app PNG icons** and **108 alternative generated designs** in `assets/icons/cosmos/{selected,primary,alternate,space-extra}/`.
+- The original generated artwork is optimized to local 128×128 PNG files for desktop, Start menu, taskbar, App Store and mobile launcher speed.
+- `core/app-icon-pngs.js` displays these local images and falls back to the existing SVG icons when needed.
+- Updated Lolite's browser favicon to the generated Cosmos logo and `icons.html` to display the new PNG pack.
+- See `assets/icons/cosmos/manifest.json` for the selected game/app icon filenames and original design references.
+
 ### Lolite OS 4.0 — 2026-11-10
 - **Game Store health checks:** verify hosted game files, hide confirmed missing entries without treating CORS or offline issues as missing.
 - **Spotlight Search (Ctrl + Space):** apps, unlocked games, file names and settings, with keyboard navigation.
