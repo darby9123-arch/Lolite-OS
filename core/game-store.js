@@ -731,8 +731,19 @@ if(Array.isArray(window.LoliteMountainCatalog)){
  const storeFinder=new MutationObserver(watchArtwork);storeFinder.observe(document.documentElement,{childList:true,subtree:true});watchArtwork();
  const listCards=list=>{const showing=list.slice(0,visibleCount);return '<div class="store-grid">'+showing.map(card).join('')+'</div>'+(showing.length<list.length?'<div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:28px 6px;color:#a9b6cb;font-size:12px">Showing '+showing.length+' of '+list.length+' <button class="store-play" type="button" style="max-width:170px" onclick="window.loliteStoreMore()">Load more games ↓</button></div>':'')};
  const section=(title,list)=>list.length?'<section class="store-section"><div class="store-section-head"><div><h2>'+title+'</h2><p>'+list.length+' games to explore</p></div><button type="button" onclick=\'window.loliteStoreCategory("'+title+'")\'>View collection →</button></div><div class="store-grid">'+list.slice(0,8).map(card).join('')+'</div></section>':'';
+ const gallerySizer=typeof ResizeObserver==='function'?new ResizeObserver(entries=>{
+  for(const entry of entries){
+   const width=entry.contentRect.width;
+   const mode=width<660?'small':width<930?'compact':'wide';
+   if(entry.target.dataset.size!==mode)entry.target.dataset.size=mode;
+  }
+ }):null;
  function render(){
   const root=document.querySelector('.store-main');if(!root)return;
+  const store=root.closest('.store-v41');
+  if(store&&gallerySizer&&!store.dataset.galleryObserved){
+   store.dataset.galleryObserved='1';gallerySizer.observe(store);
+  }
   requestHealth();
   const healthStatus=window.LoliteGameHealth?.summary?.();
   const hiddenCount=games.length-healthy(games).length;
