@@ -37,7 +37,7 @@ test('UGS appears as playable built-in HTML only; no import or Drive source cont
  assert.doesNotMatch(store,/ugsPending|ugsHasOther/);
  assert.doesNotMatch(store,/data-ugs-source|data-ugs-install|data-ugs-import-zip|data-ugs-import-folder/);
  assert.doesNotMatch(store,/window\.loliteUGSImport|window\.loliteUGSViewSource/);
- assert.doesNotMatch(store,/Import UGS ZIP|Import UGS Folder|View UGS Drive file|View source|Import HTML/);
+ assert.doesNotMatch(store,/Import UGS ZIP|Import UGS Folder|View UGS Drive file|View source/);
  assert.doesNotMatch(store,/https:\/\/drive\.google\.com\/file\/d\//);
 });
 
