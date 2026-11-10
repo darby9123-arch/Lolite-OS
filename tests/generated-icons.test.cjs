@@ -39,3 +39,46 @@ test('Generated icon artwork is centred without changing app icon hit areas',()=
  assert.match(loader,/\.lm-app-icon > \.lolite-icon--generated/);
  assert.match(loader,/\.appstore-icon > \.lolite-icon--generated/);
 });
+
+test('Brand icon pack loads after PNG icons on desktop and in gallery',()=>{
+ for(const page of ['index.html','icons.html']){
+  const html=read(page);
+  const png=html.indexOf('core/app-icon-pngs.js');
+  const brand=html.indexOf('core/app-icon-brand-pack.js?v=brand-purple-20261111');
+  assert.ok(png>=0 && brand>png,page+' incorrect icon loader order');
+  assert.ok(brand<html.indexOf(page==='index.html'?'src="app.js':'src="core/icon-preview.js'),page+' icon pack loads too late');
+ }
+});
+test('Blue and purple icon pack has two complete ten-app batches',()=>{
+ const vm=require('node:vm');
+ const code=read('core/app-icon-brand-pack.js');
+ const nodes=new Map();
+ const head={appendChild(el){nodes.set(el.id,el)}};
+ const document={
+  head,
+  getElementById(id){return nodes.get(id)||null},
+  createElement(name){assert.equal(name,'style');return {id:'',textContent:''}}
+ };
+ const previous={
+  names:['home','games','files','browser'],
+  resolve(id){return id},
+  tile(id){return '<fallback data-id="'+id+'"></fallback>'}
+ };
+ const window={LoliteIcons:previous};
+ vm.runInNewContext(code,{window,document});
+ const api=window.LoliteIcons;
+ const first=['music','steam','youtube','discord','roblox','github','spotify','docs','sheets','slides'];
+ const second=['browser','files','settings','appstore','camera','photos','mail','calendar','weather','chatroom'];
+ for(const id of [...first,...second]){
+  const html=api.tile(id);
+  assert.match(html,/lolite-icon--brand-real/,'not branded: '+id);
+  assert.match(html,/<svg /,'missing SVG: '+id);
+ }
+ assert.equal(api.resolve('app-music'),'music');
+ assert.equal(api.resolve('app-steam'),'steam');
+ assert.equal(api.resolve('app-chat'),'chatroom');
+ assert.match(api.tile('unknown-app'),/fallback/);
+ const style=nodes.get('lolite-brand-real-icons-style').textContent;
+ assert.match(style,/place-items:center!important/);
+ assert.match(style,/#taskbar/);
+});
