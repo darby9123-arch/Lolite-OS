@@ -59,6 +59,8 @@ function inspector(){
 test('ZIP inspector exports limits and reviews real MP4 headers',async()=>{
  const imp=inspector();
  assert.equal(imp.limits.maxVideoMB,50);
+ assert.equal(imp.limits.maxArchiveMB,300);
+ assert.equal(imp.limits.maxVideos,24);
  const zip=makeZip([
   {name:'Space/Cosmic_Pulse.mp4',bytes:minimalMp4,deflate:true},
   {name:'Nature/Calm-Sea.mp4',bytes:minimalMp4},
@@ -124,4 +126,30 @@ test('Uploaded MP4s use smooth looping and the Special Live Wallpapers filter',(
  assert.match(loop,/swap\(\)/);
  assert.ok(html.indexOf('core/wallpaper-thumbnails.js')<html.indexOf('core/wallpapers.js'));
  assert.ok(html.indexOf('core/wallpaper-loop.js')<html.indexOf('core/wallpapers.js'));
+});
+
+
+test('ZIP MP4 names remove trailing numbers, extensions and separators, with title case',async()=>{
+ const mp4s=[
+  ['sunset-beach-003.mp4','Sunset Beach'],
+  ['Space/PURPLE_NEBULA_20261111.MP4','Purple Nebula'],
+  ['Nature/soft-ocean-waves (12).mp4','Soft Ocean Waves'],
+  ['City/gta-vice-city-4.mp4','GTA Vice City'],
+  ['4K/bright_SKY_4k-001.mp4','Bright Sky 4K'],
+  ['Cars/fast-car4.mp4','Fast Car'],
+  ['Winter/snow-night_01_02.mp4','Snow Night'],
+  ['Folder/sunset_1080p.mp4','Sunset 1080p']
+ ];
+ const zip=makeZip(mp4s.map(([name])=>({name,bytes:minimalMp4})));
+ const titles=await inspector().inspect(new File([zip],'names.zip',{type:'application/zip'}));
+ assert.deepEqual(Array.from(titles,x=>x.name),mp4s.map(([,title])=>title));
+ assert.deepEqual(Array.from(titles,x=>x.path),mp4s.map(([name])=>name),
+  'Only the display title should change; original MP4 paths remain available');
+});
+test('Admin ZIP review shows cleaned names and original filenames before upload',()=>{
+ const admin=fs.readFileSync('core/lolite-admin.js','utf8');
+ assert.match(admin,/Original: /);
+ assert.match(admin,/safe\(entry\.name\)/);
+ assert.match(admin,/extensions, trailing numbers/);
+ assert.match(admin,/ZIP up to 300 MB/);
 });
