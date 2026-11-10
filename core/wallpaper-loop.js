@@ -10,7 +10,6 @@
   let current=els[0],next=els[1];
   function configure(el){
    el.className='lolite-live-video';
-   el.crossOrigin='anonymous';
    el.muted=true;el.defaultMuted=true;el.playsInline=true;el.loop=true;
    el.preload='auto';el.poster=poster||'';
    el.setAttribute('playsinline','');
