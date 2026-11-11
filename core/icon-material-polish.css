@@ -1,0 +1,118 @@
+/* Lolite OS 5: quiet wallpaper accents and authentic icon finishes.
+   Loaded last so Desktop customization beats the older bright Cosmos/Crimson rules. */
+html[data-wallpaper-colors="on"] .lolite-icon.lolite-icon--brand-real,
+html[data-wallpaper-colors="on"][data-lolite-design] #icons .desktop-icon .lolite-icon.lolite-icon--brand-real,
+html[data-wallpaper-colors="on"][data-lolite-design][data-desktop-experience][data-desktop-theme] #icons .desktop-icon .lolite-icon.lolite-icon--brand-real{
+ background:linear-gradient(145deg,var(--wall-icon-start),var(--wall-icon-end))!important;
+ border-color:rgba(230,240,255,.13)!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 3px 10px rgba(0,0,0,.17)!important;
+}
+/* The ink inside the inline SVG actually changes colour. White cut-outs and
+   pastel details remain untouched for contrast and brand recognition. */
+html[data-wallpaper-colors="on"]:not([data-lic-symbol-mode="custom"]):not([data-lic-symbol-mode="original"]) .lolite-icon--brand-real{
+ --lic-symbol-color:var(--wall-glyph-color,#6758d9);
+}
+html.lic-applied[data-lic-symbol-mode="original"] .lolite-icon--brand-real{
+ --lic-symbol-color:initial;
+}
+html[data-wallpaper-colors="on"] .lolite-icon.lolite-icon--brand-real svg,
+html[data-wallpaper-colors="on"] #icons .desktop-icon .lolite-icon--brand-real svg,
+html[data-wallpaper-colors="on"] #taskbar .lolite-icon--brand-real svg{
+ filter:none!important; /* Never rotate white highlights or branded artwork. */
+}
+/* Wallpaper matching accents instead of painting the entire operating system
+   into saturated colours; surfaces are almost neutral and text stays readable. */
+html[data-wallpaper-colors="on"] :is(.window,.panel,.win-flyout,#start,#searchPanel){
+ box-shadow:0 18px 50px rgba(0,0,0,.25)!important;
+}
+html[data-wallpaper-colors="on"] .window>.titlebar{
+ background:color-mix(in srgb,var(--wall-titlebar) 88%,#121620)!important;
+}
+html[data-wallpaper-colors="on"] .window>.content{
+ background:color-mix(in srgb,var(--wall-bg) 94%,#141822)!important;
+}
+html[data-wallpaper-colors="on"] :is(.appstore-card,.lw-card,.cosmos-widget){
+ border-color:color-mix(in srgb,var(--wall-border) 55%,transparent)!important;
+}
+html[data-wallpaper-colors="on"] #taskbar .win-start-logo i,
+html[data-wallpaper-colors="on"] #taskbar .win-pinned.active::after{
+ background:var(--wall-accent)!important;
+}
+/* Existing tile picker now controls the tile itself, not merely the shortcut
+   rectangle. Always retain the existing artwork size and centre alignment. */
+html.lic-applied[data-lic-tile-source="custom"] .lolite-icon.lolite-icon--brand-real,
+html.lic-applied[data-lic-tile-source="custom"][data-lolite-design] #icons .desktop-icon .lolite-icon.lolite-icon--brand-real,
+html.lic-applied[data-lic-tile-source="custom"][data-lolite-design][data-desktop-experience][data-desktop-theme] #icons .desktop-icon .lolite-icon.lolite-icon--brand-real{
+ background:linear-gradient(145deg,
+  color-mix(in srgb,var(--lic-tile-color) 77%,#afb9d0),
+  color-mix(in srgb,var(--lic-tile-color) 47%,#17243b))!important;
+}
+/* Inherited custom colours are honoured in the Start menu and the dock too. */
+html.lic-applied[data-lic-tile-source="original"] .lolite-icon.lolite-icon--brand-real,
+html.lic-applied[data-lic-tile-source="original"][data-lolite-design] #icons .desktop-icon .lolite-icon.lolite-icon--brand-real{
+ background:linear-gradient(145deg,#5689d3,#544b9f)!important;
+}
+/* Material option: soft solid / frosted glass / minimal. */
+html.lic-applied[data-lic-finish="glass"] .lolite-icon.lolite-icon--brand-real,
+html.lic-applied[data-lic-finish="glass"][data-lolite-design] #taskbar .lolite-icon.lolite-icon--brand-real,
+html.lic-applied[data-lic-finish="glass"]:not(.browsing-mode):not(.mobile-mode) #desktop #icons .desktop-icon > .lolite-icon.lolite-icon--brand-real,
+html.lic-applied[data-lic-finish="glass"] #lolite-icon-settings .lic-mini-icon > .lolite-icon.lolite-icon--brand-real{
+ background:
+  linear-gradient(150deg,rgba(255,255,255,.23),rgba(255,255,255,.045) 48%,rgba(255,255,255,.08)),
+  color-mix(in srgb,var(--lic-tile-color,#536b92) 24%,transparent)!important;
+ -webkit-backdrop-filter:blur(var(--lic-glass-blur,12px)) saturate(1.2)!important;
+ backdrop-filter:blur(var(--lic-glass-blur,12px)) saturate(1.2)!important;
+ border:1px solid rgba(235,244,255,.25)!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.33),inset 0 -1px 0 rgba(255,255,255,.035),0 5px 16px rgba(0,0,0,.16)!important;
+ position:relative;
+}
+html.lic-applied[data-lic-finish="minimal"] .lolite-icon.lolite-icon--brand-real,
+html.lic-applied[data-lic-finish="minimal"]:not(.browsing-mode):not(.mobile-mode) #desktop #icons .desktop-icon > .lolite-icon.lolite-icon--brand-real,
+html.lic-applied[data-lic-finish="minimal"] #lolite-icon-settings .lic-mini-icon > .lolite-icon.lolite-icon--brand-real{
+ background:transparent!important;
+ -webkit-backdrop-filter:none!important;
+ backdrop-filter:none!important;
+ border:1px solid transparent!important;
+ box-shadow:none!important;
+}
+/* Keep a single rounded app tile: do not accidentally restore an outer white box. */
+html.lic-applied[data-lic-finish="glass"]:not(.browsing-mode):not(.mobile-mode) #desktop #icons button.desktop-icon:not(:hover):not(.selected),
+html.lic-applied[data-lic-finish="minimal"]:not(.browsing-mode):not(.mobile-mode) #desktop #icons button.desktop-icon:not(:hover):not(.selected),
+html.lic-applied[data-lic-finish="glass"] #lolite-icon-settings .lic-mini-icon,
+html.lic-applied[data-lic-finish="minimal"] #lolite-icon-settings .lic-mini-icon{
+ background:transparent!important;border-color:transparent!important;box-shadow:none!important;
+}
+/* Avoid the original CSS's bright tile border in the desktop editor. */
+html.lic-applied[data-lic-finish="solid"]:not(.browsing-mode):not(.mobile-mode) #desktop #icons .desktop-icon > .lolite-icon.lolite-icon--brand-real{
+ border-color:transparent!important;
+ box-shadow:none!important;
+}
+.cr-settings #lolite-icon-settings .lic-appearance-head{
+ display:flex;flex-direction:column;gap:4px;grid-column:1/-1;
+ padding:12px 0 3px;border-top:1px solid rgba(184,199,231,.16);
+}
+.cr-settings #lolite-icon-settings .lic-appearance-head strong{color:#f3f7ff;font-size:14px;letter-spacing:-.01em}
+.cr-settings #lolite-icon-settings .lic-appearance-head small{font-size:11px;color:#aab8ca;line-height:1.45}
+.cr-settings #lolite-icon-settings .lic-controls select[data-lic-field]{
+ width:100%;min-height:37px;padding:8px 10px;
+ color:#eff5ff;background:#242e40;border:1px solid #51617d;border-radius:9px;
+}
+.cr-settings #lolite-icon-settings .lic-controls input[type=color]{
+ flex:none;min-width:42px;width:50px;height:36px;
+ border:1px solid #526580;border-radius:8px;background:#222c3c;padding:3px;cursor:pointer;
+}
+.cr-settings #lolite-icon-settings .lic-controls input:disabled{opacity:.45;cursor:not-allowed}
+.cr-settings #lolite-icon-settings .lic-color-line{min-height:40px;gap:10px}
+.cr-settings #lolite-icon-settings .lic-control input:focus-visible,
+.cr-settings #lolite-icon-settings .lic-control select:focus-visible{
+ outline:2px solid var(--accent,#95b5e2)!important;outline-offset:3px!important;
+}
+.cr-settings #lolite-icon-settings .lic-preview-note{color:#b9c7dc}
+@container lic-pane (max-width:520px){
+ .cr-settings #lolite-icon-settings .lic-appearance-head{grid-column:auto;}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-wallpaper-colors="on"] :is(.lolite-icon--brand-real,.window,.panel){
+  transition:none!important;
+ }
+}
