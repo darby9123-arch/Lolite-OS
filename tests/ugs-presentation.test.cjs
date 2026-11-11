@@ -94,3 +94,26 @@ test('Original game HTML remains untouched; the only new network requests look u
  assert.match(source,/while\(text\.length<65536\)/);
  assert.doesNotMatch(source,/eval\(|innerHTML\s*=|<iframe|window\.open/);
 });
+
+
+test('Every hosted UGS game gets a real image or a readable illustrated fallback',()=>{
+ const {api}=harness();
+ const sports=api.poster({file:'ugs-sports.html',title:'Basketball Stars',category:'Sports'});
+ const driving=api.poster({file:'ugs-racing.html',title:'Drift Racers',category:'Racing & Driving'});
+ const puzzle=api.poster({file:'ugs-puzzle.html',title:'Block Puzzle',category:'Puzzle & Brain'});
+ assert.match(sports,/^data:image\/svg\+xml;charset=UTF-8,/);
+ assert.match(driving,/^data:image\/svg\+xml;charset=UTF-8,/);
+ assert.match(puzzle,/^data:image\/svg\+xml;charset=UTF-8,/);
+ assert.notEqual(sports,driving);
+ assert.notEqual(driving,puzzle);
+ assert.equal(api.poster({file:'ugs-sports.html',title:'Basketball Stars',category:'Sports'}),sports);
+ const markup=decodeURIComponent(sports.split(',')[1]);
+ assert.match(markup,/Basketball Stars/);
+ assert.match(markup,/<circle /);
+ assert.doesNotMatch(markup,/<script\b|<iframe\b|<image\b|https?:\/\//);
+ const store=read('core/game-store.js');
+ assert.match(store,/function posterForGame\(game\)/);
+ assert.match(store,/LoliteUGSPresentation\.poster\(game\)/);
+ assert.match(store,/const colors=coverPalette\(g\),poster=posterForGame\(g\)/);
+ assert.match(store,/game\.backgroundUrl\|\|game\.iconUrl\|\|coverFor\(game\.file\)\|\|posterForGame\(game\)/);
+});
