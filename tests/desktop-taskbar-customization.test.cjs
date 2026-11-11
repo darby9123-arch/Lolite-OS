@@ -175,3 +175,50 @@ test('Icon visibility rule targets only the shortcut layer in desktop mode',()=>
  assert.match(index,/core\/desktop-icon-customization\.css\?v=hide-desktop-icons-20261112/);
  assert.match(index,/core\/desktop-icon-customization\.js\?v=hide-desktop-icons-20261112/);
 });
+
+
+test('Taskbar style gallery offers five distinctive, selectable saved styles',()=>{
+ const h=load();
+ const html=h.api.markup();
+ for(const [id,title] of [
+  ['floating','Floating Glass'],
+  ['pill','Pill Dock'],
+  ['minimal','Minimal'],
+  ['aero','Aero Glass'],
+  ['classic','Classic']
+ ]){
+  assert.ok(html.includes('data-ltc-style="'+id+'"'),'Missing '+title+' style card');
+  assert.ok(html.includes(title),'Missing '+title+' label');
+  assert.match(css,new RegExp('data-ltc-style='+id+'(?:\\]|\\))'),'Style lacks a real taskbar CSS rule: '+id);
+ }
+ assert.equal(h.api.get().style,'floating','Floating Glass is the cleaner default');
+ const clickStyle=id=>h.handlers.click({
+  target:{closest:selector=>selector.includes('[data-ltc-style]')?{dataset:{ltcStyle:id}}:null}
+ });
+ clickStyle('pill');
+ assert.equal(h.api.get().style,'pill');
+ assert.equal(h.dataset.ltcStyle,'pill');
+ assert.equal(JSON.parse(h.saved.get('lolite.taskbar.v1.guest')).style,'pill');
+ clickStyle('minimal');
+ assert.equal(h.dataset.ltcStyle,'minimal');
+ clickStyle('aero');
+ assert.equal(h.api.get().style,'aero');
+ clickStyle('invalid');
+ assert.equal(h.api.get().style,'aero','Invalid styles must be ignored');
+ h.api.reset();
+ assert.equal(h.api.get().style,'floating');
+ assert.equal(h.dataset.ltcStyle,undefined,'Reset removes forced style overrides');
+});
+test('No oversized opaque black taskbar is forced on the default live preview',()=>{
+ assert.match(css,/#lolite-taskbar-settings \.ltc-preview-bar\s*\{/);
+ assert.match(css,/left:50%;right:auto;bottom:10px;top:auto/);
+ assert.match(css,/width:min\(86%,720px\)/);
+ assert.match(css,/\[data-style=minimal\]/);
+ assert.match(css,/\[data-style=pill\]/);
+ assert.match(css,/\[data-style=aero\]/);
+ assert.match(css,/\[data-style=classic\]/);
+ assert.match(css,/\[data-ltc-style=floating\]/);
+ assert.match(css,/\[data-ltc-style=minimal\][\s\S]*?#desktop #taskbar\{[\s\S]*?background:transparent!important/);
+ assert.match(css,/\[data-ltc-position=top\][\s\S]*?#desktop #taskbar/);
+ assert.match(css,/var\(--ltc-opacity\)/);
+});
