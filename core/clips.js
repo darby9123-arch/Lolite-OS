@@ -12,7 +12,7 @@
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const safeUUID=x=>/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(String(x||''))?String(x):'';
  const id=()=>typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():
-  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>(c==='x'?Math.random()*16:8+Math.random()*4|0).toString(16));
+  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>Math.floor(c==='x'?Math.random()*16:8+Math.random()*4).toString(16));
  const root=()=>document.querySelector('.window[data-window-id="clips"] #lcRoot')||document.getElementById('lcRoot');
  const client=()=>window.LoliteBrowserAccounts?.getClient?.();
  const media=()=>typeof MediaRecorder!=='undefined'&&!!navigator.mediaDevices?.getDisplayMedia;
@@ -149,7 +149,7 @@
  async function refreshCloud(){
   const sb=client();
   if(!sb){S.remote=[];S.user=null;S.admin=false;return}
-  S.loading=true;render();
+  S.loading=true;S.error='';render();
   try{
    const {data:{user},error:authError}=await sb.auth.getUser();
    if(authError&&authError.name!=='AuthSessionMissingError')throw authError;
@@ -223,6 +223,7 @@
   const tabs=[['record','Record'],['library','My Clips'],['community','Community']];
   if(S.admin)tabs.push(['review','Admin review']);
   const published=S.remote.filter(c=>c.status==='approved'),pending=S.remote.filter(c=>c.status==='pending');
+  const mineUploads=S.remote.filter(c=>c.uploader_id===S.user?.id&&c.status!=='approved');
   const remoteItems=S.tab==='review'?(S.admin?S.remote:[]):
    S.tab==='community'?published:[];
   el.innerHTML='<div class="lc-header"><div><small>LOLITE OS · GAMING</small><h1>Lolite Clips</h1><p>Record moments, save them privately and share the best ones.</p></div>'+
@@ -238,8 +239,7 @@
      '<p>'+(S.tab==='review'?'Approve videos before they become visible to the community.':'Only admin-approved clips appear here. Uploads are shared only when you explicitly submit them.')+'</p></div>'+
     (!S.user?'<div class="lc-empty">Sign in with your Lolite account to see and share community clips. <button data-lc-action="signin">Open Lolite Chat</button></div>':
      '<div class="lc-grid">'+(remoteItems.length?remoteItems.map(remoteCard).join(''):'<div class="lc-empty">Nothing published here yet.</div>')+'</div>'+
-     (S.tab==='community'&&S.remote.some(r=>r.uploader_id===S.user.id&&r.status!=='approved')?
-      '<p class="lc-note">Your submitted clips are pending review or were not approved. Admins review uploads before publishing.</p>':'')))+
+     (S.tab==='community'&&mineUploads.length?'<section class="lc-my-uploads"><h3>My submitted clips</h3><p>Only you and admins can see unapproved uploads.</p><div class="lc-grid">'+mineUploads.map(remoteCard).join('')+'</div></section>':'')))+
    '</main>';
  }
  async function share(form){
