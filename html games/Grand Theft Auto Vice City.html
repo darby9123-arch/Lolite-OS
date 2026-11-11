@@ -218,7 +218,7 @@ async function verifyRuntimeAvailability() {
             response = await fetch(url, { method: "HEAD", cache: "no-store" });
         } catch (error) {
             // HEAD may be blocked by network rules even when classic scripts work.
-            // The actual <script> load below remains the authoritative fallback.
+            // The later script-element load remains the authoritative fallback.
             console.warn("Could not preflight Vice City engine script:", name, error);
             continue;
         }
