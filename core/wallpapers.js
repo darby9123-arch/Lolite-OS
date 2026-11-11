@@ -485,7 +485,7 @@
    return '<article class="cr-wall-item"><button type="button" class="cr-wall-card" data-wall-id="'+escape(wall.id)+
     '" aria-pressed="'+(active?.id===wall.id)+'" aria-label="Apply '+escape(wall.name)+'">'+
     '<span class="cr-wall-image"><img data-wall-poster-for="'+escape(wall.id)+'" src="'+escape(wall.poster||wall.src)+'" alt="" loading="lazy" decoding="async">'+
-    (live(wall)?'<span class="cr-live-label">'+escape(wall.resolution||'LIVE')+'</span>':'')+
+    (live(wall)?'<span class="cr-live-label">'+escape(wall.embedded?'REMOTE':(wall.resolution||'LIVE'))+'</span>':'')+
     '<span class="cr-wall-check">✓</span></span><span class="cr-wall-caption"><strong>'+
     escape(wall.name)+'</strong><small>'+escape(wall.embedded?'Embedded · '+wall.group:wall.category)+' · '+dimensions+
     '</small></span></button>'+(wall.source?'<a class="cr-wall-source" href="'+escape(wall.source)+
@@ -505,7 +505,7 @@
    cats.map(cat=>'<button type="button" data-wall-filter="'+cat+'" aria-pressed="'+(cat===filter)+'">'+
    escape(cat)+' <small>'+collection.filter(w=>matches(w,cat)).length+'</small></button>').join('')+
    '</div></div><div class="cr-wall-grid">'+cards(filter,query)+'</div>'+
-   '<p class="cr-help">Normal wallpapers stream from <a href="https://livelywallpaper.app/live-wallpapers/" target="_blank" rel="noopener noreferrer">LivelyWallpaper.app</a>. Embedded Wallpapers stream from <a href="https://motionbgs.com" target="_blank" rel="noopener noreferrer">MotionBGS</a> remote video links (not copied into Lolite). If playback is blocked, a still placeholder remains visible. Motion pauses when the tab is hidden or Reduce Motion is enabled.</p>';
+   '<p class="cr-help">Normal wallpapers stream from <a href="https://livelywallpaper.app/live-wallpapers/" target="_blank" rel="noopener noreferrer">LivelyWallpaper.app</a>. Embedded Wallpapers stream from <a href="https://motionbgs.com" target="_blank" rel="noopener noreferrer">MotionBGS</a> remote video links (not copied into Lolite). Playback may be blocked by MotionBGS (its HD links returned 403 in automated checks); if playback fails, a still placeholder remains visible. Motion pauses when the tab is hidden or Reduce Motion is enabled.</p>';
  }
  document.addEventListener('click',event=>{
   const button=event.target.closest?.('[data-wall-more]');
