@@ -29,6 +29,14 @@ A Lolite-branded browser desktop with the original Cosmos space interface, apps,
 
 ## Update Log
 
+### Lolite Clips — 2026-11-12
+- Added **Lolite Clips** to the desktop, Cosmos, modern Start menu and App Store (free).
+- Press **Alt+Shift+C** to start/stop permissioned gameplay recording. View, download or delete locally stored clips; choose a 15–90 second limit.
+- Clips stay private in browser storage until their owner explicitly submits them for sharing.
+- Members can upload WebM/MP4 clips up to 20 MB for admin review. Approved clips appear in Community; owners can remove their shared uploads.
+- Video files live in private Supabase Storage with row-level permissions. [Clips guide](docs/LOLITE-CLIPS.md).
+
+
 ### Feature Requests — admin replies and Done screenshots (2026-11-12)
 - Lolite admins can post dated replies to suggestions, attach screenshots and mark features Done.
 - Completed requests remain visible with their reply history, screenshot and final vote count; voting is locked.
