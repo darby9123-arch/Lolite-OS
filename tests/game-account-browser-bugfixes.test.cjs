@@ -36,11 +36,14 @@ function gameHarness(fetchFn){
  const part=html.split('<script>').find(x=>x.includes('const loadingText ='));
  assert.ok(part,'game-loader script should be present');
  const code=part.split('</script>')[0];
+ const base=(html.match(/<base href="([^"]+)"/)||[])[1];
+ assert.ok(base,'expected an external engine base URL');
  const scripts=[],notices=[];
  let removed=false,reloads=0;
  const loader={textContent:'LOADING...',remove(){removed=true},after(el){notices.push(el)}};
  const status={textContent:''},progress={max:0,value:0};
  const doc={
+  baseURI:base,
   querySelector:sel=>sel==='#loading-text'?loader:null,
   getElementById:id=>id==='status'?status:id==='progress'?progress:null,
   createElement:tag=>({tagName:tag.toUpperCase(),style:{},children:[],append(...items){this.children.push(...items)},addEventListener(name,cb){this[name]=cb}}),
@@ -52,7 +55,7 @@ function gameHarness(fetchFn){
   fetch:fetchFn,
   indexedDB:{open(){throw new Error('storage unavailable')}},
   XMLHttpRequest:class{open(){}},
-  URL:{createObjectURL:()=> 'blob:vicecity-test'},
+  URL:class GameURL extends URL{static createObjectURL(){return 'blob:vicecity-test'}},
   Request:class{constructor(url){this.url=url}},
   Blob,
   Uint8Array,
@@ -67,7 +70,7 @@ const flush=()=>new Promise(resolve=>setImmediate(resolve));
 test('Vice City shows an actionable failure rather than hanging on a missing asset',async()=>{
  const h=gameHarness(async()=>({ok:false,status:503}));
  await flush();await flush();
- assert.match(h.loader.textContent,/Unable to load Vice City game data/);
+ assert.match(h.loader.textContent,/Unable to start Vice City/);
  assert.equal(h.notices.length,1);
  assert.match(h.notices[0].children[0].textContent,/HTTP 503/);
  const retry=h.notices[0].children[1];
@@ -75,6 +78,23 @@ test('Vice City shows an actionable failure rather than hanging on a missing ass
  retry.click();
  assert.equal(h.reloads(),1);
  assert.equal(h.removed(),false);
+});
+
+test('Vice City detects missing remote engine scripts before transferring large game data',async()=>{
+ const calls=[];
+ const h=gameHarness(async(url,options)=>{
+  calls.push({url,method:options?.method||'GET'});
+  if(options?.method==='HEAD')return {status:404,ok:false};
+  throw new Error('Game data must not download if runtime files are missing');
+ });
+ await flush();await flush();
+ assert.equal(calls.length,3,'only the three lightweight script checks should run');
+ assert.ok(calls.every(call=>call.method==='HEAD'));
+ assert.ok(calls.some(call=>call.url.endsWith('/gamepademulator.js')));
+ assert.match(h.loader.textContent,/Unable to start Vice City/);
+ assert.match(h.notices[0].children[0].textContent,/gamepademulator\.js \(HTTP 404\)/);
+ assert.equal(h.removed(),false);
+ assert.equal(h.scripts.length,0);
 });
 
 test('Vice City downloads assets, shows progress and loads its three scripts in order',async()=>{
