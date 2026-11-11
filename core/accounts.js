@@ -45,13 +45,19 @@
  }
  async function signOut(guest=false){
   if(leaving)return;leaving=true;
-  await window.LoliteActivity?.stop?.();await save();
-  // Local sign-out keeps other devices signed in, while this desktop closes completely.
-  await client?.auth.signOut({scope:'local'});
-  await window.LoliteBrowserAccounts?.syncCurrentSession?.(null);
-  device.set('account','guest');device.set('auto',false);sessionStorage.removeItem('lolite-data-hydrated');
-  if(guest)sessionStorage.setItem('lolite-guest-handoff','1');
-  location.reload();
+  try{
+   await window.LoliteActivity?.stop?.();await save();
+   // A failed network request must never trap the user on an unlocked desktop.
+   // Clearing the device account disables automatic restoration on the next boot.
+   const result=await client?.auth.signOut({scope:'local'});
+   if(result?.error)throw result.error;
+   await window.LoliteBrowserAccounts?.syncCurrentSession?.(null);
+  }catch(error){console.warn('Lolite sign-out cleanup was interrupted:',error);}
+  finally{
+   device.set('account','guest');device.set('auto',false);sessionStorage.removeItem('lolite-data-hydrated');
+   if(guest)sessionStorage.setItem('lolite-guest-handoff','1');
+   location.reload();
+  }
  }
  function settings(){return '<div class="la-settings"><h2>'+esc(profile?.display_name||profile?.username||'Guest desktop')+'</h2><p>'+esc(profile?'@'+profile.username:'Sign in to save your desktop to a Lolite account.')+'</p><div class="la-settings-actions">'+(user?'<button data-lolite-profile="'+esc(user.id)+'">View gaming profile</button><button data-account-edit-profile>Edit profile</button><button data-account-signout>Sign out / switch account</button>':'<button data-account-signin>Sign in</button>')+'</div><label><input type="checkbox" data-account-auto '+(device.get('auto')==='true'?'checked':'')+' '+(!user?'disabled':'')+'> Automatically log in on this device</label><p class="la-muted">Desktop preferences, favourites and playtime belong to your account. Uploaded files stay on this device, separately for each account.</p>'+(user?'<label><input type="checkbox" data-account-privacy="show_activity" '+(profile.show_activity?'checked':'')+'> Show my activity to Lolite players</label><label><input type="checkbox" data-account-privacy="show_games" '+(profile.show_games?'checked':'')+'> Show my games and playtime on my profile</label>':'')+'<h2>Discord Rich Presence</h2><label><input type="checkbox" data-account-discord '+(localStorage.loliteDiscordEnabled!=='false'?'checked':'')+'> Show what I’m doing on Discord</label><p data-discord-status>'+ (window.loliteDesktop?.presence?'Checking Discord…':'Use the installed Lolite app with desktop Discord open.')+'</p>'+(window.loliteDesktop?.presence?'<details><summary>Discord application setup</summary><p>The Lolite owner can enter the Discord application ID here until a shared ID is included in a release.</p><form data-discord-config><label>Application ID<input name="clientId" inputmode="numeric" pattern="[0-9]{17,20}" required></label><button>Save application ID</button></form></details>':'')+'</div>';}
  document.addEventListener('submit',async e=>{
@@ -78,7 +84,7 @@
   const handoff=sessionStorage.getItem('lolite-login-handoff');sessionStorage.removeItem('lolite-login-handoff');
   if((device.get('auto')==='true'||handoff===storage.id)&&client){try{const r=await client.auth.getUser();if(r.error)throw r.error;const s=await client.auth.getSession();if(r.data.user&&s.data.session){await enter(s.data.session);return;}}catch{setMessage('Could not restore your login. Sign in again, or continue as guest.');}}
   // No automatic login means credentials are required on each desktop start.
-  if(client)await client.auth.signOut({scope:'local'});
+  if(client)try{await client.auth.signOut({scope:'local'});}catch(error){console.warn('Lolite startup sign-out was interrupted:',error);}
  }
  const startObserver=new MutationObserver(()=>{const start=document.querySelector('#start');if(!start?.children.length||start.querySelector('.la-start-account'))return;const row=document.createElement('div');row.className='la-start-account';row.innerHTML='<button type="button" '+(user?'data-account-signout':'data-account-signin')+'>'+esc(user?'Switch account · '+(profile?.display_name||profile?.username):'Sign in to Lolite')+'</button>';start.append(row);});
  startObserver.observe(document.body,{subtree:true,childList:true});
