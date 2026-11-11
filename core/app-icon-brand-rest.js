@@ -83,10 +83,19 @@
    const resolved=previous.resolve?.(raw)||key;
    return aliases[resolved]||resolved;
  }
+ // Keep pale logo highlights intact, but expose real accent paths as a CSS colour.
+ // This recolours SVG ink itself instead of applying a hue filter to the whole logo.
+ function themedGlyph(svg){
+  return svg.replace(/(fill|stroke)="#([0-9a-f]{6})"/gi,(all,prop,hex)=>{
+   const r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
+   return b>r*1.15&&b>g*1.15&&r<190&&g<190
+    ?'style="'+prop+':var(--lic-symbol-color,#'+hex+')"':all;
+  });
+ }
  function tile(id){
    const key=resolve(id);
    if(!Object.prototype.hasOwnProperty.call(glyphs,key))return previous.tile(id);
-   return '<span class="lolite-icon lolite-icon--'+key+' lolite-icon--brand-real" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" aria-hidden="true" focusable="false">'+glyphs[key]+'</svg></span>';
+   return '<span class="lolite-icon lolite-icon--'+key+' lolite-icon--brand-real" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" aria-hidden="true" focusable="false">'+themedGlyph(glyphs[key])+'</svg></span>';
  }
  window.LoliteIcons=Object.freeze({
    tile,resolve,
