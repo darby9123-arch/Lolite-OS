@@ -113,6 +113,11 @@
 
  `;
  if(!document.getElementById('lolite-game-store-style')){const s=document.createElement('style');s.id='lolite-game-store-style';document.head.appendChild(s)}document.getElementById('lolite-game-store-style').textContent=CSS;
+ function posterForGame(game){
+  return game?.ugsEntry&&window.LoliteUGSPresentation?.poster
+   ?window.LoliteUGSPresentation.poster(game)
+   :lolitePosterArt(game?.title||'Game',game?.file||'Lolite');
+ }
  function lolitePosterArt(title,seed='Lolite'){const safe=String(title||'Game').replace(/[&<>]/g,' ').slice(0,42);let h=0;for(const c of String(seed+title))h=(Math.imul(h,31)+c.charCodeAt(0))>>>0;const hue=h%360,hue2=(hue+70+(h%90))%360;const svg="<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='675' viewBox='0 0 1200 675'><defs><linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'><stop stop-color='hsl("+hue+",65%,32%)'/><stop offset='1' stop-color='hsl("+hue2+",58%,10%)'/></linearGradient><radialGradient id='glow'><stop stop-color='white' stop-opacity='.34'/><stop offset='1' stop-color='white' stop-opacity='0'/></radialGradient></defs><rect width='1200' height='675' fill='url(#bg)'/><circle cx='900' cy='180' r='330' fill='url(#glow)'/><g fill='none' stroke='white' stroke-opacity='.18' stroke-width='3'><circle cx='930' cy='330' r='205'/><circle cx='930' cy='330' r='150'/><path d='M620 500 L850 70 L1120 510 Z'/><path d='M700 0 L1200 500 M800 0 L1200 400'/></g><rect x='62' y='70' width='11' height='535' rx='5' fill='white' fill-opacity='.8'/><text x='105' y='125' font-family='Arial,sans-serif' font-size='24' font-weight='700' letter-spacing='8' fill='white' fill-opacity='.76'>LOLITE GAME LIBRARY</text><text x='100' y='475' font-family='Arial,sans-serif' font-size='68' font-weight='800' fill='white'>"+safe.replace(/['"]/g,'')+"</text><text x='105' y='530' font-family='Arial,sans-serif' font-size='22' letter-spacing='5' fill='white' fill-opacity='.7'>READY TO PLAY</text><path d='M1030 500 l45 -26 v52 z' fill='white' fill-opacity='.88'/></svg>";return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg)}
  const manifest=['Geometry Dash webport.html','Drift-Hunters.html','Grand Theft Auto Vice City.html','clangrybirds2.html','clbadmondaysimulator.html','clbaldicaseoh.html','clbaldisbasics.html','clbaldisbasicsremaster.html','clbitlife.html','clblockblast.html','clcookieclicker.html','clcookieclickermodmenu.html','clcrazycars.html','clcuttherope.html','cldemolitionderbycrashracing.html','cldungeonsanddegenerategambler.html','clescaperoad.html','clescaperoad-2.html','clescaperoad3.html','clfallguys.html','clfireboyandwatergirl2.html','clfireboyandwatergirl3.html','clFNAF.html','clFNAF2.html','clFNAF3.html','clFNAF4.html','clgdbreeze.html','clgorillatag.html','clgranny2.html','clgranny22.html','clgranny3.html','clgrannycreepy.html','clgrannynightmare.html','clgrannyy.html','clgrowagarden.html','clgta3.html','clhalflife.html','clholeio.html','clinfinitecraft.html','clLobotemyDash.html','lolite-2048.html','lolite-pong.html','lolite-sokoban.html','clmario64webgl.html','clmelonplayground.html','clminecraftpocketedition.html','clmotox3m2.html','clmotox3m3.html','clmotox3mm.html','clmotox3mpoolparty.html','clmotox3mspookyland.html','clmotox3mwinter.html','closu.html','clovo2.html','clovodimensions.html','clovofixed.html','clpaperio.html','clpaperio3d.html','clpaperiomania.html','clparkingfury.html','clparkingfury2.html','clparkingfury3.html','clpixelbattlegroundsio.html','clpvz2gardenless.html','PVZM.html','clragollhit.html','clRedBall4.html','clrocketleague.html','clshiftatmidnight.html','slope.html','slope-2-player.html','clslopeplus.html','clsmbremastered.html','clsnowrider.html','clspacewarsbattleground.html','clstickmanhook.html','clsubwaysurfersmiami.html','clsupermariobros.html','clsurvivorio.html','cltemplerun2.html','cltinyfishing.html','clvex3.html','wheely.html','wrestle-bros.html','zombie-rush.html'];
  // Local HTML entrypoints under games/ that were missing from the Game Store.
@@ -654,7 +659,7 @@
    '<div class="store-activity-heading">RECENTLY PLAYED <span>'+recent.length+'</span></div>'+
    (recent.length?recent.map(g=>{
     const session=recentSessions.find(item=>item.file===g.file);
-    const image=encodeLabel(coverFor(g.file)||lolitePosterArt(g.title,g.file));
+    const image=encodeLabel(coverFor(g.file)||posterForGame(g));
     return '<div class="store-activity-row"><img class="store-activity-cover" alt="" src="'+image+'" loading="lazy">'+
      '<div class="store-activity-copy"><strong title="'+encodeLabel(g.title)+'">'+encodeLabel(g.title)+'</strong>'+
      '<small>'+encodeLabel(relTime(session?.at||Date.now()))+'</small></div></div>';
@@ -709,7 +714,7 @@
   }).join('');
   panel.innerHTML='<section class="lolite-game-detail-panel"><div class="lolite-game-detail-top"><div><h2>'+encodeLabel(game.title)+'</h2><div class="lolite-game-detail-stat">'+encodeLabel(game.category)+' · '+servers.length+' server'+(servers.length===1?'':'s')+'</div></div>'+
    '<button type="button" class="lolite-game-detail-close" data-game-detail-close aria-label="Close game details">×</button></div>'+
-   '<div class="store-detail-artwork"><img class="lolite-game-detail-image" src="'+encodeLabel(game.backgroundUrl||game.iconUrl||coverFor(game.file)||lolitePosterArt(game.title,game.file))+'" alt="Game artwork">'+
+   '<div class="store-detail-artwork"><img class="lolite-game-detail-image" src="'+encodeLabel(game.backgroundUrl||game.iconUrl||coverFor(game.file)||posterForGame(game))+'" alt="Game artwork">'+
    (game.iconUrl?'<img class="store-detail-icon" src="'+encodeLabel(game.iconUrl)+'" alt="Game icon">':'')+'</div>'+
    '<div class="lolite-game-detail-stat">Source: '+encodeLabel(game.source||'Lolite OS')+'</div>'+
    '<div class="lolite-game-detail-stat">Recent launches: '+playCount(game).toLocaleString()+' in the last 30 days (when available)</div>'+
@@ -766,7 +771,7 @@
  };
  const coverPalette=g=>{let hash=0;for(const ch of g.file)hash=(Math.imul(hash,31)+ch.charCodeAt(0))>>>0;const hue=hash%360,hue2=(hue+48+(hash%73))%360;return [`hsl(${hue} 62% 28%)`,`hsl(${hue2} 48% 13%)`,`${12+(hash%13)}s`,String(hash%6),`-${hash%17000}ms`]};
  const card=g=>{
-  const colors=coverPalette(g),poster=lolitePosterArt(g.title,g.file),file=encodeLabel(g.file),
+  const colors=coverPalette(g),poster=posterForGame(g),file=encodeLabel(g.file),
    title=encodeLabel(g.title),fav=isFavourite(g.file);
   const plays=active==='Popular Games'?'<small class="store-play-count">'+playCount(g).toLocaleString()+' launches in 30 days</small>':'';
   const mark=g.gamefilesRecord||g.ugsInstalled?'▣':'✧';
@@ -839,7 +844,7 @@
      picture.referrerPolicy='no-referrer';
      picture.onerror=()=>{
        picture.onerror=null;
-       picture.src=lolitePosterArt(title||file,file);
+       picture.src=posterForGame(games.find(item=>item.file===file)||{title:title||file,file});
        picture.classList.remove('is-square');
        el.dataset.artLoaded='fallback';
        artCache.set(remote,{failed:true,time:Date.now()});
@@ -995,7 +1000,7 @@
  function sidebarImage(category){
   const game=sidebarRepresentative(category);
   if(!game)return sidebarFallback;
-  const candidate=coverFor(game.file)||lolitePosterArt(game.title,game.file);
+  const candidate=coverFor(game.file)||posterForGame(game);
   return failedSidebarImages.has(candidate)?sidebarFallback:candidate;
  }
  function sidebarIcon(category){
