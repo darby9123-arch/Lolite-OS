@@ -259,3 +259,86 @@ html.lic-applied:not(.browsing-mode):not(.mobile-mode) #desktop #icons .desktop-
   .cr-settings .cr-settings-main{min-height:0;flex:1 1 auto;padding:14px!important;}
   .cr-settings #lolite-icon-settings{padding:14px!important;}
 }
+
+/* Desktop icon alignment: move the entire grid without altering the icon order.
+   Apply after theme-specific #icons rules (including Cosmos and Crimson). */
+html.lic-applied[data-lic-position="left"]:not(.browsing-mode):not(.mobile-mode) #desktop #icons{
+  position:fixed!important;
+  left:20px!important;
+  right:auto!important;
+  margin-left:0!important;
+  transform:none!important;
+}
+html.lic-applied[data-lic-position="center"]:not(.browsing-mode):not(.mobile-mode) #desktop #icons{
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  margin-left:0!important;
+  transform:translateX(-50%)!important;
+}
+html.lic-applied[data-lic-position="right"]:not(.browsing-mode):not(.mobile-mode) #desktop #icons{
+  position:fixed!important;
+  left:auto!important;
+  right:20px!important;
+  margin-left:0!important;
+  transform:none!important;
+}
+/* Align the mini desktop exactly like the real icons. */
+#lolite-icon-settings .lic-wall[data-icon-position="left"] .lic-preview-grid{
+  margin-left:0!important;margin-right:auto!important;
+}
+#lolite-icon-settings .lic-wall[data-icon-position="center"] .lic-preview-grid{
+  margin-left:auto!important;margin-right:auto!important;
+}
+#lolite-icon-settings .lic-wall[data-icon-position="right"] .lic-preview-grid{
+  margin-left:auto!important;margin-right:0!important;
+}
+.cr-settings #lolite-icon-settings .lic-position-control{
+  grid-column:1/-1;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-width:0;
+}
+.cr-settings #lolite-icon-settings .lic-position-control strong{
+  font-size:12px;
+  color:#e6eefa;
+  font-weight:650;
+}
+.cr-settings #lolite-icon-settings .lic-position-choices{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+  width:100%;
+  max-width:100%;
+}
+.cr-settings #lolite-icon-settings .lic-position-choices button{
+  min-width:0;
+  min-height:36px;
+  padding:7px 8px;
+  color:#dbe7fc;
+  background:#263247;
+  border:1px solid #536782;
+  border-radius:9px;
+  cursor:pointer;
+  font-size:12px;
+}
+.cr-settings #lolite-icon-settings .lic-position-choices button:hover{
+  background:#344763;
+}
+.cr-settings #lolite-icon-settings .lic-position-choices button[aria-pressed="true"]{
+  background:color-mix(in srgb,var(--lic-color,#598cfa) 25%,#182336);
+  border-color:var(--lic-color,#598cfa);
+  color:#fff;
+}
+.cr-settings #lolite-icon-settings .lic-position-choices button:focus-visible{
+  outline:2px solid var(--accent,#8bb7f8);
+  outline-offset:2px;
+}
+@container lic-pane (max-width:520px){
+  .cr-settings #lolite-icon-settings .lic-position-control{grid-column:auto;}
+}
+@media(max-width:520px){
+  html.lic-applied[data-lic-position="left"]:not(.browsing-mode):not(.mobile-mode) #desktop #icons{left:12px!important;}
+  html.lic-applied[data-lic-position="right"]:not(.browsing-mode):not(.mobile-mode) #desktop #icons{right:12px!important;}
+}
