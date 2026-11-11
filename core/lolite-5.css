@@ -17,13 +17,13 @@ html:not(.browsing-mode) .window.is-maximised{
  border-radius:min(5px,var(--l5-window-radius))!important;
 }
 html:not(.browsing-mode) .window>.titlebar{
- background-color:color-mix(in srgb,var(--wall-titlebar,#24232c) calc(var(--l5-panel-alpha) * 100%),transparent)!important;
+ background-color:color-mix(in srgb,var(--wall-titlebar,#24232c) var(--l5-panel-opacity),transparent)!important;
 }
 html:not(.browsing-mode) :is(.win-flyout,.win-snap-menu,#start,#searchPanel,.lolite-task-preview,.lolite-task-menu){
  border-radius:clamp(7px,var(--l5-window-radius),18px)!important;
 }
 html:not(.browsing-mode) #desktop #taskbar{
- background-color:color-mix(in srgb,var(--wall-panel-solid,#252225) calc(var(--l5-taskbar-alpha) * 100%),transparent)!important;
+ background-color:color-mix(in srgb,var(--wall-panel-solid,#252225) var(--l5-taskbar-opacity),transparent)!important;
  background-image:none!important;
 }
 html[data-lolite-ui-density="compact"] #taskbar :is(.task,.taskwin,.win-pinned){
