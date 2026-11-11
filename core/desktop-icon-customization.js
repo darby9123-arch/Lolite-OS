@@ -38,7 +38,7 @@
   clean.color=validColor(value.color??clean.color);
   clean.symbolColor=validColor(value.symbolColor??clean.symbolColor);
   clean.symbolMode=['wallpaper','custom','original'].includes(value.symbolMode)?value.symbolMode:'wallpaper';
-  clean.tileSource=['wallpaper','custom','original'].includes(value.tileSource)?value.tileSource:'wallpaper';
+  clean.tileSource=['wallpaper','custom','original'].includes(value.tileSource)?value.tileSource:(value.tint===true?'custom':'wallpaper');
   clean.finish=['solid','glass','minimal'].includes(value.finish)?value.finish:'solid';
   clean.tint=value.tint===true;
   clean.labels=value.labels!==false;
