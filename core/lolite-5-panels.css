@@ -1,0 +1,63 @@
+/* Lolite OS 5.0 standalone upgrades: panels, feedback and taskbar. */
+:root{--l5-radius:12px;--l5-blur:16px;--l5-taskbar-alpha:.94}
+html[data-l5-theme=on] .window{border-radius:var(--l5-radius)!important}
+html[data-l5-theme=on] #taskbar{background-color:rgb(25 27 40 / var(--l5-taskbar-alpha))!important;backdrop-filter:blur(var(--l5-blur))}
+html[data-l5-spacing=compact] .window .content :is(.card,.setting-row){padding-block:7px}
+.l5-switcher{position:fixed;inset:auto 50% 16%;transform:translateX(50%);width:min(780px,calc(100vw - 32px));z-index:910000;padding:19px;border-radius:16px;background:rgb(18 22 35 / .96);color:#f7f9ff;box-shadow:0 24px 85px #000b;border:1px solid #ffffff30;backdrop-filter:blur(22px);display:grid;gap:14px}
+.l5-switch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;max-height:48vh;overflow:auto}
+.l5-switch-grid button{display:grid;justify-items:start;text-align:left;gap:7px;min-width:0;background:#273041;color:#f8faff;border:2px solid transparent;border-radius:10px;padding:13px;cursor:pointer}
+.l5-switch-grid button.selected,.l5-switch-grid button:focus-visible{border-color:var(--accent,#8b77f2);background:#34344e}
+.l5-switch-grid button span:not(.l5-switch-symbol){font-weight:700;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;max-width:100%}
+.l5-switch-grid button small,.l5-switcher>small{font-size:11px;color:#afbace}
+.l5-switch-symbol{font-size:26px;color:#c6b7ff}
+.l5-modal{position:fixed;inset:0;z-index:920000;display:grid;place-items:center;padding:20px;box-sizing:border-box;color:#f0f5ff;font:13px/1.5 system-ui}
+.l5-modal.hidden{display:none!important}
+.l5-shade{position:absolute;inset:0;background:rgb(0 0 0 / .6);backdrop-filter:blur(6px)}
+.l5-panel{position:relative;background:#1b2232;border:1px solid #62738b77;border-radius:var(--l5-radius);width:min(520px,95vw);max-height:min(90vh,790px);box-sizing:border-box;padding:22px;box-shadow:0 22px 70px #000b;overflow:auto;display:grid;gap:17px}
+.l5-panel header{display:flex;align-items:start;justify-content:space-between;gap:12px}
+.l5-panel header h2{margin:0;font-size:24px;letter-spacing:-.5px}
+.l5-panel header p{color:#aebcd2;margin:4px 0 0}
+.l5-panel header small{color:#ada5fb;letter-spacing:.12em;font-size:10px;font-weight:800}
+.l5-panel button,.l5-settings-card button{background:#313e55;border:1px solid #8090a866;color:#eff4ff;padding:8px 12px;border-radius:8px;cursor:pointer;font:600 12px system-ui}
+.l5-panel button:hover,.l5-settings-card button:hover{background:#495775}
+.l5-panel label{display:grid;gap:8px;font-weight:600;color:#e6ecfa}
+.l5-panel label input[type=range]{width:100%;accent-color:var(--accent,#9c82ea)}
+.l5-panel label input[type=color]{width:140px;height:42px;background:transparent;border:0;padding:0;cursor:pointer}
+.l5-panel select,.l5-panel textarea{color:#f5f6ff;border:1px solid #65758b;background:#242e40;border-radius:8px;padding:9px;font:inherit;max-width:100%;resize:vertical}
+.l5-panel footer{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+.l5-panel footer button:last-child{background:var(--accent,#7967d5);color:#fff}
+.l5-preview{height:128px;border-radius:12px;border:1px solid #6c759d;background:linear-gradient(155deg,#363d63,#212536);overflow:hidden;padding:14px}
+.l5-preview-bar{padding:9px 12px;background:#121a2b99;display:flex;justify-content:space-between;border-radius:7px 7px 0 0}
+.l5-preview-app{padding:17px 12px;background:#121a2b99;border-radius:0 0 7px 7px;font-weight:700;font-size:17px;color:var(--accent,#baa1ff)}
+.l5-notice-panel{width:min(480px,95vw)}
+.l5-notice-actions{display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between}
+.l5-notice-actions label{display:flex;flex-direction:row;align-items:center;font-weight:500}
+.l5-notice-list{display:grid;gap:9px;max-height:55vh;overflow:auto}
+.l5-notice-list article{border:1px solid #59698377;background:#29344a;border-radius:9px;padding:11px 13px}
+.l5-notice-list article small{display:block;color:#aebed4;margin-bottom:4px}
+.l5-notice-list article p{margin:5px 0 0;color:#d1daeb;overflow-wrap:anywhere}
+.l5-empty{color:#a9b6c8;text-align:center;padding:25px}
+.l5-task-button{border:1px solid #ffffff33;background:transparent;color:inherit;border-radius:9px;padding:7px 10px;position:relative;cursor:pointer}
+.l5-task-button[data-count]:not([data-count=""]):after{content:attr(data-count);position:absolute;right:-5px;top:-5px;border-radius:12px;background:var(--accent,#9979d5);color:#fff;font-size:9px;min-width:13px;line-height:14px;padding:0 2px}
+.l5-achievements{display:grid;gap:8px;max-height:63vh;overflow:auto}
+.l5-achievements article{display:grid;grid-template-columns:39px 1fr auto;align-items:center;gap:12px;padding:11px;border-radius:9px;border:1px solid #54647c70;background:#252d3c;opacity:.7}
+.l5-achievements article.is-unlocked{opacity:1;border-color:#9183ee}
+.l5-achievements article>span:first-child{font-size:24px;color:#b7a7ff}
+.l5-achievements article>span:last-child,.l5-achievements small{color:#b2bed2;font-size:11px}
+.l5-achievements strong{display:block}
+.l5-stars{display:flex;gap:6px}
+.l5-stars button{font-size:27px;flex:1;color:#ffcf77;background:#323448}
+.l5-check{display:flex!important;flex-direction:row;align-items:center;gap:10px}
+.l5-panel textarea{min-height:76px;box-sizing:border-box}
+.l5-feedback-button{white-space:nowrap;font-size:11px!important}
+.l5-app-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;color:#d8e0f2}
+.l5-app-tools label{display:flex;align-items:center;gap:6px;font-size:12px}
+.l5-app-tools select,.l5-app-tools button{background:#272f41;color:#f0f4fc;padding:7px 9px;border:1px solid #63728d;border-radius:7px;font-size:12px;cursor:pointer}
+.appstore-card .l5-app-favourite{background:#252e42;border:1px solid #6a7589;color:#e5eaff;border-radius:7px;cursor:pointer;padding:7px 10px;margin:8px 0 0}
+.appstore-card[hidden]{display:none!important}
+.l5-settings-card{margin:20px 0;padding:19px;border:1px solid #5f739d77;border-radius:12px;background:rgb(38 46 65 / .75)}
+.l5-settings-card h3{margin:0 0 5px}.l5-settings-card p{margin:0 0 12px;color:#b0bdd2}
+.l5-settings-card div{display:flex;flex-wrap:wrap;gap:8px}
+.l5-settings-card button:focus-visible,.l5-modal button:focus-visible,.l5-switcher button:focus-visible{outline:2px solid #bba8ff;outline-offset:2px}
+@media(max-width:550px){.l5-modal{padding:10px}.l5-panel{padding:15px}.l5-achievements article{grid-template-columns:30px 1fr}.l5-achievements article>span:last-child{grid-column:2}.l5-switcher{bottom:9%;padding:13px}.l5-switch-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.l5-modal *, .l5-switcher *{transition:none!important;animation:none!important}}
