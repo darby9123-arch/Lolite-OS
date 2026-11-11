@@ -207,12 +207,20 @@ function getParts(file, start, end) {
     return parts;
 }
 
+// Keep the GamepadEmulator on Lolite's own origin even though the <base> tag
+// points remaining game resources at the original external Vice City host.
+function runtimeScriptURL(name) {
+    return name === "gamepademulator.js"
+        ? new URL("./gamepademulator.js", window.location.href).href
+        : new URL(name, document.baseURI).href;
+}
+
 // Check the small, required engine resources before downloading hundreds of MB.
 // A missing upstream repository must not cause an expensive, doomed download.
 async function verifyRuntimeAvailability() {
     const missing = [];
     for (const name of ["gamepademulator.js", "idbfs.js", "game.js"]) {
-        const url = new URL(name, document.baseURI).href;
+        const url = runtimeScriptURL(name);
         let response;
         try {
             response = await fetch(url, { method: "HEAD", cache: "no-store" });
@@ -288,7 +296,7 @@ verifyRuntimeAvailability().then(() => Promise.all([
         await new Promise((resolve, reject) => {
             const script = document.createElement("script");
             script.async = false;
-            script.src = src;
+            script.src = runtimeScriptURL(src);
             script.onload = resolve;
             script.onerror = () => reject(new Error("Could not load " + src));
             document.body.appendChild(script);
