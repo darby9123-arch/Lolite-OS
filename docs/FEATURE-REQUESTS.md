@@ -24,3 +24,13 @@ Use **Admin review** (shown only to authorised Lolite admins) to see pending and
 - Automated regression coverage: `tests/feature-requests.test.cjs`.
 
 This release relies on the live Lolite Supabase project and internet access; anonymous/offline submission is not supported. It does not modify existing chat, music or game tables.
+
+## Admin replies and proof screenshots (2026-11-12)
+
+Admins can open **Admin review** and use **Reply as admin** on any request. Write an update and optionally attach a PNG, JPEG or WebP screenshot up to 5 MB; choose **Post reply** to add a dated message to the existing conversation. The original request and previous replies remain visible.
+
+Choose **Mark Done + Reply** to publish the message and screenshot and automatically set that request's status to **Done**. Completed requests remain visible under Community ideas and My requests, with their earlier vote total and an explicit **Voting closed** label. Users cannot cast or remove votes after completion: both the browser and Postgres row-level security enforce this.
+
+Screenshot uploads use the private `lolite-feature-proofs` Supabase Storage bucket, limited to admins and these image types. Signed URLs are created only for members authorised to read the request and expire after an hour; use **Refresh** if a picture expires. The database retains the screenshot path rather than a permanent public URL.
+
+The reply history is stored in `public.lolite_feature_replies` (RLS enabled, admin-only insertion). A database trigger marks a request Done atomically when its corresponding Done reply is inserted. See `supabase/migrations/20261112093000_lolite_feature_admin_replies.sql`. The original status dropdown and admin notes remain available for earlier workflows.
