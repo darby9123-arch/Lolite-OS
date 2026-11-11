@@ -186,7 +186,7 @@
    S.tab='mine';S.search='';S.category='All';S.status='All';S.notice='Your idea was submitted for review.';
    await load();
   }catch(e){notice(e?.message||'Could not submit your request')}
-  finally{S.busy=false;if(button?.isConnected)button.disabled=false}
+  finally{S.busy=false;if(button?.isConnected)button.disabled=false;render()}
  }
  async function vote(id){
   if(S.busy||!S.user)return;
@@ -201,7 +201,7 @@
    }
    await load();
   }catch(e){notice(e?.code==='23505'?'You already voted for this idea.':e?.message||'Could not update your vote')}
-  finally{S.busy=false}
+  finally{S.busy=false;render()}
  }
  async function postReply(id,kind,button){
   if(S.busy||!S.admin||!S.user||!['update','done'].includes(kind))return;
@@ -238,7 +238,7 @@
     try{await client.storage.from(PROOF_BUCKET).remove([uploadedPath])}catch(_){}
    }
    notice(error?.message||'Could not post the admin reply.');
-  }finally{S.busy=false;if(button.isConnected)button.disabled=false}
+  }finally{S.busy=false;if(button.isConnected)button.disabled=false;render()}
  }
  async function moderate(id,button){
   if(S.busy||!S.admin||!S.user)return;
@@ -254,7 +254,7 @@
    if(!rows.length)throw Error('Request was not updated. Check your admin access.');
    S.notice='Request status saved.';await load();
   }catch(e){notice(e?.message||'Could not update request')}
-  finally{S.busy=false;if(button.isConnected)button.disabled=false}
+  finally{S.busy=false;if(button.isConnected)button.disabled=false;render()}
  }
  document.addEventListener('click',event=>{
   const el=event.target.closest?.('#lfrRoot');if(!el)return;
