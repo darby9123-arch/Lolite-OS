@@ -105,6 +105,44 @@
    .replace(/^(\S+) Of (\S+)/,'$1 of $2')
    .replace(/\s+(?:The|Of|And|In|On|For|To|A)\s+/g,m=>m.toLowerCase())||'Untitled Game';
  }
+
+ // Original category illustrations for games that supply no usable cover.
+ // These are intentionally not presented as official screenshots or logos.
+ const posterCache=new Map();
+ const SCENES={
+  'Sports':'<circle cx="720" cy="210" r="138" fill="#f4f8ff" opacity=".95"/><path d="M640 144l75-38 76 44-10 86-77 35-73-43z" fill="#233459" opacity=".72"/><path d="M720 73v49m-136 91h54m156 0h54m-128 90v56" stroke="#233459" stroke-width="9" opacity=".6"/>',
+  'Racing & Driving':'<path d="M445 485L660 25H803L965 485Z" fill="#152238" opacity=".6"/><path d="M720 110v70m0 56v90m0 58v48" stroke="#edf6ff" stroke-width="14" stroke-dasharray="44 38" opacity=".7"/><path d="M554 248l51-92h188l53 92 23 27v76H528v-76z" fill="#e6edf8"/><rect x="603" y="175" width="177" height="75" rx="14" fill="#7c9ccc"/><circle cx="595" cy="355" r="29" fill="#18223b"/><circle cx="799" cy="355" r="29" fill="#18223b"/>',
+  'Puzzle & Brain':'<g transform="translate(600 77) rotate(-10 140 140)"><rect x="0" y="0" width="130" height="130" rx="18" fill="#90baff"/><rect x="145" y="0" width="130" height="130" rx="18" fill="#d5a8f7"/><rect x="0" y="145" width="130" height="130" rx="18" fill="#f7cf81"/><rect x="145" y="145" width="130" height="130" rx="18" fill="#9ee5ce"/></g>',
+  'Platformers':'<path d="M490 369h230v31H490zm260-117h200v31H750zM425 175h185v31H425z" fill="#d7ecff" opacity=".85"/><circle cx="712" cy="185" r="47" fill="#f8cf78"/><path d="M712 101l14 34 37 4-28 25 9 37-32-19-33 19 9-37-28-25 37-4z" fill="#fff6ca"/><path d="M490 434c80-59 166-59 240 0" fill="none" stroke="#8dd4ff" stroke-width="16"/>',
+  'Sandbox & Building':'<circle cx="771" cy="98" r="54" fill="#f8d28b"/><path d="M420 400l155-220 110 140 114-182 181 262z" fill="#8ad2c3"/><path d="M575 180l-49 74h99zM800 138l-46 74h93z" fill="#e7f8ff"/><path d="M420 401h560v79H420z" fill="#243d56"/><path d="M500 418h65v63h-65zm95-22h78v85h-78zm117 15h90v70h-90z" fill="#d4eefa" opacity=".3"/>',
+  'Simulation & Life':'<rect x="490" y="220" width="96" height="260" rx="7" fill="#b4c8ff"/><rect x="608" y="118" width="139" height="362" rx="7" fill="#82b8e6"/><rect x="773" y="205" width="118" height="275" rx="7" fill="#d5b3f0"/><path d="M512 252h55m-55 48h55m-55 48h55m120-198h65m-65 50h65m-65 50h65m-65 50h65m129-63h55m-55 53h55" stroke="#243754" stroke-width="13" opacity=".7"/>',
+  'Casual & Idle':'<circle cx="648" cy="230" r="120" fill="#f3bfda"/><circle cx="805" cy="166" r="75" fill="#b9d6ff"/><circle cx="825" cy="336" r="89" fill="#f7dc9e"/><path d="M649 352l-19 88m180-199l-22 200m45-18l-18 32" stroke="#e8f5ff" stroke-width="6" opacity=".8"/>',
+  'Strategy':'<path d="M635 135h162v60h-162zM666 195h100l24 176H641zM606 371h220v40H606zM577 413h280v44H577z" fill="#cfe0fd"/><path d="M674 83h85l28 52H645z" fill="#f6dca0"/><rect x="681" y="234" width="62" height="88" rx="27" fill="#617ca8"/><path d="M613 470h230" stroke="#cfe0fd" stroke-width="13"/>',
+  'Retro & Classics':'<g fill="#c8d6ff"><rect x="570" y="118" width="54" height="54"/><rect x="678" y="118" width="54" height="54"/><rect x="786" y="118" width="54" height="54"/><rect x="516" y="172" width="54" height="54"/><rect x="570" y="226" width="54" height="54"/><rect x="624" y="226" width="54" height="54"/><rect x="678" y="226" width="54" height="54"/><rect x="732" y="226" width="54" height="54"/><rect x="786" y="172" width="54" height="54"/><rect x="840" y="172" width="54" height="54"/></g><rect x="624" y="172" width="54" height="54" fill="#27395a"/>',
+  'Music & Rhythm':'<circle cx="730" cy="246" r="160" fill="#a8bafd" opacity=".32"/><path d="M720 132v222m0-222l145-36v210" stroke="#e8f5ff" stroke-width="22" fill="none" stroke-linecap="round"/><ellipse cx="676" cy="360" rx="65" ry="30" fill="#e8f5ff" transform="rotate(-23 676 360)"/><ellipse cx="821" cy="315" rx="65" ry="30" fill="#e8f5ff" transform="rotate(-23 821 315)"/>'
+ };
+ function poster(game){
+  const key=String(game?.file||game?.title||'game');
+  if(posterCache.has(key))return posterCache.get(key);
+  let hash=0;for(const ch of key)hash=(Math.imul(hash,33)+ch.charCodeAt(0))>>>0;
+  const hue=hash%360,other=(hue+70)%360;
+  const kind=String(game?.category||'');
+  const illustration=SCENES[kind]||'<circle cx="727" cy="220" r="180" fill="#b5d5fa" opacity=".22"/><circle cx="727" cy="220" r="110" fill="none" stroke="#eaf6ff" stroke-width="21" opacity=".8"/><path d="M726 62l26 83 85 26-85 26-26 84-27-84-85-26 85-26z" fill="#f8d88b"/>';
+  const title=String(game?.title||'Game').slice(0,44).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540">'+
+   '<defs><linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="hsl('+hue+' 65% 29%)"/><stop offset="1" stop-color="hsl('+other+' 59% 15%)"/></linearGradient>'+
+   '<linearGradient id="shade" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#081120" stop-opacity="0"/><stop offset="1" stop-color="#081120" stop-opacity=".94"/></linearGradient></defs>'+
+   '<rect width="960" height="540" fill="url(#bg)"/>'+
+   '<circle cx="810" cy="130" r="260" fill="#ffffff" opacity=".07"/>'+
+   illustration+
+   '<rect x="0" y="345" width="960" height="195" fill="url(#shade)"/>'+
+   '<text x="52" y="462" fill="#f8fbff" font-size="57" font-weight="800" font-family="system-ui, sans-serif">'+title+'</text>'+
+   '<text x="55" y="503" fill="#d0e2fa" font-size="16" font-family="system-ui, sans-serif" letter-spacing="3">LOLITE GAME LIBRARY</text></svg>';
+  const url='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
+  posterCache.set(key,url);
+  return url;
+ }
+
  const discovered=new Map();
  function imageURL(raw,base){
   if(!raw||/^(?:data|blob|javascript):/i.test(raw))return '';
@@ -152,5 +190,5 @@
   if(!discovered.has(key))discovered.set(key,new Promise(resolve=>{queue.push({game,resolve});pump()}));
   return discovered.get(key);
  };
- window.LoliteUGSPresentation=Object.freeze({title,discover});
+ window.LoliteUGSPresentation=Object.freeze({title,discover,poster});
 })();
