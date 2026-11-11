@@ -1,0 +1,43 @@
+name: Bundle permitted UGS HTML game pages
+
+on:
+  push:
+    paths:
+      - '.github/workflows/bundle-ugs-html.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lolite-ugs-html-bundle
+  cancel-in-progress: false
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout Lolite OS
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install HTTP client
+        run: python -m pip install --disable-pip-version-check -q requests
+      - name: Download public UGS HTML game files into repository
+        run: python scripts/bundle_ugs_html.py
+      - name: Publish bundled HTML games into Lolite source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "html games/ugs" core/ugs-hosted-catalog.js
+          if git diff --cached --quiet; then
+            echo "No new valid UGS files could be fetched."
+          else
+            git commit -m "Add downloaded UGS HTML game pages to built-in Lolite Game Store"
+            git push origin HEAD:main
+          fi
