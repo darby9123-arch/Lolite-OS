@@ -6,9 +6,16 @@
  const DEFAULT={
   height:56,iconSize:27,opacity:90,color:'#252225',
   position:'bottom',align:'center',blur:true,autoHide:false,
-  search:true,clock:true,settings:true
+  search:true,clock:true,settings:true,style:'floating'
  };
  const RANGES={height:[46,76],iconSize:[20,36],opacity:[30,100]};
+ const STYLES=[
+  ['floating','Floating Glass','A neat floating panel with soft rounded edges.'],
+  ['pill','Pill Dock','A compact, rounded dock for your apps.'],
+  ['minimal','Minimal','Icons on the wallpaper, without a solid background bar.'],
+  ['aero','Aero Glass','A translucent, softly glowing glass taskbar.'],
+  ['classic','Classic','A traditional, full-width Windows-style taskbar.']
+ ];
  const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[ch]));
  const clamp=(value,low,high)=>Math.round(Math.max(low,Math.min(high,Number(value))));
  const validColor=value=>/^#[a-f0-9]{6}$/i.test(String(value))?value:DEFAULT.color;
@@ -20,6 +27,7 @@
   for(const [name,range] of Object.entries(RANGES))
    if(Number.isFinite(Number(input[name])))next[name]=clamp(input[name],...range);
   next.color=validColor(input.color);
+  next.style=STYLES.some(([id])=>id===input.style)?input.style:DEFAULT.style;
   next.position=['bottom','top'].includes(input.position)?input.position:DEFAULT.position;
   next.align=['center','left'].includes(input.align)?input.align:DEFAULT.align;
   for(const name of ['blur','autoHide','search','clock','settings'])
@@ -36,6 +44,7 @@
    delete root.dataset.ltcSearch;
    delete root.dataset.ltcClock;
    delete root.dataset.ltcSettings;
+   delete root.dataset.ltcStyle;
    return;
   }
   root.dataset.ltcPosition=prefs.position;
@@ -44,6 +53,7 @@
   root.dataset.ltcSearch=String(prefs.search);
   root.dataset.ltcClock=String(prefs.clock);
   root.dataset.ltcSettings=String(prefs.settings);
+  root.dataset.ltcStyle=prefs.style;
   const variables={
    '--ltc-height':prefs.height+'px',
    '--ltc-icon-size':prefs.iconSize+'px',
@@ -84,6 +94,15 @@
   const icon=window.LoliteIcons?.tile?.(id);
   return '<span class="ltc-mini-app" title="'+esc(label)+'">'+(icon||'<span>◈</span>')+'</span>';
  }
+ function stylePicker(){
+  return '<div class="ltc-style-section"><div class="ltc-style-heading"><strong>Taskbar style</strong><small>Choose a look, then adjust the details below.</small></div>'+
+   '<div class="ltc-style-grid" role="group" aria-label="Taskbar style">'+
+   STYLES.map(([id,title,description])=>
+    '<button type="button" class="ltc-style-card" data-ltc-style="'+id+'" aria-pressed="'+(prefs.style===id)+'">'+
+    '<span class="ltc-style-swatch ltc-style-swatch--'+id+'" aria-hidden="true"><i></i><i></i><i></i><i></i></span>'+
+    '<strong>'+title+'</strong><small>'+description+'</small></button>').join('')+
+   '</div></div>';
+ }
  function markup(){
   return '<section class="card ltc-settings" id="lolite-taskbar-settings" aria-label="Taskbar customisation">'+
    '<div class="ltc-heading"><div><small>DESKTOP PERSONALISATION</small><h3>Taskbar Customisation</h3><p>Adjust how the taskbar looks and behaves. Changes apply instantly.</p></div>'+
@@ -96,6 +115,7 @@
    '<span class="ltc-mini-spacer"></span><span class="ltc-mini-gear" data-ltc-preview-settings>⚙</span>'+
    '<span class="ltc-mini-clock" data-ltc-preview-clock>10:30</span></div></div>'+
    '<p class="ltc-hint">The real Start menu, running apps, pinned shortcuts and notifications still work normally.</p></div>'+
+   stylePicker()+
    '<div class="ltc-controls">'+
    slider('height','Taskbar height',46,76,'px')+
    slider('iconSize','Taskbar icon size',20,36,'px')+
@@ -126,6 +146,8 @@
   bar.style.setProperty('--ltc-preview-blur',prefs.blur?'12px':'0px');
   bar.dataset.position=prefs.position;
   bar.dataset.align=prefs.align;
+  bar.dataset.style=prefs.style;
+  pane.querySelectorAll('[data-ltc-style]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.ltcStyle===prefs.style)));
   pane.querySelector('[data-ltc-preview-search]').hidden=!prefs.search;
   pane.querySelector('[data-ltc-preview-clock]').hidden=!prefs.clock;
   pane.querySelector('[data-ltc-preview-settings]').hidden=!prefs.settings;
@@ -164,6 +186,12 @@
   if(el)updateField(el);
  });
  document.addEventListener('click',event=>{
+  const styleButton=event.target.closest?.('#lolite-taskbar-settings [data-ltc-style]');
+  if(styleButton){
+   const selected=styleButton.dataset.ltcStyle;
+   if(STYLES.some(([id])=>id===selected)){prefs.style=selected;save();preview()}
+   return;
+  }
   if(event.target.closest?.('#lolite-taskbar-settings [data-ltc-reset]'))reset();
  });
  function accountChange(id){
