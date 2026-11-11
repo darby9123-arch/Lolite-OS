@@ -19,7 +19,7 @@ test('all eight selected Lolite OS 5.0 areas are integrated after their existing
 });
 test('Window Management 3.0 reuses original snapping and adds Alt+Tab and tile shortcuts',()=>{
  const wm=read('core/window-manager.js');
- assert.match(wm,/function snapWin\(/);
+ assert.match(wm,/const snapWin=\(/);
  assert.match(wm,/savedLayouts:\(\)=>/);
  assert.match(shell,/e\.altKey&&e\.key==='Tab'/);
  assert.match(shell,/function tileWindows/);
