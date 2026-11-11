@@ -6,12 +6,16 @@ on:
       - 'core/interactive-wallpapers.js'
       - 'core/uploaded-wallpapers-catalog.js'
       - 'core/wallpapers.js'
+      - 'core/wallpaper-colors.js'
+      - 'core/wallpaper-colors.css'
+      - 'core/settings-enhanced.js'
       - 'core/crimson.js'
       - 'core/media-personalisation.css'
       - 'index.html'
       - 'tests/local-live-wallpapers.test.cjs'
       - 'tests/interactive-wallpapers.test.cjs'
       - 'tests/crimson.test.cjs'
+      - 'tests/wallpaper-colors.test.cjs'
       - '.github/workflows/verify-local-wallpapers.yml'
   pull_request:
     paths:
@@ -19,12 +23,16 @@ on:
       - 'core/interactive-wallpapers.js'
       - 'core/uploaded-wallpapers-catalog.js'
       - 'core/wallpapers.js'
+      - 'core/wallpaper-colors.js'
+      - 'core/wallpaper-colors.css'
+      - 'core/settings-enhanced.js'
       - 'core/crimson.js'
       - 'core/media-personalisation.css'
       - 'index.html'
       - 'tests/local-live-wallpapers.test.cjs'
       - 'tests/interactive-wallpapers.test.cjs'
       - 'tests/crimson.test.cjs'
+      - 'tests/wallpaper-colors.test.cjs'
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -41,6 +49,7 @@ jobs:
           node --check core/interactive-wallpapers.js
           node --check core/uploaded-wallpapers-catalog.js
           node --check core/wallpapers.js
+          node --check core/wallpaper-colors.js
           node --check core/crimson.js
       - name: Verify 52 live scenes, MP4 discovery, cursor effects and sound compatibility
-        run: node --test tests/local-live-wallpapers.test.cjs tests/interactive-wallpapers.test.cjs tests/crimson.test.cjs
+        run: node --test tests/local-live-wallpapers.test.cjs tests/interactive-wallpapers.test.cjs tests/crimson.test.cjs tests/wallpaper-colors.test.cjs
