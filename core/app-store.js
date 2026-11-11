@@ -5,6 +5,7 @@
   {id:'sandstone',name:'Sandstone Browser',icon:'sandstone',category:'Network',version:'1.0.0',featured:true,desc:'Full Sandstone browser interface from the uploaded standalone HTML page.',open:()=>openApp('sandstone','Sandstone Browser',1200,780)},
   {id:'music',name:'Lolite Music',icon:'music',category:'Media',version:'1.0.0',featured:true,desc:'Ad-free community music. Upload original tracks for approval, make playlists and request songs.',open:()=>openApp('music','Lolite Music',1100,760)},
   {id:'feature-requests',name:'Feature Requests',icon:'feature-requests',category:'Social',version:'1.0.0',featured:true,desc:'Suggest Lolite OS updates, vote for approved ideas, and see the development status. Reviewed by admins.',open:()=>openApp('feature-requests','Feature Requests',1060,740)},
+  {id:'clips',name:'Lolite Clips',icon:'clips',category:'Media',version:'1.0.0',featured:true,desc:'Record gameplay with a shortcut, watch local clips, and share approved videos with Lolite members.',open:()=>openApp('clips','Lolite Clips',1020,720)},
   {id:'focus',name:'Lolite Focus Board',icon:'app-notepad',category:'Productivity',version:'1.0.0',featured:true,desc:'A working checklist and mini project planner. Save, complete, and delete tasks.',open:()=>window.LoliteQuests?.openView?.('focus')},
   {id:'arcade',name:'Arcade Shelf',icon:'app-games',category:'Games',version:'1.0.0',featured:true,desc:'Launch your purchased game shortcuts together from one collection.',open:()=>window.LoliteQuests?.openView?.('arcade')},
   {id:'lolite-quests',name:'Lolite Quests',icon:'app-academy',category:'Utilities',version:'1.0.0',featured:true,desc:'Earn virtual Lolite money by completing courses and actively using apps. Spend it on upgrades, game shortcuts, memberships and mini apps.',open:()=>openApp('lolite-quests','Lolite Quests',1040,710)},
@@ -19,10 +20,10 @@
 ];
  const key='loliteInstalledApps';
  const economy=()=>window.LoliteEconomy;
- const price=a=>a.id==='feature-requests'?0:(economy()?.appPrice?.(a)??0);
- const owned=a=>a.id==='feature-requests'||!!economy()?.hasApp?.(a);
+ const price=a=>(a.id==='feature-requests'||a.id==='clips')?0:(economy()?.appPrice?.(a)??0);
+ const owned=a=>a.id==='feature-requests'||a.id==='clips'||!!economy()?.hasApp?.(a);
  const formatted=n=>economy()?.money?.(n)||('$'+n);
- const basics=new Set(['academy','life-rp','lolite-quests','music','feature-requests']);const get=()=>{try{const saved=JSON.parse(localStorage.getItem(key)||'[]');const valid=new Set(apps.map(a=>a.id));const clean=saved.filter(id=>valid.has(id));if(clean.length!==saved.length)localStorage.setItem(key,JSON.stringify(clean));return clean}catch{return[]}};const save=x=>localStorage.setItem(key,JSON.stringify(x));
+ const basics=new Set(['academy','life-rp','lolite-quests','music','feature-requests','clips']);const get=()=>{try{const saved=JSON.parse(localStorage.getItem(key)||'[]');const valid=new Set(apps.map(a=>a.id));const clean=saved.filter(id=>valid.has(id));if(clean.length!==saved.length)localStorage.setItem(key,JSON.stringify(clean));return clean}catch{return[]}};const save=x=>localStorage.setItem(key,JSON.stringify(x));
  window.loliteInstallApp=id=>{const a=apps.find(x=>x.id===id);if(!a)return;if(!owned(a)){toast('Buy '+a.name+' for '+formatted(price(a))+' Lolite Dollars first.');render();return}const list=get();if(!list.includes(id))list.push(id);save(list);render();if(window.renderIcons)window.renderIcons();toast(a.name+' installed')};
  window.loliteUninstallApp=id=>{save(get().filter(x=>x!==id));render();if(window.renderIcons)window.renderIcons();toast('App uninstalled')}; window.loliteUninstallAll=()=>{if(!get().length){toast('No optional apps are installed');return}if(!confirm('Uninstall all optional Lolite apps?'))return;save([]);render();if(window.renderIcons)window.renderIcons();toast('All optional apps uninstalled')};
  window.loliteOpenApp=id=>{const a=apps.find(x=>x.id===id);if(!a)return;if(!owned(a)){toast('Purchase '+a.name+' with Lolite Dollars before opening it.');render();return}a.open()};
