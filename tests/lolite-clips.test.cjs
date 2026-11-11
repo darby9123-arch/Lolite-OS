@@ -47,7 +47,7 @@ function harness({captureSupported=true}={}){
  const localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)};
  let timeoutId=1;
  vm.runInNewContext(read('core/clips.js'),{
-  window:{...browser,indexedDB},document,
+  window:Object.assign(browser,{indexedDB}),document,
   navigator:{mediaDevices:{getDisplayMedia:async()=>{captures++;return stream}}},
   MediaRecorder:captureSupported?MockRecorder:undefined,Blob,URL:url,console,Date,Math,Promise,Set,Map,Number,
   localStorage,indexedDB,crypto:{randomUUID:()=> 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'},
