@@ -180,3 +180,33 @@
  .store.store-v41 .store-card,.store.store-v41 .store-card:hover .store-cover-art{transition:none!important;transform:none!important}
 }
 html.lolite-lite-mode .store.store-v41 .store-card:hover .store-cover-art{transform:none!important}
+
+
+/* Game Store search: independent, clickable clear control and a steady toolbar.
+   Keep the search control usable inside narrow app windows and on touch devices. */
+.store.store-v41 .store-search-wrap{position:relative!important;isolation:isolate}
+.store.store-v41 .store-search{
+ padding-right:45px!important;
+ min-width:0!important;
+}
+.store.store-v41 .store-clear-search{
+ position:absolute;z-index:2;top:50%;right:7px;transform:translateY(-50%);
+ width:29px;height:29px;display:grid;place-items:center;
+ border:1px solid transparent!important;border-radius:7px;
+ color:#d6cce7!important;background:#ffffff12!important;
+ font:500 21px/1 system-ui,sans-serif!important;cursor:pointer;
+ padding:0!important;
+}
+.store.store-v41 .store-clear-search:hover,
+.store.store-v41 .store-clear-search:focus-visible{
+ background:#ffffff25!important;color:#fff!important;
+ border-color:#ffffff30!important;
+}
+.store.store-v41 .store-clear-search[hidden]{display:none!important}
+.store.store-v41 .store-search-wrap:focus-within .store-search{
+ outline:2px solid var(--wall-focus-ring,#cfa9ff)!important;
+ outline-offset:0!important;
+}
+@media(prefers-reduced-motion:reduce){
+ .store.store-v41 .store-clear-search{transition:none!important}
+}
