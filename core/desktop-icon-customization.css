@@ -1,0 +1,90 @@
+/* Desktop icon customization — loaded after existing theme/icon polish. */
+html.lic-applied:not(.browsing-mode):not(.mobile-mode) #desktop #icons{
+ display:grid!important;
+ grid-template-columns:repeat(var(--lic-columns),var(--lic-cell-width))!important;
+ grid-auto-flow:row!important;
+ grid-auto-rows:var(--lic-cell-height)!important;
+ gap:var(--lic-gap)!important;
+ width:min(var(--lic-grid-width),calc(100vw - 30px))!important;
+ max-width:calc(100vw - 30px)!important;
+ height:min(var(--lic-grid-height),calc(100dvh - 175px))!important;
+ max-height:calc(100dvh - 150px)!important;
+ right:auto!important;
+ bottom:auto!important;
+ overflow-y:auto!important;
+ overflow-x:hidden!important;
+ align-content:start!important;
+}
+html.lic-applied:not(.browsing-mode):not(.mobile-mode) #desktop #icons .desktop-icon{
+ width:var(--lic-cell-width)!important;
+ height:var(--lic-cell-height)!important;
+ min-height:0!important;
+ box-sizing:border-box!important;
+ padding:6px 3px!important;
+ gap:5px!important;
+ display:flex!important;
+ flex-direction:column!important;
+ align-items:center!important;
+ justify-content:flex-start!important;
+ background:color-mix(in srgb,var(--lic-color) var(--lic-tint-opacity),transparent)!important;
+ border:1px solid color-mix(in srgb,var(--lic-color) var(--lic-tint-opacity),transparent)!important;
+}
+html.lic-applied:not(.browsing-mode):not(.mobile-mode) #desktop #icons .desktop-icon:hover,
+html.lic-applied:not(.browsing-mode):not(.mobile-mode) #desktop #icons .desktop-icon.selected{
+ background:color-mix(in srgb,var(--lic-color) 30%,transparent)!important;
+ border-color:color-mix(in srgb,var(--lic-color) 60%,transparent)!important;
+}
+html.lic-applied:not(.browsing-mode):not(.mobile-mode) #desktop #icons .desktop-icon > :is(.lolite-icon,.app-symbol){
+ width:var(--lic-size)!important;height:var(--lic-size)!important;
+ min-width:var(--lic-size)!important;max-width:var(--lic-size)!important;
+ min-height:var(--lic-size)!important;max-height:var(--lic-size)!important;
+ border-radius:var(--lic-radius)!important;
+ opacity:var(--lic-opacity)!important;
+ flex:0 0 auto!important;box-sizing:border-box!important;
+ display:grid!important;place-items:center!important;margin-inline:auto!important;
+}
+html.lic-applied:not(.browsing-mode):not(.mobile-mode) #desktop #icons .desktop-icon > span:last-child:not(.lolite-icon){
+ display:var(--lic-label-display)!important;
+ max-width:100%!important;
+ margin:0 auto!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ text-align:center!important;
+}
+/* Keep transparency on the artwork only, so labels stay readable. */
+.lic-settings{margin:14px 0 18px!important;padding:20px!important;background:#161d2ae8!important;border-color:#49617a66!important;color:#f1f4fa!important}
+.lic-header{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:15px}
+.lic-header h3{font-size:21px!important;margin:4px 0 5px!important;letter-spacing:-.3px}
+.lic-header small,.lic-preview-title{font-size:10px;letter-spacing:1.3px;font-weight:800;color:#9eb5d6}
+.lic-header p{font-size:12px;line-height:1.5;color:#b7c2d2;margin:0}
+.lic-header button{white-space:nowrap;border:1px solid #60758b!important;background:#243448!important}
+.lic-editor{display:grid;grid-template-columns:minmax(240px,1.2fr) minmax(245px,1fr);gap:18px;align-items:start}
+.lic-preview-col{min-width:0}
+.lic-preview-title{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px}
+.lic-preview-title span{letter-spacing:normal;text-transform:none;font-weight:500;color:#acb9cc}
+.lic-screen{border:1px solid #52657c;border-radius:13px;overflow:hidden;box-shadow:0 12px 32px #0006;aspect-ratio:1.75;min-height:190px}
+.lic-wall{position:relative;width:100%;height:100%;padding:12px 14px 28px;overflow:hidden;background:#171d39 center/cover no-repeat}
+.lic-wall:before{content:"";position:absolute;inset:0;background:linear-gradient(145deg,#10111c35,#08112250);pointer-events:none}
+.lic-preview-grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(var(--lic-mini-cols,3),minmax(0,1fr));grid-auto-rows:calc(var(--lic-mini-size,28px) + 24px);gap:var(--lic-mini-gap,5px);width:min(100%,330px);height:calc(var(--lic-mini-rows,6)*(var(--lic-mini-size,28px) + 24px + var(--lic-mini-gap,5px)));max-height:100%;overflow:hidden;align-content:start}
+.lic-mini-icon{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;padding:2px;min-width:0;overflow:hidden;border-radius:8px;background:color-mix(in srgb,var(--lic-mini-color) var(--lic-mini-bg),transparent)}
+.lic-mini-icon > .lic-mini-art{width:var(--lic-mini-size)!important;height:var(--lic-mini-size)!important;min-width:var(--lic-mini-size)!important;flex:0 0 auto!important;box-sizing:border-box!important;opacity:var(--lic-mini-opacity)!important;border-radius:var(--lic-mini-radius)!important;display:grid!important;place-items:center!important}
+.lic-mini-art img,.lic-mini-art svg{max-width:100%!important;max-height:100%!important;object-fit:contain;display:block}
+.lic-mini-label{display:var(--lic-mini-label)!important;max-width:100%;font-size:8px;line-height:1.15;text-align:center;color:#fff;text-shadow:0 1px 3px #000;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lic-mini-dock{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);display:flex;gap:5px;align-items:center;background:#161e32d9;padding:5px 8px;border-radius:8px;border:1px solid #ffffff22}
+.lic-mini-dock i{width:12px;height:12px;background:#7398bf;border-radius:4px}
+.lic-mini-dock i:nth-child(2){background:#a591e9}.lic-mini-dock i:nth-child(3){background:#d884aa}
+.lic-preview-note{font-size:11px;line-height:1.5;color:#adbacd;margin:9px 0 0}
+.lic-controls{display:grid;gap:11px;min-width:0}
+.lic-control{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#e6eefa}
+.lic-control>span{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.lic-control strong{font-weight:650;font-size:12px}
+.lic-control output{font-size:11px;color:#b8caff;font-variant-numeric:tabular-nums}
+.lic-control input[type=range]{width:100%;accent-color:var(--accent,#7a8bff);cursor:pointer}
+.lic-color-line{display:flex;flex-direction:row;align-items:center;justify-content:space-between}
+.lic-color-line input{appearance:none;width:44px;height:32px;padding:2px;background:#243448;border:1px solid #8293a6;border-radius:8px;cursor:pointer}
+.lic-check{display:flex;gap:8px;align-items:center;font-size:12px;color:#dce8f7}
+.lic-check input{accent-color:var(--accent,#7a8bff)}
+.lic-shape select{width:100%;min-height:34px;background:#222b3e;border:1px solid #52657c;color:#e8f1ff;border-radius:7px;padding:6px}
+.lic-save{font-size:11px;color:#95b7c2}
+@media(max-width:670px){.lic-editor{grid-template-columns:1fr}.lic-settings{padding:14px!important}.lic-header{flex-wrap:wrap}.lic-screen{max-height:250px}}
+@media(prefers-reduced-motion:reduce){.lic-settings *{scroll-behavior:auto!important;transition:none!important}}
