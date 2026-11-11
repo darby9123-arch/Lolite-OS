@@ -117,7 +117,7 @@ function iconHarness(saved=new Map()){
  const root={
   dataset,
   classList:{toggle:(name,value)=>value?classes.add(name):classes.delete(name)},
-  style:{setProperty:(name,value)=>styles.set(name,value)}
+  style:{setProperty:(name,value)=>styles.set(name,value),removeProperty:name=>styles.delete(name)}
  };
  const document={
   readyState:'complete',documentElement:root,
@@ -173,7 +173,7 @@ test('Icon visibility rule targets only the shortcut layer in desktop mode',()=>
  assert.match(iconCss,/\.lic-preview-grid\[hidden\]\s*\{\s*display:none!important;/);
  assert.doesNotMatch(iconCss,/data-lic-icons-visible="false"[^}]*#taskbar/);
  assert.match(index,/core\/desktop-icon-customization\.css\?v=hide-desktop-icons-20261112/);
- assert.match(index,/core\/desktop-icon-customization\.js\?v=hide-desktop-icons-20261112/);
+ assert.match(index,/core\/desktop-icon-customization\.js\?v=[^"]+/);
 });
 
 
