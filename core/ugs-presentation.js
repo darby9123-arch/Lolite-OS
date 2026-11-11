@@ -11,7 +11,8 @@
   'antarttycoon':'Antarctic Tycoon','achievmentunlocked2':'Achievement Unlocked 2',
   'achievmentunlocked3':'Achievement Unlocked 3','badicecream':'Bad Ice-Cream',
   'badicecream2':'Bad Ice-Cream 2','badicecream3':'Bad Ice-Cream 3',
-  'basketrandom':'Basket Random','btd5':'Bloons TD 5',
+  'basketrandom':'Basket Random',
+  'burritobisonlaunchalibre':'Burrito Bison: Launcha Libre','btd5':'Bloons TD 5',
   'bloonspp1':'Bloons Player Pack 1','bloonspp2':'Bloons Player Pack 2',
   'bloonspp3':'Bloons Player Pack 3','bloonspp4':'Bloons Player Pack 4',
   'bloonspp5':'Bloons Player Pack 5','bloonstd6scratch':'Bloons TD 6 (Scratch)',
@@ -31,7 +32,7 @@
   'one two three more all game games ball balls football basketball baseball soccer tennis '+
   'pandas brazil fantasy japan night slices pool seconds burger run escape bullets '+
   'abandoned absolute madness achievement unlocked adventure capital capitalist '+
-  'age war airline tycoon idle alien aliens transporter amidst sky amigo pancho ancient sins '+
+  'age war clash vikings airline tycoon idle alien aliens transporter amidst sky amigo pancho ancient sins '+
   'angry birds space animal crossing anti matter dimensions apple worm aqua park arcade '+
   'archery world tour armor mayhem awesome pirates planes tanks axis league babel tower '+
   'baby backyard bacon may die bad ice cream parenting piggies times simulator '+
@@ -76,8 +77,12 @@
   return dp[0]&&dp[0].length>1?dp[0]:[str];
  }
  function title(value,filename=''){
-  let s=String(value||filename||'').replace(/^.*[\\/]/,'').replace(/\.html?$/i,'')
-   .replace(/^cl(?=[a-z0-9])/i,'').replace(/\s*\(\d+\)$/,'').trim();
+  // Only bundled file paths use the "cl" prefix. Legitimate names such as
+  // "Clash" and "Climb" must never lose their first two letters.
+  const supplied=String(value||'').trim();
+  let s=(supplied||String(filename||'').replace(/^.*[\\/]/,'')
+   .replace(/\.html?$/i,'').replace(/^cl(?=[a-z0-9])/i,''))
+   .replace(/\s*\(\d+\)$/,'').trim();
   const key=s.toLowerCase().replace(/[^a-z0-9]/g,'');
   if(names[key])return names[key];
   s=s.replace(/([a-z])([A-Z])/g,'$1 $2').replace(/([A-Z])([A-Z][a-z])/g,'$1 $2')
