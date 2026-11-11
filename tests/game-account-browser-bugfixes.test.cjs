@@ -97,7 +97,7 @@ test('Unified account sign-out cannot remain stuck when auth cleanup fails',asyn
  const storage={id:'guest',device:{get:k=>device.get('lolite-device:'+k)||null,set:(k,v)=>device.set('lolite-device:'+k,String(v)),remove:k=>device.delete('lolite-device:'+k)}};
  const session=new Map([['lolite-guest-handoff','1']]);
  const sessionStorage={getItem:k=>session.get(k)||null,setItem:(k,v)=>session.set(k,String(v)),removeItem:k=>session.delete(k)};
- const dialog={open:false,showModal(){this.open=true},close(){this.open=false},remove(){}};
+ const dialog={open:false,addEventListener(){},showModal(){this.open=true},close(){this.open=false},remove(){}};
  const dom={};
  const document={
   body:{append(){}},
