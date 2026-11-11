@@ -214,7 +214,7 @@
    '</select></label><label>Keyboard shortcut<select data-lc-setting="hotkey">'+KEYS.map(k=>'<option'+(k===S.hotkey?' selected':'')+'>'+k+'</option>').join('')+
    '</select></label></div>'+
    '<div class="lc-help"><h3>How it works</h3><p>Press <kbd>'+esc(S.hotkey)+'</kbd> while Lolite has keyboard focus, or use the button above. Choose the game tab or window when your browser asks. Press the shortcut again to stop, or the clip will finish automatically at your limit.</p>'+
-   '<p>Keep the chosen game tab visible and check what you are sharing. Game sound is captured only when the browser supports it and you allow audio. Browser restrictions mean shortcuts may not work while a third-party game iframe has keyboard focus.</p>'+
+   '<p>Keep the chosen game tab visible and check what you are sharing. Game sound is captured only when the browser supports it and you allow audio. Cross-origin games may still block keyboard shortcuts while their iframe has focus; use the capture controls in that case.</p>'+
    '<p>This records from when you start it; it does <strong>not</strong> retroactively capture gameplay before the shortcut was pressed.</p></div>';
  }
  function render(){
@@ -338,14 +338,43 @@
  });
  // Shortcuts only reach Lolite when the OS page has keyboard focus. They do
  // not bypass browser permission prompts or capture keystrokes from other apps.
- document.addEventListener('keydown',event=>{
+ function handleClipHotkey(event){
   if(event.repeat||event.target?.closest?.('input,textarea,select,[contenteditable="true"]'))return;
   const match=S.hotkey==='Alt+Shift+C'?event.altKey&&event.shiftKey&&!event.ctrlKey&&event.code==='KeyC':
    event.ctrlKey&&event.shiftKey&&!event.altKey&&event.code==='KeyY';
   if(!match)return;
   event.preventDefault();
   if(S.recording)stopClip();else void beginClip();
- },true);
+ }
+ document.addEventListener('keydown',handleClipHotkey,true);
+ // Same-origin game iframes have their own keyboard focus. Register the hotkey
+ // inside those frames too; cross-origin frames remain inaccessible by design.
+ function bindFrameShortcuts(){
+  if(!document.querySelectorAll)return;
+  for(const frame of document.querySelectorAll('#windows iframe')){
+   if(frame.__loliteClipsFrameBound)continue;
+   frame.__loliteClipsFrameBound=true;
+   const attach=()=>{
+    try{
+     const child=frame.contentDocument;
+     if(!child||child.__loliteClipsHotkeyBound)return;
+     child.addEventListener('keydown',handleClipHotkey,true);
+     child.__loliteClipsHotkeyBound=true;
+    }catch(_){/* Browser security blocks cross-origin iframe listeners. */}
+   };
+   frame.addEventListener('load',attach);
+   attach();
+  }
+ }
+ const gameWindows=document.getElementById('windows');
+ if(gameWindows&&typeof MutationObserver!=='undefined'){
+  const watcher=new MutationObserver(records=>{
+   if(records.some(record=>Array.from(record.addedNodes||[]).some(node=>
+     node.nodeName==='IFRAME'||!!node.querySelector?.('iframe'))))bindFrameShortcuts();
+  });
+  watcher.observe(gameWindows,{childList:true,subtree:true});
+ }
+ bindFrameShortcuts();
  const originalPage=window.page;
  window.page=function(app){
   if(app==='clips'){
