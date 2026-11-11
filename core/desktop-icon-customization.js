@@ -4,7 +4,7 @@
  'use strict';
  const BASE='lolite.desktop-icons.v1.';
  const LIMITS={size:[32,88],opacity:[0,100],columns:[1,10],rows:[2,12],gap:[0,24]};
- const FALLBACK={size:58,opacity:100,columns:3,rows:6,gap:10,color:'#598cfa',tint:false,labels:true,shape:'rounded'};
+ const FALLBACK={size:58,opacity:100,columns:3,rows:6,gap:10,color:'#598cfa',tint:false,labels:true,shape:'rounded',position:'left'};
  const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
  const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)));
  const validColor=value=>/^#[a-f0-9]{6}$/i.test(String(value))?value:'#598cfa';
@@ -39,6 +39,7 @@
   clean.tint=value.tint===true;
   clean.labels=value.labels!==false;
   clean.shape=['rounded','square','circle'].includes(value.shape)?value.shape:'rounded';
+  clean.position=['left','center','right'].includes(value.position)?value.position:'left';
   return clean;
  }
  function load(){
@@ -53,15 +54,17 @@
  }
  function layout(){
   const width=prefs.size+26,height=prefs.size+(prefs.labels?42:14),gap=prefs.gap;
-  const holder=document.getElementById('icons');
-  const viewport=Math.max(160,window.innerWidth-(holder?.getBoundingClientRect().left||20)-18);
+  // Do not use the grid's current left edge: right/centre alignment would shrink
+  // the calculated capacity after the first slider interaction or resize.
+  const viewport=Math.max(160,window.innerWidth-40);
   const capacity=Math.max(1,Math.floor((viewport+gap)/(width+gap)));
   return {width,height,columns:Math.min(prefs.columns,capacity)};
  }
  function apply(){
   const root=document.documentElement;
   root.classList.toggle('lic-applied',custom);
-  if(!custom)return;
+  if(!custom){delete root.dataset.licPosition;return;}
+  root.dataset.licPosition=prefs.position;
   const pos=layout(),vars={
    '--lic-size':prefs.size+'px','--lic-opacity':String(prefs.opacity/100),
    '--lic-color':prefs.color,'--lic-gap':prefs.gap+'px',
@@ -93,6 +96,8 @@
     slider('columns','Columns',1,10,1,'')+
     slider('rows','Visible rows',2,12,1,'')+
     slider('gap','Icon spacing',0,24,2,'px')+
+    '<div class="lic-position-control"><strong>Desktop icon position</strong><div class="lic-position-choices" role="group" aria-label="Desktop icon position">'+
+      ['left','center','right'].map(side=>'<button type="button" data-lic-position="'+side+'" aria-pressed="'+(prefs.position===side)+'">'+({left:'Left',center:'Centre',right:'Right'}[side])+'</button>').join('')+'</div></div>'+
     '<label class="lic-control lic-hue-control"><span><strong>Colour slider</strong><output data-lic-value="hue">'+hueOf(prefs.color)+'°</output></span><input type="range" min="0" max="359" step="1" value="'+hueOf(prefs.color)+'" data-lic-field="hue" aria-label="Icon tile hue"></label>'+
     '<div class="lic-control lic-color-line"><label for="licIconColor"><strong>Exact icon tile colour</strong></label><input type="color" id="licIconColor" data-lic-field="color" value="'+prefs.color+'"></div>'+
     '<label class="lic-check"><input type="checkbox" data-lic-field="tint" '+(prefs.tint?'checked':'')+'> Coloured icon backgrounds</label>'+
@@ -151,11 +156,13 @@
   screen.style.setProperty('--lic-mini-bg',prefs.tint?'20%':'0%');
   screen.style.setProperty('--lic-mini-radius',prefs.shape==='square'?'3px':prefs.shape==='circle'?'50%':'8px');
   screen.style.setProperty('--lic-mini-label',prefs.labels?'block':'none');
+  screen.dataset.iconPosition=prefs.position;
+  section.querySelectorAll('[data-lic-position]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.licPosition===prefs.position)));
   screen.style.setProperty('--lic-mini-rows',String(prefs.rows));
   screen.style.setProperty('--lic-mini-height',Math.min(prefs.rows*(mini+24+Math.round(prefs.gap*.5)),800)+'px');
   const info=section.querySelector('#licLayoutInfo');
   const available=layout().columns;
-  if(info)info.textContent=prefs.columns+' columns × '+prefs.rows+' visible rows'+(available<prefs.columns?' (desktop adapts to '+available+' columns on this screen)':'')+'. Scroll the desktop for more icons.';
+  if(info)info.textContent=prefs.columns+' columns × '+prefs.rows+' visible rows'+(available<prefs.columns?' (desktop adapts to '+available+' columns on this screen)':'')+'. Icons positioned '+prefs.position+'. Scroll the desktop for more icons.';
   const hue=section.querySelector('[data-lic-field="hue"]');
   if(hue&&!hue.matches(':active'))hue.value=String(hueOf(prefs.color));
   const hueOutput=section.querySelector('[data-lic-value="hue"]');
@@ -197,6 +204,12 @@
   }
  });
  document.addEventListener('click',event=>{
+  const button=event.target.closest?.('#lolite-icon-settings [data-lic-position]');
+  if(button){
+   const side=button.dataset.licPosition;
+   if(['left','center','right'].includes(side)){prefs.position=side;save();preview();}
+   return;
+  }
   if(event.target.closest?.('#lolite-icon-settings [data-lic-reset]'))reset();
  });
  function currentAccount(id){
