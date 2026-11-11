@@ -6,6 +6,7 @@ on:
       - 'core/taskbar-customization.css'
       - 'core/crimson.js'
       - 'core/desktop-icon-customization.js'
+      - 'core/desktop-icon-customization.css'
       - 'index.html'
       - 'tests/desktop-taskbar-customization.test.cjs'
       - '.github/workflows/verify-desktop-taskbar.yml'
@@ -15,6 +16,7 @@ on:
       - 'core/taskbar-customization.css'
       - 'core/crimson.js'
       - 'core/desktop-icon-customization.js'
+      - 'core/desktop-icon-customization.css'
       - 'index.html'
       - 'tests/desktop-taskbar-customization.test.cjs'
 jobs:
