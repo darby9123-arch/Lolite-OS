@@ -8,6 +8,53 @@
  const audio=new Audio();
  audio.preload='metadata';
  audio.volume=.75;
+ const MUSIC5_KEY='lolite.music5.prefs.v1',MUSIC5_HISTORY='lolite.music5.history.';
+ const load5=()=>{try{return JSON.parse(localStorage.getItem(MUSIC5_KEY)||'{}')}catch{return {}}};
+ const mix5={speed:Math.min(1.5,Math.max(.75,Number(load5().speed)||1)),eq:[0,0,0],enabled:false};
+ try{const saved=load5();if(Array.isArray(saved.eq))mix5.eq=saved.eq.slice(0,3).map(x=>Math.max(-12,Math.min(12,Number(x)||0)));}catch{}
+ audio.playbackRate=mix5.speed;
+ let context5=null,filters5=null,analyser5=null;
+ const saveMix5=()=>{try{localStorage.setItem(MUSIC5_KEY,JSON.stringify({speed:mix5.speed,eq:mix5.eq}))}catch{}};
+ function configureEQ5(){
+  if(filters5)return true;
+  const AudioCtx=window.AudioContext||window.webkitAudioContext;
+  if(!AudioCtx)return false;
+  try{
+   const ctx=new AudioCtx(),src=ctx.createMediaElementSource(audio);
+   const bass=ctx.createBiquadFilter(),mid=ctx.createBiquadFilter(),treble=ctx.createBiquadFilter(),analyser=ctx.createAnalyser();
+   bass.type='lowshelf';bass.frequency.value=180;
+   mid.type='peaking';mid.frequency.value=1200;mid.Q.value=.8;
+   treble.type='highshelf';treble.frequency.value=5300;
+   analyser.fftSize=256;
+   src.connect(bass);bass.connect(mid);mid.connect(treble);treble.connect(analyser);analyser.connect(ctx.destination);
+   context5=ctx;filters5=[bass,mid,treble];analyser5=analyser;
+   filters5.forEach((node,i)=>{node.gain.value=mix5.eq[i]});
+   void ctx.resume().catch(()=>{});
+   return true;
+  }catch(error){console.warn('Music EQ unavailable for this stream',error);return false}
+ }
+ function recent5(){
+  if(!S.user?.id)return [];
+  try{const rows=JSON.parse(localStorage.getItem(MUSIC5_HISTORY+S.user.id)||'[]');return Array.isArray(rows)?rows.slice(0,24):[]}catch{return []}
+ }
+ function record5(){
+  const t=track(S.current);if(!t||!S.user?.id)return;
+  const rows=recent5().filter(x=>x.id!==t.id);
+  rows.unshift({id:t.id,title:t.title,artist:t.artist,time:Date.now()});
+  try{localStorage.setItem(MUSIC5_HISTORY+S.user.id,JSON.stringify(rows.slice(0,24)))}catch{}
+ }
+ function lyrics5(){const id=S.current;if(!cleanId(id))return '';try{return localStorage.getItem('lolite.music5.lyrics.'+id)||''}catch{return ''}}
+ function extras5(){
+  const recent=recent5().slice(0,6);
+  return '<details class="lm5-studio"><summary>Music Studio 3.0 <small>Equaliser · Speed · Lyrics · History</small></summary><div class="lm5-studio-grid">'+
+   '<section><h3>Audio controls</h3><label>Playback speed <select data-lm5-speed>'+[.75,1,1.25,1.5].map(n=>'<option value="'+n+'"'+(mix5.speed===n?' selected':'')+'>'+n+'×</option>').join('')+'</select></label>'+
+   '<button type="button" data-lm5-eq-toggle>Equaliser: '+(mix5.enabled?'On':'Off')+'</button>'+
+   ['Bass','Mids','Treble'].map((name,i)=>'<label>'+name+' <input type="range" data-lm5-band="'+i+'" min="-12" max="12" value="'+mix5.eq[i]+'"> <output>'+mix5.eq[i]+' dB</output></label>').join('')+
+   '<canvas data-lm5-visualizer width="170" height="40" aria-label="Live audio visualiser"></canvas></section>'+
+   '<section><h3>Personal lyrics notes</h3><p>Add your own words or song notes. Saved on this device; never downloaded from lyric websites.</p><textarea data-lm5-lyrics maxlength="20000" rows="6" placeholder="Write lyrics or notes you own…">'+esc(lyrics5())+'</textarea>'+
+   '<button type="button" data-lm5-save-lyrics'+(!S.current?' disabled':'')+'>Save for current track</button>'+
+   '<h3>Recently played</h3><ol>'+ (recent.length?recent.map(t=>'<li>'+esc(t.title)+' <small>'+esc(t.artist||'')+'</small></li>').join(''):'<li>Play a track to start your history.</li>')+'</ol></section></div></details>';
+ }
  const S={user:null,admin:false,loading:true,tab:'discover',query:'',tracks:[],playlists:[],entries:[],requests:[],selectedPlaylist:null,current:null,queue:[],working:false,error:'',notice:'',shuffle:false,repeat:'off'};
  const FAV_PREFIX='lolite.music.favourites.v2.';
  let favourites=new Set();
@@ -176,7 +223,7 @@
   if(S.error){el.innerHTML='<div class="lm-loading"><h2>Music unavailable</h2><p>'+esc(S.error)+'</p><button class="lm-primary" data-lm-action="reload">Retry</button></div>';return}
   if(!S.user){el.innerHTML='<div class="lm-login"><span class="lm-login-icon">♫</span><h1>Welcome to Lolite Music</h1><p>Listen to community tracks, build playlists, upload your own music and request songs. Sign in using your Lolite Chat account.</p><button class="lm-primary" data-lm-action="signin">Sign in with Lolite Chat</button><button data-lm-action="reload">I’ve signed in — refresh</button></div>';return}
   const contents={discover,favourites:favouriteSongs,playlists,upload,requests,admin};
-  el.innerHTML=header()+'<main class="lm-main">'+(contents[S.tab]||discover)()+'<p class="lm-feedback" data-lm-message role="status">'+esc(S.notice)+'</p></main>'+player();
+  el.innerHTML=header()+'<main class="lm-main">'+(contents[S.tab]||discover)()+extras5()+'<p class="lm-feedback" data-lm-message role="status">'+esc(S.notice)+'</p></main>'+player();
  }
  async function play(id,queue){
   const t=track(id);if(!t||!S.user||t.status!=='approved')return;
@@ -187,7 +234,9 @@
    const result=await sb.storage.from(BUCKET).createSignedUrl(t.storage_path,3600);
    if(result.error||!result.data?.signedUrl)throw Error(result.error?.message||'Cannot access this track');
    S.current=id;S.queue=ids.includes(id)?ids:[id,...ids];
+   if(mix5.enabled){audio.crossOrigin='anonymous';configureEQ5()}
    audio.src=result.data.signedUrl;
+   audio.playbackRate=mix5.speed;
    audio.load();
    render();
    await audio.play();
@@ -213,10 +262,13 @@
   const seek=el.querySelector('[data-lm-seek]');if(seek&&document.activeElement!==seek)seek.value=audio.duration?String(Math.round(audio.currentTime/audio.duration*1000)):'0';
   const elapsed=el.querySelector('[data-lm-elapsed]');if(elapsed)elapsed.textContent=fmt(audio.currentTime);
   const duration=el.querySelector('[data-lm-duration]');if(duration)duration.textContent=fmt(audio.duration);
+  const canvas=el.querySelector('[data-lm5-visualizer]');
+  if(canvas&&analyser5){const context=canvas.getContext('2d'),values=new Uint8Array(analyser5.frequencyBinCount);analyser5.getByteFrequencyData(values);context.clearRect(0,0,canvas.width,canvas.height);const bars=22;for(let i=0;i<bars;i++){const n=values[Math.floor(i*values.length/bars)]||0,height=Math.max(2,n/255*(canvas.height-2));context.fillStyle=getComputedStyle(el).getPropertyValue('--accent').trim()||'#9984e7';context.fillRect(i*8,canvas.height-height,5,height)}}
  }
  for(const name of ['timeupdate','loadedmetadata','play','pause','durationchange'])audio.addEventListener(name,updatePlayer);
  for(const name of ['loadedmetadata','play','pause'])audio.addEventListener(name,publishState);
  audio.addEventListener('ended',()=>{void next(1,true).catch(e=>notify(e?.message||'Cannot play next track'))});
+ audio.addEventListener('play',()=>{record5();if(context5?.state==='suspended')void context5.resume().catch(()=>{});});
  function audioSignatureOK(bytes,ext){
   const ascii=(start,len)=>String.fromCharCode(...bytes.slice(start,start+len));
   if(ext==='mp3')return ascii(0,3)==='ID3'||(bytes[0]===0xff&&(bytes[1]&0xe0)===0xe0);
@@ -408,11 +460,18 @@
   try{ensure(await sb.from('lolite_music_playlist_tracks').insert({playlist_id:pid,track_id:tid}));notify('Saved to playlist.');await load()}
   catch(e){notify(e?.code==='23505'?'Song is already in that playlist.':e?.message||'Unable to save song')}
  });
+ document.addEventListener('click',event=>{
+  const el=event.target.closest?.('[data-lm5-eq-toggle],[data-lm5-save-lyrics]');if(!el?.closest('#lmRoot'))return;
+  if(el.hasAttribute('data-lm5-eq-toggle')){mix5.enabled=!mix5.enabled;if(mix5.enabled&&!configureEQ5()){mix5.enabled=false;notify('Equaliser unavailable in this browser.')}if(filters5)filters5.forEach((node,i)=>node.gain.value=mix5.enabled?mix5.eq[i]:0);el.textContent='Equaliser: '+(mix5.enabled?'On':'Off')}
+  if(el.hasAttribute('data-lm5-save-lyrics')&&S.current){const text=root()?.querySelector('[data-lm5-lyrics]')?.value||'';try{localStorage.setItem('lolite.music5.lyrics.'+S.current,text.slice(0,20000));notify('Your lyric notes were saved locally.')}catch{notify('Cannot save lyric notes on this device.')}}
+ });
  document.addEventListener('input',event=>{
   const el=event.target;if(!el.closest('#lmRoot'))return;
   if(el.id==='lmSearch'){S.query=el.value;const list=root()?.querySelector('#lmTracks');if(list)list.innerHTML=discoverRows()}
   if(el.matches('[data-lm-volume]'))audio.volume=Math.max(0,Math.min(1,Number(el.value)/100));
   if(el.matches('[data-lm-seek]')&&audio.duration)audio.currentTime=Number(el.value)/1000*audio.duration;
+  if(el.hasAttribute('data-lm5-band')){const i=Number(el.dataset.lm5Band);if(i>=0&&i<3){mix5.eq[i]=Math.max(-12,Math.min(12,Number(el.value)||0));el.nextElementSibling&&(el.nextElementSibling.textContent=mix5.eq[i]+' dB');if(filters5)filters5[i].gain.value=mix5.enabled?mix5.eq[i]:0;saveMix5()}}
+  if(el.matches('[data-lm5-speed]')){mix5.speed=Math.min(1.5,Math.max(.75,Number(el.value)||1));audio.playbackRate=mix5.speed;saveMix5()}
  });
  const oldPage=window.page;
  window.page=function(id){if(id==='music'){setTimeout(load,0);return '<div id="lmRoot" class="lm-shell"><div class="lm-loading">Loading Lolite Music…</div></div>'}return oldPage(id)};
@@ -426,6 +485,7 @@
  window.LoliteMusic=Object.freeze({
   open:()=>window.openApp?.('music','Lolite Music',1100,760),refresh:load,
   getState:()=>{const t=track(S.current);return{title:t?.title||'',artist:t?.artist||'',playing:!!t&&!audio.paused,shuffle:S.shuffle,repeat:S.repeat}},
-  toggle:()=>{void command('toggle')},next:()=>{void command('next')},previous:()=>{void command('previous')}
+  toggle:()=>{void command('toggle')},next:()=>{void command('next')},previous:()=>{void command('previous')},
+  music5:()=>({speed:mix5.speed,eq:[...mix5.eq],enabled:mix5.enabled,history:recent5(),lyrics:lyrics5()})
  });
 })();
