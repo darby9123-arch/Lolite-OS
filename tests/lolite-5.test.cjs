@@ -101,8 +101,10 @@ test('V5 sidebar, CSS, accounts and wallpaper engine are integrated on the real 
  assert.match(accounts,/data-account-sync-now/);
  assert.match(accounts,/window\.addEventListener\('online'/);
  assert.match(accounts,/if\(storage\.id!=='guest'\)syncKeys\.add/);
- assert.match(walls,/function transitionTo\(target\)/);
+ assert.match(walls,/function transitionTo\(target,newPoster\)/);
  assert.match(walls,/function clearWallpaperFade/);
+ assert.match(walls,/preload\.onload=reveal/);
+ assert.match(walls,/fadeTimer=setTimeout\(reveal,1500\)/);
  assert.match(walls,/getTransitionMode:\(\)=>transitionMode,setTransitionMode/);
  assert.match(walls,/if\(force\)clearWallpaperFade\(\)/);
 });
