@@ -1,7 +1,8 @@
 /* Lolite OS 5.0 standalone upgrades: panels, feedback and taskbar. */
 :root{--l5-radius:12px;--l5-blur:16px;--l5-taskbar-alpha:.94}
 html[data-l5-theme=on] .window{border-radius:var(--l5-radius)!important}
-html[data-l5-theme=on] #taskbar{background-color:rgb(25 27 40 / var(--l5-taskbar-alpha))!important;backdrop-filter:blur(var(--l5-blur))}
+/* Theme Studio should not repaint a Taskbar Studio preset or the Cosmos dock. */
+html[data-l5-theme=on]:not(.ltc-applied):not([data-lolite-design="cosmos"]) #taskbar{background-color:color-mix(in srgb,var(--win-bar,var(--wall-panel-solid,#252225)) calc(var(--l5-taskbar-alpha) * 100%),transparent)!important;backdrop-filter:blur(var(--l5-blur))}
 html[data-l5-spacing=compact] .window .content :is(.card,.setting-row){padding-block:7px}
 .l5-switcher{position:fixed;inset:auto 50% 16%;transform:translateX(50%);width:min(780px,calc(100vw - 32px));z-index:910000;padding:19px;border-radius:16px;background:rgb(18 22 35 / .96);color:#f7f9ff;box-shadow:0 24px 85px #000b;border:1px solid #ffffff30;backdrop-filter:blur(22px);display:grid;gap:14px}
 .l5-switch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;max-height:48vh;overflow:auto}
