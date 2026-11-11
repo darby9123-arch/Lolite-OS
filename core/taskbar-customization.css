@@ -145,3 +145,148 @@ html.ltc-applied[data-desktop-experience=windows][data-ltc-autohide=true]:not(.b
   margin-left:0!important;max-width:calc(100% - 115px)!important;
  }
 }
+
+
+/* Taskbar Style Studio: concise swatches instead of a giant dark example bar. */
+#lolite-taskbar-settings .ltc-style-section{margin:10px 0 18px;min-width:0}
+#lolite-taskbar-settings .ltc-style-heading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:9px}
+#lolite-taskbar-settings .ltc-style-heading strong{font-size:13px;color:#f1f4fc}
+#lolite-taskbar-settings .ltc-style-heading small{font-size:11px;color:#acbad0}
+#lolite-taskbar-settings .ltc-style-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;min-width:0}
+#lolite-taskbar-settings button.ltc-style-card{min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:6px;text-align:left;
+ padding:11px;border:1px solid #ffffff22;border-radius:11px;background:#ffffff07;color:#f0f4fc;cursor:pointer;box-shadow:none!important}
+#lolite-taskbar-settings button.ltc-style-card:hover{background:#ffffff0e;border-color:#a2b7e26b}
+#lolite-taskbar-settings button.ltc-style-card[aria-pressed="true"]{background:#718dc524;border-color:#9bb6fa;box-shadow:inset 0 0 0 1px #8fa9d14a!important}
+#lolite-taskbar-settings .ltc-style-card strong{font-size:12px;line-height:1.3}
+#lolite-taskbar-settings .ltc-style-card small{font-size:10px;line-height:1.45;color:#b8c6d9}
+#lolite-taskbar-settings .ltc-style-swatch{position:relative;display:flex;align-items:center;justify-content:center;gap:5px;
+ height:45px;min-height:45px;max-width:100%;border:0;border-radius:7px;background:linear-gradient(130deg,#273e60,#435073 55%,#30354e);overflow:hidden}
+#lolite-taskbar-settings .ltc-style-swatch:before{content:'';position:absolute;bottom:6px;left:8px;right:8px;height:25px;background:#64738cb2;border:1px solid #ffffff65;border-radius:9px;box-shadow:0 4px 8px #0003}
+#lolite-taskbar-settings .ltc-style-swatch i{position:relative;z-index:1;display:block;width:11px;height:11px;border-radius:3px;background:#e5ebfa}
+#lolite-taskbar-settings .ltc-style-swatch i:nth-child(2){background:#84b6e5}
+#lolite-taskbar-settings .ltc-style-swatch i:nth-child(3){background:#d9afe9}
+#lolite-taskbar-settings .ltc-style-swatch i:nth-child(4){background:#f5be98}
+#lolite-taskbar-settings .ltc-style-swatch--pill:before{left:22px;right:22px;border-radius:999px;background:#2a3853e8}
+#lolite-taskbar-settings .ltc-style-swatch--minimal:before{background:transparent;border:0;box-shadow:none}
+#lolite-taskbar-settings .ltc-style-swatch--aero:before{background:#8fc4fa8c;box-shadow:inset 0 1px #ffffff8a,0 5px 12px #091d4755}
+#lolite-taskbar-settings .ltc-style-swatch--classic:before{left:0;right:0;bottom:0;height:19px;border-radius:0;border:0;background:#2c3444e9}
+#lolite-taskbar-settings .ltc-style-swatch--classic i{margin-top:17px}
+#lolite-taskbar-settings .ltc-preview-screen{height:128px;background:radial-gradient(ellipse at 78% 20%,#58637f,#36455f 55%,#20344c)}
+/* The mock taskbar is a small, centred component, not a full-width black rectangle. */
+#lolite-taskbar-settings .ltc-preview-bar{
+ left:50%;right:auto;bottom:10px;top:auto;
+ width:min(86%,720px);max-width:calc(100% - 24px);
+ transform:translateX(-50%);
+ background:color-mix(in srgb,var(--ltc-preview-color,#414d6b) 58%,#647693 42%);
+ border:1px solid #c4d4ec70;border-radius:13px;
+ box-shadow:0 6px 17px #0714285c;
+}
+#lolite-taskbar-settings .ltc-preview-bar[data-position=top]{
+ top:10px;bottom:auto;border:1px solid #c4d4ec70;
+}
+#lolite-taskbar-settings .ltc-preview-bar[data-style=pill]{
+ width:min(74%,490px);border-radius:999px;
+ background:color-mix(in srgb,var(--ltc-preview-color,#414d6b) 73%,#394761 27%);
+}
+#lolite-taskbar-settings .ltc-preview-bar[data-style=minimal]{
+ width:min(86%,720px);background:transparent;border-color:transparent;
+ box-shadow:none;backdrop-filter:none!important;
+}
+#lolite-taskbar-settings .ltc-preview-bar[data-style=aero]{
+ background:color-mix(in srgb,var(--ltc-preview-color,#414d6b) 46%,#8dc7fa 54%);
+ border-color:#edf7ffad;box-shadow:inset 0 1px 0 #ffffff73,0 5px 14px #132b3a4b;
+}
+#lolite-taskbar-settings .ltc-preview-bar[data-style=classic]{
+ left:0;right:0;width:100%;max-width:100%;transform:none;
+ bottom:0;border-radius:0;border-left:0;border-right:0;border-bottom:0;
+ background:color-mix(in srgb,var(--ltc-preview-color,#414d6b) 76%,#4d5a74 24%);
+}
+#lolite-taskbar-settings .ltc-preview-bar[data-style=classic][data-position=top]{
+ top:0;bottom:auto;border-top:0;border-bottom:1px solid #c4d4ec70;
+}
+#lolite-taskbar-settings .ltc-preview-bar[data-style=minimal] :is(.ltc-mini-app,.ltc-mini-start,.ltc-mini-search,.ltc-mini-gear,.ltc-mini-clock){
+ background:#1e2c4aa8;border-radius:8px;
+}
+
+/* Real taskbar style presets. Scoped to the Desktop experience so other modes keep their own UI.
+   Override fixed-width and dark-background rules from the stock desktop themes. */
+html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode):is([data-ltc-style=floating],[data-ltc-style=pill],[data-ltc-style=aero],[data-ltc-style=minimal]) #desktop #taskbar{
+ left:50%!important;right:auto!important;top:auto;
+ bottom:12px!important;width:min(900px,calc(100vw - 24px))!important;
+ max-width:calc(100vw - 24px)!important;transform:translateX(-50%)!important;
+ border-radius:16px!important;border:1px solid #b3c8e64a!important;
+ box-shadow:0 9px 25px #060d213b!important;
+ background:color-mix(in srgb,var(--ltc-color) var(--ltc-opacity),#4b596a24)!important;
+}
+html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode):is([data-ltc-style=floating],[data-ltc-style=pill],[data-ltc-style=aero],[data-ltc-style=minimal]) #taskbar .win-taskbar-center{
+ position:static!important;left:auto!important;transform:none!important;
+ display:flex!important;flex:1 1 auto!important;max-width:none!important;
+ justify-content:center!important;min-width:0;margin:0 auto!important;
+}
+html.ltc-applied[data-desktop-experience=windows][data-ltc-align=left]:not(.browsing-mode):not(.mobile-mode):is([data-ltc-style=floating],[data-ltc-style=pill],[data-ltc-style=aero],[data-ltc-style=minimal]) #taskbar .win-taskbar-center{
+ justify-content:flex-start!important;margin:0!important;
+}
+html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode)[data-ltc-style=pill] #desktop #taskbar{
+ width:min(740px,calc(100vw - 24px))!important;border-radius:999px!important;
+ background:color-mix(in srgb,var(--ltc-color) 75%,#495b75 25%)!important;
+ box-shadow:0 6px 26px #050c203b!important;
+}
+html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode)[data-ltc-style=pill] #taskbar .win-taskbar-brand{
+ display:none!important;
+}
+html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode)[data-ltc-style=aero] #desktop #taskbar{
+ width:min(960px,calc(100vw - 24px))!important;
+ background:color-mix(in srgb,var(--ltc-color) 55%,#7198b790)!important;
+ border-color:#e4f3ff85!important;
+ backdrop-filter:blur(28px) saturate(1.5)!important;
+ -webkit-backdrop-filter:blur(28px) saturate(1.5)!important;
+ box-shadow:inset 0 1px 0 #ffffff5c,0 10px 25px #152b5040!important;
+}
+html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode)[data-ltc-style=minimal] #desktop #taskbar{
+ background:transparent!important;border-color:transparent!important;
+ box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode)[data-ltc-style=minimal] #taskbar :is(.task,.taskwin,.win-pinned,.win-taskbar-brand,#clock){
+ background:color-mix(in srgb,var(--ltc-color) 55%,transparent)!important;
+ border-radius:10px!important;
+}
+html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode)[data-ltc-style=classic] #desktop #taskbar{
+ position:fixed;left:0!important;right:0!important;bottom:0!important;
+ width:100%!important;max-width:100%!important;transform:none!important;
+ border-radius:0!important;border:0!important;border-top:1px solid #ffffff34!important;
+ background:color-mix(in srgb,var(--ltc-color) var(--ltc-opacity),#45516a1c)!important;
+ box-shadow:0 -2px 14px #060f2531!important;
+}
+/* Top-edge placement is an explicit choice and takes precedence over every style's default bottom anchor. */
+html.ltc-applied[data-desktop-experience=windows][data-ltc-position=top]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
+ top:12px!important;bottom:auto!important;
+}
+html.ltc-applied[data-desktop-experience=windows][data-ltc-position=top][data-ltc-style=classic]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
+ top:0!important;bottom:auto!important;
+}
+html.ltc-applied[data-desktop-experience=windows][data-ltc-position=bottom][data-ltc-style=classic]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
+ top:auto!important;bottom:0!important;
+}
+html.ltc-applied[data-desktop-experience=windows][data-ltc-position=bottom]:not(.browsing-mode):not(.mobile-mode):not([data-ltc-style=classic]) #desktop #taskbar{
+ top:auto!important;bottom:12px!important;
+}
+html.ltc-applied[data-desktop-experience=windows][data-ltc-position=bottom]:not(.browsing-mode):not(.mobile-mode):not([data-ltc-style=classic]) #start,
+html.ltc-applied[data-desktop-experience=windows][data-ltc-position=bottom]:not(.browsing-mode):not(.mobile-mode):not([data-ltc-style=classic]) :is(#winCalendar,#winQuickSettings){
+ bottom:calc(var(--ltc-height) + 25px)!important;
+}
+html.ltc-applied[data-desktop-experience=windows][data-ltc-position=top]:not(.browsing-mode):not(.mobile-mode):not([data-ltc-style=classic]) #start,
+html.ltc-applied[data-desktop-experience=windows][data-ltc-position=top]:not(.browsing-mode):not(.mobile-mode):not([data-ltc-style=classic]) :is(#winCalendar,#winQuickSettings){
+ top:calc(var(--ltc-height) + 25px)!important;
+}
+@media(max-width:740px){
+ html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode):not([data-ltc-style=classic]) #desktop #taskbar{
+  padding:0 8px!important;
+ }
+ html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode):not([data-ltc-style=classic]) #taskbar .win-taskbar-brand{
+  display:none!important;
+ }
+}
+@media(max-width:520px){
+ #lolite-taskbar-settings .ltc-style-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #lolite-taskbar-settings .ltc-style-swatch{height:38px;min-height:38px}
+}
