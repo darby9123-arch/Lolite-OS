@@ -309,6 +309,22 @@ verifyRuntimeAvailability().then(() => Promise.all([
     retry.style.cssText = "padding:10px 18px;border:0;border-radius:7px;background:#6154da;color:#fff;cursor:pointer";
     retry.addEventListener("click", () => location.reload());
     message.append(explanation, retry);
+
+    // The legacy web-ports repository has disappeared. Retrying cannot restore
+    // missing engine code, so offer a maintained bring-your-own-files client.
+    // This is an external fallback, not a claim that Lolite has the missing data.
+    if (/Required engine files are unavailable|Could not load (?:gamepademulator|idbfs|game)\.js/i.test(String(error?.message || ""))) {
+        const note = document.createElement("p");
+        note.textContent = "This old Vice City port is missing its engine files. A separate browser client can run with game data from your own legitimate copy; it does not include the game files.";
+        const alternative = document.createElement("a");
+        alternative.href = "https://joncodeofficial.github.io/gta-vice-city-wasm/";
+        alternative.target = "_blank";
+        alternative.rel = "noopener noreferrer";
+        alternative.textContent = "Open bring-your-own-files Vice City client";
+        alternative.style.cssText = "display:inline-block;margin:12px 0;padding:10px 16px;border-radius:7px;background:#316bc1;color:#fff;text-decoration:none;font:600 14px system-ui";
+        message.append(note, alternative);
+    }
+
     loadingText.after(message);
 });
 </script>
