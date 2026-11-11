@@ -27,6 +27,39 @@
  let active=null,canvas=null,ctx=null,video=null,loopController=null,raf=0,last=0,elapsed=0;
  let width=1,height=1,scale=1,status='Still wallpaper',frames=0,playSerial=0;
  let fallbackIndex=0;
+ const TRANSITION_KEY='loliteWallpaperTransitionMode';
+ const transitionModes=['off','smooth','cinematic'];
+ const initialTransition=read(TRANSITION_KEY,'smooth');
+ let transitionMode=transitionModes.includes(initialTransition)?initialTransition:'smooth';
+ let fadeLayer=null,fadeTimer=null,transitionSerial=0;
+ function clearWallpaperFade(){
+  transitionSerial++;if(fadeTimer){clearTimeout(fadeTimer);fadeTimer=null}
+  fadeLayer?.remove();fadeLayer=null;
+ }
+ function transitionTo(target){
+  clearWallpaperFade();
+  if(!active||transitionMode==='off'||paused()||document.hidden)return;
+  const oldBackground=target.style.background;
+  if(!oldBackground||oldBackground==='none')return;
+  const layer=document.createElement('div');
+  layer.className='l5-wallpaper-transition-layer';
+  layer.setAttribute('aria-hidden','true');
+  layer.style.cssText='position:absolute;inset:0;pointer-events:none;z-index:9;opacity:1;will-change:opacity;';
+  layer.style.background=oldBackground;
+  const duration=transitionMode==='cinematic'?550:270;
+  layer.style.transition='opacity '+duration+'ms ease';
+  fadeLayer=layer;target.appendChild(layer);
+  const ticket=transitionSerial;
+  requestAnimationFrame(()=>{if(ticket===transitionSerial&&fadeLayer===layer)layer.style.opacity='0'});
+  fadeTimer=setTimeout(()=>{if(ticket===transitionSerial)clearWallpaperFade()},duration+80);
+ }
+ function setTransitionMode(value){
+  if(!transitionModes.includes(value))return false;
+  transitionMode=value;save(TRANSITION_KEY,value);
+  if(value==='off')clearWallpaperFade();
+  window.dispatchEvent(new CustomEvent('lolite:wallpapertransitionmode',{detail:{mode:value}}));
+  return true;
+ }
  const effects=window.LoliteInteractiveWallpapers;
  const getInteractionFlag=()=>read('loliteWallpaperInteractive','on')!=='off';
  let interactionOn=getInteractionFlag(),intensity=Math.max(.2,Math.min(1.4,Number(read('loliteWallpaperInteractionStrength','.8'))||.8));
@@ -344,6 +377,10 @@
   const target=document.getElementById('wallpaper');
   if(!target)return;
   if(!force&&active?.id===wall.id){sync();return}
+  // The outgoing poster stays above the old renderer while new media mounts.
+  // We never clone or read live video frames, so switching does not add decoders.
+  if(force)clearWallpaperFade();
+  else transitionTo(target);
   release();active=wall;elapsed=0;frames=0;pointer.strength=0;ripples.length=0;
   target.classList.remove('wallpaper-animated','wallpaper-pixel');
   target.dataset.motion=wall.scene||wall.motion||'';
@@ -530,6 +567,7 @@
  window.LoliteWallpapers={
   collection,apply,restore,markup,cards,setCustom,discoverVideos,syncAdminWallpapers,getStatus:()=>status,
   getQuality:()=>quality,setQuality,retry:()=>{if(active)show(active,{force:true})},
+  getTransitionMode:()=>transitionMode,setTransitionMode,
   isInteractiveEnabled:()=>interactionOn,
   setInteractiveEnabled:value=>{interactionOn=!!value;save('loliteWallpaperInteractive',interactionOn?'on':'off');if(!interactionOn){pointer.inside=false;ripples.length=0}sync()},
   interactionStrength:()=>intensity,
