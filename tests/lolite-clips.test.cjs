@@ -7,9 +7,9 @@ const read=file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8');
 const pause=()=>new Promise(resolve=>setImmediate(resolve));
 
 function harness({captureSupported=true}={}){
- const listeners={},saved=new Map(),elements=new Map();
+ const listeners={},saved=new Map(),elements=new Map(),messages=[];
  const root={innerHTML:'',querySelector:()=>null};
- const storage=new Map(),browser={page:()=>'<div>Existing app</div>',openApp(){}};
+ const storage=new Map(),browser={page:()=>'<div>Existing app</div>',openApp(){},toast:message=>messages.push(message)};
  let captures=0,recorderCount=0,lastRecorder=null;
  const track={readyState:'live',addEventListener(){},stop(){this.readyState='ended'}};
  const stream={getTracks:()=>[track],getVideoTracks:()=>[track]};
@@ -62,7 +62,7 @@ function harness({captureSupported=true}={}){
   return prevented;
  }
  return {browser,root,saved,key,get captures(){return captures},get recorderCount(){return recorderCount},
-  get recorder(){return lastRecorder},track};
+  get recorder(){return lastRecorder},track,messages};
 }
 
 test('A new Lolite Clips app mounts without asking for capture permission',async()=>{
@@ -115,7 +115,7 @@ test('Unsupported browsers display an explanation rather than silently recording
  h.browser.page('clips');await pause();
  h.key();await pause();
  assert.equal(h.captures,0);
- assert.match(h.root.innerHTML,/Screen capture requires a supported HTTPS browser/);
+ assert.ok(h.messages.some(m=>/Screen capture requires a supported HTTPS browser/.test(m)));
 });
 
 test('Game capture and cloud sharing are opt-in and do not post private clips automatically',()=>{
