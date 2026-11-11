@@ -8,6 +8,19 @@
  const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
  const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)));
  const validColor=value=>/^#[a-f0-9]{6}$/i.test(String(value))?value:'#598cfa';
+ const hueOf=color=>{
+  const rgb=[1,3,5].map(i=>parseInt(validColor(color).slice(i,i+2),16)/255);
+  const hi=Math.max(...rgb),lo=Math.min(...rgb),delta=hi-lo;
+  if(delta===0)return 0;
+  const [r,g,b]=rgb;
+  const h=hi===r?((g-b)/delta)%6:hi===g?(b-r)/delta+2:(r-g)/delta+4;
+  return Math.round((h*60+360)%360);
+ };
+ const hueColor=value=>{
+  const h=clamp(value,0,360),c=.85,x=c*(1-Math.abs((h/60)%2-1)),m=.12;
+  const [r,g,b]=h<60?[c,x,0]:h<120?[x,c,0]:h<180?[0,c,x]:h<240?[0,x,c]:h<300?[x,0,c]:[c,0,x];
+  return '#'+[r,g,b].map(v=>Math.round((v+m)*255).toString(16).padStart(2,'0')).join('');
+ };
  let account='guest',prefs=null,custom=false;
  const key=()=>BASE+account;
  const defaults=()=>({
@@ -80,7 +93,8 @@
     slider('columns','Columns',1,10,1,'')+
     slider('rows','Visible rows',2,12,1,'')+
     slider('gap','Icon spacing',0,24,2,'px')+
-    '<div class="lic-control lic-color-line"><label for="licIconColor"><strong>Icon tile colour</strong></label><input type="color" id="licIconColor" data-lic-field="color" value="'+prefs.color+'"></div>'+
+    '<label class="lic-control lic-hue-control"><span><strong>Colour slider</strong><output data-lic-value="hue">'+hueOf(prefs.color)+'°</output></span><input type="range" min="0" max="360" step="1" value="'+hueOf(prefs.color)+'" data-lic-field="hue" aria-label="Icon tile hue"></label>'+
+    '<div class="lic-control lic-color-line"><label for="licIconColor"><strong>Exact icon tile colour</strong></label><input type="color" id="licIconColor" data-lic-field="color" value="'+prefs.color+'"></div>'+
     '<label class="lic-check"><input type="checkbox" data-lic-field="tint" '+(prefs.tint?'checked':'')+'> Coloured icon backgrounds</label>'+
     '<label class="lic-check"><input type="checkbox" data-lic-field="labels" '+(prefs.labels?'checked':'')+'> Show app names</label>'+
     '<label class="lic-control lic-shape"><strong>Icon shape</strong><select data-lic-field="shape">'+
@@ -131,6 +145,10 @@
   const info=section.querySelector('#licLayoutInfo');
   const available=layout().columns;
   if(info)info.textContent=prefs.columns+' columns × '+prefs.rows+' visible rows'+(available<prefs.columns?' (desktop adapts to '+available+' columns on this screen)':'')+'. Scroll the desktop for more icons.';
+  const hue=section.querySelector('[data-lic-field="hue"]');
+  if(hue)hue.value=String(hueOf(prefs.color));
+  const hueOutput=section.querySelector('[data-lic-value="hue"]');
+  if(hueOutput)hueOutput.textContent=hueOf(prefs.color)+'°';
   for(const [name,value] of Object.entries(prefs)){
    const field=section.querySelector('[data-lic-field="'+name+'"]');
    if(field){
@@ -153,6 +171,7 @@
   const el=event.target.closest?.('#lolite-icon-settings [data-lic-field]');
   if(!el)return;
   const field=el.dataset.licField;
+  if(field==='hue'){prefs.color=hueColor(el.value);prefs.tint=true;save();preview();return}
   if(!(field in FALLBACK))return;
   if(field==='tint'||field==='labels')prefs[field]=el.checked;
   else if(field==='color'){prefs.color=validColor(el.value);prefs.tint=true}
@@ -169,19 +188,6 @@
  document.addEventListener('click',event=>{
   if(event.target.closest?.('#lolite-icon-settings [data-lic-reset]'))reset();
  });
- function bindSettings(){
-  if(typeof window.page!=='function')return;
-  const previous=window.page;
-  window.page=function(id){
-   const html=previous.apply(this,arguments);
-   if(id!=='settings')return html;
-   // Keep icon controls discoverable at the top, even when other modules append settings.
-   const body=String(html||'');
-   const result=body.includes('<h2>Settings</h2>')?body.replace('<h2>Settings</h2>','<h2>Settings</h2>'+markup()):markup()+body;
-   requestAnimationFrame(()=>preview());
-   return result;
-  };
- }
  function currentAccount(id){
   const next=id||'guest';
   if(next===account)return;
@@ -194,10 +200,10 @@
   client.auth.onAuthStateChange((_event,session)=>currentAccount(session?.user?.id));
  }
  function init(){
-  load();bindSettings();initAuth();
+  load();initAuth();
   window.addEventListener('resize',()=>{if(custom)apply();preview()},{passive:true});
   window.addEventListener('lolite:desktopthemechange',()=>{if(!custom){prefs=defaults();renderSettings()}else{apply();preview()}});
-  window.LoliteIconCustomization={get:()=>({...prefs}),reset,apply,preview};
+  window.LoliteIconCustomization={get:()=>({...prefs}),reset,apply,preview,markup};
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
  else init();
