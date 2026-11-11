@@ -93,7 +93,7 @@
     slider('columns','Columns',1,10,1,'')+
     slider('rows','Visible rows',2,12,1,'')+
     slider('gap','Icon spacing',0,24,2,'px')+
-    '<label class="lic-control lic-hue-control"><span><strong>Colour slider</strong><output data-lic-value="hue">'+hueOf(prefs.color)+'°</output></span><input type="range" min="0" max="360" step="1" value="'+hueOf(prefs.color)+'" data-lic-field="hue" aria-label="Icon tile hue"></label>'+
+    '<label class="lic-control lic-hue-control"><span><strong>Colour slider</strong><output data-lic-value="hue">'+hueOf(prefs.color)+'°</output></span><input type="range" min="0" max="359" step="1" value="'+hueOf(prefs.color)+'" data-lic-field="hue" aria-label="Icon tile hue"></label>'+
     '<div class="lic-control lic-color-line"><label for="licIconColor"><strong>Exact icon tile colour</strong></label><input type="color" id="licIconColor" data-lic-field="color" value="'+prefs.color+'"></div>'+
     '<label class="lic-check"><input type="checkbox" data-lic-field="tint" '+(prefs.tint?'checked':'')+'> Coloured icon backgrounds</label>'+
     '<label class="lic-check"><input type="checkbox" data-lic-field="labels" '+(prefs.labels?'checked':'')+'> Show app names</label>'+
@@ -108,17 +108,25 @@
   const screen=section.querySelector('.lic-wall'),grid=section.querySelector('#licPreviewIcons');
   if(!screen||!grid)return;
   const real=document.getElementById('wallpaper');
-  if(real){
+  if(real&&!screen.dataset.wallpaperReady){
    const bg=getComputedStyle(real).backgroundImage;
    screen.style.backgroundImage=bg&&bg!=='none'?bg:'linear-gradient(140deg,#19335e,#16152e 65%,#121521)';
    const art=real.querySelector('img');
    const video=real.querySelector('video');
    const picture=art?.currentSrc||art?.src||video?.poster;
    if(picture)screen.style.backgroundImage='linear-gradient(0deg,#09132340,#09132340),url("'+String(picture).replace(/"/g,'%22')+'")';
+   screen.dataset.wallpaperReady='true';
   }
   const sources=[...document.querySelectorAll('#icons > .desktop-icon')].slice(0,35);
-  grid.replaceChildren();
-  for(const item of sources){
+  // Slider input must never rebuild 35 SVG/PNG icons dozens of times per second.
+  // Rebuild only when a new Settings tab is mounted or desktop shortcuts change.
+  const signature=sources.map(item=>
+   (item.getAttribute('aria-label')||item.textContent||'')+'|'+
+   (item.querySelector('img')?.getAttribute('src')||item.querySelector('.lolite-icon')?.className||'')
+  ).join(';');
+  if(grid.dataset.iconSignature!==signature||!grid.childElementCount){
+   grid.replaceChildren();
+   for(const item of sources){
    const tile=document.createElement('div');tile.className='lic-mini-icon';
    const graphic=item.querySelector(':scope > .lolite-icon, :scope > .app-symbol');
    if(graphic){
@@ -131,6 +139,8 @@
    const label=document.createElement('span');label.className='lic-mini-label';
    label.textContent=item.getAttribute('aria-label')?.replace(/^open\s+/i,'')||item.textContent?.trim()||'App';
    tile.appendChild(label);grid.appendChild(tile);
+   }
+   grid.dataset.iconSignature=signature;
   }
   const cols=Math.min(prefs.columns,7),mini=Math.max(20,Math.round(prefs.size*.47));
   screen.style.setProperty('--lic-mini-cols',String(cols));
@@ -142,11 +152,12 @@
   screen.style.setProperty('--lic-mini-radius',prefs.shape==='square'?'3px':prefs.shape==='circle'?'50%':'8px');
   screen.style.setProperty('--lic-mini-label',prefs.labels?'block':'none');
   screen.style.setProperty('--lic-mini-rows',String(prefs.rows));
+  screen.style.setProperty('--lic-mini-height',Math.min(prefs.rows*(mini+24+Math.round(prefs.gap*.5)),800)+'px');
   const info=section.querySelector('#licLayoutInfo');
   const available=layout().columns;
   if(info)info.textContent=prefs.columns+' columns × '+prefs.rows+' visible rows'+(available<prefs.columns?' (desktop adapts to '+available+' columns on this screen)':'')+'. Scroll the desktop for more icons.';
   const hue=section.querySelector('[data-lic-field="hue"]');
-  if(hue)hue.value=String(hueOf(prefs.color));
+  if(hue&&!hue.matches(':active'))hue.value=String(hueOf(prefs.color));
   const hueOutput=section.querySelector('[data-lic-value="hue"]');
   if(hueOutput)hueOutput.textContent=hueOf(prefs.color)+'°';
   for(const [name,value] of Object.entries(prefs)){
