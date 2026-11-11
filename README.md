@@ -29,6 +29,12 @@ A Lolite-branded browser desktop with the original Cosmos space interface, apps,
 
 ## Update Log
 
+### Feature Requests — admin replies and Done screenshots (2026-11-12)
+- Lolite admins can post dated replies to suggestions, attach a screenshot and mark features Done.
+- Completed requests remain visible with their reply history, proof screenshot and final vote count; voting is locked.
+- Screenshot files are stored privately in Supabase with authenticated access and short-lived image links. [Guide](docs/FEATURE-REQUESTS.md).
+
+
 ### Lolite accounts & game activity — 2026-11-11
 - Startup sign-in and Settings → Account & activity use the same existing Lolite accounts.
 - Desktop settings and uploads are separated by account; small preferences, favourites and measured playtime sync with Supabase.
