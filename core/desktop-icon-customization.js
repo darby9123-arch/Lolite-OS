@@ -3,8 +3,8 @@
 (()=>{
  'use strict';
  const BASE='lolite.desktop-icons.v1.';
- const LIMITS={size:[32,88],opacity:[0,100],columns:[1,10],rows:[2,12],gap:[0,24]};
- const FALLBACK={size:58,opacity:100,columns:3,rows:6,gap:10,color:'#598cfa',tint:false,labels:true,visible:true,shape:'rounded',position:'left'};
+ const LIMITS={size:[32,88],opacity:[0,100],columns:[1,10],rows:[2,12],gap:[0,24],glassBlur:[0,24]};
+ const FALLBACK={size:58,opacity:100,columns:3,rows:6,gap:10,color:'#598cfa',tint:false,labels:true,visible:true,shape:'rounded',position:'left',symbolColor:'#8069de',symbolMode:'wallpaper',tileSource:'wallpaper',finish:'solid',glassBlur:12};
  const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
  const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)));
  const validColor=value=>/^#[a-f0-9]{6}$/i.test(String(value))?value:'#598cfa';
@@ -36,6 +36,10 @@
    if(Number.isFinite(Number(value[name])))clean[name]=clamp(value[name],...LIMITS[name]);
   }
   clean.color=validColor(value.color??clean.color);
+  clean.symbolColor=validColor(value.symbolColor??clean.symbolColor);
+  clean.symbolMode=['wallpaper','custom','original'].includes(value.symbolMode)?value.symbolMode:'wallpaper';
+  clean.tileSource=['wallpaper','custom','original'].includes(value.tileSource)?value.tileSource:'wallpaper';
+  clean.finish=['solid','glass','minimal'].includes(value.finish)?value.finish:'solid';
   clean.tint=value.tint===true;
   clean.labels=value.labels!==false;
   clean.visible=value.visible!==false;
@@ -64,7 +68,14 @@
  function apply(){
   const root=document.documentElement;
   root.classList.toggle('lic-applied',custom);
-  if(!custom){delete root.dataset.licPosition;delete root.dataset.licIconsVisible;return;}
+  if(!custom){
+   for(const name of ['licPosition','licIconsVisible','licSymbolMode','licTileSource','licFinish'])delete root.dataset[name];
+   for(const name of ['--lic-symbol-color','--lic-tile-color','--lic-glass-blur'])root.style.removeProperty(name);
+   return;
+  }
+  root.dataset.licSymbolMode=prefs.symbolMode;
+  root.dataset.licTileSource=prefs.tileSource;
+  root.dataset.licFinish=prefs.finish;
   root.dataset.licPosition=prefs.position;
   root.dataset.licIconsVisible=String(prefs.visible);
   const pos=layout(),vars={
@@ -76,9 +87,13 @@
    '--lic-grid-height':(prefs.rows*pos.height+(prefs.rows-1)*prefs.gap)+'px',
    '--lic-radius':prefs.shape==='square'?'5px':prefs.shape==='circle'?'50%':'16px',
    '--lic-tint-opacity':prefs.tint?'20%':'0%',
-   '--lic-label-display':prefs.labels?'block':'none'
+   '--lic-label-display':prefs.labels?'block':'none',
+   '--lic-tile-color':prefs.tileSource==='custom'?prefs.color:prefs.tileSource==='original'?'#6381b3':'var(--wall-icon-start,#65779c)',
+   '--lic-glass-blur':prefs.glassBlur+'px'
   };
   for(const [name,value] of Object.entries(vars))root.style.setProperty(name,value);
+  if(prefs.symbolMode==='custom')root.style.setProperty('--lic-symbol-color',prefs.symbolColor);
+  else root.style.removeProperty('--lic-symbol-color');
  }
  function slider(name,title,min,max,step,unit){
   const value=prefs[name];
@@ -93,6 +108,18 @@
     '<div class="lic-screen" role="img" aria-label="Preview of desktop icons with selected layout"><div class="lic-wall"><div class="lic-preview-grid" id="licPreviewIcons"></div><div class="lic-mini-dock"><i></i><i></i><i></i><i></i><i></i></div></div></div>'+
     '<p class="lic-preview-note" id="licLayoutInfo"></p></div>'+
     '<div class="lic-controls">'+
+    '<div class="lic-appearance-head"><strong>Icon colours & finish</strong><small>Change the actual logo symbol, not just the background.</small></div>'+
+    '<label class="lic-control"><strong>Logo colour</strong><select data-lic-field="symbolMode">'+
+      [['wallpaper','Match wallpaper'],['custom','Custom colour'],['original','Original icon colours']].map(([id,label])=>'<option value="'+id+'"'+(prefs.symbolMode===id?' selected':'')+'>'+label+'</option>').join('')+
+    '</select></label>'+
+    '<label class="lic-control lic-color-line"><strong>Actual logo colour</strong><input type="color" data-lic-field="symbolColor" aria-label="Actual icon symbol colour" value="'+prefs.symbolColor+'"'+(prefs.symbolMode==='custom'?'':' disabled')+'></label>'+
+    '<label class="lic-control"><strong>Tile colour</strong><select data-lic-field="tileSource">'+
+      [['wallpaper','Match wallpaper'],['custom','Custom tile colour'],['original','Classic blue-purple']].map(([id,label])=>'<option value="'+id+'"'+(prefs.tileSource===id?' selected':'')+'>'+label+'</option>').join('')+
+    '</select></label>'+
+    '<label class="lic-control"><strong>Icon material</strong><select data-lic-field="finish">'+
+      [['solid','Soft solid'],['glass','Frosted glass'],['minimal','Minimal / transparent']].map(([id,label])=>'<option value="'+id+'"'+(prefs.finish===id?' selected':'')+'>'+label+'</option>').join('')+
+    '</select></label>'+
+    slider('glassBlur','Glass blur',0,24,2,'px')+
     '<label class="lic-icon-visibility"><span><strong>Show desktop icons</strong><small>Hide shortcuts without removing them. Turn this back on to restore your desktop.</small></span><input type="checkbox" data-lic-field="visible" '+(prefs.visible?'checked':'')+' aria-label="Show desktop icons"></label>'+
     slider('size','Icon size',32,88,2,'px')+
     slider('opacity','Icon transparency',0,100,5,'% visible')+
@@ -159,6 +186,13 @@
   screen.style.setProperty('--lic-mini-bg',prefs.tint?'20%':'0%');
   screen.style.setProperty('--lic-mini-radius',prefs.shape==='square'?'3px':prefs.shape==='circle'?'50%':'8px');
   screen.style.setProperty('--lic-mini-label',prefs.labels?'block':'none');
+  screen.dataset.licFinish=prefs.finish;
+  screen.dataset.licTileSource=prefs.tileSource;
+  screen.dataset.licSymbolMode=prefs.symbolMode;
+  const logoColour=section.querySelector('[data-lic-field="symbolColor"]');
+  if(logoColour)logoColour.disabled=prefs.symbolMode!=='custom';
+  const blurSlider=section.querySelector('[data-lic-field="glassBlur"]');
+  if(blurSlider)blurSlider.disabled=prefs.finish!=='glass';
   screen.dataset.iconPosition=prefs.position;
   screen.dataset.iconsVisible=String(prefs.visible);
   grid.hidden=!prefs.visible;
@@ -194,17 +228,21 @@
   const el=event.target.closest?.('#lolite-icon-settings [data-lic-field]');
   if(!el)return;
   const field=el.dataset.licField;
-  if(field==='hue'){prefs.color=hueColor(el.value);prefs.tint=true;save();preview();return}
+  if(field==='hue'){prefs.color=hueColor(el.value);prefs.tint=true;prefs.tileSource='custom';save();preview();return}
   if(!(field in FALLBACK))return;
   if(field==='tint'||field==='labels'||field==='visible')prefs[field]=el.checked;
-  else if(field==='color'){prefs.color=validColor(el.value);prefs.tint=true}
+  else if(field==='color'){prefs.color=validColor(el.value);prefs.tint=true;prefs.tileSource='custom'}
+  else if(field==='symbolColor'){prefs.symbolColor=validColor(el.value);prefs.symbolMode='custom'}
+  else if(field==='symbolMode')prefs.symbolMode=['wallpaper','custom','original'].includes(el.value)?el.value:'wallpaper';
+  else if(field==='tileSource')prefs.tileSource=['wallpaper','custom','original'].includes(el.value)?el.value:'wallpaper';
+  else if(field==='finish')prefs.finish=['solid','glass','minimal'].includes(el.value)?el.value:'solid';
   else if(field==='shape')prefs.shape=['rounded','square','circle'].includes(el.value)?el.value:'rounded';
   else prefs[field]=clamp(el.value,...LIMITS[field]);
   save();preview();
  });
  document.addEventListener('change',event=>{
   const el=event.target.closest?.('#lolite-icon-settings [data-lic-field]');
-  if(el&&['shape','tint','labels','visible'].includes(el.dataset.licField)){
+  if(el&&['shape','tint','labels','visible','symbolMode','tileSource','finish'].includes(el.dataset.licField)){
    prefs[el.dataset.licField]=el.type==='checkbox'?el.checked:el.value;save();preview();
   }
  });
@@ -232,6 +270,8 @@
   load();initAuth();
   window.addEventListener('resize',()=>{if(custom)apply();preview()},{passive:true});
   window.addEventListener('lolite:desktopthemechange',()=>{if(!custom){prefs=defaults();renderSettings()}else{apply();preview()}});
+  window.addEventListener('lolite:wallpaperchange',()=>{const el=document.querySelector('#lolite-icon-settings .lic-wall');if(el)delete el.dataset.wallpaperReady;preview()});
+  window.addEventListener('lolite:wallpapercolormode',()=>{apply();preview()});
   window.LoliteIconCustomization={get:()=>({...prefs}),reset,apply,preview,markup};
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
