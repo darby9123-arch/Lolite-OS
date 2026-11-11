@@ -4,6 +4,13 @@ on:
     paths:
       - 'core/lolite-5.css'
       - 'core/lolite-5-customization.js'
+      - 'core/lolite-5.js'
+      - 'core/lolite-5-panels.css'
+      - 'core/lolite-5-music.css'
+      - 'core/music.js'
+      - 'core/spotlight.js'
+      - 'core/game-player.js'
+      - 'tests/lolite-5-integrations.test.cjs'
       - 'core/motion.js'
       - 'core/crimson.js'
       - 'core/accounts.js'
@@ -17,6 +24,13 @@ on:
     paths:
       - 'core/lolite-5.css'
       - 'core/lolite-5-customization.js'
+      - 'core/lolite-5.js'
+      - 'core/lolite-5-panels.css'
+      - 'core/lolite-5-music.css'
+      - 'core/music.js'
+      - 'core/spotlight.js'
+      - 'core/game-player.js'
+      - 'tests/lolite-5-integrations.test.cjs'
       - 'core/motion.js'
       - 'core/crimson.js'
       - 'core/accounts.js'
@@ -39,9 +53,13 @@ jobs:
       - name: Check 5.0 JavaScript syntax
         run: |
           node --check core/lolite-5-customization.js
+          node --check core/lolite-5.js
+          node --check core/music.js
+          node --check core/spotlight.js
+          node --check core/game-player.js
           node --check core/motion.js
           node --check core/crimson.js
           node --check core/accounts.js
           node --check core/wallpapers.js
       - name: Test desktop windows, accounts, wallpaper and Customization Studio
-        run: node --test tests/lolite-5.test.cjs tests/window-manager.test.cjs tests/accounts-activity.test.cjs tests/local-live-wallpapers.test.cjs tests/wallpaper-colors.test.cjs
+        run: node --test tests/lolite-5-integrations.test.cjs tests/lolite-5.test.cjs tests/window-manager.test.cjs tests/accounts-activity.test.cjs tests/local-live-wallpapers.test.cjs tests/wallpaper-colors.test.cjs
