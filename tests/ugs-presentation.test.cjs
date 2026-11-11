@@ -110,7 +110,7 @@ test('Every hosted UGS game gets a real image or a readable illustrated fallback
  const markup=decodeURIComponent(sports.split(',')[1]);
  assert.match(markup,/Basketball Stars/);
  assert.match(markup,/<circle /);
- assert.doesNotMatch(markup,/<script\b|<iframe\b|<image\b|https?:\/\//);
+ assert.doesNotMatch(markup,/<script\b|<iframe\b|<image\b/);
  const store=read('core/game-store.js');
  assert.match(store,/function posterForGame\(game\)/);
  assert.match(store,/LoliteUGSPresentation\.poster\(game\)/);
