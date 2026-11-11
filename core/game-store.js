@@ -143,7 +143,11 @@
    if(has(/pac.?man|donkey kong|\btetris\b|\bsnake\b|breakout|space invaders|\bpong\b|atari|\bnes\b|classic arcade|retro|old school|198[0-9]|199[0-9]|emulator|asteroids|arkanoid|frogger|galaga|pinball|\bsimon\b/))return 'Retro & Classics';
    return 'Arcade & Action';
  };
- const categoryNames=["All Games","My Library","Favorites","Recently Played","Featured","Recently Added","Popular Games","Built-in HTML","UGS","DAKNUX","Gamefiles ZIP","Free to Play","Baldi’s Basics","Sandbox & Building","Adventure & RPG","Platformers","Puzzle & Brain","Racing & Driving","Arcade & Action","Horror & Survival","Sports","Strategy","Simulation & Life","Multiplayer & .io","Music & Rhythm","Casual & Idle","Retro & Classics"];
+ const uploadedCollections=new Map((window.LoliteUploadedGamePacks?.collections||[])
+  .filter(item=>item&&/^[a-z0-9-]+$/.test(item.id)&&typeof item.name==='string')
+  .map(item=>[item.id,item.name]));
+ const uploadedCollectionNames=new Set(uploadedCollections.values());
+ const categoryNames=["All Games","My Library","Favorites","Recently Played","Featured","Recently Added","Popular Games","Built-in HTML","UGS",...uploadedCollectionNames,"DAKNUX","Gamefiles ZIP","Free to Play","Baldi’s Basics","Sandbox & Building","Adventure & RPG","Platformers","Puzzle & Brain","Racing & Driving","Arcade & Action","Horror & Survival","Sports","Strategy","Simulation & Life","Multiplayer & .io","Music & Rhythm","Casual & Idle","Retro & Classics"];
  const sidebarGamePicks={
   'All Games':['clminecraftpocketedition.html'],
   'My Library':['clminecraftpocketedition.html'],
@@ -364,7 +368,43 @@
   games.sort((a,b)=>a.title.localeCompare(b.title,undefined,{numeric:true,sensitivity:'base'}));
   window.LoliteBundledGamefilesStatus=Object.freeze({added,replaced,total:added+replaced});
  }
- // User-selected gamefiles.zip games share on-device assets; no third-party game code is published here.
+ // ZIP launch documents are hosted alongside their original relative assets.
+ // Merge duplicate titles into server choices; UGS is applied afterwards.
+ function loadUploadedGamePacks(){
+  const incoming=window.LoliteUploadedGamePacks?.games;
+  if(!Array.isArray(incoming))return;
+  const lookup=new Map(games.map(game=>[serverNameKey(game.title),game]));
+  let added=0,alternatives=0;
+  for(const entry of incoming){
+   const name=uploadedCollections.get(entry?.collection);
+   if(!name||typeof entry.title!=='string'||typeof entry.url!=='string'||typeof entry.file!=='string')continue;
+   if(!/^pack-[a-z0-9-]+-[a-f0-9]{12}\.html$/.test(entry.file))continue;
+   if(!entry.url.startsWith('html%20games/collections/'+entry.collection+'/')||!/^html%20games\/collections\/[a-z0-9-]+\/[^\s?#]+\.html?$/i.test(entry.url))continue;
+   const title=entry.title.trim(),key=serverNameKey(title);
+   if(!key||/[<>]/.test(title))continue;
+   let game=lookup.get(key);
+   if(game){
+    if(game.url!==entry.url&&!(game.servers||[]).some(server=>server.url===entry.url)){
+     // Prefer the supplied HTML when the existing default is an external host.
+     if(game.external&&!game.local){
+      game.servers=[{name:game.source||'Previous server',url:game.url},...(game.servers||[])];
+      Object.assign(game,{url:entry.url,source:name,packSource:name,local:true,external:false,openExternally:false});
+     }else (game.servers||(game.servers=[])).push({name,url:entry.url});
+     alternatives++;
+    }
+   }else{
+    game={file:entry.file,title,url:entry.url,source:name,packSource:name,
+     local:true,external:false,recentlyAdded:true,category:categorize({title,file:entry.file})};
+    games.push(game);lookup.set(key,game);added++;
+   }
+   game.uploadedCollections=[...new Set([...(game.uploadedCollections||[]),entry.collection])];
+   if(typeof entry.cover==='string'&&(/^(?:html%20games\/collections\/|https:\/\/cdn\.jsdelivr\.net\/gh\/)/.test(entry.cover)))
+    externalCovers.set(game.file,entry.cover);
+  }
+  games.sort((a,b)=>a.title.localeCompare(b.title,undefined,{numeric:true,sensitivity:'base'}));
+  window.LoliteUploadedGamePacksStatus=Object.freeze({added,alternatives,total:added+alternatives});
+ }
+ // User-selected gamefiles.zip games continue to share their on-device assets.
  const gamefilesKey=value=>String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
  async function syncGamefilesCollection(){
   const packages=window.LoliteLocalGamePackages;
@@ -486,7 +526,7 @@
    if(document.querySelector('.store-main'))render();
  }
  const availableServers=g=>{
-   const baseName=g.ugsInstalled?'UGS':g.adminSharedGame?'Admin library':g.gamefilesRecord?'Gamefiles ZIP · Local':g.bundledGameFile?'Gamefiles ZIP · GitHub HTML':(g.local||g.url.startsWith('html games/'))?'Lolite OS (local HTML)':g.openExternally?'Official creator':g.source==='DAKNUX'?'DAKNUX':'Lolite OS';
+   const baseName=g.ugsInstalled?'UGS':g.adminSharedGame?'Admin library':g.gamefilesRecord?'Gamefiles ZIP · Local':g.bundledGameFile?'Gamefiles ZIP · GitHub HTML':g.packSource?g.packSource:(g.local||g.url.startsWith('html games/'))?'Lolite OS (local HTML)':g.openExternally?'Official creator':g.source==='DAKNUX'?'DAKNUX':'Lolite OS';
    // Offer each alternate server as its own playable version; skip duplicate URLs.
    const raw=[{name:baseName,url:g.url},...(Array.isArray(g.servers)?g.servers:[])];
    const seen=new Set();
@@ -635,7 +675,7 @@
  const playCount=g=>popularity()?.countFor(g.file)||0;
  const isRanked=g=>playCount(g)>0&&!!popularity()?.isEligible(g);
  const ranked=list=>list.filter(isRanked).sort((a,b)=>playCount(b)-playCount(a)||a.title.localeCompare(b.title));
- const matchesCategory=g=>franchiseNames.has(active)?g.franchise===active:active==='All Games'||active==='Featured'||active==='Popular Games'?true:active==='Favorites'?isFavourite(g.file):active==='Recently Played'?recentSessions.some(row=>row.file===g.file):active==='Recently Added'?!!g.adminSharedGame||g.recentlyAdded||g.file.startsWith('local-'):active==='My Library'?hasGame(g):active==='Built-in HTML'?g.url.startsWith('games/'):active==='UGS'?!!g.ugsEntry:active==='DAKNUX'?availableServers(g).some(server=>server.name==='DAKNUX'):active==='Gamefiles ZIP'?!!g.gamefilesRecord||!!g.bundledGameFile:active==='Free to Play'?gamePrice(g)===0:g.category===active;
+ const matchesCategory=g=>uploadedCollectionNames.has(active)?availableServers(g).some(server=>server.name===active):franchiseNames.has(active)?g.franchise===active:active==='All Games'||active==='Featured'||active==='Popular Games'?true:active==='Favorites'?isFavourite(g.file):active==='Recently Played'?recentSessions.some(row=>row.file===g.file):active==='Recently Added'?!!g.adminSharedGame||g.recentlyAdded||g.file.startsWith('local-'):active==='My Library'?hasGame(g):active==='Built-in HTML'?g.url.startsWith('games/'):active==='UGS'?!!g.ugsEntry:active==='DAKNUX'?availableServers(g).some(server=>server.name==='DAKNUX'):active==='Gamefiles ZIP'?!!g.gamefilesRecord||!!g.bundledGameFile:active==='Free to Play'?gamePrice(g)===0:g.category===active;
  const broken=g=>{
   const versions=availableServers(g);
   if(!versions.length)return true;
@@ -906,6 +946,7 @@
    if(category==='My Library')return hasGame(g);
    if(category==='Built-in HTML')return g.url.startsWith('games/');
    if(category==='UGS')return !!g.ugsEntry;
+   if(uploadedCollectionNames.has(category))return availableServers(g).some(server=>server.name===category);
   if(category==='DAKNUX')return availableServers(g).some(server=>server.name==='DAKNUX');
    if(category==='Gamefiles ZIP')return !!g.gamefilesRecord||!!g.bundledGameFile;
    if(category==='Free to Play')return gamePrice(g)===0;
@@ -1108,6 +1149,7 @@
  buildFranchiseCategories();
  void loadAuthorizedGames().finally(async()=>{
   loadBundledGamefiles();
+  loadUploadedGamePacks();
   await syncGamefilesCollection();
   await syncUGSCollection();
   buildFranchiseCategories();

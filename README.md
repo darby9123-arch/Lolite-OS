@@ -1,4 +1,4 @@
-> **Game Store update (11 November 2026):** The GenizyMath, Mountain Games and Chicken King's Vault collections have been retired. Their catalogue entries, alternative servers and import shortcuts are no longer loaded. Lolite's own HTML games, user-provided games and DAKNUX remain. Previous notes below are historical.
+> **Game Store update (11 November 2026):** Added 1,702 game versions from the supplied ZIPs: 874 GenizyMath and 828 Chicken King's Vault versions, with actual launch HTML and included assets hosted in Lolite. Matching titles share server choices, and UGS remains the default where available. Twelve incomplete Chicken King versions are documented in [the import report](html%20games/collections/import-report.json). Mountain Games remains retired. See [collection details](html%20games/collections/README.md). Previous notes below are historical.
 
 ## Launch Lolite OS
 

@@ -37,7 +37,7 @@ test('Every HTML page in the Lolite game folders is listed exactly once',()=>{
  }
 });
 
-test('Retired provider catalogues are absent while local HTML and DAKNUX remain',()=>{
+test('Legacy remote provider catalogues stay retired while uploaded game packs are hosted locally',()=>{
  const retired=['genizymath-catalog.js','mountain-games-catalog.js','chickenkings-catalog.js'];
  for(const file of retired){
   assert.equal(fs.existsSync(path.join(root,'core',file)),false,'Retired catalog still exists: '+file);
@@ -49,7 +49,9 @@ test('Retired provider catalogues are absent while local HTML and DAKNUX remain'
  assert.match(source,/local:true,external:false,source:'Lolite OS · repository HTML'/);
  assert.match(source,/local:true,external:false,source:'Lolite OS · built-in HTML'/);
  assert.match(source,/const raw=\[\{name:baseName,url:g\.url\}/);
- assert.doesNotMatch(source,/GenizyMath|Mountain Games|Chicken King/);
+ assert.doesNotMatch(source,/Mountain Games/);
+ assert.ok(mainSource.includes('core/uploaded-game-packs.js?v='));
+ assert.match(source,/loadUploadedGamePacks\(\)/);
  assert.match(source,/"DAKNUX"/);
 });
 

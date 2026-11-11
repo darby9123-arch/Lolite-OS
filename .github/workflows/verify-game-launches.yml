@@ -6,6 +6,9 @@ on:
       - 'core/integration.js'
       - 'index.html'
       - 'core/game-store.js'
+      - 'core/uploaded-game-packs.js'
+      - 'tests/uploaded-game-packs.test.cjs'
+      - 'scripts/bundle-uploaded-game-packs.py'
       - 'core/ugs-catalog.js'
       - 'core/local-game-packages.js'
       - 'tests/ugs-integration.test.cjs'
@@ -28,6 +31,9 @@ on:
       - 'core/integration.js'
       - 'index.html'
       - 'core/game-store.js'
+      - 'core/uploaded-game-packs.js'
+      - 'tests/uploaded-game-packs.test.cjs'
+      - 'scripts/bundle-uploaded-game-packs.py'
       - 'core/ugs-catalog.js'
       - 'core/local-game-packages.js'
       - 'tests/ugs-integration.test.cjs'
@@ -57,8 +63,9 @@ jobs:
           node --check core/game-player.js
           node --check core/game-health.js
           node --check core/game-store.js
+          node --check core/uploaded-game-packs.js
           node --check core/ugs-catalog.js
           node --check core/local-game-packages.js
           node --check core/integration.js
       - name: Test game launching, fallbacks and file paths
-        run: node --test tests/game-store-search.test.cjs tests/game-store-ui-cleanup.test.cjs tests/game-store-sidebar-art.test.cjs tests/game-store-gallery.test.cjs tests/game-launches.test.cjs tests/raw-html-games.test.cjs tests/repository-html-catalog.test.cjs tests/game-server-count.test.cjs tests/game-health.test.cjs tests/ugs-integration.test.cjs
+        run: node --test tests/uploaded-game-packs.test.cjs tests/game-store-search.test.cjs tests/game-store-ui-cleanup.test.cjs tests/game-store-sidebar-art.test.cjs tests/game-store-gallery.test.cjs tests/game-launches.test.cjs tests/raw-html-games.test.cjs tests/repository-html-catalog.test.cjs tests/game-server-count.test.cjs tests/game-health.test.cjs tests/ugs-integration.test.cjs

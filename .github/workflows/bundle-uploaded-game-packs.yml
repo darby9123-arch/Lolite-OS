@@ -1,0 +1,47 @@
+name: Bundle verified uploaded game packs
+on:
+  push:
+    branches: ['codex/add-uploaded-game-packs']
+    paths:
+      - '.github/workflows/bundle-uploaded-game-packs.yml'
+      - 'scripts/materialize-game-packs.py'
+      - 'scripts/uploaded-game-pack-files.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: uploaded-game-packs
+  cancel-in-progress: false
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Restore exact uploaded game files
+        run: python scripts/materialize-game-packs.py
+      - name: Verify catalogue, server choices, and launches
+        run: |
+          node --check core/game-store.js
+          node --check core/uploaded-game-packs.js
+          node --test tests/uploaded-game-packs.test.cjs tests/game-store-search.test.cjs tests/game-store-ui-cleanup.test.cjs tests/game-store-sidebar-art.test.cjs tests/game-store-gallery.test.cjs tests/game-launches.test.cjs tests/raw-html-games.test.cjs tests/repository-html-catalog.test.cjs tests/game-server-count.test.cjs tests/game-health.test.cjs tests/ugs-integration.test.cjs
+      - name: Commit verified files to the preparation branch
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- 'html games/collections'
+          if ! git diff --cached --quiet; then
+            git commit -m 'Bundle verified uploaded game HTML and assets'
+            git push origin HEAD:"$BRANCH"
+          fi

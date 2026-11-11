@@ -1,0 +1,103 @@
+{
+  "archives": [
+    {
+      "filename": "genizymath.github.io-main(2).zip",
+      "sha256": "434a4f1752b4add27849ea110949b761e7d401ba236f41fc0a81c6ef160f4075",
+      "collection": "genizymath",
+      "games": 874,
+      "files": 2132,
+      "bytes": 87867282
+    },
+    {
+      "filename": "ChickenKingsVault-main.zip",
+      "sha256": "433b4c43915f8fc316530f2f7921da797c34c5ec17433102347cce73875a1e61",
+      "collection": "chicken-kings-vault",
+      "games": 828,
+      "files": 2942,
+      "bytes": 279079640
+    }
+  ],
+  "missing": [
+    {
+      "collection": "chicken-kings-vault",
+      "title": "2048",
+      "wrapper": "gamefiles/2048game.html",
+      "missingTarget": "gamefiles/2048.html",
+      "reason": "The supplied file is an error message or an incomplete header without game code."
+    },
+    {
+      "collection": "chicken-kings-vault",
+      "title": "Among Us",
+      "wrapper": "gamefiles/amongus.html",
+      "missingTarget": "gamefiles/Among Us.html",
+      "reason": "The supplied file is an error message or an incomplete header without game code."
+    },
+    {
+      "collection": "chicken-kings-vault",
+      "title": "Soccer Random",
+      "wrapper": "gamefiles/soccerrandom.html",
+      "missingTarget": "gamefiles/Soccer Random.html",
+      "reason": "The supplied file is an error message or an incomplete header without game code."
+    },
+    {
+      "collection": "chicken-kings-vault",
+      "title": "Draw Climber",
+      "wrapper": "gamefiles/drawclimber.html",
+      "missingTarget": "gamefiles/Draw Climber.html",
+      "reason": "The supplied file is an error message or an incomplete header without game code."
+    },
+    {
+      "collection": "chicken-kings-vault",
+      "title": "Only Up",
+      "wrapper": "gamefiles/onlyup.html",
+      "missingTarget": "Only Up.html"
+    },
+    {
+      "collection": "chicken-kings-vault",
+      "title": "Fireboy and Watergirl 2",
+      "wrapper": "gamefiles/fireboyandwatergirl2.html",
+      "missingTarget": "gamefiles/Fireboy and Watergirl 2.html",
+      "reason": "The supplied file is an error message or an incomplete header without game code."
+    },
+    {
+      "collection": "chicken-kings-vault",
+      "title": "Fireboy and Watergirl 3",
+      "wrapper": "gamefiles/fireboyandwatergirl3.html",
+      "missingTarget": "gamefiles/Fireboy and Watergirl 3.html",
+      "reason": "The supplied file is an error message or an incomplete header without game code."
+    },
+    {
+      "collection": "chicken-kings-vault",
+      "title": "Henry Stickmin: Breaking the Bank",
+      "wrapper": "gamefiles/breakingthebank.html",
+      "missingTarget": "gamefiles/Henry Stickmin Breaking the Bank.html",
+      "reason": "The supplied file is an error message or an incomplete header without game code."
+    },
+    {
+      "collection": "chicken-kings-vault",
+      "title": "Three Goblets",
+      "wrapper": "gamefiles/threegoblets.html",
+      "missingTarget": "gamefiles/Three Goblets.html",
+      "reason": "The supplied file is an error message or an incomplete header without game code."
+    },
+    {
+      "collection": "chicken-kings-vault",
+      "title": "Bullet Force",
+      "wrapper": "gamefiles/bulletforce.html",
+      "missingTarget": "Bullet Force.html"
+    },
+    {
+      "collection": "chicken-kings-vault",
+      "title": "Serial Experiments Lain",
+      "wrapper": "gamefiles/serialexperimentslain.html",
+      "missingTarget": "gamefiles/Serial Experiments Lain.html",
+      "reason": "The supplied file is an error message or an incomplete header without game code."
+    },
+    {
+      "collection": "chicken-kings-vault",
+      "title": "Please Dont Touch Anything",
+      "wrapper": "gamefiles/pleasedonttouchanything.html",
+      "missingTarget": "Please Dont Touch Anything.html"
+    }
+  ]
+}
