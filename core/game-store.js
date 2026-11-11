@@ -488,10 +488,11 @@
    const taken=new Set();
    for(const row of [...rows].sort((a,b)=>(a[2]==='html5'?0:1)-(b[2]==='html5'?0:1))){
      if(!Array.isArray(row)||row.length<5)continue;
-     const [id,filename,kind,bytes,title]=row;
+     const [id,filename,kind,bytes,sourceTitle]=row;
+     const title=window.LoliteUGSPresentation?.title(sourceTitle,filename)||sourceTitle;
      if(!/^[A-Za-z0-9_-]{12,80}$/.test(id)||!/^[-\w ().]+\.html?$/i.test(filename)||!['html5','flash'].includes(kind)||typeof title!=='string'||unsuitableRemoteTitle(title))continue;
      const key=ugsTitleKey(title);if(!key||taken.has(key))continue;
-     const record=byId.get(saved[id])||installedByTitle.get(key);
+     const record=byId.get(saved[id])||installedByTitle.get(key)||installedByTitle.get(ugsTitleKey(sourceTitle));
      const hasLocalInstall=!!record&&typeof record.root==='string'&&/^pkg-[a-f0-9-]{16,60}$/.test(record.packId||record.id);
      const hostedURL=typeof hosted[id]==='string'&&/^html%20games\/ugs\/[a-z0-9._-]+\.html?$/i.test(hosted[id])?hosted[id]:'';
      const hasHosted=!!hostedURL; // HTML5 and Ruffle-backed Flash launch pages are real hosted HTML.
@@ -499,7 +500,7 @@
      if(!hasInstall)continue; // Drive catalogue entries are not playable game files.
      taken.add(key);listed++;
      const preferredURL=hasLocalInstall?ugsFileURL(record):hostedURL;
-     const entry={id,filename,kind,title,bytes:Number(bytes)||0};
+     const entry={id,filename,kind,title,sourceTitle,bytes:Number(bytes)||0};
      const index=existing.get(key);
      if(index!==undefined){
        const previous=games[index];
@@ -708,7 +709,7 @@
   }).join('');
   panel.innerHTML='<section class="lolite-game-detail-panel"><div class="lolite-game-detail-top"><div><h2>'+encodeLabel(game.title)+'</h2><div class="lolite-game-detail-stat">'+encodeLabel(game.category)+' · '+servers.length+' server'+(servers.length===1?'':'s')+'</div></div>'+
    '<button type="button" class="lolite-game-detail-close" data-game-detail-close aria-label="Close game details">×</button></div>'+
-   '<div class="store-detail-artwork"><img class="lolite-game-detail-image" src="'+encodeLabel(game.backgroundUrl||game.iconUrl||lolitePosterArt(game.title,game.file))+'" alt="Game artwork">'+
+   '<div class="store-detail-artwork"><img class="lolite-game-detail-image" src="'+encodeLabel(game.backgroundUrl||game.iconUrl||coverFor(game.file)||lolitePosterArt(game.title,game.file))+'" alt="Game artwork">'+
    (game.iconUrl?'<img class="store-detail-icon" src="'+encodeLabel(game.iconUrl)+'" alt="Game icon">':'')+'</div>'+
    '<div class="lolite-game-detail-stat">Source: '+encodeLabel(game.source||'Lolite OS')+'</div>'+
    '<div class="lolite-game-detail-stat">Recent launches: '+playCount(game).toLocaleString()+' in the last 30 days (when available)</div>'+
@@ -783,7 +784,15 @@
    '<div class="store-card-actions"><button class="store-play" type="button" data-store-launch="'+file+'" aria-label="Play '+title+'">'+launchText+'</button>'+
    serverPickerMarkup(g)+'<button class="store-details" type="button" data-store-details="'+file+'" aria-label="Details for '+title+'">Info</button></div></div></article>';
  };
- const coverFor=file=>file.startsWith('native-')?null:(adminGameArtwork.get(file)?.background||adminGameArtwork.get(file)?.icon||externalCovers.get(file)||window.loliteGameArt?.[file]?.src||null);
+ const ugsDiscoveredArt=new Map();
+ const coverFor=file=>{
+  if(file.startsWith('native-'))return null;
+  const game=games.find(item=>item.file===file);
+  return adminGameArtwork.get(file)?.background||adminGameArtwork.get(file)?.icon||
+   externalCovers.get(file)||window.loliteGameArt?.[file]?.src||
+   (game?.ugsEntry?.filename?window.loliteGameArt?.[game.ugsEntry.filename]?.src:null)||
+   ugsDiscoveredArt.get(file)||null;
+ };
  // Local, title-specific artwork is always present; remote images only enhance it.
  const artCache=new Map();
  window.loliteStorePreview=(el,file,title)=>{
@@ -792,7 +801,20 @@
    const picture=target?.querySelector('.store-cover-picture');
    if(!target || !picture)return;
    const remote=coverFor(file);
-   if(!remote){el.dataset.artLoaded='fallback';return}
+   if(!remote){
+    // Only the visible UGS cards inspect their same-origin launch page for a
+    // genuine icon/cover. Never fetch every game at catalogue startup.
+    const ugsGame=games.find(game=>game.file===file&&game.ugsEntry);
+    if(ugsGame&&!el.dataset.ugsArtChecked&&window.LoliteUGSPresentation?.discover){
+     el.dataset.ugsArtChecked='1';
+     void window.LoliteUGSPresentation.discover(ugsGame).then(src=>{
+      if(!src)return;
+      ugsDiscoveredArt.set(file,src);
+      if(el.isConnected){delete el.dataset.artLoaded;window.loliteStorePreview(el,file,title)}
+     }).catch(()=>{});
+    }
+    el.dataset.artLoaded='fallback';return;
+   }
    const old=artCache.get(remote);
    if(old?.failed && Date.now()-old.time<60000){el.dataset.artLoaded='fallback';return}
    el.dataset.artLoading='1';
