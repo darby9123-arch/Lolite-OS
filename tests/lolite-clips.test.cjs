@@ -105,6 +105,7 @@ test('The keybind stops a clip and saves a playable local Blob',async()=>{
  h.browser.page('clips');await pause();
  h.key();await pause();h.key();await pause();await pause();
  assert.equal(h.browser.LoliteClips.status().recording,false);
+ assert.equal(h.browser.LoliteClips.status().captureActive,false);
  assert.equal(h.saved.size,1);
  const clip=[...h.saved.values()][0];
  assert.ok(clip.blob instanceof Blob);
