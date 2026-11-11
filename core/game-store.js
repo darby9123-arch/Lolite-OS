@@ -490,7 +490,7 @@
      if(!Array.isArray(row)||row.length<5)continue;
      const [id,filename,kind,bytes,sourceTitle]=row;
      const title=window.LoliteUGSPresentation?.title(sourceTitle,filename)||sourceTitle;
-     if(!/^[A-Za-z0-9_-]{12,80}$/.test(id)||!/^[-\w ().]+\.html?$/i.test(filename)||!['html5','flash'].includes(kind)||typeof title!=='string'||unsuitableRemoteTitle(title))continue;
+     if(!/^[A-Za-z0-9_-]{12,80}$/.test(id)||!/^[-\w ().]+\.html?$/i.test(filename)||!['html5','flash'].includes(kind)||typeof sourceTitle!=='string'||unsuitableRemoteTitle(sourceTitle))continue;
      const key=ugsTitleKey(title);if(!key||taken.has(key))continue;
      const record=byId.get(saved[id])||installedByTitle.get(key)||installedByTitle.get(ugsTitleKey(sourceTitle));
      const hasLocalInstall=!!record&&typeof record.root==='string'&&/^pkg-[a-f0-9-]{16,60}$/.test(record.packId||record.id);
