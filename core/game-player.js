@@ -33,6 +33,7 @@
    if(!frame.isConnected||frame.dataset.popularityRecorded==='yes'||frame.dataset.gameReady!=='1')return;
    if(!frame.srcdoc && (!frame.src||frame.src==='about:blank'))return;
    frame.dataset.popularityRecorded='yes';
+   window.dispatchEvent(new CustomEvent('lolite5:gameplayed',{detail:{file}}));
    void window.LoliteGamePopularity?.record?.(file);
   });
  }
