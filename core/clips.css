@@ -59,3 +59,5 @@
 .lc-loading{padding:48px;color:#abbadb}
 @media(max-width:700px){.lc-header{padding:20px 16px}.lc-main{padding:17px}.lc-hero{align-items:flex-start;flex-direction:column;padding:17px}.lc-hero h2{font-size:20px}.lc-nav{padding:10px}.lc-count{display:none}.lc-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.lc-shell *,#loliteClipCaptureStatus{transition:none!important;animation:none!important}}
+
+.lc-my-uploads{margin-top:25px;padding-top:17px;border-top:1px solid #ffffff20}.lc-my-uploads h3{font-size:15px;margin:0 0 5px}.lc-my-uploads>p{margin:0 0 13px;color:#acbcd6;font-size:11px}
