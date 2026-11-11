@@ -181,6 +181,9 @@
   const token=++version;
   // Immediate, deterministic colour while any poster loads.
   applyScheme(derive(wall));
+  // These palettes were sampled from the actual catalogue posters at build time.
+  // The video CDN does not grant canvas CORS access.
+  if(wall.provider==='LivelyWallpaper.app'&&Array.isArray(wall.palette))return;
   const source=wall.poster||wall.src;
   if(typeof source!=='string'||!source||/\.(?:mp4|webm)(?:[?#]|$)/i.test(source))return;
   sampleImage(source,pixels=>{

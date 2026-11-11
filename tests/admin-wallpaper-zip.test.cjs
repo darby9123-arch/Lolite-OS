@@ -116,7 +116,7 @@ test('Uploaded MP4s use smooth looping and the Special Live Wallpapers filter',(
  const html=fs.readFileSync('index.html','utf8');
  const loop=fs.readFileSync('core/wallpaper-loop.js','utf8');
  assert.match(source,/Special Live Wallpapers/);
- assert.match(source,/wall\.id\.startsWith\('user-'\)/);
+ assert.match(source,/if\(wall\.video&&window\.LoliteSeamlessVideo\)/);
  assert.match(source,/window\.LoliteSeamlessVideo\.create/);
  assert.match(source,/item\.poster_url/);
  assert.match(source,/requestPoster\(collection\[collection\.length-1\]\)/);

@@ -1,3 +1,5 @@
+> **Wallpaper update (11 November 2026):** Replaced the previous wallpaper selection with all **840 LivelyWallpaper.app live wallpapers**, including **750 labelled 4K**. Search, category filters, real image previews, original/HD/preview quality, smooth loops and wallpaper colour adaptation are included. Videos stream directly from the source CDN and require internet. Existing wallpaper selections migrate to the new collection; uploads made after this replacement remain supported. [Details and validation](docs/LIVELY-WALLPAPERS.md).
+
 > **Game Store update (11 November 2026):** Added 1,702 game versions from the supplied ZIPs: 874 GenizyMath and 828 Chicken King's Vault versions, with actual launch HTML and included assets hosted in Lolite. Matching titles share server choices, and UGS remains the default where available. Twelve incomplete Chicken King versions are documented in [the import report](html%20games/collections/import-report.json). Mountain Games remains retired. See [collection details](html%20games/collections/README.md). Previous notes below are historical.
 
 ## Launch Lolite OS
@@ -21,7 +23,7 @@ These four addresses point to the same Vercel project as `lolite-os.vercel.app`;
 
 The Vercel version includes Ultraviolet runtime files and the Bare HTTP endpoint, but its service worker currently fails in browser testing. Scramjet's proxy runtime is unavailable on Vercel. Both browser apps now offer a standard, non-proxy embedded browsing mode for sites that permit framing, with an Open in tab option.
 
-A Lolite-branded browser desktop with the original Cosmos space interface, apps, games, files, 52 built-in animated live wallpapers, and a responsive desktop or browser workspace. Earlier desktop themes remain available.
+A Lolite-branded browser desktop with the original Cosmos space interface, apps, games, files, 840 live video wallpapers, and a responsive desktop or browser workspace. Earlier desktop themes remain available.
 
 ## Update Log
 

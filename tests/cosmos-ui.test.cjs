@@ -14,9 +14,10 @@ test('Cosmos is an actual loaded desktop, not a static mockup', () => {
   assert.match(js,/function updateIconFade/);
 });
 
-test('Cosmos is registered in both themes and wallpapers', () => {
+test('Cosmos remains a theme while wallpapers use the replacement collection', () => {
   assert.match(read('core/desktop-themes.js'),/id:'cosmos'/);
-  assert.match(read('core/wallpapers.js'),/staticWall\('cosmos-orbit'/);
+  assert.match(read('core/wallpapers.js'),/window\.LoliteLivelyWallpapers/);
+  assert.doesNotMatch(read('core/wallpapers.js'),/staticWall\('cosmos-orbit'/);
   assert.match(read('index.html'),/loliteCosmosUpgrade/);
 });
 

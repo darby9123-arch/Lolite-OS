@@ -114,7 +114,7 @@ test('The loaded page includes each feature and Lite Mode starts before wallpape
  assert.match(html,/core\/game-store\.js\?v=[^"']+/);
  assert.match(html,/core\/music\.js\?v=[^"']+/);
  assert.ok(html.indexOf('core/music-zip.js')<html.indexOf('core/music.js'));
- assert.ok(html.indexOf('core/performance-mode.js?v=4.1.0')<html.indexOf('core/wallpapers.js?v=lite-4.1.0'));
+ assert.ok(html.indexOf('core/performance-mode.js?v=4.1.0')<html.indexOf('core/wallpapers.js'));
  assert.match(read('core/wallpapers.js'),/root\.classList\.contains\('lolite-lite-mode'\)/);
  assert.match(read('core/lolite-4-1.css'),/#icons \.desktop-icon.*align-items:center/);
 });

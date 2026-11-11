@@ -92,13 +92,10 @@ test('Live wallpapers use one passive document-level cursor observer and cap cli
  assert.match(js,/effects\?\.render\(ctx,/);
  assert.match(js,/effects\?\.overlay\(ctx,/);
 });
-test('Settings exposes mouse interaction, strength and a verified MP4 gallery',()=>{
+test('retired interactive and uploaded catalogues are no longer loaded in Settings',()=>{
  const panel=read('core/crimson.js'),index=read('index.html');
- assert.match(panel,/data-wall-interactive/);
- assert.match(panel,/data-wall-interaction-strength/);
+ assert.doesNotMatch(panel,/data-wall-interactive|data-wall-interaction-strength/);
  assert.match(panel,/lolite:wallpapercollectionchange/);
- assert.match(index,/core\/interactive-wallpapers\.js/);
- assert.match(index,/core\/uploaded-wallpapers-catalog\.js/);
- assert.ok(index.indexOf('core/interactive-wallpapers.js')<index.indexOf('core/wallpapers.js'));
- assert.ok(index.indexOf('core/uploaded-wallpapers-catalog.js')<index.indexOf('core/wallpapers.js'));
+ assert.doesNotMatch(index,/src="core\/interactive-wallpapers\.js|src="core\/uploaded-wallpapers-catalog\.js/);
+ assert.ok(index.indexOf('core/lively-wallpapers-catalog.js')<index.indexOf('core/wallpapers.js'));
 });

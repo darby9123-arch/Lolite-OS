@@ -35,3 +35,7 @@
 .cr-wall-item .cr-live-label{z-index:2}
 @media(max-width:600px){.cr-wall-interactions{align-items:flex-start;flex-direction:column}
 .cr-wall-interaction-range input{width:min(200px,45vw)}}
+
+/* Large video collections load covers in small batches. */
+.cr-wall-more{grid-column:1/-1;justify-self:center;margin:10px 0;min-width:210px}
+.cr-wall-image img{object-fit:cover}

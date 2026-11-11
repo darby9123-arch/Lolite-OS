@@ -1,70 +1,22 @@
-/* Lolite OS wallpapers: 36 original, built-in high-resolution animated scenes.
-   No third-party streams, install prompts, local video imports, or fake MP4 links.
-   One scene renderer (or video if a real hosted asset is supplied), per desktop. */
+/* Lolite wallpaper collection: LivelyWallpaper.app MP4s, source previews and saved choices. */
 (()=>{
  'use strict';
  const root=document.documentElement;
  const read=(key,fallback='')=>{try{return localStorage.getItem(key)??fallback}catch{return fallback}};
  const save=(key,value)=>{try{localStorage.setItem(key,value);return true}catch{return false}};
  const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const staticWall=(id,name,category,art=id)=>Object.freeze({
-   id,name,category,src:'assets/wallpapers/'+art+(art==='crimson-dunes'?'.webp':'.svg')
- });
- const collection=[
-   staticWall('cosmos-orbit','Cosmic Orbit','Space'),
-   staticWall('crimson-dunes','Crimson Dunes','Signature'),
-   staticWall('crimson-fold','Fold','Signature'),
-   staticWall('red-ridges','Red Ridges','Nature'),
-   staticWall('pine-silence','Pine Silence','Nature'),
-   staticWall('tidal-night','Tidal Night','Nature'),
-   staticWall('lunar','Lunar','Nature'),
-   staticWall('contour','Contour','Abstract'),
-   staticWall('carbon','Carbon','Abstract'),
-   staticWall('rain-city','After Hours','Signature')
- ];
- collection.push(...(window.LoliteLiveWallpapers?.catalog||[]));
- collection.push(...(window.LoliteInteractiveWallpapers?.catalog||[]));
- collection.push(...(window.LoliteUploadedWallpapers?.catalog||[]));
- const live=wall=>Boolean(wall?.scene||wall?.video||wall?.src4k||wall?.motion);
- const interactive=wall=>!!wall?.scene?.startsWith('interactive-');
- // Existing preferences migrate without making an unhosted MP4 look installed.
- const legacy={
-  'lolite-aurora':'crimson-dunes','purple-bloom':'crimson-fold','blue-pulse':'tidal-night',
-  'liquid-violet':'live-liquid-violet','neon-waves':'live-holographic-waves',
-  'midnight-mesh':'carbon','forest-mist':'live-mountain-fog',
-  'ocean-dawn':'tidal-night','mountain-evening':'red-ridges','deep-space':'live-deep-orbit',
-  'purple-nebula':'live-nebula-violet','blue-galaxy':'live-galactic-drift',
-  'pixel-night':'carbon','pixel-purple':'contour','arcade':'live-cyber-grid',
-  'cyber-grid':'live-cyber-grid','game-over':'crimson-fold','obsidian':'carbon',
-  'dark-violet':'carbon','soft-slate':'carbon','minimal-blue':'tidal-night',
-  'vaporwave':'live-synthwave-drive','retro-sunset':'live-sunset-horizon',
-  'world-green':'pine-silence','world-snow':'live-gentle-snow','world-desert':'crimson-dunes',
-  'animated-aurora':'live-aurora-green','animated-nebula':'live-nebula-violet',
-  'animated-ocean':'live-ocean-blue','animated-matrix':'live-digital-rain',
-  'animated-solar':'live-solar-flare','animated-galaxy':'live-galactic-drift',
-  'live-rain':'live-rainy-window','live-snow':'live-gentle-snow',
-  'live-stars':'live-starfield','live-contour':'live-electric-cyan',
-  'live-meteor':'live-meteor-shower','live-tide':'live-midnight-tide',
-  'live-embers':'live-embers','live-dust':'live-cosmic-dust',
-  'user-sukuna-fuga-flames':'live-embers','user-nissan-gt-r32-rocket-bunny':'live-neon-rain',
-  'user-hiyuki-silent-storm':'live-aurora-violet','user-minecraft-aquarium':'live-turquoise-sea',
-  'user-spider-man-2':'live-neon-rain','user-zelda-starlight-adventure':'live-forest-fireflies',
-  'user-fortnite-stormy-sky':'live-sunset-horizon',
-  'user-japans-majestic-peaks-and-cherry-blossoms':'live-pink-sky',
-  'user-isagi-yoichi-devil-eyes':'live-liquid-violet',
-  'user-where-whales-fly':'live-ocean-blue',
-  'user-minecraft-dog':'live-forest-fireflies',
-  'user-kakashi-hatake-naruto':'live-mountain-fog',
-  'user-liquid-lines-cyan':'live-electric-cyan',
-  'user-aesthetic-mountains-in-front-of-the-sky':'live-sunset-horizon',
-  'user-forest-rainfall':'live-mountain-fog',
-  'user-konata-on-windows-xp':'live-synthwave-drive',
-  'user-audi-rs-7-sportback-under-the-rain':'live-neon-rain',
-  'user-rain-drops-on-window':'live-rainy-window',
-  'user-blurred-sunset-while-raining':'live-pink-sky',
-  'user-motorcycle-parked':'live-city-at-night'
- };
- const find=id=>collection.find(w=>w.id===id)||collection.find(w=>w.id===legacy[id]);
+ const catalog=window.LoliteLivelyWallpapers;
+ if(!catalog?.catalog?.length)return;
+ const collection=catalog.catalog.map(wall=>({...wall}));
+ const defaultId=catalog.defaultId;
+ const live=wall=>Boolean(wall?.video||wall?.src4k||wall?.motion);
+ const find=id=>collection.find(wall=>wall.id===id);
+ // Replace saved selections once; custom images and later admin uploads still work.
+ if(read('loliteWallpaperCollection')!==catalog.version){
+  save('loliteWallpaperCollection',catalog.version);
+  save('wallpaperId',defaultId);save('wallpaper',defaultId);
+  save('loliteWallpaperCustomActive','false');save('wallpaperCategory','All');
+ }
  const media=matchMedia('(prefers-reduced-motion: reduce)');
  const paused=()=>read('loliteWallpaperPaused')==='true'||media.matches||
    root.classList.contains('reduce')||root.classList.contains('reduce-motion')||root.classList.contains('lolite-lite-mode');
@@ -360,9 +312,10 @@
   if(old){old.pause();old.removeAttribute('src');old.load();old.remove()}
  }
  function sources(wall){
-  const paths=[wall.src4k,wall.src1080,wall.video].filter((x,i,a)=>typeof x==='string'&&x&&a.indexOf(x)===i);
-  return quality==='lite'?[...paths].reverse():quality==='balanced'&&wall.src1080
-    ?[wall.src1080,...paths.filter(x=>x!==wall.src1080)]:paths;
+  const original=wall.src4k||wall.video;
+  const ordered=quality==='lite'?[wall.preview,wall.src1080,original]
+   :quality==='balanced'?[wall.src1080,original,wall.preview]:[original,wall.src1080,wall.preview];
+  return ordered.filter((url,i,all)=>typeof url==='string'&&url&&all.indexOf(url)===i);
  }
  function sync(){
   cancelAnimationFrame(raf);raf=0;last=0;
@@ -407,8 +360,7 @@
    if(ctx){resize();sync()}else report('Live effects unavailable in this browser');
   }else if(wall.video||wall.src4k||wall.src1080){
    // Preload two decoders and crossfade at the wrap to avoid black loop flashes.
-   if(wall.video&&window.LoliteSeamlessVideo&&
-     (wall.provider==='Admin Library'||wall.id.startsWith('user-'))){
+   if(wall.video&&window.LoliteSeamlessVideo){
     loopController=window.LoliteSeamlessVideo.create({
      target,sources:sources(wall),poster,onStatus:report
     });
@@ -435,25 +387,8 @@
    id:wall.id,name:wall.name,live:live(wall)
   }}));
  }
- async function discoverVideos(force=false){
-   const host=window.LoliteUploadedWallpapers;
-   if(!host?.discover)return [];
-   const available=await host.discover(force);
-   let added=0;
-   for(const item of available){
-     if(!collection.some(w=>w.id===item.id)){
-      const tagged={...item,category:'Special Live Wallpapers'};
-      collection.push(tagged);requestPoster(tagged);added++
-     }
-   }
-   if(added){
-     window.loliteWallpaperIds=[...collection.map(w=>w.id),...Object.keys(legacy)];
-     const stored=read('wallpaperId');
-     if(stored?.startsWith('user-')&&find(stored)&&active?.id!==stored)apply(stored,{persist:false});
-     window.dispatchEvent(new CustomEvent('lolite:wallpapercollectionchange',{detail:{added,total:collection.length}}));
-   }
-   return available;
- }
+ // Old uploaded-file probing is retired with the previous wallpaper collection.
+ const discoverVideos=async()=>[];
  function apply(id,{persist=true}={}){
   const selected=find(id);if(!selected)return false;
   if(persist){
@@ -467,8 +402,8 @@
   if(custom&&read('loliteWallpaperCustomActive')==='true'){
    show({id:'custom',name:'Your wallpaper',src:custom});return;
   }
-  const chosen=read('wallpaperId',root.dataset.desktopTheme==='cosmos'?'cosmos-orbit':'crimson-dunes');
-  if(!apply(chosen,{persist:false}))apply('cosmos-orbit');
+  const chosen=read('wallpaperId',defaultId);
+  if(!apply(chosen,{persist:false}))apply(defaultId,{persist:!chosen.startsWith('admin-')});
  }
  function setCustom(image){
   if(typeof image!=='string'||!/^data:image\/(?:png|jpeg|webp);base64,/.test(image))return false;
@@ -477,26 +412,35 @@
   show({id:'custom',name:'Your wallpaper',src:image});return true;
  }
  function matches(wall,filter,query=''){
-  const valid=filter==='All'||(filter==='Live'&&live(wall))||(filter==='Videos'&&!!wall.video)||(filter==='Admin Uploads'&&wall.provider==='Admin Library')||wall.category===filter;
-  return valid&&(!query||[wall.name,wall.category,wall.provider||'Lolite'].join(' ').toLowerCase().includes(query.trim().toLowerCase()));
+  const valid=filter==='All'||(filter==='Live'&&live(wall))||
+   (filter==='4K'&&wall.resolution==='4K')||
+   (filter==='Special Live Wallpapers'&&wall.provider==='Admin Library')||
+   wall.category===filter||wall.categories?.includes(filter);
+  const words=query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const text=[wall.name,wall.category,...(wall.tags||[])].join(' ').toLowerCase();
+  return valid&&words.every(word=>text.includes(word));
  }
- function cards(filter='All',query=''){
+ function cards(filter='All',query='',limit=48){
   const found=collection.filter(wall=>matches(wall,filter,query));
   if(!found.length)return '<p class="cr-wall-empty">No wallpapers match. Try a different category or search.</p>';
-  return found.map(wall=>{
-   const isLive=live(wall);
+  const count=Math.min(found.length,Math.max(48,Number(limit)||48));
+  return found.slice(0,count).map(wall=>{
+   const dimensions=wall.width&&wall.height?wall.width+' × '+wall.height:'Custom';
    return '<article class="cr-wall-item"><button type="button" class="cr-wall-card" data-wall-id="'+escape(wall.id)+
     '" aria-pressed="'+(active?.id===wall.id)+'" aria-label="Apply '+escape(wall.name)+'">'+
     '<span class="cr-wall-image"><img data-wall-poster-for="'+escape(wall.id)+'" src="'+escape(wall.poster||wall.src)+'" alt="" loading="lazy" decoding="async">'+
-    (isLive?'<span class="cr-live-label">'+(wall.video?'VIDEO':'LIVE')+'</span>':'')+
+    (live(wall)?'<span class="cr-live-label">'+escape(wall.resolution||'LIVE')+'</span>':'')+
     '<span class="cr-wall-check">✓</span></span><span class="cr-wall-caption"><strong>'+
-    escape(wall.name)+'</strong><small>'+escape(wall.category)+(isLive?' · Animated':' · Still')+
-    '</small></span></button></article>';
-  }).join('');
+    escape(wall.name)+'</strong><small>'+escape(wall.category)+' · '+dimensions+
+    '</small></span></button>'+(wall.source?'<a class="cr-wall-source" href="'+escape(wall.source)+
+    '" target="_blank" rel="noopener noreferrer">Source & download ↗</a>':'')+'</article>';
+  }).join('')+(count<found.length?'<button type="button" class="cr-secondary cr-wall-more" data-wall-more="'+(count+48)+
+   '" data-wall-more-filter="'+escape(filter)+'" data-wall-more-query="'+escape(query)+'">Show more · '+count+' of '+found.length+'</button>':'');
  }
  function markup(filter='All',query=''){
-  const cats=['All','Live','Interactive','Special Live Wallpapers','Videos','Admin Uploads','Space','Nature','City','Neon','Abstract','Signature'];
-  if(!cats.includes(filter))filter='All';
+  const cats=['All','4K','Games','Anime','Cars','Nature','Space','Art & Fantasy'];
+  if(collection.some(w=>w.provider==='Admin Library'))cats.push('Special Live Wallpapers');
+  if(filter==='Live'||!cats.includes(filter))filter='All';
   return '<div class="cr-wall-browse"><label class="cr-wall-search"><span aria-hidden="true">⌕</span>'+
    '<input type="search" data-wall-search placeholder="Search '+collection.length+' wallpapers" aria-label="Search wallpapers" value="'+escape(query)+'"></label>'+
    '<label class="cr-upload">Custom image<input type="file" accept="image/png,image/jpeg,image/webp" data-wall-upload hidden></label></div>'+
@@ -504,22 +448,31 @@
    cats.map(cat=>'<button type="button" data-wall-filter="'+cat+'" aria-pressed="'+(cat===filter)+'">'+
    escape(cat)+' <small>'+collection.filter(w=>matches(w,cat)).length+'</small></button>').join('')+
    '</div></div><div class="cr-wall-grid">'+cards(filter,query)+'</div>'+
-   '<p class="cr-help">Move your mouse to interact with the live scenes. Click the desktop background to create ripples. Uploaded videos appear under Special Live Wallpapers when published, with thumbnails taken from the video. Motion pauses when the tab is hidden or Reduce Motion is enabled.</p>';
+   '<p class="cr-help">Wallpapers from <a href="https://livelywallpaper.app/live-wallpapers/" target="_blank" rel="noopener noreferrer">LivelyWallpaper.app</a>. Videos stream online at their original quality. Balanced uses HD where available; Performance uses a smaller preview. Motion pauses when the tab is hidden or Reduce Motion is enabled.</p>';
  }
+ document.addEventListener('click',event=>{
+  const button=event.target.closest?.('[data-wall-more]');
+  if(!button)return;
+  const grid=button.closest('.cr-wall-grid');
+  if(!grid)return;
+  const prior=grid.querySelectorAll('[data-wall-id]').length;
+  grid.innerHTML=cards(button.dataset.wallMoreFilter,button.dataset.wallMoreQuery,Number(button.dataset.wallMore));
+  grid.querySelectorAll('[data-wall-id]')[prior]?.focus({preventScroll:true});
+ });
  const setQuality=value=>{
   quality=validQuality.has(value)?value:value==='hd'||value==='4k'?'max':'balanced';
   save('loliteWallpaperQuality',quality);
   if(active)show(active,{force:true});
  };
  window.loliteWallpaper=apply;
- window.loliteWallpaperIds=[...collection.map(w=>w.id),...Object.keys(legacy)];
+ window.loliteWallpaperIds=collection.map(w=>w.id);
  window.loliteWallpaperCategory=category=>{
   save('wallpaperCategory',category);
   window.dispatchEvent(new Event('lolite:wallpapercategory'));
  };
  const posterRequests=new Map();
  function requestPoster(wall){
-  if(!wall?.video||!window.LoliteWallpaperThumbnails)return;
+  if(!wall?.video||wall.provider==='LivelyWallpaper.app'||!window.LoliteWallpaperThumbnails)return;
   const url=wall.video;
   if(posterRequests.has(url)){
    const stored=posterRequests.get(url);
@@ -547,7 +500,7 @@
   }
  }
  function syncAdminWallpapers(items){
-  const added=(Array.isArray(items)?items:[]).filter(item=>item.kind==='wallpaper'&&
+  const added=(Array.isArray(items)?items:[]).filter(item=>item.kind==='wallpaper'&&Date.parse(item.created_at)>Date.parse(catalog.replacedBefore)&&
     /^[0-9a-f-]{36}$/i.test(item.id)&&typeof item.url==='string'&&
     /^https:\/\/[^\s]+$/i.test(item.url));
   for(let i=collection.length-1;i>=0;i--)if(collection[i].provider==='Admin Library')collection.splice(i,1);
@@ -556,18 +509,20 @@
    collection.push({
     id:'admin-'+item.id,name:String(item.title||'Community wallpaper').slice(0,90),
     category:videoFile?'Special Live Wallpapers':'Signature',provider:'Admin Library',
-    src:videoFile?'assets/wallpapers/cosmos-orbit.svg':item.url,
-    poster:videoFile?(item.poster_url||'assets/wallpapers/cosmos-orbit.svg'):item.url,
+    src:videoFile?collection[0].poster:item.url,
+    poster:videoFile?(item.poster_url||collection[0].poster):item.url,
     ...(videoFile?{video:item.url}:{})
    });
    if(videoFile&&!item.poster_url)requestPoster(collection[collection.length-1]);
   }
-  window.loliteWallpaperIds=[...collection.map(w=>w.id),...Object.keys(legacy)];
+  window.loliteWallpaperIds=collection.map(w=>w.id);
   if(active?.provider==='Admin Library'){
    const replacement=find(active.id);
-   if(!replacement)apply('cosmos-orbit');
+   if(!replacement)apply(defaultId);
    else if(active.src!==replacement.src||active.video!==replacement.video||active.poster!==replacement.poster)show(replacement,{force:true});
   }
+  const stored=read('wallpaperId');
+  if(stored.startsWith('admin-')&&find(stored))apply(stored,{persist:false});
   window.dispatchEvent(new CustomEvent('lolite:wallpapercollectionchange',
    {detail:{admin:added.length,total:collection.length}}));
  }
@@ -581,7 +536,7 @@
   setInteractionStrength:value=>{intensity=Math.max(.2,Math.min(1.4,Number(value)||.8));save('loliteWallpaperInteractionStrength',String(intensity))},
   pause:value=>{save('loliteWallpaperPaused',String(value));sync()},
   isPaused:paused,current:()=>active,
-  debug:()=>({running:!!raf||!!(video&&!video.paused),frames,status,
+  debug:()=>({running:!!raf||!!((loopController?.getCurrent()||video)&&!(loopController?.getCurrent()||video).paused),frames,status,
    resolution:canvas?[canvas.width,canvas.height]:null,
    videoCount:loopController?loopController.getVideoCount():video?1:0,canvasCount:document.querySelectorAll('.lolite-live-canvas').length,
    pointer:{x:pointer.x,y:pointer.y,strength:pointer.strength},ripples:ripples.length,interactive:interactionOn}),
@@ -611,6 +566,6 @@
  addEventListener('lolite:modechange',sync);
  media.addEventListener?.('change',sync);
  new MutationObserver(sync).observe(root,{attributes:true,attributeFilter:['class']});
- const boot=()=>{restore();void discoverVideos()};
+ const boot=()=>restore();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
