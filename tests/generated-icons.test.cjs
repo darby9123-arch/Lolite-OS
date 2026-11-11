@@ -44,7 +44,7 @@ test('Brand icon pack loads after PNG icons on desktop and in gallery',()=>{
  for(const page of ['index.html','icons.html']){
   const html=read(page);
   const png=html.indexOf('core/app-icon-pngs.js');
-  const brand=html.indexOf('core/app-icon-brand-pack.js?v=brand-purple-20261111');
+  const brand=html.indexOf('core/app-icon-brand-pack.js');
   assert.ok(png>=0 && brand>png,page+' incorrect icon loader order');
   assert.ok(brand<html.indexOf(page==='index.html'?'src="app.js':'src="core/icon-preview.js'),page+' icon pack loads too late');
  }
