@@ -3,7 +3,7 @@
 (()=>{
  'use strict';
  const BASE='lolite.desktop-icons.v1.';
- const LIMITS={size:[32,88],opacity:[30,100],columns:[1,10],rows:[2,12],gap:[0,24]};
+ const LIMITS={size:[32,88],opacity:[0,100],columns:[1,10],rows:[2,12],gap:[0,24]};
  const FALLBACK={size:58,opacity:100,columns:3,rows:6,gap:10,color:'#598cfa',tint:false,labels:true,shape:'rounded'};
  const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
  const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)));
@@ -76,7 +76,7 @@
     '<p class="lic-preview-note" id="licLayoutInfo"></p></div>'+
     '<div class="lic-controls">'+
     slider('size','Icon size',32,88,2,'px')+
-    slider('opacity','Icon transparency',30,100,5,'% visible')+
+    slider('opacity','Icon transparency',0,100,5,'% visible')+
     slider('columns','Columns',1,10,1,'')+
     slider('rows','Visible rows',2,12,1,'')+
     slider('gap','Icon spacing',0,24,2,'px')+
