@@ -93,6 +93,12 @@ test('Vice City detects missing remote engine scripts before transferring large 
  assert.ok(calls.some(call=>call.url.endsWith('/gamepademulator.js')));
  assert.match(h.loader.textContent,/Unable to start Vice City/);
  assert.match(h.notices[0].children[0].textContent,/gamepademulator\.js \(HTTP 404\)/);
+ const fallback=h.notices[0].children[3];
+ assert.equal(fallback.tagName,'A');
+ assert.equal(fallback.href,'https://joncodeofficial.github.io/gta-vice-city-wasm/');
+ assert.equal(fallback.target,'_blank');
+ assert.equal(fallback.rel,'noopener noreferrer');
+ assert.match(h.notices[0].children[2].textContent,/your own legitimate copy/);
  assert.equal(h.removed(),false);
  assert.equal(h.scripts.length,0);
 });
