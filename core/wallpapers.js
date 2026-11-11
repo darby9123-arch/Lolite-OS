@@ -36,7 +36,7 @@
   transitionSerial++;if(fadeTimer){clearTimeout(fadeTimer);fadeTimer=null}
   fadeLayer?.remove();fadeLayer=null;
  }
- function transitionTo(target){
+ function transitionTo(target,newPoster){
   clearWallpaperFade();
   if(!active||transitionMode==='off'||paused()||document.hidden)return;
   const oldBackground=target.style.background;
@@ -50,8 +50,24 @@
   layer.style.transition='opacity '+duration+'ms ease';
   fadeLayer=layer;target.appendChild(layer);
   const ticket=transitionSerial;
-  requestAnimationFrame(()=>{if(ticket===transitionSerial&&fadeLayer===layer)layer.style.opacity='0'});
-  fadeTimer=setTimeout(()=>{if(ticket===transitionSerial)clearWallpaperFade()},duration+80);
+  // Hold the old poster while the incoming image decodes, capped so a broken
+  // third-party URL cannot leave the desktop covered indefinitely.
+  let revealed=false,preload=null;
+  const reveal=()=>{
+   if(revealed||ticket!==transitionSerial||fadeLayer!==layer)return;
+   revealed=true;
+   clearTimeout(fadeTimer);fadeTimer=null;
+   if(preload){preload.onload=null;preload.onerror=null;preload=null;}
+   requestAnimationFrame(()=>{if(ticket===transitionSerial&&fadeLayer===layer)layer.style.opacity='0'});
+   fadeTimer=setTimeout(()=>{if(ticket===transitionSerial)clearWallpaperFade()},duration+80);
+  };
+  fadeTimer=setTimeout(reveal,1500);
+  if(typeof Image!=='function'||typeof newPoster!=='string'||!newPoster||/\.(?:mp4|webm)(?:[?#]|$)/i.test(newPoster)){reveal();return}
+  try{
+   preload=new Image();
+   preload.onload=reveal;preload.onerror=reveal;preload.src=newPoster;
+   if(preload.complete&&preload.naturalWidth)reveal();
+  }catch{reveal()}
  }
  function setTransitionMode(value){
   if(!transitionModes.includes(value))return false;
@@ -379,12 +395,12 @@
   if(!force&&active?.id===wall.id){sync();return}
   // The outgoing poster stays above the old renderer while new media mounts.
   // We never clone or read live video frames, so switching does not add decoders.
+  const poster=wall.poster||wall.src;
   if(force)clearWallpaperFade();
-  else transitionTo(target);
+  else transitionTo(target,poster);
   release();active=wall;elapsed=0;frames=0;pointer.strength=0;ripples.length=0;
   target.classList.remove('wallpaper-animated','wallpaper-pixel');
   target.dataset.motion=wall.scene||wall.motion||'';
-  const poster=wall.poster||wall.src;
   target.style.background='#07101e url("'+poster+'") center / cover no-repeat';
   root.dataset.wallpaper=wall.id;
   if(wall.scene||wall.motion){
