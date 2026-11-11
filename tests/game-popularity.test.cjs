@@ -67,7 +67,7 @@ test('Store sorts by play counts rather than matching game-name keywords',()=>{
  const store=read('core/game-store.js');
  assert.doesNotMatch(store,/const isPopular=g=>\/baldi\|fnaf/);
  assert.match(store,/const ranked=list=>list\.filter\(isRanked\)\.sort/);
- assert.match(store,/return active==='Popular Games'\?ranked\(found\):/);
+ assert.match(store,/return searching\?found:active==='Popular Games'\?ranked\(found\):/);
  assert.match(store,/active==='Recently Added'\?found\.sort/);
  assert.match(store,/No game launches counted yet/);
  assert.match(store,/Count my game launches anonymously/);
