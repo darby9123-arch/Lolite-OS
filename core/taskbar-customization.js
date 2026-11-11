@@ -33,11 +33,17 @@
    delete root.dataset.ltcPosition;
    delete root.dataset.ltcAlign;
    delete root.dataset.ltcAutohide;
+   delete root.dataset.ltcSearch;
+   delete root.dataset.ltcClock;
+   delete root.dataset.ltcSettings;
    return;
   }
   root.dataset.ltcPosition=prefs.position;
   root.dataset.ltcAlign=prefs.align;
   root.dataset.ltcAutohide=String(prefs.autoHide);
+  root.dataset.ltcSearch=String(prefs.search);
+  root.dataset.ltcClock=String(prefs.clock);
+  root.dataset.ltcSettings=String(prefs.settings);
   const variables={
    '--ltc-height':prefs.height+'px',
    '--ltc-icon-size':prefs.iconSize+'px',
