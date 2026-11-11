@@ -11,7 +11,7 @@ function harness({saved='on',wall={id:'live-forest',palette:['#051812','#145b41'
   setProperty(key,val){vars.set(key,val)},
   removeProperty(key){vars.delete(key)},
   getPropertyValue(key){return vars.get(key)||''}
- },removeAttribute(name){if(name==='data-wallpaper-colors')delete this.dataset.wallpaperColors}};
+ },removeAttribute(name){if(name==='data-wallpaper-colors')delete this.dataset.wallpaperColors;if(name==='data-wallpaper-intensity')delete this.dataset.wallpaperIntensity}};
  const buttons=[];
  const document={
   documentElement:root,readyState:'complete',
@@ -21,7 +21,7 @@ function harness({saved='on',wall={id:'live-forest',palette:['#051812','#145b41'
    return {width:0,height:0,getContext(){return {
     drawImage(){},
     getImageData(){const pixels=new Uint8ClampedArray(48*30*4);
-     for(let i=0;i<pixels.length;i+=4){pixels[i]=rgb[0];pixels[i+1]=rgb[1];pixels[i+2]=rgb[2];pixels[i+3]=255}
+     for(let i=0;i<pixels.length;i+=4){const colour=Array.isArray(rgb[0])?rgb[Math.floor(i/4)%rgb.length]:rgb;pixels[i]=colour[0];pixels[i+1]=colour[1];pixels[i+2]=colour[2];pixels[i+3]=255}
      return {data:pixels};
     }
    }}};
@@ -88,4 +88,48 @@ test('Adaptive palettes are loaded last and cover UI and icon variants without t
  assert.match(css,/\.lolite-icon--brand-real/);
  assert.match(read('core/wallpapers.js'),/lolite:wallpaperposter/);
  assert.match(read('core/settings-enhanced.js'),/loliteWallpaperColorMode/);
+});
+test('Wallpaper images override inaccurate catalogue palettes and extract two colour families',()=>{
+ const h=harness({wall:{id:'wall-with-metadata',poster:'data:image/png;base64,test',
+  palette:['#170702','#592219','#ee6e4d','#fff4e0']},
+  rgb:[[25,135,245],[25,135,245],[25,135,245],[235,53,160]]});
+ const scheme=h.win.LoliteWallpaperColors.getScheme();
+ assert.ok(scheme.hue>175&&scheme.hue<255,'Blue-dominant poster should win over orange metadata');
+ assert.ok(Math.abs(scheme.hue-scheme.secondaryHue)>35,'Distinct secondary wallpaper colour should be retained');
+ assert.ok(h.vars.has('--wall-secondary'));
+ assert.ok(h.vars.has('--wall-glow'));
+ assert.ok(h.vars.has('--wall-focus-ring'));
+});
+test('Subtle, Balanced and Vivid settings persist and alter interface colour strength',()=>{
+ const h=harness();
+ const api=h.win.LoliteWallpaperColors;
+ assert.equal(api.getIntensity(),'balanced');
+ assert.match(h.win.page('settings'),/data-wall-color-intensity="vivid"/);
+ const balanced=api.getScheme().saturation;
+ assert.equal(api.setIntensity('subtle'),true);
+ assert.equal(api.getIntensity(),'subtle');
+ assert.ok(api.getScheme().saturation<balanced);
+ assert.equal(h.values.get('loliteWallpaperColorIntensity'),'subtle');
+ assert.equal(h.root.dataset.wallpaperIntensity,'subtle');
+ assert.equal(api.setIntensity('vivid'),true);
+ assert.ok(api.getScheme().saturation>balanced);
+ const actual=api.getScheme().saturation;
+ assert.equal(api.setIntensity('invalid'),false);
+ assert.equal(api.getScheme().saturation,actual);
+ api.setEnabled(false);
+ assert.equal(h.root.dataset.wallpaperIntensity,undefined);
+ assert.equal(h.vars.has('--wall-secondary'),false);
+});
+test('Adaptive surfaces apply to real Lolite apps but not game canvases or media elements',()=>{
+ const css=read('core/wallpaper-colors.css'),js=read('core/wallpaper-colors.js');
+ for(const marker of ['.store.store-v41','.lm-shell','.appstore','.la-shell','.lw-card',
+  '.win-flyout','.window .titlebar','.store-main','.wall-color-intensity']){
+  assert.ok(css.includes(marker),'Missing adaptive selector: '+marker);
+ }
+ assert.match(css,/--wall-secondary/);
+ assert.match(css,/--wall-text/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.match(js,/sampleImage\(source,pixels=>/);
+ assert.match(js,/setIntensity/);
+ assert.match(read('core/settings-enhanced.js'),/loliteWallpaperColorIntensity/);
 });
