@@ -55,6 +55,7 @@ jobs:
         run: |
           node --check core/lively-wallpapers-catalog.js
           node --check core/motionbgs-embeds.js
+          node --check scripts/check-motionbgs-streams.cjs
           node --check core/live-wallpapers-catalog.js
           node --check core/interactive-wallpapers.js
           node --check core/uploaded-wallpapers-catalog.js
@@ -63,3 +64,20 @@ jobs:
           node --check core/crimson.js
       - name: Verify 840 wallpaper entries, playback, preferences and sound compatibility
         run: node --test tests/motionbgs-embeds.test.cjs tests/local-live-wallpapers.test.cjs tests/interactive-wallpapers.test.cjs tests/crimson.test.cjs tests/wallpaper-colors.test.cjs
+
+  motionbgs:
+    name: Verify MotionBGS remote wallpaper entries
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify embedded video catalogue and isolation
+        run: node --test tests/motionbgs-embeds.test.cjs
+      - name: Probe source-hosted video links (non-blocking)
+        continue-on-error: true
+        timeout-minutes: 2
+        run: node scripts/check-motionbgs-streams.cjs
