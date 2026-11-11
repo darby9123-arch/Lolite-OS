@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - 'core/lively-wallpapers-catalog.js'
+      - 'core/motionbgs-embeds.js'
+      - 'tests/motionbgs-embeds.test.cjs'
       - 'scripts/build-lively-wallpapers.py'
       - 'core/live-wallpapers-catalog.js'
       - 'core/interactive-wallpapers.js'
@@ -22,6 +24,8 @@ on:
   pull_request:
     paths:
       - 'core/lively-wallpapers-catalog.js'
+      - 'core/motionbgs-embeds.js'
+      - 'tests/motionbgs-embeds.test.cjs'
       - 'scripts/build-lively-wallpapers.py'
       - 'core/live-wallpapers-catalog.js'
       - 'core/interactive-wallpapers.js'
@@ -50,6 +54,7 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check core/lively-wallpapers-catalog.js
+          node --check core/motionbgs-embeds.js
           node --check core/live-wallpapers-catalog.js
           node --check core/interactive-wallpapers.js
           node --check core/uploaded-wallpapers-catalog.js
@@ -57,4 +62,4 @@ jobs:
           node --check core/wallpaper-colors.js
           node --check core/crimson.js
       - name: Verify 840 wallpaper entries, playback, preferences and sound compatibility
-        run: node --test tests/local-live-wallpapers.test.cjs tests/interactive-wallpapers.test.cjs tests/crimson.test.cjs tests/wallpaper-colors.test.cjs
+        run: node --test tests/motionbgs-embeds.test.cjs tests/local-live-wallpapers.test.cjs tests/interactive-wallpapers.test.cjs tests/crimson.test.cjs tests/wallpaper-colors.test.cjs
