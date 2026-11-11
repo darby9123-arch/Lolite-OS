@@ -222,3 +222,15 @@ test('No oversized opaque black taskbar is forced on the default live preview',(
  assert.match(css,/\[data-ltc-position=top\][\s\S]*?#desktop #taskbar/);
  assert.match(css,/var\(--ltc-opacity\)/);
 });
+
+
+test('Taskbar art fits inside the button when an older profile saves oversized icons',()=>{
+ const h=load();
+ h.set('height','46');
+ h.set('iconSize','36');
+ assert.equal(h.api.get().iconSize,36,'Preserve requested icon size in settings');
+ assert.equal(h.styles.get('--ltc-button-size'),'38px');
+ assert.equal(h.styles.get('--ltc-icon-size'),'28px','Limit rendered glyph to available padded content');
+ h.set('height','68');
+ assert.equal(h.styles.get('--ltc-icon-size'),'36px','Larger taskbars can show full icon size');
+});
