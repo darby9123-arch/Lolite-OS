@@ -456,6 +456,8 @@ async function handleForm(form){
   if(!display)throw Error('Enter your display name.');
   if(!['online','idle','dnd','invisible'].includes(status))throw Error('Invalid status.');
   check(await sb.from('profiles').update({display_name:display,about,avatar,status,updated_at:new Date().toISOString()}).eq('id',meId()));
+  // Keep the shared account Settings profile in sync with successful Chat edits.
+  window.LoliteAccounts?.refreshProfile?.({id:meId(),display_name:display,about,avatar,status});
   state.modal=null;return refresh(true);
  }
  if(type==='report'){
