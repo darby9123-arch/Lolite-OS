@@ -4,9 +4,29 @@
  const storage=window.LoliteAccountStorage,device=storage.device;
  const client=window.supabase?.createClient('https://rztxhwfdbrzuhdqpegar.supabase.co','sb_publishable_I3eswNK0zu8qQvDp1Kcfbw_zZzzi18u',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
  let user=null,profile=null,ready=false,leaving=false,syncTimer,hydrated=false,saveBusy=false;
+ let syncState='idle',lastSync=null;
+ function syncText(){
+  if(syncState==='syncing')return 'Saving account preferences…';
+  if(syncState==='saved')return 'Preferences saved to your account'+(lastSync?' · '+lastSync.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'')+'.';
+  if(syncState==='offline')return 'Sync unavailable. Changes stay on this device and will retry when online.';
+  return 'Desktop, wallpaper and Studio settings can sync to your Lolite account.';
+ }
+ function setSyncState(value){
+  syncState=value;
+  const node=document.querySelector('[data-account-sync-status]');
+  if(node)node.textContent=syncText();
+ }
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  // Explicit small preferences only: never sync tokens, private drafts, imported files or game code.
  const syncKeys=new Set(['wallpaper','wallpaperId','loliteWallpaperQuality','loliteWallpaperCollection','glass','reduce','loliteGameFavoritesV1','loliteGameRecentlyPlayedV1','loliteDesktopTheme','loliteBrowserTheme','loliteDeviceMode','lolitePerformanceMode','loliteWindowLayoutsV4','loliteWidgetsV2','loliteSystemSounds','loliteCursor','loliteDiscordEnabled','lolite.widgets.v1','lolite.performance.lite.v1','loliteSounds','loliteSoundVolume','loliteCursorPack','loliteCursorSize']);
+ // Only settings, not messages, documents, files or authentication secrets.
+ [
+  'loliteWallpaperColorMode','loliteWallpaperColorIntensity','loliteWallpaperPaused',
+  'loliteWallpaperInteractive','loliteWallpaperInteractionStrength','loliteMotionMode',
+  'loliteWallpaperTransitionMode','lolite5WindowRadius','lolite5PanelOpacity',
+  'lolite5TaskbarOpacity','lolite5TaskbarDensity'
+ ].forEach(key=>syncKeys.add(key));
+ if(storage.id!=='guest')syncKeys.add('lolite.desktop-icons.v1.'+storage.id);
  const snapshot=()=>Object.fromEntries([...syncKeys].map(k=>[k,localStorage.getItem(k)]).filter(([,v])=>v!==null&&v.length<20000));
  function setMessage(message){const el=document.querySelector('[data-account-message]');if(el)el.textContent=message;}
  function gate(mode='login'){
@@ -17,9 +37,18 @@
  }
  function unlock(){ready=true;document.querySelector('#loliteLogin')?.close();document.querySelector('#loliteLogin')?.remove();document.documentElement.classList.remove('lolite-account-locked');document.querySelector('#desktop')?.removeAttribute('inert');window.dispatchEvent(new CustomEvent('lolite:account-ready',{detail:{user,profile}}));}
  async function save(){
-  if(!ready||!user||!hydrated||saveBusy)return;
-  saveBusy=true;const data=snapshot();
-  try{const r=await client.from('lolite_account_data').upsert({user_id:user.id,data,updated_at:new Date().toISOString()});if(r.error)throw r.error;if(JSON.stringify(snapshot())===JSON.stringify(data))device.remove('dirty:'+user.id);else{clearTimeout(syncTimer);syncTimer=setTimeout(save,1000);}}catch{device.set('dirty:'+user.id,'true');}finally{saveBusy=false;}
+  if(!ready||!user||!hydrated||saveBusy)return false;
+  saveBusy=true;setSyncState('syncing');const data=snapshot();
+  try{
+   const r=await client.from('lolite_account_data').upsert({user_id:user.id,data,updated_at:new Date().toISOString()});
+   if(r.error)throw r.error;
+   lastSync=new Date();setSyncState('saved');
+   if(JSON.stringify(snapshot())===JSON.stringify(data))device.remove('dirty:'+user.id);
+   else{clearTimeout(syncTimer);syncTimer=setTimeout(save,1000);}
+   return true;
+  }catch{
+   device.set('dirty:'+user.id,'true');setSyncState('offline');return false;
+  }finally{saveBusy=false;}
  }
  async function enter(session){
   if(!session?.user)throw Error('Sign in to continue.');
@@ -53,7 +82,7 @@
   if(guest)sessionStorage.setItem('lolite-guest-handoff','1');
   location.reload();
  }
- function settings(){return '<div class="la-settings"><h2>'+esc(profile?.display_name||profile?.username||'Guest desktop')+'</h2><p>'+esc(profile?'@'+profile.username:'Sign in to save your desktop to a Lolite account.')+'</p><div class="la-settings-actions">'+(user?'<button data-lolite-profile="'+esc(user.id)+'">View gaming profile</button><button data-account-edit-profile>Edit profile</button><button data-account-signout>Sign out / switch account</button>':'<button data-account-signin>Sign in</button>')+'</div><label><input type="checkbox" data-account-auto '+(device.get('auto')==='true'?'checked':'')+' '+(!user?'disabled':'')+'> Automatically log in on this device</label><p class="la-muted">Desktop preferences, favourites and playtime belong to your account. Uploaded files stay on this device, separately for each account.</p>'+(user?'<label><input type="checkbox" data-account-privacy="show_activity" '+(profile.show_activity?'checked':'')+'> Show my activity to Lolite players</label><label><input type="checkbox" data-account-privacy="show_games" '+(profile.show_games?'checked':'')+'> Show my games and playtime on my profile</label>':'')+'<h2>Discord Rich Presence</h2><label><input type="checkbox" data-account-discord '+(localStorage.loliteDiscordEnabled!=='false'?'checked':'')+'> Show what I’m doing on Discord</label><p data-discord-status>'+ (window.loliteDesktop?.presence?'Checking Discord…':'Use the installed Lolite app with desktop Discord open.')+'</p>'+(window.loliteDesktop?.presence?'<details><summary>Discord application setup</summary><p>The Lolite owner can enter the Discord application ID here until a shared ID is included in a release.</p><form data-discord-config><label>Application ID<input name="clientId" inputmode="numeric" pattern="[0-9]{17,20}" required></label><button>Save application ID</button></form></details>':'')+'</div>';}
+ function settings(){return '<div class="la-settings"><h2>'+esc(profile?.display_name||profile?.username||'Guest desktop')+'</h2><p>'+esc(profile?'@'+profile.username:'Sign in to save your desktop to a Lolite account.')+'</p><div class="la-settings-actions">'+(user?'<button data-lolite-profile="'+esc(user.id)+'">View gaming profile</button><button data-account-edit-profile>Edit profile</button><button data-account-signout>Sign out / switch account</button>':'<button data-account-signin>Sign in</button>')+'</div><label><input type="checkbox" data-account-auto '+(device.get('auto')==='true'?'checked':'')+' '+(!user?'disabled':'')+'> Automatically log in on this device</label><p class="la-muted">Desktop preferences, favourites and playtime belong to your account. Uploaded files stay on this device, separately for each account.</p>'+(user?'<div class="la-sync-row"><p data-account-sync-status role="status" aria-live="polite">'+esc(syncText())+'</p><button type="button" data-account-sync-now>Sync now</button></div>':'')+(user?'<label><input type="checkbox" data-account-privacy="show_activity" '+(profile.show_activity?'checked':'')+'> Show my activity to Lolite players</label><label><input type="checkbox" data-account-privacy="show_games" '+(profile.show_games?'checked':'')+'> Show my games and playtime on my profile</label>':'')+'<h2>Discord Rich Presence</h2><label><input type="checkbox" data-account-discord '+(localStorage.loliteDiscordEnabled!=='false'?'checked':'')+'> Show what I’m doing on Discord</label><p data-discord-status>'+ (window.loliteDesktop?.presence?'Checking Discord…':'Use the installed Lolite app with desktop Discord open.')+'</p>'+(window.loliteDesktop?.presence?'<details><summary>Discord application setup</summary><p>The Lolite owner can enter the Discord application ID here until a shared ID is included in a release.</p><form data-discord-config><label>Application ID<input name="clientId" inputmode="numeric" pattern="[0-9]{17,20}" required></label><button>Save application ID</button></form></details>':'')+'</div>';}
  document.addEventListener('submit',async e=>{
   const form=e.target.closest('[data-account-form]');if(!form)return;e.preventDefault();const button=form.querySelector('[type="submit"]');button.disabled=true;setMessage('Signing in…');
   try{
@@ -62,7 +91,7 @@
    await login(username,password,form.elements.auto.checked);
   }catch(error){setMessage(error.message||'Could not sign in. Please retry.');}finally{button.disabled=false;}
  });
- document.addEventListener('click',e=>{if(e.target.closest('[data-account-mode]'))gate(e.target.closest('[data-account-mode]').dataset.accountMode);if(e.target.closest('[data-account-guest]'))void signOut(true);if(e.target.closest('[data-account-signout]'))void signOut();if(e.target.closest('[data-account-signin]'))gate();if(e.target.closest('[data-account-edit-profile]')){e.target.closest('dialog')?.close();void window.LoliteChat?.editProfile?.();}});
+ document.addEventListener('click',e=>{if(e.target.closest('[data-account-mode]'))gate(e.target.closest('[data-account-mode]').dataset.accountMode);if(e.target.closest('[data-account-guest]'))void signOut(true);if(e.target.closest('[data-account-signout]'))void signOut();if(e.target.closest('[data-account-signin]'))gate();if(e.target.closest('[data-account-sync-now]'))void save();if(e.target.closest('[data-account-edit-profile]')){e.target.closest('dialog')?.close();void window.LoliteChat?.editProfile?.();}});
  document.addEventListener('change',async e=>{
   if(e.target.matches('[data-account-auto]'))device.set('auto',e.target.checked);
   if(e.target.matches('[data-account-discord]')){localStorage.loliteDiscordEnabled=String(e.target.checked);window.LoliteActivity?.update();}
@@ -70,7 +99,8 @@
  });
  window.addEventListener('lolite:account-data',e=>{if(user&&syncKeys.has(e.detail.key)){device.set('dirty:'+user.id,'true');clearTimeout(syncTimer);syncTimer=setTimeout(save,2000);}});
  window.addEventListener('storage',e=>{if(e.key==='lolite-device:account'&&e.newValue!==storage.id){document.documentElement.classList.add('lolite-account-locked');location.reload();}});
- window.LoliteAccounts=Object.freeze({getClient:()=>client,getUser:()=>user,getProfile:()=>profile,isReady:()=>ready,signIn:login,signOut,showLogin:gate,settingsMarkup:settings,save,refreshProfile:value=>{if(value?.id===user?.id)profile={...profile,...value};}});
+ window.addEventListener('online',()=>{if(user&&hydrated&&device.get('dirty:'+user.id)==='true')void save()});
+ window.LoliteAccounts=Object.freeze({getClient:()=>client,getUser:()=>user,getProfile:()=>profile,isReady:()=>ready,signIn:login,signOut,showLogin:gate,settingsMarkup:settings,save,syncStatus:()=>({state:syncState,lastSync}),refreshProfile:value=>{if(value?.id===user?.id)profile={...profile,...value};}});
  client?.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'&&ready&&user&&!leaving){leaving=true;device.set('account','guest');location.reload();}if(event==='SIGNED_IN'&&ready&&session?.user.id!==user?.id)setTimeout(()=>enter(session).catch(()=>gate()),0);});
  async function boot(){
   gate();
