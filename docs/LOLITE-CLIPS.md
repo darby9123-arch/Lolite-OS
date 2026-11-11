@@ -7,9 +7,9 @@ Lolite Clips is a built-in recording app in the desktop, modern Start menu, Cosm
 2. Press **Start recording** or the default **Alt+Shift+C** keyboard shortcut while Lolite has keyboard focus.
 3. In your browser's screen-sharing prompt, select the game tab/window/screen you want to capture. Capture cannot start without this explicit permission.
 4. Press **Alt+Shift+C** again (or Stop & save clip) to stop. You can choose automatic limits of **15, 30, 60 or 90 seconds**, and change the shortcut to **Ctrl+Shift+Y**.
-5. A recording indicator is shown while capture is active. Use **Stop sharing screen** to release the capture source.
+5. A recording indicator is shown while capture is active. Saving a clip automatically stops screen sharing; you can also use **Stop sharing screen** to release the capture source.
 
-**Important browser limitations:** This records **from the time you start recording**; it does not retrieve the last 30 seconds retroactively (no background replay buffer). The keyboard shortcut only works while the Lolite page has keyboard focus; a third-party game iframe may intercept it. Screen/tab capture requires a supported browser and HTTPS. Game/tab audio is included only if the browser supports it and you choose to share audio. Capture will stop if you end browser screen sharing.
+**Important browser limitations:** This records **from the time you start recording**; it does not retrieve the last 30 seconds retroactively (no background replay buffer). The keyboard shortcut works when Lolite or a same-origin game iframe has keyboard focus. Cross-origin game iframes can intercept it, so use the capture controls in those games. Screen/tab capture requires a supported browser and HTTPS. Game/tab audio is included only if the browser supports it and you choose to share audio. Capture will stop if you end browser screen sharing.
 
 ## My Clips: private local library
 Recordings are saved as **WebM or MP4** in the browser's **IndexedDB** storage. They are not sent to Lolite servers automatically. **My Clips** lets you watch, download and delete each clip. Download any clip you want to preserve: clearing browser storage or changing devices may remove local videos. If browser storage fails when a recording ends, the app offers the recording as a download instead.
