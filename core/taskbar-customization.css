@@ -49,6 +49,11 @@
 .ltc-footer{grid-column:1/-1}
 @media(max-width:760px){.ltc-controls,.ltc-toggles{grid-template-columns:1fr}.ltc-heading{gap:10px}.ltc-preview-screen{height:120px}}
 @media(prefers-reduced-motion:reduce){.ltc-settings *{transition:none!important}}
+html.ltc-applied[data-desktop-experience=windows][data-ltc-search=false]:not(.browsing-mode):not(.mobile-mode) #taskbar #searchBtn,
+html.ltc-applied[data-desktop-experience=windows][data-ltc-clock=false]:not(.browsing-mode):not(.mobile-mode) #taskbar #clock,
+html.ltc-applied[data-desktop-experience=windows][data-ltc-settings=false]:not(.browsing-mode):not(.mobile-mode) #taskbar #settingsBtn{
+ display:none!important;
+}
 /* Real Windows taskbar. Guard browsing and mobile modes. */
 html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
  height:var(--ltc-height)!important;
@@ -77,9 +82,6 @@ html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobil
 html.ltc-applied[data-desktop-experience=windows][data-ltc-align=left]:not(.browsing-mode):not(.mobile-mode) #taskbar .win-taskbar-center{
  position:static!important;transform:none!important;justify-content:flex-start!important;
  max-width:calc(100% - 160px)!important;margin-left:12px!important;
-}
-html.ltc-applied[data-desktop-experience=windows][data-ltc-align=left]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar[data-ltc-test]{
- /* no-op marker for selector coverage */
 }
 html.ltc-applied[data-desktop-experience=windows][data-ltc-position=top]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
  top:0!important;bottom:auto!important;
@@ -111,16 +113,8 @@ html.ltc-applied[data-desktop-experience=windows][data-ltc-position=top].lic-app
 html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode)[data-ltc-position=bottom] #icons{
  bottom:calc(var(--ltc-height) + 10px);
 }
-html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode) #taskbar #searchBtn:not(#ltc-override),
-html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode) #taskbar #clock,
-html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode) #taskbar #settingsBtn{
- /* Visibility is controlled through data attributes to avoid touching DOM event listeners. */
-}
 html.ltc-applied[data-desktop-experience=windows][data-ltc-position=top]:not(.browsing-mode):not(.mobile-mode) #taskbar #winShowDesktop{
  border-left-color:#ffffff30;
-}
-html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode)[data-ltc-align=center] #taskbar .win-taskbar-center{
- /* Keep the native theme's default centred layout. */
 }
 html.ltc-applied[data-desktop-experience=windows][data-ltc-autohide=true]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
  translate:0 0;
