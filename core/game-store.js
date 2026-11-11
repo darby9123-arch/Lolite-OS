@@ -686,7 +686,13 @@
 
  // Avoid issuing thousands of HEAD requests every time the user opens the store.
  // The explicit Check game files action still validates the entire hosted library.
- const requestHealth=()=>{void window.LoliteGameHealth?.scan?.(games.filter(g=>g.url?.startsWith('html games/')||g.url?.startsWith('games/')).slice(0,80))};
+ let lastBackgroundHealthScan=0;
+ const requestHealth=()=>{
+  // Do not start up to 80 probes every time a user types into Search.
+  if(Date.now()-lastBackgroundHealthScan<5*60*1000)return;
+  lastBackgroundHealthScan=Date.now();
+  void window.LoliteGameHealth?.scan?.(games.filter(g=>g.url?.startsWith('html games/')||g.url?.startsWith('games/')).slice(0,80));
+ };
  window.LoliteGameSearch=(text,limit=8)=>{
    const q=String(text||'').trim().toLowerCase();
    if(q.length<2)return [];
@@ -695,9 +701,24 @@
     .slice(0,Math.min(20,Math.max(1,limit)))
     .map(g=>({file:g.file,title:g.title,category:g.category,unlocked:hasGame(g)}));
  };
- const filtered=()=>{
-  const found=healthy(games).filter(g=>matchesCategory(g)&&(!query||g.title.toLowerCase().includes(query.toLowerCase())||g.category.toLowerCase().includes(query.toLowerCase())||(g.franchise||'').toLowerCase().includes(query.toLowerCase())||availableServers(g).some(x=>x.name.toLowerCase().includes(query.toLowerCase()))));
-  return active==='Popular Games'?ranked(found):active==='Recently Played'?found.sort((a,b)=>(recentSessions.find(row=>row.file===b.file)?.at||0)-(recentSessions.find(row=>row.file===a.file)?.at||0)):active==='Recently Added'?found.sort((a,b)=>Date.parse(b.addedAt||0)-Date.parse(a.addedAt||0)||a.title.localeCompare(b.title)):found;
+ // Search is global, regardless of the currently selected game collection.
+ // Match full names, filenames, genre/franchise, common abbreviations and
+ // punctuation-free spellings (e.g. GTA4, FNAF, GeometryDash).
+ const normalizeGameSearch=value=>String(value||'').normalize('NFKD')
+  .replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,' ').trim().toLowerCase();
+ function matchesGameQuery(game,text){
+  const title=String(game.title||''),file=String(game.file||'');
+  const aliases=/grand theft auto/i.test(title)?' gta ': /five nights at freddy/i.test(title)?' fnaf ': '';
+  const haystack=normalizeGameSearch([title,file,game.category,game.franchise,game.source,aliases,
+   ...(Array.isArray(game.servers)?game.servers.map(server=>server.name):[])].filter(Boolean).join(' '));
+  const compact=haystack.replace(/ /g,'');
+  const tokens=normalizeGameSearch(text).split(' ').filter(Boolean);
+  return tokens.every(token=>haystack.includes(token)||compact.includes(token));
+ }
+ const filtered=(available=healthy(games))=>{
+  const searching=!!query.trim();
+  const found=available.filter(g=>searching?matchesGameQuery(g,query):matchesCategory(g));
+  return searching?found:active==='Popular Games'?ranked(found):active==='Recently Played'?found.sort((a,b)=>(recentSessions.find(row=>row.file===b.file)?.at||0)-(recentSessions.find(row=>row.file===a.file)?.at||0)):active==='Recently Added'?found.sort((a,b)=>Date.parse(b.addedAt||0)-Date.parse(a.addedAt||0)||a.title.localeCompare(b.title)):found;
  };
  const coverPalette=g=>{let hash=0;for(const ch of g.file)hash=(Math.imul(hash,31)+ch.charCodeAt(0))>>>0;const hue=hash%360,hue2=(hue+48+(hash%73))%360;return [`hsl(${hue} 62% 28%)`,`hsl(${hue2} 48% 13%)`,`${12+(hash%13)}s`,String(hash%6),`-${hash%17000}ms`]};
  const card=g=>{
@@ -806,25 +827,27 @@
   }
   requestHealth();
   const healthStatus=window.LoliteGameHealth?.summary?.();
-  const hiddenCount=games.length-healthy(games).length;
+  const totalGames=healthy(games);
+  const hiddenCount=games.length-totalGames.length;
   const healthText=hiddenCount?hiddenCount+' missing hidden':'Check game files';
-  const totalGames=healthy(games),totalPlayable=playableVersionCount(totalGames);
+  const totalPlayable=playableVersionCount(totalGames);
   const sortMenu='<label class="store-sort-label">Sort <select data-store-sort aria-label="Sort games"><option value="az"'+(sortOrder==='az'?' selected':'')+'>A–Z</option><option value="za"'+(sortOrder==='za'?' selected':'')+'>Z–A</option><option value="servers"'+(sortOrder==='servers'?' selected':'')+'>Most servers</option><option value="popular"'+(sortOrder==='popular'?' selected':'')+'>Most launched</option></select></label>';
   const categoryJump='<label class="store-category-jump">Collection <select data-store-category-jump aria-label="Choose game collection">'+
     categoryNames.map(name=>'<option value="'+encodeLabel(name)+'"'+(active===name?' selected':'')+'>'+encodeLabel(name)+'</option>').join('')+
     '</select></label>';
-  const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" type="search" aria-label="Search games" placeholder="Search games…" value="'+encodeLabel(query)+'"></div>'+sortMenu+'<button class="store-health-check" type="button" onclick="window.loliteStoreCheckFiles()" aria-label="Check game files" title="'+encodeLabel(healthText)+'">⚙</button><span class="store-count-pill" title="Every distinct server counts as one playable version">'+totalPlayable.toLocaleString()+' games incl. servers ('+totalGames.length+' titles)</span>'+categoryJump+'</div>';
+  const top='<div class="store-top"><div class="store-search-wrap"><span class="store-search-mark" aria-hidden="true">⌕</span><input class="store-search" type="search" aria-label="Search all games" placeholder="Search all games…" autocomplete="off" spellcheck="false" value="'+encodeLabel(query)+'"><button type="button" class="store-clear-search" data-store-clear-search aria-label="Clear game search" title="Clear search" '+(query.trim()?'':'hidden')+'>×</button></div>'+sortMenu+'<button class="store-health-check" type="button" onclick="window.loliteStoreCheckFiles()" aria-label="Check game files" title="'+encodeLabel(healthText)+'">⚙</button><span class="store-count-pill" title="Every distinct server counts as one playable version">'+totalPlayable.toLocaleString()+' games incl. servers ('+totalGames.length+' titles)</span>'+categoryJump+'</div>';
   let list;
-  if(query)list=filtered();
+  if(query.trim())list=filtered(totalGames);
   else if(active==='Featured'){
    const picks=featuredGames.map(item=>games.find(g=>g.file===item.file)).filter(Boolean);
    list=[...picks,...ranked(games)].filter((g,i,all)=>all.findIndex(item=>item.file===g.file)===i);
   }else if(active==='All Games')list=healthy(games);
-  else list=filtered();
-  list=healthy(list);
-  if(query||active==='All Games'||active==='My Library'||active==='Favorites'||active==='UGS')list=sortGames(list);
-  const showFeatured=!query&&active==='Featured';
-  const livePopularity=active==='Popular Games';
+  else list=filtered(totalGames);
+  // Featured can add titles from the full catalogue; verify they are playable.
+  if(active==='Featured'&&!query.trim())list=healthy(list);
+  if(query.trim()||active==='All Games'||active==='My Library'||active==='Favorites'||active==='UGS')list=sortGames(list);
+  const showFeatured=!query.trim()&&active==='Featured';
+  const livePopularity=active==='Popular Games'&&!query.trim();
   const popularityStatus=popularity()?.getStatus()?.status||'loading';
   const summary=livePopularity
     ?'Most launched in Lolite · Last 30 days · Anonymous totals'
@@ -842,16 +865,32 @@
     :'';
   const content=(showFeatured?heroMarkup():'')+
     '<section class="store-section"><div class="store-section-head"><div><h2>'+
-    (query?'Search results':encodeLabel(active))+'</h2><p>'+summary+'</p></div></div>'+
+    (query.trim()?'Search results for “'+encodeLabel(query.trim())+'”':encodeLabel(active))+'</h2><p>'+summary+'</p></div></div>'+
     privacy+(list.length?listCards(list):'<div class="store-empty">'+empty+'</div>')+
     '</section>';
-  const existing=keepToolbar&&root.querySelector('.store-top')&&root.querySelector('.store-results');
-  if(existing){
-   existing.innerHTML=content;
+  const toolbar=root.querySelector('.store-top'),results=root.querySelector('.store-results');
+  const searchFocused=!!document.activeElement?.matches?.('.store-v41 .store-search');
+  // Async health, popularity, wallet and catalogue updates must not replace the
+  // input while the user is typing. Keep its selection and focus intact.
+  if(toolbar&&results&&(keepToolbar||query.trim()||searchFocused)){
+   results.innerHTML=content;
+   const searchInput=toolbar.querySelector?.('.store-search');
+   if(searchInput&&searchInput.value!==query)searchInput.value=query;
+   const clear=toolbar.querySelector?.('[data-store-clear-search]');
+   if(clear)clear.hidden=!query.trim();
+   const category=toolbar.querySelector?.('[data-store-category-jump]');
+   if(category&&category.value!==active)category.value=active;
+   const count=toolbar.querySelector?.('.store-count-pill');
+   if(count)count.textContent=totalPlayable.toLocaleString()+' games incl. servers ('+totalGames.length+' titles)';
+   const check=toolbar.querySelector?.('.store-health-check');
+   if(check){check.title=healthText;check.setAttribute('aria-label',healthText)}
   }else root.innerHTML=top+'<div class="store-results">'+content+'</div>';
   root.scrollTop=resetScroll?0:previousScroll;
   if(showFeatured)loadHeroArt();
-  refreshActivity();refreshSidebarIcons();
+  // The sidebar may contain thousands of games. Recomputing all 20+ category
+  // thumbnails on every keypress caused a serious search typing slowdown.
+  if(!keepToolbar&&!query.trim()){refreshActivity();refreshSidebarIcons()}
+  else if(!keepToolbar)refreshActivity();
  }
  // The art shown in the left navigation is a real member of the named collection.
  // Empty collections use the existing Games app image, never a text abbreviation.
@@ -941,9 +980,9 @@
   render({resetScroll:true});
  };
  window.loliteStoreSearch=q=>{
-  const next=String(q||'');
+  const next=String(q??'').slice(0,160);
   if(query===next)return;
-  query=next;visibleCount=60;
+  query=next;visibleCount=next.trim()?30:60;
   render({keepToolbar:true,resetScroll:true});
  };
  window.loliteStoreMore=()=>{visibleCount+=60;render({keepToolbar:true})};
@@ -1012,6 +1051,8 @@
  window.lolitePlayMinecraft=()=>window.loliteStorePlay('clminecraftpocketedition.html');
  window.loliteStoreCheckFiles=()=>window.LoliteGameHealth?.scan?.(games,{force:true});
  document.addEventListener('click',event=>{
+  const clear=event.target.closest?.('.store-v41 [data-store-clear-search]');
+  if(clear){event.preventDefault();window.loliteStoreSearch('');document.querySelector('.store-v41 .store-search')?.focus?.();return}
   const node=event.target.closest?.('.store-v41 [data-store-favorite],.store-v41 [data-store-launch],.store-v41 [data-store-details],.store-v41 [data-store-open-chat],.store-v41 [data-category]');
   if(!node)return;
   if(node.dataset.storeFavorite){toggleFavourite(node.dataset.storeFavorite);event.preventDefault();return}
@@ -1031,6 +1072,16 @@
  document.addEventListener('compositionend',event=>{
   const input=event.target.closest?.('.store-v41 .store-search');
   if(input)window.loliteStoreSearch(input.value);
+ });
+ document.addEventListener('search',event=>{
+  const input=event.target.closest?.('.store-v41 .store-search');
+  if(input)window.loliteStoreSearch(input.value);
+ });
+ document.addEventListener('keydown',event=>{
+  const input=event.target.closest?.('.store-v41 .store-search');
+  if(input&&event.key==='Escape'&&input.value){
+   event.preventDefault();input.value='';window.loliteStoreSearch('');
+  }
  });
  document.addEventListener('change',event=>{
   const category=event.target.closest?.('.store-v41 [data-store-category-jump]');
