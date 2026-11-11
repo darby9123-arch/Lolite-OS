@@ -101,7 +101,7 @@ html.reduce .lfr-shell *,html.lolite-lite-mode .lfr-shell *{transition:none!impo
 .lfr-proof-picker input::file-selector-button{margin-right:10px;padding:6px 9px;border:0;border-radius:6px;color:#fff;background:#61548c;cursor:pointer}
 .lfr-proof-picker span{font-size:10px;color:#aab9cf;overflow-wrap:anywhere}
 .lfr-compose-actions{display:flex;justify-content:flex-start;flex-wrap:wrap;gap:9px}
-.lfr-compose-actions button{padding:10px 13px;border:1px solid #57496e;border-radius:8px;color:#eee2ff;background:#302a42;font:700 12px/1.3 inherit}
+.lfr-compose-actions button{padding:10px 13px;border:1px solid #57496e;border-radius:8px;color:#eee2ff;background:#302a42;font-size:12px;font-weight:700;line-height:1.3;font-family:inherit}
 .lfr-compose-actions button:hover:not(:disabled){background:#493963}
 .lfr-compose-actions button.lfr-primary{background:#587b64;border-color:#719782;color:#fff}
 .lfr-compose-actions button.lfr-primary:hover:not(:disabled){background:#659774}
