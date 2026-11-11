@@ -6,8 +6,27 @@
   {id:'wallpapers',name:'Wallpapers & Live Effects',hint:'Change the desktop wallpaper',term:'wallpapers background interactive',go:()=>{if(window.LoliteCrimson?.openSettings)window.LoliteCrimson.openSettings('wallpapers');else launch('settings')}},
   {id:'hosts',name:'Hosting Status',hint:'Check GitHub Pages, Vercel and Railway',term:'hosting servers versions status uptime',go:()=>window.LoliteHostStatus?.openPanel?.()},
   {id:'games-health',name:'Check Game Files',hint:'Scan for missing repository HTML games',term:'broken game files missing check',go:()=>{launch('games');window.loliteStoreCheckFiles?.()}},
-  {id:'taskbar',name:'Taskbar & Pinned Apps',hint:'Right-click a taskbar icon to pin or unpin it',term:'taskbar pinned app preview',go:()=>launch('settings')}
+  {id:'taskbar',name:'Taskbar & Pinned Apps',hint:'Right-click a taskbar icon to pin or unpin it',term:'taskbar pinned app preview',go:()=>launch('settings')},
+  {id:'theme-studio',name:'Theme Studio',hint:'Colours, window corners and taskbar opacity',term:'themes colors colour personalisation blur',go:()=>window.LoliteThemeStudio?.open?.()},
+  {id:'notifications',name:'Notification Centre',hint:'Unread items and Do Not Disturb',term:'alerts notification centre',go:()=>window.LoliteNotifications5?.open?.()},
+  {id:'achievements',name:'Achievements',hint:'Your unlocked Lolite badges',term:'badges milestones',go:()=>window.LoliteAchievements5?.open?.()},
+  {id:'tile-windows',name:'Tile Windows',hint:'Arrange up to four windows',term:'snapping layouts tile window',go:()=>window.LoliteWindows5?.tile?.()}
  ];
+ function calculate(expression){
+  const input=String(expression||'').replace(/^=\s*/,'').trim();
+  if(input.length>100||!input||!/^[0-9+\-*/%.()^\s]+$/.test(input)||!/[+\-*/%^]/.test(input))return null;
+  let pos=0;const space=()=>{while(/\s/.test(input[pos]||''))pos++};
+  const primary=()=>{space();const char=input[pos];
+   if(char==='+'||char==='-'){pos++;const n=primary();return char==='-'?-n:n}
+   if(char==='('){pos++;const n=expr();space();if(input[pos++]!==')')throw Error('Unclosed group');return n}
+   const match=input.slice(pos).match(/^(?:\d+(?:\.\d*)?|\.\d+)/);
+   if(!match)throw Error('Invalid number');pos+=match[0].length;return Number(match[0]);
+  };
+  const power=()=>{let n=primary();space();if(input[pos]==='^'){pos++;n=Math.pow(n,power())}return n};
+  const term=()=>{let n=power();space();while(['*','/','%'].includes(input[pos])){const op=input[pos++],v=power();n=op==='*'?n*v:op==='/'?n/v:n%v;space()}return n};
+  const expr=()=>{let n=term();space();while(input[pos]==='+'||input[pos]==='-'){const op=input[pos++],v=term();n=op==='+'?n+v:n-v;space()}return n};
+  try{const n=expr();space();return pos===input.length&&Number.isFinite(n)&&Math.abs(n)<1e15?Number(n.toPrecision(12)):null}catch{return null}
+ }
  const favorites=()=>{try{return JSON.parse(localStorage.getItem('loliteRecentAppsV2')||'[]')}catch{return []}};
  let modal=null,input=null,results=null,active=0,items=[],files=[],opened=false,seq=0;
  const appList=()=>Array.isArray(window.LoliteDesktopShell?.apps)?window.LoliteDesktopShell.apps:[];
@@ -34,6 +53,10 @@
  };
  function build(query){
   const q=query.trim().toLowerCase(),recent=favorites(),out=[];
+  const value=calculate(q);
+  if(value!==null){const answer=String(value);
+   out.push({kind:'calculator',id:'math:'+q,label:answer,detail:'Calculation result · click to copy',points:150,icon:'=',go:()=>{if(navigator.clipboard?.writeText)navigator.clipboard.writeText(answer).then(()=>window.toast?.('Copied '+answer)).catch(()=>window.toast?.('Result: '+answer));else window.toast?.('Result: '+answer)}});
+  }
   for(const a of appList()){
    const points=q?score(a[1],a[2],q):recent.includes(a[0])?60-recent.indexOf(a[0]):10;
    if(points<0)continue;
@@ -90,7 +113,7 @@
  }
  function activate(n=active){
   const item=items[n];if(!item)return;
-  close();item.go();
+  close();window.dispatchEvent(new CustomEvent('lolite5:search',{detail:{kind:item.kind}}));item.go();
  }
  function close(){
   if(!opened)return;
@@ -155,5 +178,5 @@
   window.openSearch=()=>open();
  };
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
- window.LoliteSpotlight=Object.freeze({open,close,search:build,openFile,get isOpen(){return opened}});
+ window.LoliteSpotlight=Object.freeze({open,close,search:build,calculate,openFile,get isOpen(){return opened}});
 })();
