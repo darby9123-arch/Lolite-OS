@@ -111,3 +111,194 @@ html[data-wallpaper-colors="on"] .lolite-icon--generated .lolite-generated-png{
  html[data-wallpaper-colors="on"] .lolite-icon--brand-real{transition:none!important}
 }
 html.reduce[data-wallpaper-colors="on"] .lolite-icon--brand-real{transition:none!important}
+
+
+/* Adaptive UI 2.0: coordinated primary and secondary tones across shell surfaces.
+   Colour is only applied to OS chrome and known native apps, never user game canvases,
+   uploaded wallpapers, photos or video playback. */
+html[data-wallpaper-colors="on"]{
+ color-scheme:dark;
+ --ui-text:var(--wall-text)!important;
+ --ui-muted:var(--wall-muted)!important;
+ --ui-accent:var(--wall-accent)!important;
+ --ui-highlight:var(--wall-secondary-soft)!important;
+}
+html[data-wallpaper-colors="on"] :is(#taskbar,.win-taskbar-center,.win-taskbar-start,.win-taskbar-right){
+ border-color:var(--wall-border)!important;
+ background:var(--wall-panel)!important;
+}
+html[data-wallpaper-colors="on"] :is(.win-start-body,.win-start-footer,.win-start-header,.win-flyout,.win-quick-panel,.win-notifications,.win-calendar,#start,#searchPanel,.lolite-context,.win-snap-menu){
+ background:var(--wall-panel-solid)!important;
+ border-color:var(--wall-border)!important;
+ color:var(--wall-text)!important;
+}
+html[data-wallpaper-colors="on"] :is(.win-start-grid button,.win-all-apps button,.win-start-recent button,.win-quick-tiles button,.win-quick-action,.search-result,.win-flyout button):hover{
+ background:var(--wall-hover)!important;
+}
+html[data-wallpaper-colors="on"] :is(.win-pinned,.taskwin,#startBtn)[aria-pressed="true"],
+html[data-wallpaper-colors="on"] :is(.win-quick-tiles button,.win-quick-action)[aria-pressed="true"]{
+ border-color:var(--wall-accent-soft)!important;
+ background:var(--wall-pressed)!important;
+}
+html[data-wallpaper-colors="on"] :is(.window,.panel,.win-flyout,#start,.lolite-context,.win-snap-menu){
+ box-shadow:0 18px 54px #0008,0 0 28px var(--wall-glow)!important;
+}
+html[data-wallpaper-colors="on"] .window .titlebar{
+ color:var(--wall-text)!important;
+ background:linear-gradient(110deg,var(--wall-titlebar),var(--wall-panel-solid))!important;
+}
+html[data-wallpaper-colors="on"] .window .content :is(.card,.tool-head,.calculator,.settings-card){
+ border-color:var(--wall-border)!important;
+}
+html[data-wallpaper-colors="on"] .window .content .card{
+ background:var(--wall-panel-solid)!important;
+}
+html[data-wallpaper-colors="on"] .window .content :is(.soft,.setting-btn,.calc-grid button,.calc-display,.notepad){
+ background:var(--wall-raised)!important;
+ border-color:var(--wall-border)!important;
+ color:var(--wall-text)!important;
+}
+html[data-wallpaper-colors="on"] .window .content :is(.soft,.setting-btn,.calc-grid button):hover{
+ background:var(--wall-button)!important;
+}
+html[data-wallpaper-colors="on"] .window .content :is(.notepad,.calc-display,.settings-extra input):focus-visible{
+ outline:2px solid var(--wall-focus-ring)!important;
+ outline-offset:1px;
+}
+html[data-wallpaper-colors="on"] :is(.desktop-icon:hover,.desktop-icon:focus-visible){
+ background:var(--wall-hover)!important;
+}
+html[data-wallpaper-colors="on"] :is(.window,.win-flyout,#start,.panel) :is(button,input,textarea,select):focus-visible,
+html[data-wallpaper-colors="on"] :is(.store,.lm-shell,.appstore,.lw-card) :is(button,input,textarea,select):focus-visible{
+ outline:2px solid var(--wall-focus-ring)!important;
+ outline-offset:2px;
+}
+/* Game Store: tint navigation and surfaces, never the actual game covers. */
+html[data-wallpaper-colors="on"] .store.store-v41{
+ --gallery-surface:var(--wall-bg)!important;
+ --gallery-sidebar:var(--wall-panel-solid)!important;
+ --gallery-right:var(--wall-panel-solid)!important;
+ --gallery-panel:var(--wall-raised)!important;
+ --gallery-stroke:var(--wall-border)!important;
+ --gallery-accent:var(--wall-accent)!important;
+ --gallery-muted:var(--wall-muted)!important;
+ --gallery-text:var(--wall-text)!important;
+}
+html[data-wallpaper-colors="on"] .store.store-v41 .store-main{
+ background:radial-gradient(ellipse at 65% -25%,var(--wall-glow),transparent 65%),var(--wall-bg)!important;
+}
+html[data-wallpaper-colors="on"] .store.store-v41 .store-top{
+ background:linear-gradient(var(--wall-bg) 77%,transparent)!important;
+}
+html[data-wallpaper-colors="on"] .store.store-v41 :is(.store-search,.store-toolbar-icon,.store-health-check,.store-sort-label select,.store-category-jump select,.store-nav .nav-mark){
+ border-color:var(--wall-border)!important;
+}
+html[data-wallpaper-colors="on"] .store.store-v41 .store-nav button.active{
+ background:var(--wall-pressed)!important;
+ border-color:var(--wall-border)!important;
+ color:var(--wall-text)!important;
+}
+html[data-wallpaper-colors="on"] .store.store-v41 :is(.store-search,.store-toolbar-icon,.store-health-check,.store-sort-label select,.store-category-jump select){
+ background:var(--wall-panel-solid)!important;
+ color:var(--wall-text)!important;
+}
+html[data-wallpaper-colors="on"] .store.store-v41 .store-nav button.active .nav-mark.nav-game-art{
+ border-color:var(--wall-accent)!important;
+}
+/* Music: replace its isolated green palette with the desktop's current colours.
+   Track covers, status warnings and playback visualisations remain untouched. */
+html[data-wallpaper-colors="on"] .lm-shell{
+ --accent:var(--wall-accent)!important;
+ --ink:var(--wall-text)!important;
+ --muted:var(--wall-muted)!important;
+ background:var(--wall-bg)!important;
+}
+html[data-wallpaper-colors="on"] .lm-shell :is(.lm-header,.lm-nav){
+ background:var(--wall-panel-solid)!important;
+ border-color:var(--wall-border)!important;
+}
+html[data-wallpaper-colors="on"] .lm-shell .lm-header{
+ background-image:radial-gradient(ellipse at 6% -15%,var(--wall-glow),transparent 58%)!important;
+}
+html[data-wallpaper-colors="on"] .lm-shell :is(.lm-form,.lm-track,.lm-request,.lm-search){
+ background:var(--wall-panel-solid)!important;
+ border-color:var(--wall-border)!important;
+}
+html[data-wallpaper-colors="on"] .lm-shell :is(.lm-nav button.active,.lm-track.playing){
+ background:var(--wall-pressed)!important;
+ border-color:var(--wall-border)!important;
+ color:var(--wall-text)!important;
+}
+html[data-wallpaper-colors="on"] .lm-shell :is(.lm-brand-icon,.lm-login-icon,.lm-record){
+ background:var(--wall-icon-start)!important;
+ color:var(--wall-bg)!important;
+}
+html[data-wallpaper-colors="on"] .lm-shell :is(.lm-track-actions button:not(.lm-negative),.lm-row-buttons button:not(.lm-negative)):hover{
+ border-color:var(--wall-accent-soft)!important;
+}
+/* App Store, Admin Center and Widgets use the same tone but keep each layout. */
+html[data-wallpaper-colors="on"] .appstore,
+html[data-wallpaper-colors="on"] .la-shell{
+ background:var(--wall-bg)!important;
+ color:var(--wall-text)!important;
+}
+html[data-wallpaper-colors="on"] :is(.appstore-card,.la-form,.la-item,.la-game-art,.lw-picker){
+ background:var(--wall-panel-solid)!important;
+ border-color:var(--wall-border)!important;
+}
+html[data-wallpaper-colors="on"] :is(.appstore-toolbar input,.la-form input,.la-form select,.la-shell button:not(.la-danger),.lw-picker-list button){
+ background:var(--wall-raised)!important;
+ border-color:var(--wall-border)!important;
+ color:var(--wall-text)!important;
+}
+html[data-wallpaper-colors="on"] .appstore :is(.store-tab.active,.appstore-card button:not(.installed)),
+html[data-wallpaper-colors="on"] .la-shell .la-primary{
+ background:var(--wall-button)!important;
+ border-color:var(--wall-border)!important;
+ color:#fff!important;
+}
+html[data-wallpaper-colors="on"] .appstore :is(.store-tab.active,.appstore-card button:not(.installed)):hover,
+html[data-wallpaper-colors="on"] .la-shell .la-primary:hover{
+ background:var(--wall-button-hover)!important;
+}
+html[data-wallpaper-colors="on"] :is(.lw-card,.cosmos-widget,.cosmos-tile){
+ background:linear-gradient(145deg,var(--wall-panel),var(--wall-panel-solid))!important;
+ border-color:var(--wall-border)!important;
+ color:var(--wall-text)!important;
+}
+html[data-wallpaper-colors="on"] :is(.lw-today,.lw-calendar-grid .lw-today){
+ background:var(--wall-button)!important;
+ color:#fff!important;
+}
+html[data-wallpaper-colors="on"] :is(.lw-note,.lw-weather-set input,.lw-timer-actions input){
+ background:var(--wall-bg)!important;
+ border-color:var(--wall-border)!important;
+ color:var(--wall-text)!important;
+}
+html[data-wallpaper-colors="on"] :is(.lw-quick-grid button,.lw-month-nav button,.lw-weather-set button,.lw-timer-actions button){
+ background:var(--wall-raised)!important;
+ border-color:var(--wall-border)!important;
+ color:var(--wall-text)!important;
+}
+html[data-wallpaper-colors="on"] :is(.lw-quick-grid button,.lw-month-nav button,.lw-weather-set button,.lw-timer-actions button):hover{
+ background:var(--wall-pressed)!important;
+}
+/* The UI preference itself previews both palette hues and tone depth. */
+.wall-colour-preview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;width:min(300px,100%);height:26px}
+.wall-colour-preview span{border-radius:6px;border:1px solid var(--wall-border,#ffffff28)}
+.wall-colour-preview span:nth-child(1){background:var(--wall-accent,#6ea8ef)}
+.wall-colour-preview span:nth-child(2){background:var(--wall-secondary,#9674e9)}
+.wall-colour-preview span:nth-child(3){background:var(--wall-raised,#262c3c)}
+.wall-colour-preview span:nth-child(4){background:var(--wall-panel-solid,#111820)}
+.wall-color-intensity{display:flex;gap:6px;flex-wrap:wrap}
+.wall-color-intensity button{background:var(--wall-raised,#232a34)!important;border:1px solid var(--wall-border,#ffffff33)!important;color:var(--wall-text,#fff)!important;border-radius:8px;padding:7px 11px;cursor:pointer}
+.wall-color-intensity button[aria-pressed="true"]{background:var(--wall-button,#36477e)!important;border-color:var(--wall-accent-soft,#93aaff)!important;color:#fff!important}
+.wall-color-intensity button:disabled{opacity:.52;cursor:not-allowed}
+@media(prefers-reduced-motion:no-preference){
+ html[data-wallpaper-colors="on"] :is(.window,.panel,.win-flyout,.lw-card,.cosmos-widget,.appstore-card,.lm-shell,.store.store-v41){
+  transition:background-color .22s ease,border-color .22s ease,color .22s ease;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-wallpaper-colors="on"] :is(.window,.panel,.win-flyout,.lw-card,.cosmos-widget,.appstore-card,.lm-shell,.store.store-v41){transition:none!important}
+}
