@@ -4,7 +4,7 @@
  'use strict';
  const BASE='lolite.desktop-icons.v1.';
  const LIMITS={size:[32,88],opacity:[0,100],columns:[1,10],rows:[2,12],gap:[0,24]};
- const FALLBACK={size:58,opacity:100,columns:3,rows:6,gap:10,color:'#598cfa',tint:false,labels:true,shape:'rounded',position:'left'};
+ const FALLBACK={size:58,opacity:100,columns:3,rows:6,gap:10,color:'#598cfa',tint:false,labels:true,visible:true,shape:'rounded',position:'left'};
  const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
  const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)));
  const validColor=value=>/^#[a-f0-9]{6}$/i.test(String(value))?value:'#598cfa';
@@ -38,6 +38,7 @@
   clean.color=validColor(value.color??clean.color);
   clean.tint=value.tint===true;
   clean.labels=value.labels!==false;
+  clean.visible=value.visible!==false;
   clean.shape=['rounded','square','circle'].includes(value.shape)?value.shape:'rounded';
   clean.position=['left','center','right'].includes(value.position)?value.position:'left';
   return clean;
@@ -63,8 +64,9 @@
  function apply(){
   const root=document.documentElement;
   root.classList.toggle('lic-applied',custom);
-  if(!custom){delete root.dataset.licPosition;return;}
+  if(!custom){delete root.dataset.licPosition;delete root.dataset.licIconsVisible;return;}
   root.dataset.licPosition=prefs.position;
+  root.dataset.licIconsVisible=String(prefs.visible);
   const pos=layout(),vars={
    '--lic-size':prefs.size+'px','--lic-opacity':String(prefs.opacity/100),
    '--lic-color':prefs.color,'--lic-gap':prefs.gap+'px',
@@ -91,6 +93,7 @@
     '<div class="lic-screen" role="img" aria-label="Preview of desktop icons with selected layout"><div class="lic-wall"><div class="lic-preview-grid" id="licPreviewIcons"></div><div class="lic-mini-dock"><i></i><i></i><i></i><i></i><i></i></div></div></div>'+
     '<p class="lic-preview-note" id="licLayoutInfo"></p></div>'+
     '<div class="lic-controls">'+
+    '<label class="lic-icon-visibility"><span><strong>Show desktop icons</strong><small>Hide shortcuts without removing them. Turn this back on to restore your desktop.</small></span><input type="checkbox" data-lic-field="visible" '+(prefs.visible?'checked':'')+' aria-label="Show desktop icons"></label>'+
     slider('size','Icon size',32,88,2,'px')+
     slider('opacity','Icon transparency',0,100,5,'% visible')+
     slider('columns','Columns',1,10,1,'')+
@@ -157,12 +160,14 @@
   screen.style.setProperty('--lic-mini-radius',prefs.shape==='square'?'3px':prefs.shape==='circle'?'50%':'8px');
   screen.style.setProperty('--lic-mini-label',prefs.labels?'block':'none');
   screen.dataset.iconPosition=prefs.position;
+  screen.dataset.iconsVisible=String(prefs.visible);
+  grid.hidden=!prefs.visible;
   section.querySelectorAll('[data-lic-position]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.licPosition===prefs.position)));
   screen.style.setProperty('--lic-mini-rows',String(prefs.rows));
   screen.style.setProperty('--lic-mini-height',Math.min(prefs.rows*(mini+24+Math.round(prefs.gap*.5)),800)+'px');
   const info=section.querySelector('#licLayoutInfo');
   const available=layout().columns;
-  if(info)info.textContent=prefs.columns+' columns × '+prefs.rows+' visible rows'+(available<prefs.columns?' (desktop adapts to '+available+' columns on this screen)':'')+'. Icons positioned '+prefs.position+'. Scroll the desktop for more icons.';
+  if(info)info.textContent=!prefs.visible?'Desktop icons hidden. They remain installed and can be shown again with the switch above.':prefs.columns+' columns × '+prefs.rows+' visible rows'+(available<prefs.columns?' (desktop adapts to '+available+' columns on this screen)':'')+'. Icons positioned '+prefs.position+'. Scroll the desktop for more icons.';
   const hue=section.querySelector('[data-lic-field="hue"]');
   if(hue&&!hue.matches(':active'))hue.value=String(hueOf(prefs.color));
   const hueOutput=section.querySelector('[data-lic-value="hue"]');
@@ -191,7 +196,7 @@
   const field=el.dataset.licField;
   if(field==='hue'){prefs.color=hueColor(el.value);prefs.tint=true;save();preview();return}
   if(!(field in FALLBACK))return;
-  if(field==='tint'||field==='labels')prefs[field]=el.checked;
+  if(field==='tint'||field==='labels'||field==='visible')prefs[field]=el.checked;
   else if(field==='color'){prefs.color=validColor(el.value);prefs.tint=true}
   else if(field==='shape')prefs.shape=['rounded','square','circle'].includes(el.value)?el.value:'rounded';
   else prefs[field]=clamp(el.value,...LIMITS[field]);
@@ -199,7 +204,7 @@
  });
  document.addEventListener('change',event=>{
   const el=event.target.closest?.('#lolite-icon-settings [data-lic-field]');
-  if(el&&['shape','tint','labels'].includes(el.dataset.licField)){
+  if(el&&['shape','tint','labels','visible'].includes(el.dataset.licField)){
    prefs[el.dataset.licField]=el.type==='checkbox'?el.checked:el.value;save();preview();
   }
  });
