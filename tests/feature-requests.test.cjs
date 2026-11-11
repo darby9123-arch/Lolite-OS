@@ -7,11 +7,21 @@ const read=file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8');
 const USER='11111111-1111-1111-1111-111111111111';
 const OTHER='22222222-2222-2222-2222-222222222222';
 const IDEA='33333333-3333-3333-3333-333333333333';
-function harness({signedIn=true,admin=false,requests=[],votes=[]}={}){
+function harness({signedIn=true,admin=false,requests=[],votes=[],replies=[]}={}){
  const element={innerHTML:'',querySelector:()=>null};
  const listeners={};
- const calls=[];
+ const calls=[],uploads=[],notifications=[];
+ const storage={
+  from(bucket){
+   return {
+    async createSignedUrl(file,ttl){calls.push({operation:'sign',bucket,file,ttl});return {data:{signedUrl:'https://storage.example/view-proof.png?token=example'},error:null}},
+    async upload(file,blob,options){uploads.push({bucket,file,blob,options});return {data:{path:file},error:null}},
+    async remove(files){calls.push({operation:'remove',bucket,files});return {data:[],error:null}}
+   };
+  }
+ };
  const client={
+  storage,
   auth:{
    getUser:async()=>({data:{user:signedIn?{id:USER}:null},error:null}),
    onAuthStateChange(){}
@@ -21,9 +31,19 @@ function harness({signedIn=true,admin=false,requests=[],votes=[]}={}){
     select(){return this},
     eq(){return this},
     order(){return this},
-    limit(){return Promise.resolve({data:name==='lolite_feature_requests'?requests:name==='lolite_feature_votes'?votes:[],error:null})},
+    limit(){return Promise.resolve({data:name==='lolite_feature_requests'?requests:name==='lolite_feature_votes'?votes:name==='lolite_feature_replies'?replies:[],error:null})},
     maybeSingle(){return Promise.resolve({data:admin?{user_id:USER}:null,error:null})},
-    insert(row){calls.push({table:name,operation:'insert',row});return Promise.resolve({data:null,error:null})},
+    insert(row){
+     calls.push({table:name,operation:'insert',row});
+     if(name==='lolite_feature_replies'){
+      replies.push({id:'44444444-4444-4444-4444-444444444444',created_at:new Date().toISOString(),...row});
+      if(row.kind==='done'){
+       const match=requests.find(r=>r.id===row.request_id);
+       if(match)match.status='shipped';
+      }
+     }
+     return Promise.resolve({data:null,error:null});
+    },
     update(row){calls.push({table:name,operation:'update',row});return this},
     delete(){calls.push({table:name,operation:'delete'});return this}
    };
@@ -31,7 +51,7 @@ function harness({signedIn=true,admin=false,requests=[],votes=[]}={}){
   }
  };
  const opened=[];
- const win={page:id=>'<div>'+id+'</div>',openApp:(...args)=>opened.push(args),
+ const win={page:id=>'<div>'+id+'</div>',openApp:(...args)=>opened.push(args),toast:msg=>notifications.push(msg),
   LoliteBrowserAccounts:{getClient:()=>client}};
  const doc={
   querySelector:selector=>selector.includes('#lfrRoot')?element:null,
@@ -42,7 +62,7 @@ function harness({signedIn=true,admin=false,requests=[],votes=[]}={}){
   window:win,document:doc,console,Date,Number,Set,Promise,CustomEvent:class{},
   setTimeout(){return 0}
  },{timeout:2000});
- return {win,element,listeners,opened,calls};
+ return {win,element,listeners,opened,calls,uploads,notifications};
 }
 function idea(overrides={}){
  return {id:IDEA,submitted_by:OTHER,title:'Resizable desktop folders',description:'Allow desktop folders to be resized and arranged on a grid.',
@@ -119,4 +139,97 @@ test('Database migration enables RLS, protects votes and limits updates to admin
  assert.match(sql,/voter_id=\(select auth\.uid\(\)\)/);
  assert.match(sql,/create trigger lolite_feature_vote_tally_trigger/);
  assert.doesNotMatch(read('core/feature-requests.js'),/service_role|sb_secret_/);
+});
+
+test('Completed requests remain visible with an admin reply, screenshot and disabled voting',async()=>{
+ const proof=IDEA+'/'+USER+'/demo-screenshot.png';
+ const h=harness({
+  requests:[idea({status:'shipped',vote_count:23})],
+  votes:[{request_id:IDEA}],
+  replies:[{
+   id:'44444444-4444-4444-4444-444444444444',
+   request_id:IDEA,author_id:USER,kind:'done',
+   message:'Done! The folders now resize. <script>not HTML</script>',
+   screenshot_path:proof,created_at:'2026-11-12T00:00:00.000Z'
+  }]
+ });
+ await h.win.LoliteFeatureRequests.refresh();
+ assert.match(h.element.innerHTML,/Resizable desktop folders/);
+ assert.match(h.element.innerHTML,/lfr-status-shipped/);
+ assert.match(h.element.innerHTML,/Voting closed/);
+ assert.match(h.element.innerHTML,/aria-label="Voting closed for /);
+ assert.match(h.element.innerHTML,/23<\/b>/);
+ assert.match(h.element.innerHTML,/class="lfr-reply lfr-reply-done"/);
+ assert.match(h.element.innerHTML,/class="lfr-proof-image"/);
+ assert.match(h.element.innerHTML,/View screenshot full size/);
+ assert.match(h.element.innerHTML,/&lt;script&gt;not HTML&lt;\/script&gt;/);
+ assert.equal(h.calls.filter(x=>x.operation==='sign').length,1);
+ const before=h.calls.filter(x=>x.table==='lolite_feature_votes').length;
+ const button={dataset:{lfrAction:'vote',lfrId:IDEA}};
+ const target={closest:s=>s==='#lfrRoot'?{}:s==='[data-lfr-action]'?button:null};
+ for(const handler of h.listeners.click||[])handler({target});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(h.calls.filter(x=>x.table==='lolite_feature_votes').length,before);
+});
+
+test('Admin can post a Done reply with a private screenshot and complete a request',async()=>{
+ const h=harness({admin:true,requests:[idea()]});
+ await h.win.LoliteFeatureRequests.refresh();
+ const tab={dataset:{lfrTab:'admin'},closest:s=>s==='#lfrRoot'||s==='[data-lfr-tab]'?tab:null};
+ for(const handler of h.listeners.click||[])handler({target:tab});
+ assert.match(h.element.innerHTML,/data-lfr-action="post-reply" data-lfr-kind="done"/);
+ assert.match(h.element.innerHTML,/data-lfr-proof-file/);
+ const screenshot={type:'image/png',name:'finished.png',size:2039};
+ const panel={
+  querySelector(selector){
+   if(selector==='[data-lfr-reply-message]')return {value:'Done! New folders are working.'};
+   if(selector==='[data-lfr-proof-file]')return {files:[screenshot]};
+   return null;
+  }
+ };
+ const button={dataset:{lfrAction:'post-reply',lfrKind:'done',lfrId:IDEA},disabled:false,isConnected:true,closest:()=>panel};
+ const target={closest:s=>s==='#lfrRoot'?{}:s==='[data-lfr-action]'?button:null};
+ for(const handler of h.listeners.click||[])handler({target});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(h.uploads.length,1);
+ assert.equal(h.uploads[0].options.upsert,false);
+ assert.match(h.uploads[0].file,/\.png$/);
+ const posted=h.calls.find(x=>x.table==='lolite_feature_replies'&&x.operation==='insert');
+ assert.ok(posted);
+ assert.equal(posted.row.kind,'done');
+ assert.equal(posted.row.request_id,IDEA);
+ assert.equal(posted.row.screenshot_path,h.uploads[0].file);
+ assert.match(h.element.innerHTML,/Voting closed/);
+ assert.match(h.element.innerHTML,/New folders are working/);
+ assert.match(h.element.innerHTML,/class="lfr-proof-image"/);
+});
+
+test('Ordinary users cannot see or activate admin reply controls',async()=>{
+ const h=harness({requests:[idea()]});
+ await h.win.LoliteFeatureRequests.refresh();
+ assert.doesNotMatch(h.element.innerHTML,/Reply as admin/);
+ assert.doesNotMatch(h.element.innerHTML,/data-lfr-action="post-reply"/);
+ const button={dataset:{lfrAction:'post-reply',lfrKind:'done',lfrId:IDEA},closest:()=>({querySelector:()=>({value:'bad'})})};
+ const target={closest:s=>s==='#lfrRoot'?{}:s==='[data-lfr-action]'?button:null};
+ for(const handler of h.listeners.click||[])handler({target});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(h.calls.some(x=>x.table==='lolite_feature_replies'&&x.operation==='insert'),false);
+ assert.equal(h.uploads.length,0);
+});
+
+test('Admin reply schema enforces RLS, private screenshots and closed voting on Done',()=>{
+ const sql=read('supabase/migrations/20261112093000_lolite_feature_admin_replies.sql');
+ assert.match(sql,/create table public\.lolite_feature_replies/i);
+ assert.match(sql,/alter table public\.lolite_feature_replies enable row level security/i);
+ assert.match(sql,/feature replies are admin-only/i);
+ assert.match(sql,/author_id=\(select auth\.uid\(\)\)/i);
+ assert.match(sql,/create trigger lolite_feature_reply_done_trigger/i);
+ assert.match(sql,/set status='shipped'/i);
+ assert.match(sql,/bucket_id='lolite-feature-proofs'/i);
+ assert.match(sql,/values\('lolite-feature-proofs','lolite-feature-proofs',false,5242880/i);
+ assert.match(sql,/feature voters remove own vote/i);
+ assert.match(sql,/r\.status in \('open','planned','in_progress'\)/);
+ assert.match(read('core/feature-requests.js'),/createSignedUrl\(r\.screenshot_path,3600\)/);
+ assert.match(read('core/feature-requests.js'),/upload\(uploadedPath,file/);
+ assert.match(read('core/feature-requests.js'),/VOTABLE=new Set\(\['open','planned','in_progress'\]\)/);
 });
