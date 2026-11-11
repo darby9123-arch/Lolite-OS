@@ -92,7 +92,7 @@ test('V5 sidebar, CSS, accounts and wallpaper engine are integrated on the real 
  assert.match(crimson,/LoliteCustomizationStudio\?\.markup/);
  assert.ok(html.indexOf('core/lolite-5.css')>html.indexOf('core/desktop-icon-customization.css'));
  assert.ok(html.indexOf('core/lolite-5-customization.js')>html.indexOf('core/wallpapers.js'));
- assert.match(css,/\\.l5-studio/);
+ assert.match(css,/\.l5-studio/);
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.match(css,/--l5-window-radius/);
  for(const key of ['loliteMotionMode','loliteWallpaperTransitionMode','lolite5WindowRadius','lolite5TaskbarOpacity']){
