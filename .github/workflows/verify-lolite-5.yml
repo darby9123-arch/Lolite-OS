@@ -1,0 +1,47 @@
+name: Verify Lolite OS 5.0
+on:
+  push:
+    paths:
+      - 'core/lolite-5.css'
+      - 'core/lolite-5-customization.js'
+      - 'core/motion.js'
+      - 'core/crimson.js'
+      - 'core/accounts.js'
+      - 'core/wallpapers.js'
+      - 'core/desktop-icon-customization.js'
+      - 'core/wallpaper-colors.js'
+      - 'index.html'
+      - 'tests/lolite-5.test.cjs'
+      - '.github/workflows/verify-lolite-5.yml'
+  pull_request:
+    paths:
+      - 'core/lolite-5.css'
+      - 'core/lolite-5-customization.js'
+      - 'core/motion.js'
+      - 'core/crimson.js'
+      - 'core/accounts.js'
+      - 'core/wallpapers.js'
+      - 'core/desktop-icon-customization.js'
+      - 'core/wallpaper-colors.js'
+      - 'index.html'
+      - 'tests/lolite-5.test.cjs'
+      - '.github/workflows/verify-lolite-5.yml'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check 5.0 JavaScript syntax
+        run: |
+          node --check core/lolite-5-customization.js
+          node --check core/motion.js
+          node --check core/crimson.js
+          node --check core/accounts.js
+          node --check core/wallpapers.js
+      - name: Test desktop windows, accounts, wallpaper and Customization Studio
+        run: node --test tests/lolite-5.test.cjs tests/window-manager.test.cjs tests/accounts-activity.test.cjs tests/local-live-wallpapers.test.cjs tests/wallpaper-colors.test.cjs
