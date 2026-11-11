@@ -44,7 +44,7 @@
   const ids=switchable().map(el=>el.dataset.windowId).slice(0,4);
   const layout=ids.length===2?['left','right']:ids.length===3?['left','top-right','bottom-right']:['top-left','top-right','bottom-left','bottom-right'];
   ids.forEach((id,i)=>window.snapWin?.(id,layout[i]||'max'));
-  if(ids.length)announce('Windows arranged',ids.length+' windows tiled. Ctrl + Alt + L to tile again.');
+  if(ids.length){emit('lolite5:windowtiled',{count:ids.length});announce('Windows arranged',ids.length+' windows tiled. Ctrl + Alt + L to tile again.')}
   return ids.length;
  }
  document.addEventListener('keydown',e=>{
@@ -85,6 +85,7 @@
   root.style.setProperty('--l5-blur',theme.blur+'px');
   root.style.setProperty('--l5-taskbar-alpha',String(theme.taskbar/100));
   root.dataset.l5Spacing=theme.spacing;
+  if(persist||read(THEME_KEY,null))root.dataset.l5Theme='on';
   if(persist){
    window.loliteSetAccent?.(theme.accent);
    save(THEME_KEY,theme);
@@ -196,9 +197,7 @@
  window.addEventListener('lolite5:search',()=>award('searcher'));
  window.addEventListener('lolite5:gameplayed',()=>award('games'));
  window.addEventListener('lolite5:appinstalled',()=>award('appstore'));
- const originalTile=window.LoliteWindows5.tile;
- window.LoliteWindows5=Object.freeze({...window.LoliteWindows5,tile:()=>{const count=originalTile();if(count)award('window-pro');return count}});
- // The keyboard shortcut calls tileWindows directly; the event works for both paths.
+ // Window tiling emits an event from the shared command, including keyboard use.
  window.addEventListener('lolite5:windowtiled',()=>award('window-pro'));
 
  // Game Store 4.0: local rating and a copyable bug report; no unverified public submissions.
@@ -246,12 +245,7 @@
  const initObserver=()=>{if(document.body)observer.observe(document.body,{childList:true,subtree:true})};
 
  window.LoliteGameFeedback5=Object.freeze({open:openGameFeedback,get:file=>({...feedback[file]})});
- const player=window.LoliteGamePlayer;
- if(player&&typeof player.open==='function'){
-  const original=player.open;
-  // Keep method's original receiver, arguments and returned success status.
-  try{player.open=function(...args){const result=original.apply(this,args);if(result)emit('lolite5:gameplayed',{file:args[0]?.file});return result}}catch{}
- }
+ // The trusted Game Player raises a launch-success event after opening a frame.
 
  // App Store 2.0: sortable installed/favourite collections and live installed status.
  const APP_FAV_KEY='lolite5.app-favourites.v1';
@@ -280,7 +274,7 @@
   const cards=Array.from(grid.children).filter(n=>n.matches?.('.appstore-card'));
   if(appSort!=='default'){
    const sorted=[...cards].sort((a,b)=>appId(a).localeCompare(appId(b),undefined,{numeric:true})*(appSort==='name-desc'?-1:1));
-   sorted.forEach(card=>grid.appendChild(card));
+   if(sorted.some((card,index)=>card!==cards[index]))sorted.forEach(card=>grid.appendChild(card));
   }
   cards.forEach(card=>{card.hidden=favFilter&&!favApps.includes(appId(card))});
  }
