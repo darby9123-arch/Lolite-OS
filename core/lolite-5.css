@@ -1,0 +1,95 @@
+/* Lolite OS 5.0 | Desktop UI 3.0 + Customization Studio. */
+/* Scoped to native window chrome: embedded websites and game canvases remain untouched. */
+html{
+ --l5-window-radius:12px;
+ --l5-panel-alpha:.95;
+ --l5-taskbar-alpha:.92;
+ --l5-window-gap:8px;
+}
+html:not(.browsing-mode) .window{
+ border-radius:var(--l5-window-radius)!important;
+ box-shadow:0 18px 46px #0009,0 0 0 1px #ffffff0c!important;
+}
+html:not(.browsing-mode) .window.is-active{
+ box-shadow:0 21px 55px #0009,0 0 0 1px var(--wall-accent-soft,#a48fff55)!important;
+}
+html:not(.browsing-mode) .window.is-maximised{
+ border-radius:min(5px,var(--l5-window-radius))!important;
+}
+html:not(.browsing-mode) .window>.titlebar{
+ background-color:color-mix(in srgb,var(--wall-titlebar,#24232c) calc(var(--l5-panel-alpha) * 100%),transparent)!important;
+}
+html:not(.browsing-mode) :is(.win-flyout,.win-snap-menu,#start,#searchPanel,.lolite-task-preview,.lolite-task-menu){
+ border-radius:clamp(7px,var(--l5-window-radius),18px)!important;
+}
+html:not(.browsing-mode) #desktop #taskbar{
+ background-color:color-mix(in srgb,var(--wall-panel-solid,#252225) calc(var(--l5-taskbar-alpha) * 100%),transparent)!important;
+ background-image:none!important;
+}
+html[data-lolite-ui-density="compact"] #taskbar :is(.task,.taskwin,.win-pinned){
+ margin-inline:0!important;
+ padding-inline:3px!important;
+}
+html[data-lolite-ui-density="compact"] #winPinnedApps{gap:0!important}
+html[data-lolite-ui-density="comfortable"] #winPinnedApps{gap:6px!important}
+html[data-lolite-ui-density="comfortable"] #taskbar :is(.task,.taskwin,.win-pinned){margin-inline:2px!important}
+html:not(.browsing-mode) .window .controls button:focus-visible,
+html:not(.browsing-mode) .win-snap-menu button:focus-visible,
+html:not(.browsing-mode) #taskbar button:focus-visible{
+ outline:2px solid var(--wall-focus-ring,var(--accent,#ad99ff))!important;
+ outline-offset:-3px;
+}
+html:not(.browsing-mode) .window>.titlebar strong{
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+/* Keyboard and motor accessibility: honour all reduced-motion preferences. */
+html[data-lolite-motion="off"] :is(.window,.win-flyout,.win-snap-menu,.lolite-task-preview){
+ transition:none!important;animation:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+ html :is(.window,.win-flyout,.win-snap-menu,.lolite-task-preview){transition:none!important;animation:none!important}
+}
+/* Studio is a proper Settings section with live previews. */
+.l5-studio{margin:16px 0;padding:20px!important;border:1px solid var(--wall-border,#ffffff26)!important;
+ border-radius:15px;background:var(--wall-panel-solid,#192031)!important;color:var(--wall-text,#f4f6fb)}
+.l5-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.l5-head small{font-size:10px;letter-spacing:1.2px;color:var(--wall-muted,#9baac1);font-weight:750}
+.l5-head h3{margin:3px 0 5px;font-size:22px}
+.l5-head p{margin:0;color:var(--wall-muted,#a6b5cd);font-size:12px;line-height:1.55;max-width:540px}
+.l5-body{display:grid;grid-template-columns:minmax(240px,1fr) minmax(220px,1fr);gap:18px;margin-top:17px}
+.l5-preview{position:relative;min-height:220px;border:1px solid var(--wall-border,#50627a);
+ border-radius:12px;overflow:hidden;padding:24px 18px 44px;
+ background:radial-gradient(circle at 70% 24%,var(--wall-glow,#5b67df44),transparent 50%),var(--wall-bg,#111b2d)}
+.l5-preview-window{width:min(260px,90%);margin:auto;border-radius:var(--l5-window-radius,12px);
+ overflow:hidden;border:1px solid var(--wall-border,#7788a866);
+ box-shadow:0 13px 30px #0009;background:var(--wall-panel-solid,#25283c);color:var(--wall-text,#eef4ff)}
+.l5-preview-bar{height:28px;padding:7px 10px;background:var(--wall-titlebar,#33334a);
+ display:flex;align-items:center;justify-content:space-between;font-size:10px}
+.l5-preview-bar i{display:block;width:7px;height:7px;border-radius:50%;background:var(--wall-accent,#a78bfa)}
+.l5-preview-content{display:grid;gap:9px;padding:14px;min-height:86px}
+.l5-preview-content b{height:9px;width:75%;border-radius:5px;background:var(--wall-secondary-soft,#5864af55)}
+.l5-preview-content span{height:8px;width:95%;border-radius:5px;background:var(--wall-border,#5a687a)}
+.l5-preview-content span:last-child{width:60%}
+.l5-preview-dock{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:9px;padding:8px 12px;
+ border-radius:10px;border:1px solid var(--wall-border,#64758a);background:var(--wall-panel-solid,#192b4c)}
+.l5-preview-dock i{display:block;width:17px;height:17px;border-radius:5px;background:var(--wall-accent,#ab91ff)}
+.l5-preview-dock i:nth-child(2){background:var(--wall-secondary,#6b96c0)}
+.l5-preview-dock i:nth-child(3){background:var(--wall-raised,#455879)}
+.l5-controls{display:grid;gap:14px;align-content:start}
+.l5-controls label{display:grid;gap:6px;font-size:12px;font-weight:650}
+.l5-controls label>span{display:flex;justify-content:space-between;gap:8px}
+.l5-controls output{font-variant-numeric:tabular-nums;color:var(--wall-muted,#b0baca)}
+.l5-controls :is(select,input[type=range]){width:100%;min-width:0;accent-color:var(--wall-accent,#9b82ff)}
+.l5-controls select{padding:8px;background:var(--wall-raised,#31334b);color:var(--wall-text,#fff);
+ border:1px solid var(--wall-border,#647086);border-radius:8px}
+.l5-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.l5-actions button{background:var(--wall-raised,#303a4f);border:1px solid var(--wall-border,#647086);
+ color:var(--wall-text,#fff);padding:9px 13px;border-radius:8px;cursor:pointer}
+.l5-actions button:hover{background:var(--wall-hover,#4e527d)}
+.l5-actions button:focus-visible{outline:2px solid var(--wall-focus-ring,#b89dff)}
+.l5-status{font-size:12px;color:var(--wall-muted,#bac4d4);min-height:16px}
+.l5-subsection{margin:18px 0 10px;font-size:15px}
+.l5-studio .l5-wallpaper-options{display:flex;flex-wrap:wrap;gap:8px}
+.l5-studio .l5-wallpaper-options label{flex:1 1 190px}
+@media(max-width:700px){.l5-body{grid-template-columns:1fr}.l5-studio{padding:14px!important}}
+@media(prefers-reduced-motion:reduce){.l5-studio *,html[data-lolite-motion="off"] .l5-studio *{transition:none!important;animation:none!important}}
