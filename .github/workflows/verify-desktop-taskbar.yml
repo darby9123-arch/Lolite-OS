@@ -4,6 +4,8 @@ on:
     paths:
       - 'core/taskbar-customization.js'
       - 'core/taskbar-customization.css'
+      - 'core/taskbar-alignment-fix.css'
+      - 'tests/taskbar-alignment-fix.test.cjs'
       - 'core/crimson.js'
       - 'core/desktop-icon-customization.js'
       - 'core/desktop-icon-customization.css'
@@ -14,6 +16,8 @@ on:
     paths:
       - 'core/taskbar-customization.js'
       - 'core/taskbar-customization.css'
+      - 'core/taskbar-alignment-fix.css'
+      - 'tests/taskbar-alignment-fix.test.cjs'
       - 'core/crimson.js'
       - 'core/desktop-icon-customization.js'
       - 'core/desktop-icon-customization.css'
@@ -35,4 +39,4 @@ jobs:
           node --check core/crimson.js
           node --check core/desktop-icon-customization.js
       - name: Verify Desktop settings and taskbar controls
-        run: node --test tests/desktop-taskbar-customization.test.cjs
+        run: node --test tests/desktop-taskbar-customization.test.cjs tests/taskbar-alignment-fix.test.cjs
