@@ -34,7 +34,7 @@ with check (
 );
 create policy "clips admin moderation" on public.lolite_clips for update to authenticated
 using(exists(select 1 from public.lolite_admins a where a.user_id=(select auth.uid())))
-with check(exists(select 1 from public.lolite_admins a where a.user_id=(select auth.uid()))));
+with check(exists(select 1 from public.lolite_admins a where a.user_id=(select auth.uid())));
 create policy "clips owner can unshare or admin remove" on public.lolite_clips for delete to authenticated
 using (
  uploader_id=(select auth.uid())
