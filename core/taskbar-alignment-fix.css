@@ -1,0 +1,273 @@
+/* Lolite OS 5.0 — taskbar alignment hotfix.
+ * One dock, one vertical baseline, no detached Cosmos tray.
+ * Loaded last: opt-in Taskbar Studio presets still control height, style and placement. */
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
+  position:fixed!important;
+  box-sizing:border-box!important;
+  left:50%!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:12px!important;
+  transform:translateX(-50%)!important;
+  width:min(880px,calc(100vw - 28px))!important;
+  max-width:calc(100vw - 28px)!important;
+  height:64px!important;
+  min-height:0!important;
+  padding:0 13px!important;
+  gap:9px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:visible!important;
+  border:1px solid rgba(154,183,220,.34)!important;
+  border-radius:17px!important;
+  background:rgb(13 24 43 / var(--l5-taskbar-alpha,.94))!important;
+  box-shadow:0 12px 34px #0208178c,inset 0 1px 0 #ffffff17!important;
+  backdrop-filter:blur(22px) saturate(1.16)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(1.16)!important;
+  pointer-events:auto!important;
+}
+/* Previously Cosmos had its own 66px-high dock positioned 15px above the
+ * bottom of a 104px transparent shell. Once the outer shell was customised,
+ * the child dock floated above the icons' intended baseline. */
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center{
+  position:relative!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:auto!important;
+  transform:none!important;
+  box-sizing:border-box!important;
+  width:auto!important;
+  max-width:none!important;
+  height:100%!important;
+  min-height:0!important;
+  flex:1 1 auto!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  gap:4px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  pointer-events:auto!important;
+}
+html[data-lolite-design="cosmos"] #desktop #taskbar .win-taskbar-center::before{
+  content:none!important;
+}
+/* The tray used to be fixed to the TOP-RIGHT CORNER of the screen, even when
+ * the user chose a bottom or top taskbar. Keep the clock and controls inside
+ * the actual bar, with normal flex positioning and readable spacing. */
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .tray{
+  position:relative!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:auto!important;
+  transform:none!important;
+  box-sizing:border-box!important;
+  flex:0 0 auto!important;
+  height:100%!important;
+  min-height:0!important;
+  padding:0 2px 0 8px!important;
+  margin:0 0 0 auto!important;
+  gap:3px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  border:0!important;
+  border-left:1px solid #ffffff1c!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  pointer-events:auto!important;
+}
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #clock{
+  box-sizing:border-box!important;
+  height:42px!important;
+  min-height:0!important;
+  display:flex;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  line-height:16px!important;
+  padding:4px 7px!important;
+  margin:0!important;
+}
+/* All dock controls share the same centre line, independent of hover state,
+ * desktop theme, 5.0 density, or icon-size preferences. */
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar :is(.win-taskbar-center,#winPinnedApps,#tasks){
+  align-items:center!important;
+  box-sizing:border-box!important;
+}
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned){
+  box-sizing:border-box!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  align-self:center!important;
+  position:relative!important;
+  top:auto!important;
+  bottom:auto!important;
+  margin:0!important;
+  transform:none!important;
+  flex:0 0 auto!important;
+  width:44px!important;
+  min-width:44px!important;
+  height:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
+  padding:8px!important;
+  line-height:1!important;
+  border-radius:12px!important;
+  vertical-align:middle!important;
+}
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned):hover{
+  transform:none!important;
+  translate:0!important;
+  background:#ffffff13!important;
+}
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar :is(.task,.taskwin,.win-pinned)>.lolite-icon{
+  box-sizing:border-box!important;
+  display:grid!important;
+  place-items:center!important;
+  flex:none!important;
+  margin:auto!important;
+  transform:none!important;
+  vertical-align:middle!important;
+}
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center .lolite-icon{
+  width:27px!important;
+  height:27px!important;
+  max-width:100%!important;
+  max-height:100%!important;
+}
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #winPinnedApps,
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #tasks{
+  box-sizing:border-box!important;
+  align-self:center!important;
+  height:100%!important;
+  max-height:100%!important;
+  align-items:center!important;
+  overflow-y:hidden!important;
+}
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #winShowDesktop{
+  top:0!important;
+  bottom:0!important;
+  height:100%!important;
+}
+/* Taskbar Studio preferences win over the non-custom default. */
+html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
+  height:var(--ltc-height,56px)!important;
+  background:color-mix(in srgb,var(--ltc-color,#252225) var(--ltc-opacity,90%),transparent)!important;
+  backdrop-filter:blur(var(--ltc-blur,18px))!important;
+  -webkit-backdrop-filter:blur(var(--ltc-blur,18px))!important;
+}
+html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned){
+  width:var(--ltc-button-size,44px)!important;
+  min-width:var(--ltc-button-size,44px)!important;
+  height:var(--ltc-button-size,44px)!important;
+  min-height:var(--ltc-button-size,44px)!important;
+  max-height:var(--ltc-button-size,44px)!important;
+  padding:5px!important;
+}
+html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center .lolite-icon{
+  width:var(--ltc-icon-size,27px)!important;
+  height:var(--ltc-icon-size,27px)!important;
+}
+html.ltc-applied[data-desktop-experience="windows"][data-ltc-align="left"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center{
+  justify-content:flex-start!important;
+}
+html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-style="pill"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
+  width:min(740px,calc(100vw - 28px))!important;
+  border-radius:999px!important;
+}
+html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-style="aero"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
+  width:min(960px,calc(100vw - 28px))!important;
+  border-color:#cce8f792!important;
+  box-shadow:inset 0 1px #ffffff58,0 12px 35px #0007!important;
+}
+html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-style="minimal"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
+  background:transparent!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-style="classic"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
+  left:0!important;right:0!important;
+  transform:none!important;
+  width:100%!important;max-width:100%!important;
+  bottom:0!important;
+  border-radius:0!important;
+  padding-inline:14px!important;
+}
+html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-position="top"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
+  top:12px!important;bottom:auto!important;
+}
+html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-position="top"][data-ltc-style="classic"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
+  top:0!important;bottom:auto!important;
+}
+html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-position="bottom"][data-ltc-style="classic"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
+  top:auto!important;bottom:0!important;
+}
+/* Panels follow the dock, rather than the old top-right tray. */
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) :is(#winCalendar,#winQuickSettings){
+  top:auto!important;
+  bottom:91px!important;
+}
+html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-position="top"]:not(.browsing-mode):not(.mobile-mode) :is(#winCalendar,#winQuickSettings){
+  top:calc(var(--ltc-height,56px) + 25px)!important;
+  bottom:auto!important;
+}
+html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-position="bottom"]:not(.browsing-mode):not(.mobile-mode) :is(#winCalendar,#winQuickSettings){
+  top:auto!important;
+  bottom:calc(var(--ltc-height,56px) + 25px)!important;
+}
+@media(min-width:701px) and (max-width:810px){
+  html[data-lolite-design="cosmos"][data-desktop-experience="windows"] #desktop #taskbar .tray #clock{
+    display:flex!important;
+  }
+}
+@media(max-width:700px){
+  html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
+    width:calc(100vw - 16px)!important;
+    max-width:calc(100vw - 16px)!important;
+    gap:3px!important;
+    padding:0 7px!important;
+    border-radius:13px!important;
+  }
+  html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center{
+    justify-content:flex-start!important;
+    gap:2px!important;
+  }
+  html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned){
+    width:38px!important;min-width:38px!important;height:40px!important;min-height:40px!important;max-height:40px!important;
+    padding:6px!important;
+  }
+  html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .tray{
+    padding-left:4px!important;gap:1px!important;
+  }
+}
+@media(max-width:520px){
+  html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #searchBtn,
+  html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #winDesktopSwitch{
+    display:none!important;
+  }
+  html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .tray #clock{
+    display:none!important;
+  }
+}
+/* Respect accessibility: do not animate icons into a different vertical row. */
+@media(prefers-reduced-motion:reduce){
+  html[data-lolite-design="cosmos"] #desktop #taskbar :is(.task,.taskwin,.win-pinned){
+    transition:none!important;
+  }
+}
