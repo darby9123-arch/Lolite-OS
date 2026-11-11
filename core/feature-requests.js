@@ -4,11 +4,14 @@
 (()=>{'use strict';
  const CATEGORIES=['Apps','UI & Themes','Games','Music','Performance','Other'];
  const STATUSES=['pending','open','planned','in_progress','shipped','declined'];
- const LABELS={pending:'Awaiting review',open:'Open',planned:'Planned',in_progress:'In progress',shipped:'Released',declined:'Not planned'};
+ const LABELS={pending:'Awaiting review',open:'Open',planned:'Planned',in_progress:'In progress',shipped:'Done',declined:'Not planned'};
  const VOTABLE=new Set(['open','planned','in_progress']);
+ const PROOF_BUCKET='lolite-feature-proofs';
+ const PROOF_LIMIT=5*1024*1024;
+ const IMAGE_TYPES=Object.freeze({'image/png':'png','image/jpeg':'jpg','image/webp':'webp'});
  const PUBLISHED=new Set(['open','planned','in_progress','shipped']);
  const S={user:null,admin:false,loaded:false,loading:false,busy:false,tab:'browse',
-  rows:[],votes:new Set(),search:'',category:'All',sort:'top',status:'All',notice:'',error:''};
+  rows:[],votes:new Set(),replies:[],screenshots:new Map(),search:'',category:'All',sort:'top',status:'All',notice:'',error:''};
  const root=()=>document.querySelector('.window[data-window-id="feature-requests"] #lfrRoot')||document.getElementById('lfrRoot');
  const sb=()=>window.LoliteBrowserAccounts?.getClient?.();
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -34,7 +37,7 @@
    if(ticket!==requestTicket)return;
    const user=identity.data?.user||null;
    S.user=user;S.admin=false;
-   if(!user){S.rows=[];S.votes=new Set();S.loaded=true;return}
+   if(!user){S.rows=[];S.votes=new Set();S.replies=[];S.screenshots=new Map();S.loaded=true;return}
    const admin=await client.from('lolite_admins').select('user_id').eq('user_id',user.id).maybeSingle();
    if(admin.error)throw admin.error;
    if(ticket!==requestTicket)return;
@@ -43,11 +46,24 @@
     client.from('lolite_feature_requests')
      .select('id,submitted_by,title,description,category,status,admin_note,vote_count,created_at,updated_at')
      .order('created_at',{ascending:false}).limit(500),
-    client.from('lolite_feature_votes').select('request_id').eq('voter_id',user.id).limit(500)
+    client.from('lolite_feature_votes').select('request_id').eq('voter_id',user.id).limit(500),
+    client.from('lolite_feature_replies')
+     .select('id,request_id,author_id,kind,message,screenshot_path,created_at')
+     .order('created_at',{ascending:true}).limit(800)
    ]);
+   if(ticket!==requestTicket)return;
+   const replies=ensure(result[2]);
+   const screenshots=new Map();
+   await Promise.all(replies.filter(r=>r.screenshot_path).slice(0,160).map(async r=>{
+    try{
+     const {data,error}=await client.storage.from(PROOF_BUCKET).createSignedUrl(r.screenshot_path,3600);
+     if(!error&&typeof data?.signedUrl==='string')screenshots.set(r.screenshot_path,data.signedUrl);
+    }catch(error){console.warn('Feature screenshot unavailable:',error?.message||error)}
+   }));
    if(ticket!==requestTicket)return;
    S.rows=ensure(result[0]);
    S.votes=new Set(ensure(result[1]).map(v=>v.request_id));
+   S.replies=replies;S.screenshots=screenshots;
    if(!S.admin&&S.tab==='admin')S.tab='browse';
    S.loaded=true;
   }catch(e){if(ticket===requestTicket)S.error=e?.message||'Unable to load feature requests'}
@@ -70,21 +86,42 @@
   else list.sort((a,b)=>Date.parse(a.created_at)-Date.parse(b.created_at));
   return list;
  }
+ function replyMarkup(reply){
+  const screenshot=reply.screenshot_path?S.screenshots.get(reply.screenshot_path):null;
+  return '<div class="lfr-reply'+(reply.kind==='done'?' lfr-reply-done':'')+'">'+
+   '<div class="lfr-reply-heading"><strong>'+(reply.kind==='done'?'✓ Done':'Admin reply')+'</strong><time>'+esc(date(reply.created_at))+'</time></div>'+
+   '<p>'+esc(reply.message)+'</p>'+
+   (reply.screenshot_path?
+    (screenshot?'<a class="lfr-proof-link" href="'+esc(screenshot)+'" target="_blank" rel="noopener noreferrer" aria-label="Open screenshot for this reply">'+
+      '<img class="lfr-proof-image" alt="Screenshot from the Lolite admin showing the feature" loading="lazy" src="'+esc(screenshot)+'">'+
+      '<span>View screenshot full size ↗</span></a>':
+     '<span class="lfr-proof-unavailable">Screenshot unavailable. Refresh to try again.</span>'):'')+
+   '</div>';
+ }
  function item(r){
   const voted=S.votes.has(r.id),allowed=canVote(r);
   const own=r.submitted_by===S.user?.id;
+  const replies=S.replies.filter(reply=>reply.request_id===r.id);
   return '<article class="lfr-item" data-lfr-item="'+esc(r.id)+'">'+
-   '<div class="lfr-votes"><button type="button" class="lfr-vote '+(voted?'lfr-voted':'')+'" data-lfr-action="vote" data-lfr-id="'+esc(r.id)+'" aria-label="'+(voted?'Remove vote from ':'Vote for ')+esc(r.title)+'" aria-pressed="'+voted+'" '+(!allowed||S.busy?'disabled':'')+'><span aria-hidden="true">▲</span><b>'+Number(r.vote_count||0).toLocaleString()+'</b></button><small>votes</small></div>'+
+   '<div class="lfr-votes"><button type="button" class="lfr-vote '+(voted?'lfr-voted':'')+'" data-lfr-action="vote" data-lfr-id="'+esc(r.id)+'" aria-label="'+(allowed?(voted?'Remove vote from ':'Vote for '):'Voting closed for ')+esc(r.title)+'" aria-pressed="'+voted+'" '+(!allowed||S.busy?'disabled':'')+'><span aria-hidden="true">▲</span><b>'+Number(r.vote_count||0).toLocaleString()+'</b></button><small>votes</small>'+
+   (r.status==='shipped'?'<span class="lfr-vote-closed">Voting closed</span>':'')+'</div>'+
    '<div class="lfr-item-main"><div class="lfr-item-top">'+statusBadge(r.status)+
     '<span class="lfr-category">'+esc(r.category)+'</span>'+
     (own?'<span class="lfr-owned">Your request</span>':'')+'</div>'+
    '<h3>'+esc(r.title)+'</h3><p class="lfr-description">'+esc(r.description)+'</p>'+
    '<div class="lfr-date">Suggested '+esc(date(r.created_at))+'</div>'+
    (r.admin_note?'<div class="lfr-admin-message"><strong>Team update</strong><p>'+esc(r.admin_note)+'</p></div>':'')+
+   (replies.length?'<div class="lfr-replies"><h4>Updates from Lolite</h4>'+replies.map(replyMarkup).join('')+'</div>':'')+
    (S.admin&&S.tab==='admin'?'<div class="lfr-admin-tools"><label>Status<select data-lfr-admin-status>'+
     STATUSES.map(status=>'<option value="'+status+'"'+(status===r.status?' selected':'')+'>'+esc(LABELS[status])+'</option>').join('')+
     '</select></label><label>Team note (optional)<textarea data-lfr-admin-note rows="2" maxlength="600" placeholder="What should members know?">'+esc(r.admin_note)+'</textarea></label>'+
-    '<button type="button" class="lfr-primary" data-lfr-action="moderate" data-lfr-id="'+esc(r.id)+'" '+(S.busy?'disabled':'')+'>Save status</button></div>':'')+
+    '<button type="button" class="lfr-primary" data-lfr-action="moderate" data-lfr-id="'+esc(r.id)+'" '+(S.busy?'disabled':'')+'>Save status</button></div>'+
+    '<div class="lfr-reply-compose"><strong>Reply as admin</strong>'+
+    '<label>Message<textarea data-lfr-reply-message rows="3" maxlength="1200" placeholder="Tell users what changed, or explain that the feature is done."></textarea></label>'+
+    '<label class="lfr-proof-picker">Screenshot (optional, PNG, JPEG or WebP, max 5 MB)<input data-lfr-proof-file type="file" accept="image/png,image/jpeg,image/webp"><span data-lfr-proof-name>No screenshot selected</span></label>'+
+    '<div class="lfr-compose-actions"><button type="button" data-lfr-action="post-reply" data-lfr-kind="update" data-lfr-id="'+esc(r.id)+'" '+(S.busy?'disabled':'')+'>Post reply</button>'+
+    '<button type="button" class="lfr-primary" data-lfr-action="post-reply" data-lfr-kind="done" data-lfr-id="'+esc(r.id)+'" '+(S.busy||r.status==='shipped'?'disabled':'')+'>✓ Mark Done + Reply</button></div>'+
+    '</div>':'')+
    '</div></article>';
  }
  function listMarkup(){
@@ -166,6 +203,43 @@
   }catch(e){notice(e?.code==='23505'?'You already voted for this idea.':e?.message||'Could not update your vote')}
   finally{S.busy=false}
  }
+ async function postReply(id,kind,button){
+  if(S.busy||!S.admin||!S.user||!['update','done'].includes(kind))return;
+  const row=S.rows.find(r=>r.id===id);
+  if(!row||(kind==='done'&&row.status==='shipped'))return;
+  const panel=button.closest('.lfr-item');
+  const message=String(panel?.querySelector('[data-lfr-reply-message]')?.value||'').trim();
+  const file=panel?.querySelector('[data-lfr-proof-file]')?.files?.[0];
+  if(message.length<1||message.length>1200){notice('Write a reply before posting.');return}
+  if(file&&(!IMAGE_TYPES[file.type]||file.size<1||file.size>PROOF_LIMIT)){
+   notice('Choose a PNG, JPEG or WebP screenshot smaller than 5 MB.');return;
+  }
+  S.busy=true;button.disabled=true;
+  const client=sb();
+  let uploadedPath=null,committed=false;
+  try{
+   if(file){
+    const suffix=typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12);
+    uploadedPath=id+'/'+S.user.id+'/'+suffix+'.'+IMAGE_TYPES[file.type];
+    const uploaded=await client.storage.from(PROOF_BUCKET).upload(uploadedPath,file,{
+     contentType:file.type,upsert:false,cacheControl:'3600'
+    });
+    if(uploaded.error)throw uploaded.error;
+   }
+   const rows=await client.from('lolite_feature_replies').insert({
+    request_id:id,author_id:S.user.id,kind,message,screenshot_path:uploadedPath
+   });
+   if(rows.error)throw rows.error;
+   committed=true;
+   S.notice=kind==='done'?'Marked Done. Voting is now closed, and your reply is visible.':'Admin reply posted.';
+   await load();
+  }catch(error){
+   if(uploadedPath&&!committed){
+    try{await client.storage.from(PROOF_BUCKET).remove([uploadedPath])}catch(_){}
+   }
+   notice(error?.message||'Could not post the admin reply.');
+  }finally{S.busy=false;if(button.isConnected)button.disabled=false}
+ }
  async function moderate(id,button){
   if(S.busy||!S.admin||!S.user)return;
   const row=S.rows.find(r=>r.id===id);
@@ -191,7 +265,8 @@
   if(action==='signin'){window.openApp?.('chatroom','Lolite Chat',1050,690);return}
   if(action==='reload'){void load();return}
   if(action==='vote'&&id){void vote(id);return}
-  if(action==='moderate'&&id){void moderate(id,button)}
+  if(action==='moderate'&&id){void moderate(id,button);return}
+  if(action==='post-reply'&&id){void postReply(id,button.dataset.lfrKind,button)}
  });
  document.addEventListener('submit',event=>{
   const form=event.target.closest?.('#lfrRoot form[data-lfr-form="suggest"]');
@@ -205,6 +280,12 @@
   if(count){const n=visibleRows().length;count.textContent=n+' request'+(n===1?'':'s')}
  });
  document.addEventListener('change',event=>{
+  const screenshot=event.target.closest?.('#lfrRoot [data-lfr-proof-file]');
+  if(screenshot){
+   const name=screenshot.closest('.lfr-reply-compose')?.querySelector('[data-lfr-proof-name]');
+   if(name)name.textContent=screenshot.files?.[0]?.name||'No screenshot selected';
+   return;
+  }
   const field=event.target.closest?.('#lfrRoot [data-lfr-category],#lfrRoot [data-lfr-status],#lfrRoot [data-lfr-sort]');
   if(!field)return;
   if(field.hasAttribute('data-lfr-category'))S.category=CATEGORIES.includes(field.value)?field.value:'All';
@@ -222,6 +303,6 @@
   if(id==='feature-requests'){setTimeout(()=>{void load()},0);return '<div class="lfr-shell" id="lfrRoot"><div class="lfr-loading">Loading feature requests…</div></div>'}
   return oldPage(id);
  };
- sb()?.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){S.user=null;S.admin=false;S.rows=[];S.votes.clear();S.loaded=false}setTimeout(()=>{if(root())void load()},0)});
+ sb()?.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){S.user=null;S.admin=false;S.rows=[];S.votes.clear();S.replies=[];S.screenshots.clear();S.loaded=false}setTimeout(()=>{if(root())void load()},0)});
  window.LoliteFeatureRequests=Object.freeze({open:()=>window.openApp?.('feature-requests','Feature Requests',1060,740),refresh:load});
 })();
