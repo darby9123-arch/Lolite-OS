@@ -289,6 +289,38 @@
   return res;
  };
 
+ // Music 3.0 mini-player stays visible while browsing other Lolite apps.
+ let miniPlayer=null,miniVisible=false;
+ const musicState=()=>window.LoliteMusic?.getState?.()||{};
+ function drawMini(){
+  if(!miniPlayer||!miniVisible)return;
+  const data=musicState();
+  miniPlayer.querySelector('[data-l5-mini-title]').textContent=data.title||'No track playing';
+  miniPlayer.querySelector('[data-l5-mini-artist]').textContent=data.artist||'Open Music to choose a song';
+  const toggle=miniPlayer.querySelector('[data-l5-mini-control="toggle"]');
+  if(toggle){toggle.textContent=data.playing?'❚❚':'▶';toggle.setAttribute('aria-label',data.playing?'Pause music':'Play music')}
+ }
+ function toggleMini(force){
+  miniVisible=typeof force==='boolean'?force:!miniVisible;
+  if(!miniPlayer){
+   miniPlayer=document.createElement('aside');miniPlayer.id='l5MusicMini';miniPlayer.className='l5-mini';
+   miniPlayer.setAttribute('role','region');miniPlayer.setAttribute('aria-label','Lolite Music mini player');
+   miniPlayer.innerHTML='<div><strong data-l5-mini-title>Music</strong><small data-l5-mini-artist>Choose a track</small></div><nav aria-label="Music controls"><button data-l5-mini-control="previous" aria-label="Previous song">⏮</button><button data-l5-mini-control="toggle" aria-label="Play or pause">▶</button><button data-l5-mini-control="next" aria-label="Next song">⏭</button><button data-l5-mini-control="open" aria-label="Open Music app">↗</button><button data-l5-mini-control="close" aria-label="Close mini player">✕</button></nav>';
+   document.body.appendChild(miniPlayer);
+  }
+  miniPlayer.hidden=!miniVisible;drawMini();
+ }
+ document.addEventListener('click',e=>{
+  if(e.target.closest?.('[data-lm5-mini-toggle]')){toggleMini();return}
+  const button=e.target.closest?.('[data-l5-mini-control]');if(!button)return;
+  const action=button.dataset.l5MiniControl;
+  if(action==='close')toggleMini(false);
+  else if(action==='open')window.LoliteMusic?.open?.();
+  else if(['previous','next','toggle'].includes(action))window.LoliteMusic?.[action]?.();
+ });
+ window.addEventListener('lolite:musicstate',drawMini);
+ window.LoliteMusicMini5=Object.freeze({open:()=>toggleMini(true),close:()=>toggleMini(false),toggle:toggleMini});
+
  // Shared click/change handlers; no replacement of existing app handlers.
  document.addEventListener('click',e=>{
   const el=e.target.closest?.('button,[data-l5-dismiss]');
