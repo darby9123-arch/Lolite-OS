@@ -12,7 +12,7 @@
  function animate(el,frames,options={},done){
   cancel(el);if(!el?.isConnected||reduced()||!el.animate){done?.();return null}
   const duration=Math.max(0,Number.isFinite(options.duration)?options.duration:200);
-  const animation=el.animate(frames,{duration:mode==='snappy'?Math.max(60,Math.round(duration*.58)):duration,easing:'cubic-bezier(.2,.8,.2,1)',fill:'both',...options,duration:mode==='snappy'?Math.max(60,Math.round(duration*.58)):duration});active.set(el,{animation,done});
+  const animation=el.animate(frames,{easing:'cubic-bezier(.2,.8,.2,1)',fill:'both',...options,duration:mode==='snappy'?Math.max(60,Math.round(duration*.58)):duration});active.set(el,{animation,done});
   animation.finished.then(()=>{if(active.get(el)?.animation!==animation)return;active.delete(el);done?.();animation.cancel()},()=>{});return animation;
  }
  function settle(){if(!reduced())return;for(const [el,job] of active){active.delete(el);job.done?.();job.animation.cancel()}}
