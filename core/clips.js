@@ -117,6 +117,8 @@
    recorder.addEventListener('dataavailable',event=>{if(event.data?.size)chunks.push(event.data)});
    recorder.addEventListener('error',event=>notify(event.error?.message||'Recording failed.',true));
    recorder.addEventListener('stop',async()=>{
+    // A saved clip must also release browser screen-sharing permission.
+    if(S.stream){for(const track of S.stream.getTracks())track.stop();S.stream=null}
     S.saving=true;finish();
     const blob=new Blob(chunks,{type:recorder.mimeType?.split(';')[0]||type.split(';')[0]});
     if(blob.size){
@@ -141,7 +143,8 @@
   }catch(e){
    notify(e?.name==='NotAllowedError'?'Capture cancelled. No video was recorded.':
     'Cannot start capture: '+(e?.message||e),true);
-   if(S.stream&&!activeStream())S.stream=null;
+   // Do not leave an active capture source behind after a start failure.
+   if(S.stream){for(const track of S.stream.getTracks())track.stop();S.stream=null}
    indicator();render();
   }finally{S.requesting=false}
  }
