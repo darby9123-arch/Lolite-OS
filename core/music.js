@@ -48,7 +48,7 @@
   const recent=recent5().slice(0,6);
   return '<details class="lm5-studio"><summary>Music Studio 3.0 <small>Equaliser · Speed · Lyrics · History</small></summary><div class="lm5-studio-grid">'+
    '<section><h3>Audio controls</h3><label>Playback speed <select data-lm5-speed>'+[.75,1,1.25,1.5].map(n=>'<option value="'+n+'"'+(mix5.speed===n?' selected':'')+'>'+n+'×</option>').join('')+'</select></label>'+
-   '<button type="button" data-lm5-eq-toggle>Equaliser: '+(mix5.enabled?'On':'Off')+'</button>'+
+   '<button type="button" data-lm5-eq-toggle>Equaliser: '+(mix5.enabled?'On':'Off')+'</button> <button type="button" data-lm5-mini-toggle>Mini player</button>'+
    ['Bass','Mids','Treble'].map((name,i)=>'<label>'+name+' <input type="range" data-lm5-band="'+i+'" min="-12" max="12" value="'+mix5.eq[i]+'"> <output>'+mix5.eq[i]+' dB</output></label>').join('')+
    '<canvas data-lm5-visualizer width="170" height="40" aria-label="Live audio visualiser"></canvas></section>'+
    '<section><h3>Personal lyrics notes</h3><p>Add your own words or song notes. Saved on this device; never downloaded from lyric websites.</p><textarea data-lm5-lyrics maxlength="20000" rows="6" placeholder="Write lyrics or notes you own…">'+esc(lyrics5())+'</textarea>'+
