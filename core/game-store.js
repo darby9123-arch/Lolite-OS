@@ -454,7 +454,7 @@
      const record=byId.get(saved[id])||installedByTitle.get(key);
      const hasLocalInstall=!!record&&typeof record.root==='string'&&/^pkg-[a-f0-9-]{16,60}$/.test(record.packId||record.id);
      const hostedURL=typeof hosted[id]==='string'&&/^html%20games\/ugs\/[a-z0-9._-]+\.html?$/i.test(hosted[id])?hosted[id]:'';
-     const hasHosted=kind==='html5'&&!!hostedURL;
+     const hasHosted=!!hostedURL; // HTML5 and Ruffle-backed Flash launch pages are real hosted HTML.
      const hasInstall=hasLocalInstall||hasHosted;
      if(!hasInstall)continue; // Drive catalogue entries are not playable game files.
      taken.add(key);listed++;

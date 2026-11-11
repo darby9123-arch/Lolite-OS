@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CATALOG = ROOT / "core/ugs-catalog.js"
 HOSTED = ROOT / "core/ugs-hosted-catalog.js"
 TARGET = ROOT / "html games/ugs"
-MAX_FILE = 85000
+MAX_FILE = 1200000
 # Store only small HTML launch pages, not very large game binaries.
 BLOCKED = re.compile(
     r"casino|poker|blackjack|roulette|slot|betting|gambl|wager|"
@@ -104,7 +104,7 @@ def main():
         if not isinstance(row, list) or len(row) < 5:
             continue
         file_id, filename, kind, size, title = row
-        if kind != "html5" or not isinstance(size, int):
+        if kind not in ("html5", "flash") or not isinstance(size, int):
             continue
         if size < 550 or size > MAX_FILE or file_id in hosted:
             continue

@@ -60,7 +60,7 @@ test('Repository hosts actual licensed UGS HTML files, not Drive redirects',()=>
  assert.ok(html.indexOf('core/ugs-hosted-catalog.js?v=')>html.indexOf('core/ugs-catalog.js?v='));
  assert.ok(html.indexOf('core/ugs-hosted-catalog.js?v=')<html.indexOf('core/game-store.js?v='));
  for(const [id,url] of entries){
-  assert.ok(catalog.some(row=>row[0]===id&&row[2]==='html5'),'Hosted games must come from UGS index');
+  assert.ok(catalog.some(row=>row[0]===id&&['html5','flash'].includes(row[2])),'Hosted games must come from UGS index');
   assert.match(url,/^html%20games\/ugs\/[a-z0-9._-]+\.html?$/i);
   const file=decodeURIComponent(url);
   const source=read(file);

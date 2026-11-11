@@ -1,18 +1,17 @@
-# Built-in UGS HTML game files
+# Built-in Ultimate Game Stash games
 
-This directory contains **actual HTML launch files committed to Lolite OS**, not Google Drive previews, import prompts, or placeholder entries.
+These are the **actual HTML game launch pages** included directly in Lolite OS. The Game Store uses **UGS** as the default server. Players click **Play**; no file upload, import button, or Drive preview is needed.
 
-Currently included from the UGS collection:
+**Credits:** <https://docs.google.com/document/d/1_FmH3BlSBQI7FGgAQL59-ZPe8eCxs35wel6JUyVaG8Q/edit> — Ultimate Game Stash (UGS), its creator and volunteer editors. UGS explicitly permits using its shared HTML files on websites and requests credit. The original game rights remain with their respective creators; Lolite does not claim ownership or endorsement.
 
-- **Antimatter Dimensions** — `clantimatterdimensions.html`; upstream MIT licence in `LICENSE-antimatter-dimensions.txt`
-- **Hextris** — `clhextris.html`; upstream GPLv3 text in `LICENSE-hextris.md`
-- **Asteroids** — `clasteroidsALT.html`; original WebAssembly port GPLv2 in `LICENSE-asteroids.txt`
-- **We Become What We Behold** — `clwebecomewhatwebehold.html`; developer's public-domain/attribution notice in `LICENSE-we-become-what-we-behold.md`
-- **Space Company** — `clspacecompany.html`; original MIT terms in `LICENSE-space-company.txt`
-- **Chrome Dino** — `clgoogledino.html`; Chromium BSD-style terms in `LICENSE-google-dino.txt`
+Lolite's UGS HTML catalogue is sourced from the linked UGS Drive collection. The catalogue is larger than the directly hosted subset; large, restricted, invalid or unsupported files may not be hosted.
 
-The Game Store's UGS category lists only bundled launch files and any previously installed local game files. Click **Play** to launch. No user upload or Drive file preview is required for bundled files.
+Some launch pages depend on external JavaScript, game assets, or Flash emulation through Ruffle and may require an internet connection. Successful HTML loading does not guarantee every game will work; please report broken titles.
 
-**Important:** Some of these HTML documents depend on game assets hosted on external CDNs (via `<base>` or external script URLs), so inclusion of an HTML file does not guarantee fully offline play. Individual game compatibility remains to be tested.
-
-The larger Drive catalogue is retained only as metadata; it is not a claim that the complete third-party collection is hosted here. Additional games require redistribution permission and compatible assets.
+Licence notices for individually licensed games bundled earlier are preserved here:
+- Antimatter Dimensions: `LICENSE-antimatter-dimensions.txt`
+- Hextris: `LICENSE-hextris.md`
+- Asteroids: `LICENSE-asteroids.txt`
+- We Become What We Behold: `LICENSE-we-become-what-we-behold.md`
+- Space Company: `LICENSE-space-company.txt`
+- Chrome Dino: `LICENSE-google-dino.txt`
