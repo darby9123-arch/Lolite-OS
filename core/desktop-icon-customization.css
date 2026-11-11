@@ -88,3 +88,22 @@ html.lic-applied:not(.browsing-mode):not(.mobile-mode) #desktop #icons .desktop-
 .lic-save{font-size:11px;color:#95b7c2}
 @media(max-width:670px){.lic-editor{grid-template-columns:1fr}.lic-settings{padding:14px!important}.lic-header{flex-wrap:wrap}.lic-screen{max-height:250px}}
 @media(prefers-reduced-motion:reduce){.lic-settings *{scroll-behavior:auto!important;transition:none!important}}
+
+/* Standalone Desktop Icons tab in the existing Settings category sidebar. */
+.cr-settings-main .lic-settings{margin:0!important;max-width:100%;box-shadow:none!important}
+.cr-settings-main .lic-header{padding:0}
+.cr-settings-main .lic-editor{grid-template-columns:minmax(200px,1fr) minmax(220px,1fr)}
+.lic-hue-control input[type="range"]{
+  appearance:none;-webkit-appearance:none;height:12px;border-radius:20px;border:1px solid #ffffff55;
+  background:linear-gradient(to right,#f33 0%,#ff0 16.666%,#0f0 33.333%,#0ff 50%,#00f 66.667%,#f0f 83.333%,#f33 100%);
+  outline-offset:5px;
+}
+.lic-hue-control input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:19px;height:19px;border-radius:50%;
+  border:3px solid white;background:#202a39;box-shadow:0 2px 7px #0009;cursor:grab;
+}
+.lic-hue-control input[type="range"]::-moz-range-thumb{
+  width:14px;height:14px;border-radius:50%;border:3px solid white;
+  background:#202a39;box-shadow:0 2px 7px #0009;cursor:grab;
+}
+@media(max-width:900px){.cr-settings-main .lic-editor{grid-template-columns:1fr}}
