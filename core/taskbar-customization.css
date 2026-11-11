@@ -79,6 +79,10 @@ html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobil
 html.ltc-applied[data-desktop-experience=windows]:not(.browsing-mode):not(.mobile-mode) #taskbar #clock{
  height:var(--ltc-button-size)!important;
 }
+html.ltc-applied[data-desktop-experience=windows][data-ltc-align=center]:not(.browsing-mode):not(.mobile-mode) #taskbar .win-taskbar-center{
+ position:absolute!important;left:50%!important;transform:translateX(-50%)!important;
+ justify-content:center!important;max-width:calc(100% - 240px)!important;margin-left:0!important;
+}
 html.ltc-applied[data-desktop-experience=windows][data-ltc-align=left]:not(.browsing-mode):not(.mobile-mode) #taskbar .win-taskbar-center{
  position:static!important;transform:none!important;justify-content:flex-start!important;
  max-width:calc(100% - 160px)!important;margin-left:12px!important;
@@ -125,6 +129,12 @@ html.ltc-applied[data-desktop-experience=windows][data-ltc-autohide=true]:not(.b
  }
  html.ltc-applied[data-desktop-experience=windows][data-ltc-autohide=true][data-ltc-position=top]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar:not(:hover):not(:focus-within){
   translate:0 calc(-100% + 5px);
+ }
+}
+@media(max-width:850px){
+ html.ltc-applied[data-desktop-experience=windows][data-ltc-align=center]:not(.browsing-mode):not(.mobile-mode) #taskbar .win-taskbar-center{
+  position:static!important;left:auto!important;transform:none!important;
+  justify-content:flex-start!important;max-width:calc(100% - 160px)!important;
  }
 }
 @media(max-width:600px){
