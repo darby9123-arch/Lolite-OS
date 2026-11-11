@@ -42,7 +42,7 @@ test('Embedded collection remains out of All and non-embedded categories',()=>{
  assert.match(player,/!wall\.embedded&&filter==='4K'/);
  assert.match(player,/if\(motionBGS\.length\)cats\.push\('Embedded Wallpapers'\)/);
  assert.match(player,/View on MotionBGS/);
- assert.match(player,/Remote streaming may be restricted|If playback is blocked/);
+ assert.match(player,/Playback may be blocked by MotionBGS|if playback fails/);
 });
 test('MotionBGS catalogue loads before wallpaper engine and keeps the normal library',()=>{
  const html=read('index.html');
