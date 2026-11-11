@@ -6,8 +6,9 @@ const vm=require('node:vm');
 const read=file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8');
 const pause=()=>new Promise(resolve=>setImmediate(resolve));
 
-function harness({captureSupported=true}={}){
- const listeners={},saved=new Map(),elements=new Map(),messages=[];
+function harness({captureSupported=true,withFrame=false}={}){
+ const listeners={},frameListeners={},saved=new Map(),elements=new Map(),messages=[];
+ const gameFrame={contentDocument:{addEventListener(name,fn){(frameListeners[name]??=[]).push(fn)}},addEventListener(){}};
  const root={innerHTML:'',querySelector:()=>null};
  const storage=new Map(),browser={page:()=>'<div>Existing app</div>',openApp(){},toast:message=>messages.push(message)};
  let captures=0,recorderCount=0,lastRecorder=null;
@@ -15,7 +16,8 @@ function harness({captureSupported=true}={}){
  const stream={getTracks:()=>[track],getVideoTracks:()=>[track]};
  const document={
   body:{appendChild(x){if(x.id)elements.set(x.id,x)}},
-  getElementById(id){return id==='lcRoot'?root:elements.get(id)||null},
+  getElementById(id){return id==='lcRoot'?root:id==='windows'?{}:elements.get(id)||null},
+  querySelectorAll(selector){return selector==='#windows iframe'&&withFrame?[gameFrame]:[]}, 
   querySelector(q){return q.includes('#lcRoot')?root:null},
   addEventListener(name,fn){(listeners[name]??=[]).push(fn)},
   createElement(){return {hidden:true,id:'',textContent:'',className:'',title:'',
@@ -54,11 +56,11 @@ function harness({captureSupported=true}={}){
   setTimeout:(fn,ms)=>{const id=timeoutId++;if(ms===0)queueMicrotask(fn);return id},
   setInterval:()=>1,clearTimeout(){},clearInterval(){},confirm:()=>true
  },{timeout:2000});
- function key({inInput=false}={}){
+ function key({inInput=false,inFrame=false}={}){
   let prevented=false;
   const event={repeat:false,altKey:true,shiftKey:true,ctrlKey:false,code:'KeyC',
    target:{closest:()=>inInput?{}:null},preventDefault(){prevented=true}};
-  for(const handler of listeners.keydown||[])handler(event);
+  for(const handler of (inFrame?frameListeners:listeners).keydown||[])handler(event);
   return prevented;
  }
  return {browser,root,saved,key,get captures(){return captures},get recorderCount(){return recorderCount},
@@ -85,6 +87,17 @@ test('Alt+Shift+C triggers an explicit browser capture and starts the recorder',
  assert.equal(h.browser.LoliteClips.status().recording,true);
  assert.equal(h.recorder.state,'recording');
  assert.match(h.root.innerHTML,/Stop & save clip/);
+});
+
+test('The shortcut works when a same-origin HTML game iframe has keyboard focus',async()=>{
+ const h=harness({withFrame:true});
+ h.browser.page('clips');await pause();
+ assert.equal(h.key({inFrame:true}),true);
+ await pause();
+ assert.equal(h.captures,1);
+ assert.equal(h.browser.LoliteClips.status().recording,true);
+ h.key({inFrame:true});await pause();await pause();
+ assert.equal(h.saved.size,1);
 });
 
 test('The keybind stops a clip and saves a playable local Blob',async()=>{
