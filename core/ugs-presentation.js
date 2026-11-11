@@ -8,10 +8,15 @@
   '3pandasjapan':'3 Pandas: Japan','3pandasnight':'3 Pandas: Night',
   '8ballpool':'8 Ball Pool','40xescape':'40x Escape',
   'agariolite':'Agar.io Lite','adventurecapatalist':'AdVenture Capitalist',
-  'antarttycoon':'Antarctic Tycoon','achievmentunlocked2':'Achievement Unlocked 2',
+  'antarttycoon':'Antarctic Tycoon','antimatterdimensions':'Antimatter Dimensions',
+  'akoopasrevenge2':'A Koopa’s Revenge 2','arcadevolley':'Arcade Volley',
+  'acegangstertaxi':'Ace Gangster Taxi','alienhominid':'Alien Hominid','achievmentunlocked2':'Achievement Unlocked 2',
   'achievmentunlocked3':'Achievement Unlocked 3','badicecream':'Bad Ice-Cream',
   'badicecream2':'Bad Ice-Cream 2','badicecream3':'Bad Ice-Cream 3',
-  'basketrandom':'Basket Random',
+  'basketrandom':'Basket Random','baseballbros':'Baseball Bros',
+  'badpiggieslatest':'Bad Piggies (Latest)','bballlegend':'Basketball Legend',
+  'battlekarts':'Battle Karts','beachboxingsim':'Beach Boxing Simulator',
+  'blightborne':'Blightborne','boxhead2playrooms':'Boxhead 2Play Rooms',
   'burritobisonlaunchalibre':'Burrito Bison: Launcha Libre','btd5':'Bloons TD 5',
   'bloonspp1':'Bloons Player Pack 1','bloonspp2':'Bloons Player Pack 2',
   'bloonspp3':'Bloons Player Pack 3','bloonspp4':'Bloons Player Pack 4',
@@ -19,7 +24,8 @@
   'bfdia5b':'BFDIA 5B','btts':'BTTS','btts2':'BTTS 2',
   'papaspizzeria':'Papa’s Pizzeria','papasfreezeria':'Papa’s Freezeria',
   'papasburgeria':'Papa’s Burgeria','papasdonuteria':'Papa’s Donuteria',
-  'papasbakeria':'Papa’s Bakeria','papassushiria':'Papa’s Sushiria',
+  'papasbakeria':'Papa’s Bakeria','papaspancakeria':'Papa’s Pancakeria',
+  'papaswingeria':'Papa’s Wingeria','papassushiria':'Papa’s Sushiria',
   'papascheeseria':'Papa’s Cheeseria','papascupcakeria':'Papa’s Cupcakeria',
   'worldshardestgame':'World’s Hardest Game','worldshardestgame2':'World’s Hardest Game 2',
   'worldshardestgame3':'World’s Hardest Game 3','worldshardestgame4':'World’s Hardest Game 4',
@@ -36,12 +42,12 @@
   'angry birds space animal crossing anti matter dimensions apple worm aqua park arcade '+
   'archery world tour armor mayhem awesome pirates planes tanks axis league babel tower '+
   'baby backyard bacon may die bad ice cream parenting piggies times simulator '+
-  'blast banana bananas barry secret bart basket legends legend stars superstars super '+
+  'blast bodyguard bodyguards banana bananas barry secret bart basket legends legend stars superstars super '+
   'random slam dunk batter up beach boxing bear bejeweled twist flash bergen truck '+
   'big flappy neon tiny square shot binding sheep bit burner life black knight smith '+
   'lab blazed blight borne blob story stories block craft parkour post pig blocky demolition '+
   'derby bloons player pack bloxorz blumgi racers rocket boba bob robber bottle cracks '+
-  'bounce back masters bouncy motors bounty bow box head play rooms brain rot brawl '+
+  'bounce back masters bouncy motors bounty bow box head play rooms brain rot brawl volley volleyball '+
   'bread skate bridge race battle bunny land bubble tank arenas build now '+
   'burrito bison launch libre revenge cactus mccoy candy box cannon city car cars cat '+
   'click clicker chicken chill cookie core crazy crash crush cut dash dark day days dead '+
@@ -91,7 +97,10 @@
   return s.split(' ').flatMap(w=>/^[a-z]{8,}$/i.test(w)?splitWord(w):[w])
    .filter(Boolean).map(w=>short[w.toLowerCase()]||(/^\d+$/.test(w)?w:
     w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()))
-   .join(' ').replace(/\s+io\b/gi,'.io')||'Untitled Game';
+   .join(' ').replace(/\s+io\b/gi,'.io')
+   .replace(/\b([2348]) D\b/g,'$1D')
+   .replace(/^(\S+) Of (\S+)/,'$1 of $2')
+   .replace(/\s+(?:The|Of|And|In|On|For|To|A)\s+/g,m=>m.toLowerCase())||'Untitled Game';
  }
  const discovered=new Map();
  function imageURL(raw,base){
@@ -126,10 +135,18 @@
   }catch(error){/* No image is a normal fallback, not a game launch failure. */}
   return '';
  }
+ // Keep art scans throttled while browsing a large catalogue.
+ const queue=[];let running=0;
+ function pump(){
+  while(running<3&&queue.length){
+   const {game,resolve}=queue.shift();running++;
+   Promise.resolve().then(()=>scan(game)).then(resolve,()=>resolve('')).finally(()=>{running--;pump()});
+  }
+ }
  const discover=game=>{
   const key=game?.url||'';
   if(!key)return Promise.resolve('');
-  if(!discovered.has(key))discovered.set(key,scan(game));
+  if(!discovered.has(key))discovered.set(key,new Promise(resolve=>{queue.push({game,resolve});pump()}));
   return discovered.get(key);
  };
  window.LoliteUGSPresentation=Object.freeze({title,discover});
