@@ -240,8 +240,9 @@ html.lic-applied:not(.browsing-mode):not(.mobile-mode) #desktop #icons .desktop-
 .cr-settings #lolite-icon-settings .lic-color-line{flex-wrap:wrap;gap:8px;}
 .cr-settings #lolite-icon-settings .lic-color-line input{flex:none;}
 @container lic-pane (max-width:520px){
-  .lic-controls{grid-template-columns:minmax(0,1fr)!important;}
-  .lic-hue-control,.lic-save{grid-column:auto!important;}
+  .cr-settings #lolite-icon-settings .lic-controls{grid-template-columns:minmax(0,1fr)!important;}
+  .cr-settings #lolite-icon-settings .lic-hue-control,
+  .cr-settings #lolite-icon-settings .lic-save{grid-column:auto!important;}
 }
 @media(max-width:720px){
   .cr-settings .cr-settings-nav{max-width:135px;min-width:115px;padding:14px 6px;}
