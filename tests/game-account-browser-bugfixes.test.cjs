@@ -51,7 +51,7 @@ function gameHarness(fetchFn){
  };
  const context={
   document:doc,
-  window:{fetch:fetchFn},
+  window:{fetch:fetchFn,location:{href:'https://lolite.example/html%20games/Grand%20Theft%20Auto%20Vice%20City.html'}},
   fetch:fetchFn,
   indexedDB:{open(){throw new Error('storage unavailable')}},
   XMLHttpRequest:class{open(){}},
@@ -66,6 +66,19 @@ function gameHarness(fetchFn){
  return {loader,status,progress,scripts,notices,removed:()=>removed,reloads:()=>reloads};
 }
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
+
+test('Vice City ships and loads an MIT-licensed first-party GamepadEmulator',()=>{
+ const script=read('html games/gamepademulator.js');
+ assert.match(script,/class GamepadEmulator/);
+ assert.match(script,/AddEmulatedGamepad/);
+ assert.doesNotThrow(()=>new Function(script),'gamepad JS must parse in classic-script mode');
+ const notice=read('html games/gamepademulator.LICENSE.txt');
+ assert.match(notice,/MIT License/);
+ assert.match(notice,/Kyle W-M/);
+ const html=read('html games/Grand Theft Auto Vice City.html');
+ assert.match(html,/new URL\("\.\/gamepademulator\.js", window\.location\.href\)/);
+ assert.match(html,/script\.src = runtimeScriptURL\(src\)/);
+});
 
 test('Vice City shows an actionable failure rather than hanging on a missing asset',async()=>{
  const h=gameHarness(async()=>({ok:false,status:503}));
@@ -113,7 +126,11 @@ test('Vice City downloads assets, shows progress and loads its three scripts in 
  await flush();await flush();
  assert.ok(requests>25,'all game-data parts should be attempted');
  assert.ok(h.progress.value>0,'downloaded bytes should be reported');
- assert.deepEqual(h.scripts,['gamepademulator.js','idbfs.js','game.js']);
+ assert.deepEqual(h.scripts,[
+  'https://lolite.example/html%20games/gamepademulator.js',
+  'https://cdn.jsdelivr.net/gh/web-ports/vice-city@796678be4ed26a13c1256be98781ca9b90beb981/idbfs.js',
+  'https://cdn.jsdelivr.net/gh/web-ports/vice-city@796678be4ed26a13c1256be98781ca9b90beb981/game.js'
+ ]);
  assert.equal(h.removed(),true);
  assert.equal(h.notices.length,0);
 });
