@@ -4,9 +4,15 @@
  */
 (()=>{'use strict';
  const KEY='loliteWallpaperColorMode';
+ const INTENSITY_KEY='loliteWallpaperColorIntensity';
+ const intensityLevels=['subtle','balanced','vivid'];
  const root=document.documentElement;
- const names=['--wall-accent','--wall-accent-soft','--wall-button','--wall-button-hover','--wall-bg','--wall-panel','--wall-raised','--wall-titlebar','--wall-border','--wall-hover','--wall-icon-start','--wall-icon-end','--wall-icon-border','--wall-glyph-rotate'];
- let enabled=true,version=0,scheme=null;
+ const names=['--wall-accent','--wall-accent-soft','--wall-secondary','--wall-secondary-soft',
+  '--wall-button','--wall-button-hover','--wall-bg','--wall-panel','--wall-panel-solid','--wall-raised',
+  '--wall-titlebar','--wall-border','--wall-hover','--wall-pressed','--wall-glow',
+  '--wall-text','--wall-muted','--wall-focus-ring','--wall-icon-start','--wall-icon-end',
+  '--wall-icon-border','--wall-glyph-rotate'];
+ let enabled=true,version=0,scheme=null,intensity='balanced';
  const clamp=(n,min,max)=>Math.min(max,Math.max(min,n));
  const hue=n=>((Math.round(n)%360)+360)%360;
  const hsl=(h,s,l)=>'hsl('+hue(h)+' '+Math.round(s)+'% '+Math.round(l)+'%)';
@@ -30,27 +36,46 @@
   }
   return {h,s:clamp(s,0,1),l};
  }
- // Prefer the most visible coloured region instead of dark pixels or white text.
+ // Find the dominant *area* of colour rather than a single bright logo/text pixel.
+ // A second sufficiently large hue family gives the UI a real two-tone palette.
  function sampleHue(pixels){
   if(!pixels||pixels.length<4)return null;
-  const weights=new Float64Array(24),sx=new Float64Array(24),sy=new Float64Array(24);
+  const bins=36,weight=new Float64Array(bins),xs=new Float64Array(bins),ys=new Float64Array(bins);
+  let luminance=0,visible=0,colourWeight=0;
   for(let i=0;i<pixels.length;i+=4){
-   if(pixels[i+3]<160)continue;
+   const alpha=pixels[i+3]/255;
+   if(alpha<.55)continue;
    const c=rgbHsl(pixels[i],pixels[i+1],pixels[i+2]);
-   if(c.s<.14||c.l<.12||c.l>.92)continue;
-   const weight=Math.pow(c.s,1.45)*(.25+.75*(1-Math.abs(c.l-.55))) ;
-   const bin=Math.floor(c.h/15)%24,rad=c.h*Math.PI/180;
-   weights[bin]+=weight;sx[bin]+=Math.cos(rad)*weight;sy[bin]+=Math.sin(rad)*weight;
+   luminance+=c.l*alpha;visible+=alpha;
+   if(c.s<.135||c.l<.09||c.l>.94)continue;
+   const w=Math.pow(c.s,1.22)*(.38+.62*(1-Math.abs(c.l-.54)))*alpha;
+   const bin=Math.floor(c.h/10)%bins,angle=c.h*Math.PI/180;
+   weight[bin]+=w;xs[bin]+=Math.cos(angle)*w;ys[bin]+=Math.sin(angle)*w;
+   colourWeight+=w;
   }
-  let best=0;
-  for(let i=1;i<24;i++)if(weights[i]>weights[best])best=i;
-  if(weights[best]<.28)return null;
-  let x=0,y=0,total=0;
-  for(const k of [(best+23)%24,best,(best+1)%24]){
-   x+=sx[k];y+=sy[k];total+=weights[k];
+  const group=i=>{
+   let mass=0,x=0,y=0;
+   for(const j of [(i+bins-1)%bins,i,(i+1)%bins]){
+    mass+=weight[j];x+=xs[j];y+=ys[j];
+   }
+   return {mass,h:hue(Math.atan2(y,x)*180/Math.PI)};
+  };
+  let primary=null,secondary=null;
+  for(let i=0;i<bins;i++){
+   if(!weight[i])continue;
+   const current=group(i);
+   if(!primary||current.mass>primary.mass)primary=current;
   }
-  if(total<=0)return null;
-  return {h:hue(Math.atan2(y,x)*180/Math.PI),s:.64};
+  if(!primary||colourWeight<.28||primary.mass/colourWeight<.12)return null;
+  for(let i=0;i<bins;i++){
+   if(!weight[i])continue;
+   const current=group(i);
+   const gap=Math.abs(current.h-primary.h),distance=Math.min(gap,360-gap);
+   if(distance<38||current.mass<primary.mass*.22)continue;
+   if(!secondary||current.mass>secondary.mass)secondary=current;
+  }
+  return {h:primary.h,s:clamp(.38+primary.mass/(colourWeight||1)*.47,.40,.80),
+   secondary:secondary?.h,brightness:visible?luminance/visible:.5};
  }
  function fallback(wall){
   const value=[wall?.id,wall?.name,wall?.category].filter(Boolean).join(' ').toLowerCase();
@@ -63,32 +88,56 @@
   if(/silver|carbon|mono|slate/.test(value))return {h:225,s:.21};
   return {h:222,s:.58};
  }
- function seed(wall,pixels){
+ function paletteSeed(wall){
   const palette=wall?.palette;
-  if(Array.isArray(palette)&&palette.length>=3){
-   const rgb=hexColor(palette[2])||hexColor(palette[1]);
-   if(rgb){const c=rgbHsl(...rgb);if(c.s>.10)return {h:hue(c.h),s:c.s};}
-  }
-  return sampleHue(pixels)||fallback(wall);
+  if(!Array.isArray(palette))return null;
+  const shades=palette.map(hexColor).filter(Boolean).map(rgb=>rgbHsl(...rgb));
+  const vivid=shades.filter(c=>c.s>.12&&c.l>.12&&c.l<.93);
+  if(!vivid.length)return null;
+  const primary=vivid.length>1?vivid[Math.min(1,vivid.length-1)]:vivid[0];
+  const other=vivid.find(c=>{
+   const d=Math.abs(c.h-primary.h);return Math.min(d,360-d)>38;
+  });
+  return {h:hue(primary.h),s:primary.s,secondary:other?other.h:null,
+   brightness:shades.reduce((sum,c)=>sum+c.l,0)/shades.length};
+ }
+ function seed(wall,pixels){
+  // The visible poster wins over metadata, including for wallpapers with a built-in palette.
+  return sampleHue(pixels)||paletteSeed(wall)||fallback(wall);
  }
  function derive(wall,pixels){
-  const colour=seed(wall,pixels),h=hue(colour.h),s=clamp(Math.round(colour.s*100),24,78);
-  // Surfaces are always dark, so foreground labels remain legible regardless
-  // of bright, white, dark or high-saturation wallpapers.
+  const colour=seed(wall,pixels),h=hue(colour.h);
+  const gain=intensity==='subtle'?.64:intensity==='vivid'?1.23:1;
+  const s=clamp(Math.round(colour.s*100*gain),intensity==='subtle'?19:27,85);
+  let secondary=hue(colour.secondary??(h+(h>280||h<35?32:-31)));
+  const distance=Math.abs(secondary-h);
+  if(Math.min(distance,360-distance)<25)secondary=hue(h+35);
+  // Dark surfaces with light foreground, even if the original wallpaper is pale.
+  // Vivid mode increases colour in chrome, never the contrast of text or gameplay.
+  const surfaceSat=intensity==='subtle'?12:intensity==='vivid'?31:22;
+  const panelSat=intensity==='subtle'?13:intensity==='vivid'?36:27;
   const scheme={
-   hue:h,saturation:s,
-   '--wall-accent':hsl(h,Math.max(44,s),68),
-   '--wall-accent-soft':hsla(h,Math.max(40,s),63,.60),
-   '--wall-button':hsl(h,clamp(s+2,44,74),32),
-   '--wall-button-hover':hsl(h,clamp(s+4,45,78),40),
-   '--wall-bg':hsl(h,23,9),
-   '--wall-panel':hsla(h,28,13,.95),
-   '--wall-raised':hsl(h,27,20),
-   '--wall-titlebar':hsl(h,25,16),
-   '--wall-border':hsla(h,60,72,.33),
-   '--wall-hover':hsla(h,65,62,.17),
-   '--wall-icon-start':hsl(h-12,clamp(s+9,45,78),57),
-   '--wall-icon-end':hsl(h+15,clamp(s+4,42,77),35),
+   hue:h,secondaryHue:secondary,saturation:s,intensity,
+   '--wall-accent':hsl(h,Math.max(44,s),72),
+   '--wall-accent-soft':hsla(h,Math.max(35,s),66,.60),
+   '--wall-secondary':hsl(secondary,clamp(s-3,38,78),67),
+   '--wall-secondary-soft':hsla(secondary,clamp(s-12,28,70),51,.24),
+   '--wall-button':hsl(h,clamp(s+2,44,79),intensity==='vivid'?34:32),
+   '--wall-button-hover':hsl(h,clamp(s+4,45,82),42),
+   '--wall-bg':hsl(h,surfaceSat,8),
+   '--wall-panel':hsla(h,panelSat,13,.96),
+   '--wall-panel-solid':hsl(h,panelSat,13),
+   '--wall-raised':hsl(h,panelSat+3,20),
+   '--wall-titlebar':hsl(h,panelSat,16),
+   '--wall-border':hsla(h,clamp(s+8,40,80),72,intensity==='subtle'?.25:.32),
+   '--wall-hover':hsla(h,clamp(s+4,42,80),63,.18),
+   '--wall-pressed':hsla(h,clamp(s+5,42,80),65,.28),
+   '--wall-glow':hsla(secondary,clamp(s+1,40,79),43,intensity==='subtle'?.10:intensity==='vivid'?.23:.16),
+   '--wall-text':hsl(h,14,95),
+   '--wall-muted':hsl(h,15,74),
+   '--wall-focus-ring':hsla(h,clamp(s+12,55,92),79,.90),
+   '--wall-icon-start':hsl(h-10,clamp(s+7,42,85),56),
+   '--wall-icon-end':hsl(secondary,clamp(s+1,38,80),35),
    '--wall-icon-border':hsla(h,72,87,.5),
    '--wall-glyph-rotate':Math.round(((h-250+540)%360)-180)+'deg'
   };
@@ -98,6 +147,7 @@
   scheme=next;
   if(!enabled)return;
   root.dataset.wallpaperColors='on';
+  root.dataset.wallpaperIntensity=intensity;
   for(const name of names)root.style.setProperty(name,next[name]);
   root.style.setProperty('--accent',next['--wall-accent']);
   root.style.setProperty('--win-accent',next['--wall-accent']);
@@ -129,8 +179,8 @@
   const wall=window.LoliteWallpapers?.current?.();
   if(!wall)return;
   const token=++version;
+  // Immediate, deterministic colour while any poster loads.
   applyScheme(derive(wall));
-  if(wall.palette?.length>=3)return;
   const source=wall.poster||wall.src;
   if(typeof source!=='string'||!source||/\.(?:mp4|webm)(?:[?#]|$)/i.test(source))return;
   sampleImage(source,pixels=>{
@@ -143,6 +193,7 @@
   if(enabled)refresh();
   else {
    root.removeAttribute('data-wallpaper-colors');
+   root.removeAttribute('data-wallpaper-intensity');
    for(const name of names)root.style.removeProperty(name);
    const userAccent=read('loliteAccent','');
    if(/^#[a-f0-9]{6}$/i.test(userAccent))root.style.setProperty('--accent',userAccent);
@@ -154,18 +205,32 @@
    button.textContent=enabled?'On · Match wallpaper':'Off · Use original theme';
   });
   document.querySelectorAll('[data-wall-color-description]').forEach(label=>{
-   label.textContent=enabled?'App icon tiles, highlights and desktop panels use the wallpaper colours.':'Original app icon colours and desktop theme are restored.';
+   label.textContent=enabled?'Windows, menus, widgets, game store and app surfaces follow your wallpaper.':'Original app colours and desktop theme are restored.';
   });
+  document.querySelectorAll('[data-wall-color-intensity]').forEach(button=>{button.disabled=!enabled});
   window.dispatchEvent(new CustomEvent('lolite:wallpapercolormode',{detail:{enabled}}));
  }
  const isEnabled=()=>enabled;
+ function setIntensity(value){
+  if(!intensityLevels.includes(value))return false;
+  intensity=value;save(INTENSITY_KEY,value);
+  document.querySelectorAll('[data-wall-color-intensity]').forEach(button=>{
+   button.setAttribute('aria-pressed',String(button.dataset.wallColorIntensity===value));
+  });
+  if(enabled)refresh();
+  window.dispatchEvent(new CustomEvent('lolite:wallpapercolorintensity',{detail:{intensity:value}}));
+  return true;
+ }
  function settingsCard(){
   return '<section class="card wall-color-settings"><h3>Wallpaper colours</h3>'+
    '<div class="wall-color-row"><span class="wall-color-swatch" aria-hidden="true"></span>'+
    '<button type="button" class="wall-color-toggle" data-wall-color-toggle aria-pressed="'+String(enabled)+'">'+
     (enabled?'On · Match wallpaper':'Off · Use original theme')+'</button></div>'+
-   '<p data-wall-color-description>'+(enabled?'App icon tiles, highlights and desktop panels use the wallpaper colours.':'Original app icon colours and desktop theme are restored.')+'</p>'+
-   '<p>Works with still images, live wallpapers and custom uploads. Animations never constantly recolour the interface.</p></section>';
+   '<p data-wall-color-description>'+(enabled?'Windows, menus, widgets, game store and app surfaces follow your wallpaper.':'Original app colours and desktop theme are restored.')+'</p>'+
+   '<div class="wall-colour-preview" aria-hidden="true"><span></span><span></span><span></span><span></span></div>'+
+   '<div class="wall-color-intensity" role="group" aria-label="Wallpaper colour intensity">'+
+   intensityLevels.map(level=>'<button type="button" data-wall-color-intensity="'+level+'" aria-pressed="'+(intensity===level)+'" '+(!enabled?'disabled ':'')+'>'+level[0].toUpperCase()+level.slice(1)+'</button>').join('')+'</div>'+
+   '<p>Samples still wallpapers and video posters once on change. No constant frame sampling; text stays readable.</p></section>';
  }
  function installSettings(){
   const old=window.page;
@@ -177,16 +242,19 @@
  }
  document.addEventListener('click',event=>{
   if(event.target?.closest?.('[data-wall-color-toggle]'))setEnabled(!enabled);
+  const choice=event.target?.closest?.('[data-wall-color-intensity]');
+  if(choice&&enabled)setIntensity(choice.dataset.wallColorIntensity);
  });
  window.addEventListener('lolite:wallpaperchange',refresh);
  window.addEventListener('lolite:wallpaperposter',refresh);
  window.addEventListener('lolite:desktopthemechange',()=>{if(enabled&&scheme)applyScheme(scheme)});
- window.LoliteWallpaperColors=Object.freeze({isEnabled,setEnabled,refresh,derive,getScheme:()=>scheme});
+ window.LoliteWallpaperColors=Object.freeze({isEnabled,setEnabled,refresh,derive,setIntensity,getIntensity:()=>intensity,getScheme:()=>scheme});
  enabled=read(KEY,'on')!=='off';
+ intensity=intensityLevels.includes(read(INTENSITY_KEY,'balanced'))?read(INTENSITY_KEY,'balanced'):'balanced';
  installSettings();
  const boot=()=>{
   if(enabled)refresh();
-  else root.removeAttribute('data-wallpaper-colors');
+  else {root.removeAttribute('data-wallpaper-colors');root.removeAttribute('data-wallpaper-intensity')}
  };
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
  else boot();
