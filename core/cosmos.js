@@ -5,7 +5,7 @@
  const icon=id=>window.LoliteIcons?.tile(id)||'';
  const apps=[
   ['files','Files'],['browser','Browser'],['appstore','App Store'],
-  ['games','Games'],['music','Lolite Music'],['feature-requests','Feature Requests'],['chatroom','Chat'],['lowlight-ai','AI'],
+  ['games','Games'],['music','Lolite Music'],['feature-requests','Feature Requests'],['clips','Lolite Clips'],['chatroom','Chat'],['lowlight-ai','AI'],
   ['wallpaper-editor','Wallpaper'],['terminal','Terminal'],['settings','Settings']
  ];
  const quick=[['games','Game Store'],['cloud-gaming','Cloud Gaming'],['minecraft18','Minecraft 1.8'],['academy','Academy'],['appstore','App Store']];
