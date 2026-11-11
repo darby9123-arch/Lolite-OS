@@ -133,3 +133,18 @@ test('IME composition updates results on completion, not during intermediate cha
  for(const handler of h.listeners.compositionend||[])handler({target:input});
  assert.match(h.main.results.innerHTML,/Search results/);
 });
+
+test('Primary game-card Play buttons are larger and stay aligned with Info',()=>{
+ const css=read('core/game-store-ui-cleanup.css');
+ const js=read('core/game-store.js');
+ const playRule=css.match(/\.store\.store-v41 \.store-card-actions \.store-play\{([^}]*)\}/)?.[1]||'';
+ const infoRule=css.match(/\.store\.store-v41 \.store-card-actions \.store-details\{([^}]*)\}/)?.[1]||'';
+ assert.match(playRule,/min-height:52px!important/);
+ assert.match(playRule,/font-size:15px!important/);
+ assert.match(playRule,/padding:12px 16px!important/);
+ assert.match(playRule,/width:100%!important/);
+ assert.match(infoRule,/min-height:52px!important/);
+ assert.match(js,/class="store-play" type="button" data-store-launch/);
+ assert.match(js,/class="store-details" type="button" data-store-details/);
+ assert.match(read('index.html'),/core\/game-store-ui-cleanup\.css\?v=big-play-20261112/);
+});
