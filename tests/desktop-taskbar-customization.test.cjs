@@ -110,3 +110,68 @@ test('Taskbar settings do not modify desktop icons or browser/mobile modes',()=>
  assert.match(css,/not\(\.browsing-mode\)/);
  assert.match(css,/not\(\.mobile-mode\)/);
 });
+
+
+function iconHarness(saved=new Map()){
+ const events={},classes=new Set(),dataset={},styles=new Map();
+ const root={
+  dataset,
+  classList:{toggle:(name,value)=>value?classes.add(name):classes.delete(name)},
+  style:{setProperty:(name,value)=>styles.set(name,value)}
+ };
+ const document={
+  readyState:'complete',documentElement:root,
+  addEventListener:(name,fn)=>events[name]=fn,
+  getElementById:()=>null
+ };
+ const localStorage={
+  getItem:key=>saved.has(key)?saved.get(key):null,
+  setItem:(key,value)=>saved.set(key,String(value)),
+  removeItem:key=>saved.delete(key)
+ };
+ const window={innerWidth:1200,addEventListener(){}};
+ vm.runInNewContext(fs.readFileSync('core/desktop-icon-customization.js','utf8'),
+  {window,document,localStorage,console,Number,Math},
+  {timeout:2000});
+ const setVisible=checked=>{
+  const input={dataset:{licField:'visible'},checked,type:'checkbox',closest:()=>input};
+  events.input({target:input});
+ };
+ return {api:window.LoliteIconCustomization,setVisible,classes,dataset,styles,saved};
+}
+test('Desktop visibility switch hides all shortcuts without deleting their settings',()=>{
+ const h=iconHarness();
+ assert.equal(h.api.get().visible,true,'Existing users see their shortcuts by default');
+ assert.match(h.api.markup(),/data-lic-field="visible"/);
+ assert.match(h.api.markup(),/Show desktop icons/);
+ h.setVisible(false);
+ assert.equal(h.api.get().visible,false);
+ assert.equal(h.dataset.licIconsVisible,'false');
+ assert.equal(h.classes.has('lic-applied'),true);
+ assert.equal(JSON.parse(h.saved.get('lolite.desktop-icons.v1.guest')).visible,false);
+ h.setVisible(true);
+ assert.equal(h.api.get().visible,true);
+ assert.equal(h.dataset.licIconsVisible,'true');
+});
+test('Old desktop icon preferences and Reset icons both restore shortcut visibility',()=>{
+ const saved=new Map([['lolite.desktop-icons.v1.guest',JSON.stringify({size:72,position:'right'})]]);
+ const h=iconHarness(saved);
+ assert.equal(h.api.get().size,72);
+ assert.equal(h.api.get().visible,true,'Old saved preferences remain compatible');
+ h.setVisible(false);
+ assert.equal(h.api.get().size,72,'Hiding shortcuts preserves their size');
+ h.api.reset();
+ assert.equal(h.api.get().visible,true);
+ assert.equal(h.classes.has('lic-applied'),false);
+ assert.equal(h.dataset.licIconsVisible,undefined);
+ assert.equal(saved.has('lolite.desktop-icons.v1.guest'),false);
+});
+test('Icon visibility rule targets only the shortcut layer in desktop mode',()=>{
+ const iconCss=fs.readFileSync('core/desktop-icon-customization.css','utf8');
+ const index=fs.readFileSync('index.html','utf8');
+ assert.match(iconCss,/html\.lic-applied\[data-lic-icons-visible="false"\]:not\(\.browsing-mode\):not\(\.mobile-mode\) #desktop #icons\s*\{\s*display:none!important;/);
+ assert.match(iconCss,/\.lic-preview-grid\[hidden\]\s*\{\s*display:none!important;/);
+ assert.doesNotMatch(iconCss,/data-lic-icons-visible="false"[^}]*#taskbar/);
+ assert.match(index,/core\/desktop-icon-customization\.css\?v=hide-desktop-icons-20261112/);
+ assert.match(index,/core\/desktop-icon-customization\.js\?v=hide-desktop-icons-20261112/);
+});
