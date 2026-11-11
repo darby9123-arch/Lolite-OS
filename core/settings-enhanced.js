@@ -29,7 +29,7 @@
   window.loliteSetAccent=color=>{if(window.LoliteWallpaperColors?.isEnabled?.())window.LoliteWallpaperColors.setEnabled(false);document.documentElement.style.setProperty('--accent',color);key('loliteAccent',color)};
   window.toggleGlass=on=>{key('glass',on?'true':'false');document.documentElement.classList.toggle('glass',!!on);document.documentElement.classList.toggle('liquid-glass',!!on);window.LoliteLiquidGlass?.setEnabled(!!on)};
   window.toggleReduce=on=>{key('reduce',on?'true':'false');document.documentElement.classList.toggle('reduce-motion',!!on);document.documentElement.classList.toggle('reduce',!!on)};
-  window.loliteResetSettings=()=>{['glass','reduce','loliteCursor','loliteCursorPack','loliteCursorSize','loliteAccent','wallpaperCategory','loliteWallpaperColorMode'].forEach(k=>localStorage.removeItem(k));location.reload()};
+  window.loliteResetSettings=()=>{['glass','reduce','loliteCursor','loliteCursorPack','loliteCursorSize','loliteAccent','wallpaperCategory','loliteWallpaperColorMode','loliteWallpaperColorIntensity'].forEach(k=>localStorage.removeItem(k));location.reload()};
   window.loliteClearCache=async()=>{
     const proceed=window.confirm("Clear Lolite's temporary caches and automatically downloaded games? Your accounts, settings, files, and games installed from a ZIP will be kept.");
     if(!proceed)return;
