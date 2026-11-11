@@ -103,8 +103,9 @@ test('Wallpaper images override inaccurate catalogue palettes and extract two co
 test('Subtle, Balanced and Vivid settings persist and alter interface colour strength',()=>{
  const h=harness();
  const api=h.win.LoliteWallpaperColors;
- assert.equal(api.getIntensity(),'balanced');
+ assert.equal(api.getIntensity(),'subtle'); // Current product default is deliberately low-intensity.
  assert.match(h.win.page('settings'),/data-wall-color-intensity="vivid"/);
+ assert.equal(api.setIntensity('balanced'),true);
  const balanced=api.getScheme().saturation;
  assert.equal(api.setIntensity('subtle'),true);
  assert.equal(api.getIntensity(),'subtle');
