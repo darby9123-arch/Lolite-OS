@@ -28,7 +28,7 @@
    const allowed = await window.LoliteBrowserAccounts?.guard(content, resume);
    if (!allowed) {
     const s = content.querySelector("#uvStatus");
-    if(s)s.textContent = "Sign in with your Lolite Chat account to use the browser.";
+    if(s)s.textContent = "Sign in with your Lolite account to use the browser.";
     return;
    }
    content.dataset.loliteBrowserSignedIn = "1";
@@ -64,7 +64,7 @@
   };
   const direct=(raw,openNewTab=true)=>{
     if(content.dataset.loliteBrowserSignedIn!=="1"){
-      setStatus(status,'Sign in to Lolite Chat before browsing.',true);
+      setStatus(status,'Sign in to Lolite before browsing.',true);
       return;
     }
     try{
@@ -119,8 +119,11 @@
  window.page=function(id){if(id==='browser'||id==='ultraviolet')return browserPage();return oldPage(id)};
  const oldOpen=window.openApp;
  window.openApp=function(id,title,w,h){
-  oldOpen(id,title||'Ultraviolet Browser',w||900,h||650);
-  if(id==='browser'||id==='ultraviolet')setTimeout(()=>{const win=window.state?.windows?.[id]?.el||document.querySelector('#windows .window:last-child');const content=win?.querySelector('.content');if(content&&!content.dataset.uvReady){content.dataset.uvReady='1';start(content)}},0);
+  const isBrowser=id==='browser'||id==='ultraviolet';
+  // Keep the window manager's default sizes and return value for every other app.
+  const opened=oldOpen(id,isBrowser?(title||'Ultraviolet Browser'):title,isBrowser?(w??900):w,isBrowser?(h??650):h);
+  if(isBrowser)setTimeout(()=>{const win=window.state?.windows?.[id]?.el||document.querySelector('#windows .window:last-child');const content=win?.querySelector('.content');if(content&&!content.dataset.uvReady){content.dataset.uvReady='1';start(content)}},0);
+  return opened;
  };
  window.LoliteUltraviolet={open:()=>window.openApp('browser','Ultraviolet Browser',900,650)};
 })();

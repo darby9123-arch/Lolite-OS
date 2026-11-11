@@ -11,6 +11,11 @@ on:
       - 'core/window-manager.js'
       - 'core/interface.js'
       - 'core/lolite-4.css'
+      - 'core/accounts.js'
+      - 'core/chat-v2.js'
+      - 'core/ultraviolet.js'
+      - 'core/scramjet-browser.js'
+      - 'html games/Grand Theft Auto Vice City.html'
       - 'index.html'
       - 'server.mjs'
       - 'tests/*.test.cjs'
@@ -20,6 +25,7 @@ on:
   pull_request:
     paths:
       - 'core/**'
+      - 'html games/Grand Theft Auto Vice City.html'
       - 'index.html'
       - 'server.mjs'
       - 'tests/*.test.cjs'
@@ -37,6 +43,9 @@ jobs:
       - name: Validate Lolite 4.0 JavaScript
         run: |
           node --check core/accounts.js
+          node --check core/ultraviolet.js
+          node --check core/scramjet-browser.js
+          node --check core/chat-v2.js
           node --check core/player-activity.js
           node --check core/account-storage.js
           node --check core/game-health.js
@@ -59,4 +68,4 @@ jobs:
           node --check server.mjs
       - name: Test game library, host version, taskbar, Spotlight and snapping
         run: |
-          node --test tests/accounts-activity.test.cjs tests/lolite-4.test.cjs tests/window-manager.test.cjs tests/game-launches.test.cjs tests/game-popularity.test.cjs tests/tab-cloaking.test.cjs tests/generated-icons.test.cjs tests/lolite-4-1.test.cjs tests/game-health.test.cjs tests/game-store-gallery.test.cjs tests/game-store-ui-cleanup.test.cjs tests/feature-requests.test.cjs tests/wallpaper-colors.test.cjs tests/ui-shell-bugfixes.test.cjs
+          node --test tests/accounts-activity.test.cjs tests/lolite-4.test.cjs tests/window-manager.test.cjs tests/game-launches.test.cjs tests/game-popularity.test.cjs tests/tab-cloaking.test.cjs tests/generated-icons.test.cjs tests/lolite-4-1.test.cjs tests/game-health.test.cjs tests/game-store-gallery.test.cjs tests/game-store-ui-cleanup.test.cjs tests/feature-requests.test.cjs tests/wallpaper-colors.test.cjs tests/ui-shell-bugfixes.test.cjs tests/game-account-browser-bugfixes.test.cjs

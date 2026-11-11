@@ -29,7 +29,7 @@
       const allowed = await window.LoliteBrowserAccounts?.guard(content, resume);
       if (!allowed) {
         const state = content.querySelector("#sj-state");
-        if (state) state.textContent = "Sign in with your Lolite Chat account to use the browser.";
+        if (state) state.textContent = "Sign in with your Lolite account to use the browser.";
         return;
       }
       content.dataset.loliteBrowserSignedIn = "1";
@@ -54,7 +54,7 @@
     };
     const go=(raw,openNewTab=true)=>{
       if(content.dataset.loliteBrowserSignedIn!=="1"){
-        status(statusEl,"Sign in to Lolite Chat before browsing.",true);
+        status(statusEl,"Sign in to Lolite before browsing.",true);
         return;
       }
       try{
@@ -110,14 +110,17 @@
   window.page = id => id === "scramjet" ? page() : previousPage(id);
   const previousOpen = window.openApp;
   window.openApp = function(id, title, w, h) {
-    previousOpen(id, title || (id === "scramjet" ? "Scramjet Browser" : title), w || 900, h || 650);
-    if (id !== "scramjet") return;
+    const isBrowser = id === "scramjet";
+    // Do not override default dimensions or swallow the return value of other apps.
+    const opened = previousOpen(id, isBrowser ? (title || "Scramjet Browser") : title, isBrowser ? (w ?? 900) : w, isBrowser ? (h ?? 650) : h);
+    if (!isBrowser) return opened;
     setTimeout(() => {
       const content = window.state?.windows?.[id]?.el?.querySelector(".content") || document.querySelector("#windows .window:last-child .content");
       if (!content || content.dataset.scramjetBrowserReady) return;
       content.dataset.scramjetBrowserReady = "1";
       init(content);
     }, 0);
+    return opened;
   };
   function addLauncher() {
     const icons = document.getElementById("icons");
