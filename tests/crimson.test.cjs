@@ -38,13 +38,14 @@ test('the replacement migrates old selections and contains only the 840 source v
 test('switching wallpapers releases old videos and keeps only two seamless-loop decoders',()=>{
  const e=wallpapers(),api=e.c.LoliteWallpapers;
  for(const wall of api.collection.slice(0,12)){
-  const previous=e.children.slice();
+  const previous=e.children.filter(el=>el.tag==='video');
   assert.equal(api.apply(wall.id),true);
-  assert.equal(e.children.length,2);
-  assert.ok(e.children.every(el=>el.tag==='video'&&el.muted&&el.loop&&el.playsInline));
-  assert.equal(e.children[0].src,wall.video);
+  const decoders=e.children.filter(el=>el.tag==='video');
+  assert.equal(decoders.length,2,'Crossfade can add a passive transition layer, but only two video decoders');
+  assert.ok(decoders.every(el=>el.muted&&el.loop&&el.playsInline));
+  assert.equal(decoders[0].src,wall.video);
   assert.equal(api.debug().canvasCount,0);
-  if(previous[0]!==e.children[0])assert.ok(previous.every(el=>el.paused&&!el.src));
+  if(previous[0]!==e.children.find(el=>el.tag==='video'))assert.ok(previous.every(el=>el.paused&&!el.src));
  }
 });
 test('quality selects original, verified HD, and small preview without inventing missing HD sources',()=>{
@@ -79,7 +80,8 @@ test('custom images still work after migration and stop video playback',()=>{
  const e=wallpapers(),api=e.c.LoliteWallpapers;
  assert.equal(api.setCustom('javascript:alert(1)'),false);
  const image='data:image/png;base64,aGVsbG8=';
- assert.equal(api.setCustom(image),true);assert.equal(e.children.length,0);
+ assert.equal(api.setCustom(image),true);
+ assert.equal(e.children.filter(el=>el.tag==='video').length,0,'Custom images release all video decoders; decorative fade can remain briefly');
  api.restore();assert.equal(api.current().id,'custom');
  const fresh=wallpapers(Object.fromEntries(e.data));assert.equal(fresh.c.LoliteWallpapers.current().id,'custom');
  api.apply(DEFAULT);assert.equal(e.data.get('loliteWallpaperCustomActive'),'false');
