@@ -34,6 +34,12 @@
    if(typeof input[name]==='boolean')next[name]=input[name];
   return next;
  }
+ function measure(){
+  const button=Math.min(prefs.height-8,prefs.iconSize+17);
+  // Keep icon artwork INSIDE the button's padded content area, even for
+  // a short taskbar with a large saved icon-size preference.
+  return {button,icon:Math.min(prefs.iconSize,Math.max(16,button-10))};
+ }
  function apply(){
   const root=document.documentElement;
   root.classList.toggle('ltc-applied',custom);
@@ -54,10 +60,11 @@
   root.dataset.ltcClock=String(prefs.clock);
   root.dataset.ltcSettings=String(prefs.settings);
   root.dataset.ltcStyle=prefs.style;
+  const dimensions=measure();
   const variables={
    '--ltc-height':prefs.height+'px',
-   '--ltc-icon-size':prefs.iconSize+'px',
-   '--ltc-button-size':Math.min(prefs.height-8,prefs.iconSize+17)+'px',
+   '--ltc-icon-size':dimensions.icon+'px',
+   '--ltc-button-size':dimensions.button+'px',
    '--ltc-opacity':prefs.opacity+'%',
    '--ltc-color':prefs.color,
    '--ltc-blur':prefs.blur?'24px':'0px'
@@ -137,10 +144,10 @@
   if(!pane)return;
   const bar=pane.querySelector('[data-ltc-preview-bar]');
   if(!bar)return;
-  const width=Math.min(prefs.height-8,prefs.iconSize+17);
+  const dimensions=measure();
   bar.style.setProperty('--ltc-preview-height',Math.round(prefs.height*.68)+'px');
-  bar.style.setProperty('--ltc-preview-icon',Math.round(prefs.iconSize*.72)+'px');
-  bar.style.setProperty('--ltc-preview-button',Math.round(width*.72)+'px');
+  bar.style.setProperty('--ltc-preview-icon',Math.round(dimensions.icon*.72)+'px');
+  bar.style.setProperty('--ltc-preview-button',Math.round(dimensions.button*.72)+'px');
   bar.style.setProperty('--ltc-preview-opacity',prefs.opacity+'%');
   bar.style.setProperty('--ltc-preview-color',prefs.color);
   bar.style.setProperty('--ltc-preview-blur',prefs.blur?'12px':'0px');
