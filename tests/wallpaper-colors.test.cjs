@@ -140,7 +140,7 @@ test('Wallpaper matching now uses restrained surfaces and directly colourable lo
  assert.equal(h.win.LoliteWallpaperColors.getIntensity(),'subtle');
  assert.ok(scheme.saturation<=55,'Subtle mode must avoid over-saturation');
  assert.ok(h.vars.has('--wall-glyph-color'),'Wallpaper palette must colour logo ink');
- assert.match(h.vars.get('--wall-panel'),/ 5% 13% \/ \.96\)$/);
+ assert.match(h.vars.get('--wall-panel'),/ 5% 13% \/ 0?\.96\)$/);
  assert.equal(h.vars.get('--wall-glyph-rotate'),'0deg');
  const css=read('core/icon-material-polish.css');
  assert.match(css,/--wall-glyph-color/);
