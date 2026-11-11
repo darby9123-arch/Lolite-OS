@@ -342,3 +342,28 @@ html.lic-applied[data-lic-position="right"]:not(.browsing-mode):not(.mobile-mode
   html.lic-applied[data-lic-position="left"]:not(.browsing-mode):not(.mobile-mode) #desktop #icons{left:12px!important;}
   html.lic-applied[data-lic-position="right"]:not(.browsing-mode):not(.mobile-mode) #desktop #icons{right:12px!important;}
 }
+
+
+/* Settings > Desktop: hide only the desktop shortcut layer, not the apps,
+ * taskbar, wallpaper, open windows, or the Settings window. */
+html.lic-applied[data-lic-icons-visible="false"]:not(.browsing-mode):not(.mobile-mode) #desktop #icons{
+ display:none!important;
+}
+#lolite-icon-settings .lic-preview-grid[hidden]{
+ display:none!important;
+}
+#lolite-icon-settings .lic-icon-visibility{
+ grid-column:1/-1;
+ display:flex;align-items:center;justify-content:space-between;gap:16px;
+ min-width:0;padding:12px 14px;
+ color:#edf3ff;background:#243248;border:1px solid #536782;border-radius:10px;
+}
+#lolite-icon-settings .lic-icon-visibility>span{display:flex;flex-direction:column;min-width:0;gap:4px}
+#lolite-icon-settings .lic-icon-visibility strong{font-size:13px;font-weight:700}
+#lolite-icon-settings .lic-icon-visibility small{font-size:11px;line-height:1.5;color:#aebfd4}
+#lolite-icon-settings .lic-icon-visibility input[type="checkbox"]{
+ width:19px;height:19px;min-width:19px;flex:none;accent-color:var(--accent,#82aef8);cursor:pointer;
+}
+#lolite-icon-settings .lic-icon-visibility:focus-within{
+ outline:2px solid var(--accent,#82aef8);outline-offset:2px;
+}
