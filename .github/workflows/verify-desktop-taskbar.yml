@@ -1,0 +1,36 @@
+name: Verify Desktop and taskbar customisation
+on:
+  push:
+    paths:
+      - 'core/taskbar-customization.js'
+      - 'core/taskbar-customization.css'
+      - 'core/crimson.js'
+      - 'core/desktop-icon-customization.js'
+      - 'index.html'
+      - 'tests/desktop-taskbar-customization.test.cjs'
+      - '.github/workflows/verify-desktop-taskbar.yml'
+  pull_request:
+    paths:
+      - 'core/taskbar-customization.js'
+      - 'core/taskbar-customization.css'
+      - 'core/crimson.js'
+      - 'core/desktop-icon-customization.js'
+      - 'index.html'
+      - 'tests/desktop-taskbar-customization.test.cjs'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify scripts parse
+        run: |
+          node --check core/taskbar-customization.js
+          node --check core/crimson.js
+          node --check core/desktop-icon-customization.js
+      - name: Verify Desktop settings and taskbar controls
+        run: node --test tests/desktop-taskbar-customization.test.cjs
