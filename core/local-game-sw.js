@@ -8,18 +8,18 @@ const base=new URL(self.registration.scope);
 const prefix=base.pathname+"local-games/";
 self.addEventListener("install",event=>event.waitUntil(self.skipWaiting()));
 self.addEventListener("activate",event=>event.waitUntil(self.clients.claim()));
-let cached=null;
-function database(){
- if(cached)return cached;
- cached=new Promise((resolve,reject)=>{
-  const req=indexedDB.open(DB,1);
+const databases=new Map();
+function database(account=""){
+ if(databases.has(account))return databases.get(account);
+ const cached=new Promise((resolve,reject)=>{
+  const req=indexedDB.open(account?DB+"-"+account:DB,1);
   req.onsuccess=()=>resolve(req.result);
   req.onerror=()=>reject(req.error||new Error("Local package storage unavailable"));
- }).catch(error=>{cached=null;throw error});
- return cached;
+ }).catch(error=>{databases.delete(account);throw error});
+ databases.set(account,cached);return cached;
 }
-async function getAsset(key){
- const db=await database();
+async function getAsset(key,account=""){
+ const db=await database(account);
  return new Promise((resolve,reject)=>{
   const tx=db.transaction(STORE,"readonly");
   const req=tx.objectStore(STORE).get(key);
@@ -37,10 +37,12 @@ async function serve(request){
  try{relative=decodeURIComponent(url.pathname.slice(prefix.length))}
  catch{return response(400,"Invalid local file path")}
  const segments=relative.split("/");
+ let account="";
+ if(/^account-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(segments[0]))account=segments.shift().slice(8);
  const id=segments.shift(),path=segments.join("/");
  if(!/^pkg-[a-f0-9-]{16,60}$/.test(id)||!path||segments.some(forbidden)||path.includes("\\")||path.includes(":")||path.length>500)return response(400,"Invalid local game file");
  let asset;
- try{asset=await getAsset(id+"/"+path)}
+ try{asset=await getAsset(id+"/"+path,account)}
  catch{return response(503,"Local game storage is unavailable")}
  if(!asset||!(asset.data instanceof Blob))return response(404,"Local game file not found. Re-import the full game ZIP.");
  const data=asset.data,headers=new Headers({

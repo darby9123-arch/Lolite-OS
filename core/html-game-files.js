@@ -9,7 +9,7 @@
    if(!("indexedDB" in window))return Promise.reject(new Error("Browser storage is unavailable"));
    if(pending)return pending;
    pending=new Promise((resolve,reject)=>{
-     const request=indexedDB.open(DB_NAME,1);
+     const request=indexedDB.open(window.LoliteAccountStorage?.db(DB_NAME)||DB_NAME,1);
      request.onupgradeneeded=()=>{const db=request.result;if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE,{keyPath:"id"})};
      request.onsuccess=()=>resolve(request.result);
      request.onerror=()=>reject(request.error||new Error("Cannot open saved game storage"));

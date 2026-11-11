@@ -97,7 +97,7 @@ test('Recently played is recorded locally and the sidebar shows genuine history'
  const h=storeHarness();
  const api=h.win.LoliteGameStoreGallery;
  assert.match(api.getActivityMarkup(),/No games played yet/);
- assert.match(api.getActivityMarkup(),/Friend presence isn’t connected/);
+ assert.match(api.getActivityMarkup(),/Loading player activity/);
  api.recordRecent('clblockblast.html');
  api.recordRecent('slope.html');
  api.recordRecent('clblockblast.html');

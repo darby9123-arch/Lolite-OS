@@ -93,6 +93,7 @@ const check=r=>{if(r?.error){const err=r.error;throw Error((err.message||'Someth
 const flash=m=>{const r=root();if(!r)return;const d=document.createElement('div');d.className='lc-toast';d.textContent=m;r.appendChild(d);setTimeout(()=>d.remove(),3100)};
 function unreadCount(){return state.requests.filter(r=>r.to_id===meId()&&r.status==='pending').length}
 function authHtml(){
+ if(window.LoliteAccounts)return '<div class="lc-placeholder"><div><h2>Sign in to Lolite</h2><p>Use one Lolite account for your desktop, games and chat.</p><button class="lc-primary" data-account-signin>Sign in / create account</button></div></div>';
  return '<div class="lc-auth-screen"><div class="lc-auth"><div class="lc-logo">L</div><h1>Lolite Chat</h1><p>Message friends, join channels and stay connected. Free forever.</p>'+
  '<div class="lc-auth-tabs"><button type="button" data-lc-action="tabLogin" class="'+(state.authTab==='login'?'active':'')+'">Log in</button><button type="button" data-lc-action="tabRegister" class="'+(state.authTab==='register'?'active':'')+'">Create account</button></div>'+
  '<form data-lc-form="auth"><label>Username</label><input name="username" placeholder="your_username" pattern="[A-Za-z0-9_]{3,24}" minlength="3" maxlength="24" autocomplete="username" required>'+
@@ -155,7 +156,7 @@ function messageHtml(m){
  '<div class="lc-msg-body"><div class="lc-msg-title"><button type="button" class="lc-user-name" data-lc-user="'+esc(m.sender_id)+'" title="View profile">'+esc(label(p))+'</button>'+(state.adminIds.includes(m.sender_id)?'<small class="lc-admin-badge">ADMIN</small>':'')+'<time>'+esc(new Date(m.created_at).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))+'</time>'+
  (m.edited_at?'<small>(edited)</small>':'')+(m.is_pinned?'<small class="lc-msg-pin">'+lcIcon('pin',12)+' Pinned</small>':'')+'</div>'+
  (reply?'<div class="lc-replyref">↳ '+esc(label(person(reply.sender_id)))+': '+esc(reply.content.slice(0,75))+'</div>':'')+
- '<div class="lc-msg-content">'+fmt(m.content)+'</div>'+
+ '<div class="lc-msg-content">'+(window.LoliteActivity?.formatMessage(m.content,fmt)||fmt(m.content))+'</div>'+
  (Object.keys(counts).length?'<div class="lc-msg-reactions">'+Object.keys(counts).map(em=>'<button type="button" class="lc-reaction" data-lc-action="react" data-lc-id="'+m.id+'" data-lc-emoji="'+esc(em)+'">'+esc(em)+' '+counts[em].length+'</button>').join('')+'</div>':'')+
  '<details class="lc-msg-more"><summary aria-label="More message actions" title="Message actions"><span aria-hidden="true">···</span></summary><div class="lc-msg-actions"><button type="button" data-lc-action="reply" data-lc-id="'+m.id+'">Reply</button><button type="button" data-lc-action="copy" data-lc-id="'+m.id+'">Copy</button>'+
  ['👍','❤️','😂'].map(em=>'<button type="button" aria-label="React '+esc(em)+'" data-lc-action="react" data-lc-id="'+m.id+'" data-lc-emoji="'+esc(em)+'">'+em+'</button>').join('')+
@@ -188,7 +189,7 @@ function chatHtml(){
 }
 
 function personCard(p,controls){
- return '<article class="lc-card" data-lc-user="'+esc(p.id)+'">'+avatar(p)+'<div class="lc-card-info"><b>'+esc(label(p))+'</b><small>@'+esc(p.username)+' · '+esc(p.status||'online')+'</small></div><div class="lc-card-actions">'+controls+'</div></article>';
+ return '<article class="lc-card" data-lc-user="'+esc(p.id)+'">'+avatar(p)+'<div class="lc-card-info"><b>'+esc(label(p))+'</b><small>@'+esc(p.username)+' · '+esc(window.LoliteActivity?.activityText(p.id)||p.status||'online')+'</small></div><div class="lc-card-actions">'+controls+'</div></article>';
 }
 const tinyBtn=(name,action,id,extra='')=>'<button type="button" class="lc-secondary '+extra+'" data-lc-action="'+action+'" data-lc-id="'+esc(id)+'">'+name+'</button>';
 
@@ -223,8 +224,8 @@ function browseHtml(){
 
 function profileHtml(){
  const p=self();
- return '<main class="lc-main"><div class="lc-area lc-profile-page"><header class="lc-page-header"><div><span class="lc-overline">ACCOUNT</span><h2>Your profile</h2><p class="lc-muted">Manage how you appear to people in Lolite Chat.</p></div></header>'+
- '<section class="lc-profile-card"><div class="lc-profile-banner"></div><div class="lc-profile-card-inner"><div class="lc-profile-avatar">'+avatar(p)+'</div><h2>'+esc(label(p))+'</h2><p>@'+esc(p?.username||'user')+'</p><p class="lc-profile-about">'+esc(p?.about||'No bio added yet.')+'</p><div class="lc-pills"><span class="lc-pill">'+esc(p?.status||'online')+'</span><span class="lc-pill">Lolite member</span></div><div class="lc-profile-actions"><button class="lc-primary" data-lc-action="profile">'+lcIcon('settings',16)+' Edit profile</button><button class="lc-secondary" data-lc-action="logout">Log out</button></div></div></section>'+
+ return '<main class="lc-main"><div class="lc-area lc-profile-page"><header class="lc-page-header"><div><span class="lc-overline">ACCOUNT</span><h2>Your profile</h2><p class="lc-muted">Manage your Lolite account across the desktop, games and chat.</p></div></header>'+
+ '<section class="lc-profile-card"><div class="lc-profile-banner"></div><div class="lc-profile-card-inner"><div class="lc-profile-avatar">'+avatar(p)+'</div><h2>'+esc(label(p))+'</h2><p>@'+esc(p?.username||'user')+'</p><p class="lc-profile-about">'+esc(p?.about||'No bio added yet.')+'</p><div class="lc-pills"><span class="lc-pill">'+esc(window.LoliteActivity?.activityText(p?.id)||p?.status||'online')+'</span><span class="lc-pill">Lolite member</span></div><div class="lc-profile-actions"><button class="lc-secondary" data-lolite-profile="'+esc(p?.id)+'">Gaming profile</button><button class="lc-primary" data-lc-action="profile">'+lcIcon('settings',16)+' Edit profile</button><button class="lc-secondary" data-lc-action="logout">Log out</button></div></div></section>'+
  '<p class="lc-muted lc-profile-note">Keep your password safe. Accounts without an email cannot currently use automatic password recovery.</p></div></main>';
 }
 
@@ -396,7 +397,7 @@ async function dispatch(action,id,button){
  }
  case 'pin':{const m=state.messages.find(m=>m.id===Number(id));if(!m||m.sender_id!==meId())return;check(await sb.from('messages').update({is_pinned:!m.is_pinned}).eq('id',m.id));return refresh(true)}
  case 'report':state.modal={type:'report',messageId:Number(id)};return render();
- case 'logout':{messageDrafts.clear();await sb.auth.signOut();state.view='browse';state.channel='general';state.conversationId=null;state.modal=null;return refresh(true)}
+ case 'logout':{messageDrafts.clear();if(window.LoliteAccounts){await window.LoliteAccounts.signOut();return;}await sb.auth.signOut();state.view='browse';state.channel='general';state.conversationId=null;state.modal=null;return refresh(true)}
  case 'accept':case 'decline':check(await sb.from('friend_requests').update({status:action==='accept'?'accepted':'declined'}).eq('id',id).eq('to_id',meId()));return refresh(true);
  case 'cancelRequest':check(await sb.from('friend_requests').delete().eq('id',id));return refresh(true);
  case 'unfriend':{if(!confirm('Remove this friend?'))return;const requests=state.requests.filter(r=>r.status==='accepted'&&((r.from_id===id&&r.to_id===meId())||(r.to_id===id&&r.from_id===meId())));for(const item of requests)check(await sb.from('friend_requests').delete().eq('id',item.id));return refresh(true)}
@@ -510,5 +511,5 @@ window.page=function(id){
  return '<div class="lc-root" id="lcRoot"><div class="lc-loader">Opening Lolite Chat…</div></div>';
 };
 window.LoliteChatIcons=lcIcon;
-window.LoliteChat={open:()=>window.openApp('chatroom','Lolite Chat',1100,700),refresh:()=>refresh(true),getClient:()=>sb,getState:()=>state,createDM,sendFriendRequest:requestFriend};
+window.LoliteChat={open:()=>window.openApp('chatroom','Lolite Chat',1100,700),refresh:()=>refresh(true),getClient:()=>sb,getState:()=>state,editProfile:async()=>{window.openApp('chatroom','Lolite Chat',1100,700);await refresh(true);state.modal={type:'profile'};render();},createDM,sendFriendRequest:requestFriend};
 })();

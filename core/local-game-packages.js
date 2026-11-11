@@ -23,7 +23,7 @@ function database(){
  if(dbPromise)return dbPromise;
  if(!("indexedDB" in window))return Promise.reject(new Error("Browser storage is not available"));
  dbPromise=new Promise((resolve,reject)=>{
-  const request=indexedDB.open(DB,1);
+  const request=indexedDB.open(window.LoliteAccountStorage?.db(DB)||DB,1);
   request.onupgradeneeded=()=>{
    const db=request.result;
    if(!db.objectStoreNames.contains(PKGS))db.createObjectStore(PKGS,{keyPath:"id"});
@@ -418,7 +418,7 @@ async function launchUrl(record){
  if(!record||!safeId(record.id)||!safePath(record.root))throw new Error("Invalid local game");
  const scope=await ensureWorker();
  const id=record.packId&&safeId(record.packId)?record.packId:record.id;
- return new URL("local-games/"+id+"/"+record.root.split("/").map(encodeURIComponent).join("/"),scope).href;
+ return new URL("local-games/"+(window.LoliteAccountStorage?.scope==='guest'?'':'account-'+window.LoliteAccountStorage.scope+'/')+id+"/"+record.root.split("/").map(encodeURIComponent).join("/"),scope).href;
 }
 window.LoliteLocalGamePackages=Object.freeze({importZip,importFolder,importStandaloneHtml,importSavedHtml,importGamefilesZip,importUGSZip,importUGSFolder,removeGamefilesZip,list:getAll,remove:erase,ensureWorker,launchUrl});
 })();

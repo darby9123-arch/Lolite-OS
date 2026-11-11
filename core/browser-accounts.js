@@ -5,6 +5,7 @@
   const PUBLISHABLE_KEY = "sb_publishable_I3eswNK0zu8qQvDp1Kcfbw_zZzzi18u";
   let client = null;
   const getClient = () => {
+    if (window.LoliteAccounts) return window.LoliteAccounts.getClient();
     if (!client && window.supabase?.createClient) {
       client = window.supabase.createClient(SUPABASE_URL, PUBLISHABLE_KEY, {
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
@@ -78,7 +79,7 @@
       gate.style.cssText = "position:absolute;inset:0;z-index:5;overflow:auto;display:flex;align-items:center;justify-content:center;background:#0c1423;color:#eaf1ff;padding:20px;text-align:center";
       gate.innerHTML = `<form class="lb-account-form" style="width:min(100%,330px);display:grid;gap:12px">
         <strong style="font-size:21px">Sign in to Lolite</strong>
-        <span style="font-size:13px;color:#aebbd1">Use your Lolite Chat account. No second account is needed.</span>
+        <span style="font-size:13px;color:#aebbd1">Use your Lolite account across the desktop, games and chat.</span>
         <label style="font-size:12px;text-align:left">Username
           <input name="username" autocomplete="username" required minlength="3" maxlength="24" pattern="[A-Za-z0-9_]{3,24}" placeholder="Username" style="width:100%;margin-top:5px;box-sizing:border-box">
         </label>
@@ -87,12 +88,12 @@
         </label>
         <p class="lb-account-message" role="status" style="margin:0;font-size:12px"></p>
         <button type="submit" class="primary">Sign in</button>
-        <button type="button" class="soft lb-create-account">Create an account in Lolite Chat</button>
+        <button type="button" class="soft lb-create-account">Create a Lolite account</button>
       </form>`;
       stage.appendChild(gate);
       gate.querySelector(".lb-create-account").onclick = () => {
-        if (typeof window.openApp === "function") window.openApp("chatroom", "Lolite Chat", 1100, 700);
-        showMessage(gate, "Create your account in Lolite Chat, then sign in here.");
+        window.LoliteAccounts?.showLogin("register");
+        showMessage(gate, "Create your account on the Lolite sign-in screen.");
       };
       gate.querySelector("form").onsubmit = async (event) => {
         event.preventDefault();

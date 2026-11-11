@@ -36,6 +36,9 @@ jobs:
           node-version: '24'
       - name: Validate Lolite 4.0 JavaScript
         run: |
+          node --check core/accounts.js
+          node --check core/player-activity.js
+          node --check core/account-storage.js
           node --check core/game-health.js
           node --check core/game-store.js
           node --check core/game-player.js
@@ -56,4 +59,4 @@ jobs:
           node --check server.mjs
       - name: Test game library, host version, taskbar, Spotlight and snapping
         run: |
-          node --test tests/lolite-4.test.cjs tests/window-manager.test.cjs tests/game-launches.test.cjs tests/game-popularity.test.cjs tests/tab-cloaking.test.cjs tests/generated-icons.test.cjs tests/lolite-4-1.test.cjs tests/game-health.test.cjs tests/game-store-gallery.test.cjs tests/game-store-ui-cleanup.test.cjs tests/feature-requests.test.cjs tests/wallpaper-colors.test.cjs tests/ui-shell-bugfixes.test.cjs
+          node --test tests/accounts-activity.test.cjs tests/lolite-4.test.cjs tests/window-manager.test.cjs tests/game-launches.test.cjs tests/game-popularity.test.cjs tests/tab-cloaking.test.cjs tests/generated-icons.test.cjs tests/lolite-4-1.test.cjs tests/game-health.test.cjs tests/game-store-gallery.test.cjs tests/game-store-ui-cleanup.test.cjs tests/feature-requests.test.cjs tests/wallpaper-colors.test.cjs tests/ui-shell-bugfixes.test.cjs

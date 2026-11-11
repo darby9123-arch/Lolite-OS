@@ -4,6 +4,8 @@ module.exports = Object.freeze({
   manifest: 'lolite-desktop.json',
   installer: 'LoliteOS-Setup.exe',
   origin: 'lolite://app',
+  // Public Discord developer application ID (not a token). Configure once for releases.
+  discordClientId: '',
   launcherOrigin: 'lolite://launcher',
   // Set the certificate subject in desktop/signing.json before a signed release.
   publisher: require('../signing.json').publisher,

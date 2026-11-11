@@ -5,7 +5,7 @@
  const safeURL=value=>{
   try{
    const u=new URL(String(value||''),document.baseURI);
-   return u.protocol==='https:'||u.protocol==='http:'?u:null;
+   return u.protocol==='https:'||u.protocol==='http:'||(u.protocol==='lolite:'&&['app','content'].includes(u.hostname))?u:null;
   }catch{return null}
  };
  const windowId=file=>'store-game-'+String(file||'game').replace(/[^a-z0-9]+/gi,'-').slice(0,70);

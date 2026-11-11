@@ -624,6 +624,7 @@
   if(isFavourite(file))favouriteIds.delete(file);
   else{if(favouriteIds.size>=250){window.toast?.('Favorites are limited to 250 games.');return false}favouriteIds.add(file)}
   storeSaved(FAV_KEY,[...favouriteIds]);
+  window.LoliteActivity?.favorite(file,isFavourite(file));
   if(active==='Favorites')render();
   else document.querySelectorAll('.store-favourite').forEach(button=>{
    if(button.dataset.storeFavorite!==file)return;
@@ -661,9 +662,9 @@
    '<div class="store-social-stats"><div><strong>'+games.length+'</strong><small>Game titles</small></div>'+
    '<div><strong>'+favCount+'</strong><small>Favorites</small></div></div></div>'+
    '<div class="store-activity-section"><div class="store-activity-heading">FRIENDS & CHAT</div>'+
-   '<p class="store-activity-empty">Friend presence isn’t connected here yet. Lolite Chat is available separately.</p>'+
+   (window.LoliteActivity?.sidebar()||'<p class="store-activity-empty">Loading player activity…</p>')+
    '<button type="button" class="store-social-button" data-store-open-chat>Open Lolite Chat ↗</button></div>'+
-   '<div class="store-social-footer">Favorites and recently played games are saved in this browser.</div>';
+   '<div class="store-social-footer">Your library follows your Lolite account. Guest data stays on this device.</div>';
  }
  const economy=()=>window.LoliteEconomy;
  const gamePrice=g=>economy()?.gamePrice?.(g)??0;
@@ -711,6 +712,8 @@
    (game.iconUrl?'<img class="store-detail-icon" src="'+encodeLabel(game.iconUrl)+'" alt="Game icon">':'')+'</div>'+
    '<div class="lolite-game-detail-stat">Source: '+encodeLabel(game.source||'Lolite OS')+'</div>'+
    '<div class="lolite-game-detail-stat">Recent launches: '+playCount(game).toLocaleString()+' in the last 30 days (when available)</div>'+
+   '<div class="lolite-game-detail-stat">Your playtime: '+(window.LoliteActivity?.duration(window.LoliteActivity?.statsFor(game.file)?.total_seconds||0)||'0 sec')+'</div>'+
+   '<button type="button" data-copy-game="'+encodeLabel(game.file)+'">Copy game</button>'+
    '<strong>Available servers</strong><ul>'+desc+'</ul>'+
    '<div class="lolite-game-detail-actions"><button type="button" data-game-detail-play="'+encodeLabel(game.file)+'">'+(hasGame(game)?'Play game':'Unlock game')+'</button></div></section>';
   document.body.append(panel);
@@ -1007,7 +1010,7 @@
    '<details class="store-categories"><summary>MORE COLLECTIONS</summary>'+
    '<nav class="store-nav store-nav-extra" aria-label="Game categories">'+other.map(navButton).join('')+'</nav></details>'+
    '<div class="store-profile"><span class="store-profile-avatar" aria-hidden="true">L</span>'+
-   '<div><strong>Lolite Player</strong><small>Local game library</small></div></div></aside>'+
+   '<div><strong>'+encodeLabel(window.LoliteAccounts?.getProfile()?.display_name||'Guest player')+'</strong><small>'+(window.LoliteAccounts?.getUser()?'Lolite account':'Guest library')+'</small></div></div></aside>'+
    '<main class="store-main"><div class="store-empty">Loading your library…</div></main>'+
    '<aside class="store-social" aria-label="Recent game activity"><div class="store-social-inner">'+activityMarkup()+'</div></aside></div>';
  }
@@ -1137,8 +1140,11 @@
  window.LoliteGameStoreGallery=Object.freeze({
   isFavorite:isFavourite,toggleFavorite:toggleFavourite,
   getFavorites:()=>[...favouriteIds],getRecent:()=>recentSessions.map(row=>({...row})),
-  recordRecent:markRecent,getActivityMarkup:activityMarkup
+  recordRecent:markRecent,getActivityMarkup:activityMarkup,
+  getGame:file=>{const g=games.find(g=>g.file===file);return g?{file:g.file,title:g.title}:null},
+  replaceFavorites:ids=>{favouriteIds.clear();ids.filter(id=>typeof id==='string').slice(0,250).forEach(id=>favouriteIds.add(id));storeSaved(FAV_KEY,[...favouriteIds]);refreshActivity();}
  });
+ window.addEventListener('lolite:activitychange',refreshActivity);
  window.addEventListener('lolite:gamehealthchange',()=>{if(document.querySelector('.store-main'))render({keepToolbar:true})});
  window.addEventListener('lolite:popular-games',()=>{if((active==='Popular Games'||active==='Featured')&&document.querySelector('.store-main'))render({keepToolbar:true})});
  window.addEventListener('lolite-store-purchase',()=>render());

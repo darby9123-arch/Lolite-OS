@@ -1,7 +1,7 @@
 /* Lolite OS virtual filesystem + ZIP support. Browser-only, persistent with IndexedDB. */
 const FileOS=(()=>{
   const DB='lolite-fs',STORE='files';let dbp;
-  const openDB=()=>dbp||(dbp=new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE,{keyPath:'path'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
+  const openDB=()=>dbp||(dbp=new Promise((res,rej)=>{const r=indexedDB.open(window.LoliteAccountStorage?.db(DB)||DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE,{keyPath:'path'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
   async function put(path,data){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction(STORE,'readwrite');const store=tx.objectStore(STORE),get=store.get(path);get.onsuccess=()=>store.put({path,data,created:get.result?.created||Date.now(),updated:Date.now()});tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
   async function allRaw(){const db=await openDB();return new Promise((res,rej)=>{const r=db.transaction(STORE).objectStore(STORE).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
   async function all(){return(await allRaw()).filter(r=>!r.trashed)}

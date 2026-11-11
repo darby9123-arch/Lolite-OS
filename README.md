@@ -1,3 +1,5 @@
+> **Lolite accounts & game activity (11 November 2026):** One existing username/password account now signs in to the desktop, games and chat. Startup login, automatic login, separate desktop data, friends activity, gaming profiles, playtime and copyable game cards are included. Native Discord RPC is implemented; a Discord application ID must be configured before it can connect. [Details](docs/ACCOUNTS-AND-ACTIVITY.md).
+
 > **Wallpaper update (11 November 2026):** Replaced the previous wallpaper selection with all **840 LivelyWallpaper.app live wallpapers**, including **750 labelled 4K**. Search, category filters, real image previews, original/HD/preview quality, smooth loops and wallpaper colour adaptation are included. Videos stream directly from the source CDN and require internet. Existing wallpaper selections migrate to the new collection; uploads made after this replacement remain supported. [Details and validation](docs/LIVELY-WALLPAPERS.md).
 
 > **Game Store update (11 November 2026):** Added 1,702 game versions from the supplied ZIPs: 874 GenizyMath and 828 Chicken King's Vault versions, with actual launch HTML and included assets hosted in Lolite. Matching titles share server choices, and UGS remains the default where available. Twelve incomplete Chicken King versions are documented in [the import report](html%20games/collections/import-report.json). Mountain Games remains retired. See [collection details](html%20games/collections/README.md). Previous notes below are historical.
@@ -26,6 +28,14 @@ The Vercel version includes Ultraviolet runtime files and the Bare HTTP endpoint
 A Lolite-branded browser desktop with the original Cosmos space interface, apps, games, files, 840 live video wallpapers, and a responsive desktop or browser workspace. Earlier desktop themes remain available.
 
 ## Update Log
+
+### Lolite accounts & game activity — 2026-11-11
+- Startup sign-in and Settings → Account & activity use the same existing Lolite accounts.
+- Desktop settings and uploads are separated by account; small preferences, favourites and measured playtime sync with Supabase.
+- Player profiles show activity, most-played games, favourites and longest sessions.
+- Game Info → Copy game produces a link that becomes a playable card in Lolite Chat.
+- Desktop Discord integration needs the owner’s public Discord application ID. Web-only Lolite cannot access Discord IPC.
+
 
 ### Feature Requests app — 2026-11-11
 - Added **Feature Requests** to the desktop, modern Start menu, Spotlight Search, Cosmos desktop and App Store (always free).

@@ -24,6 +24,8 @@ fs.mkdirSync(path.join(dataRoot,'profile'),{recursive:true});
 app.setPath('userData',dataRoot);
 app.setPath('sessionData',path.join(dataRoot,'profile'));
 const store=new Store(dataRoot);
+const {DiscordPresence}=require('./discord-presence.cjs');
+const discordPresence=new DiscordPresence({clientId:store.data.discordClientId||require('./config.cjs').discordClientId});
 let launcher=null,os=null,updater=null,updating=false,healthTimer=null,healthy=false,updateClient=null;
 let navigation={tab:'home',serial:0},lastAutoCheck=0;
 protocol.registerSchemesAsPrivileged([{scheme:'lolite',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true,stream:true,allowServiceWorkers:false}}]);
@@ -114,7 +116,7 @@ function showLauncher(page='home',check=true){
 function showOS(){
   if(updating)return;if(os){os.show();os.restore();os.focus();return os;}
   healthy=false;os=new BrowserWindow(windowOptions('os'));secureWindow(os,'os');
-  os.on('closed',()=>{os=null;clearTimeout(healthTimer);nativeFiles.revoke();emit();});
+  os.on('closed',()=>{discordPresence.update(null);os=null;clearTimeout(healthTimer);nativeFiles.revoke();emit();});
   os.webContents.on('did-fail-load',(_event,code,description,_url,main)=>{if(main&&code!==-3)recover(description);});
   os.loadURL('lolite://app/index.html');
   healthTimer=setTimeout(()=>{if(!healthy)recover('The desktop did not finish starting.');},30000);
@@ -137,6 +139,9 @@ async function start(){
   nativeFiles=fileAccess({dialog,getWindow:()=>os});
   for(const op of ['open','save','folder','list','read'])handle('files:'+op,'app',arg=>nativeFiles[op](arg));
   handle('desktop:version','app',()=>version);
+  handle('discord:update','app',activity=>discordPresence.update(activity));
+  handle('discord:status','app',()=>discordPresence.status());
+  handle('discord:configure','app',id=>{const result=discordPresence.configure(id);store.data.discordClientId=id;store.save();return result;});
   handle('desktop:launcher','app',async(page='home')=>{
     if(!['home','updates','readme'].includes(page))throw Error('Unknown launcher page.');
     showLauncher(page,page!=='updates');
@@ -189,7 +194,7 @@ async function recover(reason){
   showLauncher('updates',false);updater.set({phase:'error',message:reason+' Use Repair Installation. Your personal files are preserved.'});
 }
 app.on('window-all-closed',()=>app.quit());
-app.on('before-quit',()=>{clearTimeout(healthTimer);updater?.pause();store.save();});
+app.on('before-quit',()=>{discordPresence.close();clearTimeout(healthTimer);updater?.pause();store.save();});
 function smokeResult(result){if(process.env.LOLITE_SMOKE_RESULT)fs.writeFileSync(process.env.LOLITE_SMOKE_RESULT,JSON.stringify({...result,version},null,2));}
 async function smokeDesktop(){
   const result=await os.webContents.executeJavaScript(`(async()=>{const rows=await FileOS.all();await FileOS.put('Documents/desktop-smoke.txt',new Blob(['persistent desktop data']));const catalog=await fetch('game-catalog.json').then(r=>r.json());const pdf=await import('lolite://app/vendor/pdf.mjs');const nativeVersion=await loliteDesktop.version();const offline=await fetch('https://api.github.com/repos/darby9123-arch/Lolite-OS/releases',{cache:'no-store'}).then(()=>false,()=>true);openApp('files','File Explorer');return {bridge:!!window.loliteDesktop,node:typeof require,icons:document.querySelectorAll('#icons .desktop-icon').length,files:!!window.FileOS,previous:rows.some(r=>r.path==='Documents/desktop-smoke.txt'),offline,catalog:catalog.length,pdf:typeof pdf.getDocument,nativeVersion}})()`);
