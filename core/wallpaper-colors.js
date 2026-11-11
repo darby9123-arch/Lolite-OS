@@ -11,8 +11,8 @@
   '--wall-button','--wall-button-hover','--wall-bg','--wall-panel','--wall-panel-solid','--wall-raised',
   '--wall-titlebar','--wall-border','--wall-hover','--wall-pressed','--wall-glow',
   '--wall-text','--wall-muted','--wall-focus-ring','--wall-icon-start','--wall-icon-end',
-  '--wall-icon-border','--wall-glyph-rotate'];
- let enabled=true,version=0,scheme=null,intensity='balanced';
+  '--wall-icon-border','--wall-glyph-rotate','--wall-glyph-color'];
+ let enabled=true,version=0,scheme=null,intensity='subtle';
  const clamp=(n,min,max)=>Math.min(max,Math.max(min,n));
  const hue=n=>((Math.round(n)%360)+360)%360;
  const hsl=(h,s,l)=>'hsl('+hue(h)+' '+Math.round(s)+'% '+Math.round(l)+'%)';
@@ -107,39 +107,40 @@
  }
  function derive(wall,pixels){
   const colour=seed(wall,pixels),h=hue(colour.h);
-  const gain=intensity==='subtle'?.64:intensity==='vivid'?1.23:1;
-  const s=clamp(Math.round(colour.s*100*gain),intensity==='subtle'?19:27,85);
+  const gain=intensity==='subtle'?.54:intensity==='vivid'?1.04:.76;
+  const s=clamp(Math.round(colour.s*100*gain),intensity==='subtle'?18:23,70);
   let secondary=hue(colour.secondary??(h+(h>280||h<35?32:-31)));
   const distance=Math.abs(secondary-h);
   if(Math.min(distance,360-distance)<25)secondary=hue(h+35);
   // Dark surfaces with light foreground, even if the original wallpaper is pale.
   // Vivid mode increases colour in chrome, never the contrast of text or gameplay.
-  const surfaceSat=intensity==='subtle'?12:intensity==='vivid'?31:22;
-  const panelSat=intensity==='subtle'?13:intensity==='vivid'?36:27;
+  const surfaceSat=intensity==='subtle'?3:intensity==='vivid'?12:7;
+  const panelSat=intensity==='subtle'?5:intensity==='vivid'?15:9;
   const scheme={
    hue:h,secondaryHue:secondary,saturation:s,intensity,
-   '--wall-accent':hsl(h,Math.max(44,s),72),
-   '--wall-accent-soft':hsla(h,Math.max(35,s),66,.60),
-   '--wall-secondary':hsl(secondary,clamp(s-3,38,78),67),
-   '--wall-secondary-soft':hsla(secondary,clamp(s-12,28,70),51,.24),
-   '--wall-button':hsl(h,clamp(s+2,44,79),intensity==='vivid'?34:32),
-   '--wall-button-hover':hsl(h,clamp(s+4,45,82),42),
+    '--wall-accent':hsl(h,Math.max(34,s),70),
+    '--wall-accent-soft':hsla(h,Math.max(32,s),65,.44),
+    '--wall-secondary':hsl(secondary,clamp(s-4,30,65),67),
+    '--wall-secondary-soft':hsla(secondary,clamp(s-12,18,48),51,.10),
+    '--wall-button':hsl(h,clamp(s+2,32,60),32),
+    '--wall-button-hover':hsl(h,clamp(s+4,34,67),39),
    '--wall-bg':hsl(h,surfaceSat,8),
-   '--wall-panel':hsla(h,panelSat,13,.96),
-   '--wall-panel-solid':hsl(h,panelSat,13),
-   '--wall-raised':hsl(h,panelSat+3,20),
+    '--wall-panel':hsla(h,panelSat,13,.96),
+    '--wall-panel-solid':hsl(h,panelSat,13),
+    '--wall-raised':hsl(h,panelSat+2,20),
    '--wall-titlebar':hsl(h,panelSat,16),
-   '--wall-border':hsla(h,clamp(s+8,40,80),72,intensity==='subtle'?.25:.32),
-   '--wall-hover':hsla(h,clamp(s+4,42,80),63,.18),
-   '--wall-pressed':hsla(h,clamp(s+5,42,80),65,.28),
-   '--wall-glow':hsla(secondary,clamp(s+1,40,79),43,intensity==='subtle'?.10:intensity==='vivid'?.23:.16),
+    '--wall-border':hsla(h,clamp(s+4,28,58),72,intensity==='subtle'?.18:.26),
+    '--wall-hover':hsla(h,clamp(s+2,30,62),63,.12),
+    '--wall-pressed':hsla(h,clamp(s+4,32,65),65,.20),
+    '--wall-glow':hsla(secondary,clamp(s+1,30,65),43,intensity==='subtle'?.055:intensity==='vivid'?.15:.09),
    '--wall-text':hsl(h,14,95),
    '--wall-muted':hsl(h,15,74),
    '--wall-focus-ring':hsla(h,clamp(s+12,55,92),79,.90),
-   '--wall-icon-start':hsl(h-10,clamp(s+7,42,85),56),
-   '--wall-icon-end':hsl(secondary,clamp(s+1,38,80),35),
-   '--wall-icon-border':hsla(h,72,87,.5),
-   '--wall-glyph-rotate':Math.round(((h-250+540)%360)-180)+'deg'
+    '--wall-icon-start':hsl(h-7,clamp(Math.round(s*.52),18,44),47),
+    '--wall-icon-end':hsl(h+10,clamp(Math.round(s*.48),17,42),31),
+    '--wall-icon-border':hsla(h,40,83,.28),
+    '--wall-glyph-rotate':'0deg',
+   '--wall-glyph-color':hsl(h,clamp(s+14,40,76),42)
   };
   return scheme;
  }
@@ -253,7 +254,7 @@
  window.addEventListener('lolite:desktopthemechange',()=>{if(enabled&&scheme)applyScheme(scheme)});
  window.LoliteWallpaperColors=Object.freeze({isEnabled,setEnabled,refresh,derive,setIntensity,getIntensity:()=>intensity,getScheme:()=>scheme});
  enabled=read(KEY,'on')!=='off';
- intensity=intensityLevels.includes(read(INTENSITY_KEY,'balanced'))?read(INTENSITY_KEY,'balanced'):'balanced';
+ intensity=intensityLevels.includes(read(INTENSITY_KEY,'subtle'))?read(INTENSITY_KEY,'subtle'):'subtle';
  installSettings();
  const boot=()=>{
   if(enabled)refresh();
