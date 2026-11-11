@@ -16,7 +16,7 @@
     <meta charset="utf-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
-    <title>University of Adelaide</title>
+    <title>Grand Theft Auto: Vice City — Lolite OS</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -86,9 +86,21 @@
     <script>
     </script>
 <script>
-alert("Thank Bread from GN-Math for this web-port of gta vice city!");
+// Avoid blocking the download progress screen with an alert.
 const loadingText = document.querySelector("#loading-text");
 let loadedBytes = 0;
+const TOTAL_ESTIMATED_BYTES = 633.45 * 1024 * 1024;
+function updateProgress(name = "", cached = false) {
+    const loadedMB = (loadedBytes / (1024 * 1024)).toFixed(2);
+    loadingText.textContent = "LOADING... " + loadedMB + " MB / ~633.45 MB";
+    const status = document.getElementById("status");
+    if (status) status.textContent = (cached ? "Using cached: " : "Downloading: ") + name;
+    const progress = document.getElementById("progress");
+    if (progress) {
+        progress.max = TOTAL_ESTIMATED_BYTES;
+        progress.value = Math.min(loadedBytes, TOTAL_ESTIMATED_BYTES);
+    }
+}
 const DB_NAME = "gameFilesDB";
 const STORE_NAME = "files";
 
@@ -133,34 +145,45 @@ async function getFile(name) {
 
 // Fetch with progress and caching
 async function fetchWithCache(name, url) {
-    let cached = await getFile(name);
-    if (cached) return cached; // Return cached version
+    // Browser storage may be unavailable in private mode or when quota is full.
+    let cached = null;
+    try { cached = await getFile(name); } catch (error) { console.warn("Vice City cache read failed:", error); }
+    if (cached && cached.byteLength) {
+        loadedBytes += cached.byteLength;
+        updateProgress(name, true);
+        return cached;
+    }
 
     const response = await fetch(url);
-    const reader = response.body.getReader();
-    let chunks = [];
+    if (!response.ok) throw new Error(name + ": download failed (HTTP " + response.status + ").");
+    const chunks = [];
     let received = 0;
-
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        received += value.length;
-        loadedBytes += value.length;
-        chunks.push(value);
-
-        let mbDone = (loadedBytes / (1024 * 1024)).toFixed(2);
-        let mbTotal = '633.45';
-        loadingText.textContent = `LOADING... ${mbDone} MB / ${mbTotal} MB`;
+    if (response.body && typeof response.body.getReader === "function") {
+        const reader = response.body.getReader();
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            received += value.byteLength;
+            loadedBytes += value.byteLength;
+            chunks.push(value);
+            updateProgress(name);
+        }
+    } else {
+        const full = new Uint8Array(await response.arrayBuffer());
+        chunks.push(full);
+        received = full.byteLength;
+        loadedBytes += received;
+        updateProgress(name);
     }
-
-    let fullBuffer = new Uint8Array(received);
+    if (!received) throw new Error(name + ": downloaded file is empty.");
+    const fullBuffer = new Uint8Array(received);
     let offset = 0;
-    for (let chunk of chunks) {
+    for (const chunk of chunks) {
         fullBuffer.set(chunk, offset);
-        offset += chunk.length;
+        offset += chunk.byteLength;
     }
-
-    await saveFile(name, fullBuffer.buffer); // Cache it
+    // Lack of persistent cache must not prevent playing a downloaded game.
+    try { await saveFile(name, fullBuffer.buffer); } catch (error) { console.warn("Vice City cache write failed:", error); }
     return fullBuffer.buffer;
 }
 
@@ -196,7 +219,7 @@ Promise.all([
     mergeFiles(getParts("audio/vrock.adf", 1, 4), "vrock.adf"),
     mergeFiles(getParts("audio/wave.adf", 1, 4), "wave.adf"),
     mergeFiles(getParts("audio/wild.adf", 1, 4), "wild.adf"),
-]).then(([indexdataurl, EMOTIONadfurl, ESPANTadfurl, FEVERadfurl, FLASHadfurl, KCHATadfurl, VCPRadfurl, VROCKadfurl, WAVEadfurl, WILDadfurl]) => {
+]).then(async ([indexdataurl, EMOTIONadfurl, ESPANTadfurl, FEVERadfurl, FLASHadfurl, KCHATadfurl, VCPRadfurl, VROCKadfurl, WAVEadfurl, WILDadfurl]) => {
     
     // Override fetch to use cached URLs
     const originalFetch = window.fetch;
@@ -235,13 +258,33 @@ Promise.all([
     };
 
     // Load game scripts
-    ["gamepademulator.js", "idbfs.js", "game.js"].forEach(src => {
-        const script = document.createElement("script");
-        script.src = src;
-        document.body.appendChild(script);
-    });
+    // Startup scripts depend on one another: dynamically appended scripts can race.
+    for (const src of ["gamepademulator.js", "idbfs.js", "game.js"]) {
+        await new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.async = false;
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = () => reject(new Error("Could not load " + src));
+            document.body.appendChild(script);
+        });
+    }
 
     loadingText.remove();
+}).catch(error => {
+    console.error("Vice City loading failed:", error);
+    loadingText.textContent = "Unable to load Vice City game data.";
+    const message = document.createElement("div");
+    message.style.cssText = "color:#f1f5ff;text-align:center;font:15px/1.5 system-ui;padding:16px";
+    const explanation = document.createElement("p");
+    explanation.textContent = error?.message || "Please check your connection and try again.";
+    const retry = document.createElement("button");
+    retry.type = "button";
+    retry.textContent = "Retry loading";
+    retry.style.cssText = "padding:10px 18px;border:0;border-radius:7px;background:#6154da;color:#fff;cursor:pointer";
+    retry.addEventListener("click", () => location.reload());
+    message.append(explanation, retry);
+    loadingText.after(message);
 });
 </script>
 
