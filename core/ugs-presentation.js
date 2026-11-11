@@ -30,7 +30,10 @@
   'worldshardestgame':'World’s Hardest Game','worldshardestgame2':'World’s Hardest Game 2',
   'worldshardestgame3':'World’s Hardest Game 3','worldshardestgame4':'World’s Hardest Game 4',
   'webecomewhatwebehold':'We Become What We Behold','pokepath':'PokéPath TD',
-  'bitlife':'BitLife','fnaf':'Five Nights at Freddy’s'
+  'bitlife':'BitLife','fnaf':'Five Nights at Freddy’s',
+  'aquaparkio':'Aquapark.io','motox3m':'Moto X3M','motox3m2':'Moto X3M 2',
+  'motox3m3':'Moto X3M 3','motox3mwinter':'Moto X3M Winter',
+  'motox3mspookyland':'Moto X3M Spooky Land','motox3mpoolparty':'Moto X3M Pool Party'
  };
  const short={io:'io',td:'TD',rpg:'RPG',fps:'FPS',gta:'GTA',fnaf:'FNAF',btd:'BTD',
   bfdi:'BFDI',bfdia:'BFDIA',frvr:'FRVR',x3m:'X3M',hd:'HD',vr:'VR'};
