@@ -76,3 +76,13 @@ The poster and header directories use `<source-slug>.webp` and
 `<source-slug>.txt` filenames respectively. They are build inputs, not shipped
 assets. Existing decorative theme artwork remains available to the theme UI;
 it is not offered as an old wallpaper selection.
+
+## Favourite wallpapers (12 November 2026)
+
+Open **Settings → Wallpapers** and click the **heart** at the top-right of any wallpaper preview to add it to your favourites, without applying the wallpaper. The **Favourites** category displays your saved wallpapers together; click the heart again to remove one. You can also save the **currently applied wallpaper** from the control above the gallery.
+
+Favourites work for regular and live wallpapers, embedded MotionBGS wallpapers, admin-uploaded wallpapers (including videos uploaded from ZIPs) and a personal custom image saved through **Custom image**. Embedded wallpapers remain excluded from the general **All** category; favouriting one does not change that, but makes it accessible through **Favourites**. Custom images appear in Favourites when explicitly hearted. Unavailable admin wallpapers retain their favourite IDs so they can reappear if restored later.
+
+Favourites are saved in this browser's local storage under `loliteWallpaperFavouritesV1`, separately from wallpaper catalogue versions. They survive normal reloads and catalogue upgrades, but do not automatically sync between browsers or devices. Clearing site storage may delete the favourites list. Existing wallpaper selection, live playback, categories and video quality are unchanged.
+
+Regression tests: `tests/wallpaper-favourites.test.cjs`.
