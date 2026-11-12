@@ -36,3 +36,13 @@ Members can delete their shared clips to unshare them. A local copy stays on the
 - Storage policies: uploads are restricted to the signed-in user's folder; playback is limited to the clip owner, admin, or members watching approved clips. Files must be WebM/MP4.
 - No background/silent capture, service-role keys, or automatic uploads.
 - Regression suite: `tests/lolite-clips.test.cjs`. Browser-specific recording and audio support still require a manual browser test.
+
+## Clips 3.0 UI and reliability fixes (13 November 2026)
+
+- The app now opens on **Record**, with a clean, responsive layout that fits narrow and maximised windows.
+- Clips has its own DOM root (`#loliteClipsRoot`), `lclip-` CSS classes, and data-action attributes. These intentionally do not overlap with Lolite Chat's `#lcRoot` / `lc-` styles or handlers.
+- Once the browser screen picker finishes, the **Stop & save clip** button is active. Capture permission is released after saving.
+- Videos use stable local object URLs until a clip is deleted or its underlying video changes. Searching, sorting, renaming and favouriting local clips update only the relevant cards to prevent playback jumping back to the beginning.
+- Background account refresh no longer rebuilds the private video gallery. Videos without an automatically loaded community preview offer **Load video** to request a fresh, access-controlled link.
+- Sharing a clip shows an uploading state and leaves the locally saved copy unchanged. Uploads still require user confirmation and admin approval to appear in the community.
+- Regression coverage: `tests/lolite-clips.test.cjs`. Browser-specific capture, audio and mobile resizing should still be tested in the deployed app.
