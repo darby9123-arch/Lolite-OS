@@ -517,7 +517,10 @@
  function cards(filter='All',query='',limit=48){
   const found=(filter==='Favourites'?[...collection,...(customWall()?[customWall()]:[])]:
    collection).filter(wall=>matches(wall,filter,query));
-  if(!found.length)return '<p class="cr-wall-empty">No wallpapers match. Try a different category or search.</p>';
+  if(!found.length)return '<p class="cr-wall-empty">'+
+   (filter==='Favourites'&&!query.trim()?
+    'No favourite wallpapers yet. Tap ♡ on any wallpaper to save it here.':
+    'No wallpapers match. Try a different category or search.')+'</p>';
   const count=Math.min(found.length,Math.max(48,Number(limit)||48));
   return found.slice(0,count).map(wall=>{
    const dimensions=wall.width&&wall.height?wall.width+' × '+wall.height:'Custom';
