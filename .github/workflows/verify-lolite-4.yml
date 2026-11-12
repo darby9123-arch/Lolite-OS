@@ -16,6 +16,8 @@ on:
       - 'core/lolite-4.css'
       - 'core/accounts.js'
       - 'core/chat-v2.js'
+      - 'core/clips.js'
+      - 'core/clips.css'
       - 'core/ultraviolet.js'
       - 'core/scramjet-browser.js'
       - 'html games/Grand Theft Auto Vice City.html'
