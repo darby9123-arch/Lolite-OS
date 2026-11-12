@@ -138,6 +138,10 @@ test('All excludes both providers and remote admin links while Lolite uploads re
  assert.doesNotMatch(api.cards('All'),/Remote upload|lively-/);
  assert.match(api.cards('Embedded Wallpapers','Remote upload'),/Remote upload/);
  assert.match(api.cards('Special Live Wallpapers'),/Hosted upload/);
+ api.apply('admin-11111111-1111-4111-8111-111111111111');
+ assert.equal(e.children.filter(el=>el.tag==='video').length,1);
+ api.setQuality('max');
+ assert.equal(e.children.filter(el=>el.tag==='video').length,2,'Uploaded MP4s retain seamless looping in Original quality');
 });
 function soundEnvironment(seed){const e=environment(seed);let created=0,starts=0;const param=()=>({value:0,setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}});e.c.AudioContext=class{constructor(){created++;this.state='running';this.currentTime=0;this.destination={}}createGain(){return {gain:param(),connect(){},disconnect(){}}}createOscillator(){return {frequency:param(),connect(){},disconnect(){},start(){starts++},stop(){}}}resume(){return Promise.resolve()}};return {...e,counts:()=>({created,starts})}}
 test('sounds wait for interaction; mute and zero volume do not schedule tones',()=>{const e=soundEnvironment();run(e,'system-sounds');assert.equal(e.c.LoliteSounds.play('startup'),false);assert.equal(e.counts().created,0);e.c.LoliteSounds.unlock();assert.equal(e.c.LoliteSounds.play('startup',true),true);assert.equal(e.counts().starts,3);e.c.LoliteSounds.setEnabled(false);assert.equal(e.c.LoliteSounds.play('startup',true),false);e.c.LoliteSounds.setEnabled(true);e.c.LoliteSounds.setVolume(0);assert.equal(e.c.LoliteSounds.play('open',true),false);assert.equal(e.counts().created,1);assert.equal(e.counts().starts,3)});

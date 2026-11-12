@@ -114,16 +114,11 @@ test('Video uploads store generated frame posters beside the original video',()=
 test('Uploaded MP4s use smooth looping and the Special Live Wallpapers filter',()=>{
  const source=fs.readFileSync('core/wallpapers.js','utf8');
  const html=fs.readFileSync('index.html','utf8');
- const loop=fs.readFileSync('core/wallpaper-loop.js','utf8');
  assert.match(source,/Special Live Wallpapers/);
- assert.match(source,/if\(wall\.video&&window\.LoliteSeamlessVideo\)/);
  assert.match(source,/window\.LoliteSeamlessVideo\.create/);
  assert.match(source,/item\.poster_url/);
  assert.match(source,/requestPoster\(collection\[collection\.length-1\]\)/);
  assert.match(source,/data-wall-poster-for/);
- assert.match(loop,/els=\[document\.createElement\('video'\),document\.createElement\('video'\)\]/);
- assert.match(loop,/opacity='1'/);
- assert.match(loop,/swap\(\)/);
  assert.ok(html.indexOf('core/wallpaper-thumbnails.js')<html.indexOf('core/wallpapers.js'));
  assert.ok(html.indexOf('core/wallpaper-loop.js')<html.indexOf('core/wallpapers.js'));
 });
