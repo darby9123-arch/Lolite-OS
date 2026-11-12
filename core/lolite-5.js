@@ -232,7 +232,7 @@
    if(card.querySelector('[data-l5-feedback]'))continue;
    const actions=card.querySelector('.store-card-actions');if(!actions)continue;
    const button=document.createElement('button');button.type='button';button.className='store-details l5-feedback-button';button.dataset.l5Feedback=card.dataset.gameFile;
-   button.textContent='Rate / Report';button.title='Rate this game or save a broken-game report';
+   button.textContent='★ Rate / Bug';button.title='Rate this game or report a bug';button.setAttribute('aria-label','Rate or report a bug for '+(card.querySelector('h3')?.textContent||'this game'));
    actions.appendChild(button);
   }
  };
