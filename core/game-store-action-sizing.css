@@ -115,3 +115,7 @@
   transition:none!important;
  }
 }
+.store.store-v41 .store-gallery-card .store-card-actions > .store-details:not(.l5-feedback-button){
+ width:40px!important;min-width:40px!important;justify-self:start!important;
+}
+.store.store-v41 .store-gallery-card .store-details[title="About this game"] span{font:500 20px/1 system-ui,sans-serif}

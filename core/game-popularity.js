@@ -15,11 +15,12 @@
  function getStatus(){return {status,periodDays:30,trackedGames:counts.size,lastRefresh};}
  const countFor=file=>counts.get(String(file||''))||0;
  function shareEnabled(){
-   try{return localStorage.getItem('loliteAnonymousPlayCounts')!=='off'}catch{return true}
+   try{return localStorage.getItem('loliteAnonymousPlayCounts')==='on'}catch{return false}
  }
  function setSharingEnabled(enabled){
    try{localStorage.setItem('loliteAnonymousPlayCounts',enabled?'on':'off')}catch{}
    event();
+   return shareEnabled();
  }
  async function refresh(force=false){
    if(inflight)return inflight;

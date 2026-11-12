@@ -514,9 +514,38 @@
   const text=[wall.name,wall.category,wall.group,...(wall.tags||[])].join(' ').toLowerCase();
   return valid&&words.every(word=>text.includes(word));
  }
+ const sortOptions={default:'Default',az:'A–Z',za:'Z–A',random:'Random'};
+ let sortOrder=read('loliteWallpaperSortV1','default');
+ if(!Object.hasOwn(sortOptions,sortOrder))sortOrder='default';
+ const randomWallRanks=new Map();
+ const allWalls=()=>[...collection,...(customWall()?[customWall()]:[])];
+ const matchingWalls=(filter,query)=>allWalls().filter(wall=>matches(wall,filter,query));
+ function shuffleWalls(items){
+  const ids=[...new Set(items.map(wall=>wall.id))];
+  for(const id of ids)if(!randomWallRanks.has(id))randomWallRanks.set(id,randomWallRanks.size);
+  ids.sort((a,b)=>randomWallRanks.get(a)-randomWallRanks.get(b));
+  const before=[...ids],positions=ids.map(id=>randomWallRanks.get(id));
+  for(let i=ids.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]]}
+  if(ids.length>1&&ids.every((id,i)=>id===before[i]))ids.push(ids.shift());
+  ids.forEach((id,i)=>randomWallRanks.set(id,positions[i]));
+ }
+ function sortWalls(list){
+  if(sortOrder==='random'){
+   shuffleWalls(allWalls().filter(wall=>!randomWallRanks.has(wall.id)));
+   return list.sort((a,b)=>randomWallRanks.get(a.id)-randomWallRanks.get(b.id));
+  }
+  if(sortOrder==='az'||sortOrder==='za')return list.sort((a,b)=>(sortOrder==='az'?1:-1)*a.name.localeCompare(b.name,undefined,{numeric:true}));
+  return list;
+ }
+ function setSort(value){
+  if(!Object.hasOwn(sortOptions,value))return;
+  sortOrder=value;save('loliteWallpaperSortV1',value);
+ }
+ function reshuffle(filter='All',query=''){
+  if(sortOrder==='random')shuffleWalls(matchingWalls(filter,query));
+ }
  function cards(filter='All',query='',limit=48){
-  const found=(filter==='Favourites'?[...collection,...(customWall()?[customWall()]:[])]:
-   collection).filter(wall=>matches(wall,filter,query));
+  const found=sortWalls(matchingWalls(filter,query));
   if(!found.length)return '<p class="cr-wall-empty">'+
    (filter==='Favourites'&&!query.trim()?
     'No favourite wallpapers yet. Tap ♡ on any wallpaper to save it here.':
@@ -549,6 +578,9 @@
   if(filter==='Live'||!cats.includes(filter))filter='All';
   return '<div class="cr-wall-browse"><label class="cr-wall-search"><span aria-hidden="true">⌕</span>'+
    '<input type="search" data-wall-search placeholder="Search wallpapers" aria-label="Search wallpapers" value="'+escape(query)+'"></label>'+
+   '<label class="cr-wall-sort">Sort by <select data-wall-sort aria-label="Sort wallpapers">'+
+   Object.entries(sortOptions).map(([value,label])=>'<option value="'+value+'"'+(value===sortOrder?' selected':'')+'>'+label+'</option>').join('')+'</select></label>'+
+   '<button type="button" class="cr-secondary cr-wall-reshuffle" data-wall-reshuffle '+(sortOrder==='random'?'':'hidden')+'>Reshuffle</button>'+
    '<label class="cr-upload">Custom image<input type="file" accept="image/png,image/jpeg,image/webp" data-wall-upload hidden></label></div>'+
    '<div class="cr-wall-toolbar"><div class="cr-filter" role="group" aria-label="Wallpaper collection">'+
    cats.map(cat=>'<button type="button" data-wall-filter="'+cat+'" aria-pressed="'+(cat===filter)+'">'+
@@ -637,6 +669,7 @@
  window.LoliteWallpapers={
   collection,apply,restore,markup,cards,setCustom,discoverVideos,syncAdminWallpapers,getStatus:()=>status,
   isFavourite,toggleFavourite,favouriteCount,
+  getSort:()=>sortOrder,setSort,reshuffle,
   getQuality:()=>quality,setQuality,retry:()=>{if(active)show(active,{force:true})},
   getTransitionMode:()=>transitionMode,setTransitionMode,
   isInteractiveEnabled:()=>interactionOn,

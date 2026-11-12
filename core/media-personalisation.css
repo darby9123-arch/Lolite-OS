@@ -39,3 +39,10 @@
 /* Large video collections load covers in small batches. */
 .cr-wall-more{grid-column:1/-1;justify-self:center;margin:10px 0;min-width:210px}
 .cr-wall-image img{object-fit:cover}
+.cr-wall-browse{flex-wrap:wrap}
+.cr-wall-browse .cr-wall-search{flex:1 1 190px;min-width:140px}
+.cr-wall-sort{display:flex;align-items:center;gap:7px;white-space:nowrap;color:#d2c6d0;font-size:12px}
+.cr-wall-sort select{min-height:38px;padding:7px 9px;border:1px solid #ffffff30;border-radius:7px;background:#27232b;color:#f2eaf0;font:inherit;cursor:pointer}
+.cr-wall-reshuffle{min-height:38px;white-space:nowrap}
+.cr-wall-reshuffle[hidden]{display:none!important}
+.cr-wall-sort select:focus-visible,.cr-wall-reshuffle:focus-visible{outline:2px solid var(--accent,#cfa9ff);outline-offset:2px}

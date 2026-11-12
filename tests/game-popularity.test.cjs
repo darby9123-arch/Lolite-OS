@@ -43,6 +43,7 @@ test('Unreported and restricted titles never become popularity recommendations',
 });
 test('Game launches report only file and ephemeral page token and deduplicate repeats',async()=>{
  const h=harness([]);
+ assert.equal(h.api.setSharingEnabled(true),true);
  await h.api.record('clgdbreeze.html');
  await h.api.record('clgdbreeze.html');
  const post=h.requests.filter(r=>r.method==='POST');
@@ -51,7 +52,7 @@ test('Game launches report only file and ephemeral page token and deduplicate re
  assert.equal(payload.file,'clgdbreeze.html');
  assert.match(payload.session,/^[a-f0-9-]{36}$/);
  assert.deepEqual(Object.keys(payload).sort(),['file','session']);
- assert.equal(h.store.size,0,'No account or device ID is persisted');
+ assert.deepEqual([...h.store.keys()],['loliteAnonymousPlayCounts'],'Only the preference is persisted, not an account or device ID');
 });
 test('People can stop contributing anonymous counts without losing rankings',async()=>{
  const h=harness([{file:'clgdbreeze.html',plays:5}]);
@@ -70,7 +71,8 @@ test('Store sorts by play counts rather than matching game-name keywords',()=>{
  assert.match(store,/return searching\?found:active==='Popular Games'\?ranked\(found\):/);
  assert.match(store,/active==='Recently Added'\?found\.sort/);
  assert.match(store,/No game launches counted yet/);
- assert.match(store,/Count my game launches anonymously/);
+ assert.doesNotMatch(store,/Count my game launches anonymously|setSharingEnabled|data-account-anonymous-counts/);
+ assert.match(read('core/accounts.js'),/Count my game launches anonymously/);
  assert.match(store,/launches in 30 days/);
  assert.match(store,/lolite:popular-games/);
 });
@@ -93,4 +95,29 @@ test('Only an aggregate API is exposed to the site, never a service-role key',()
  assert.match(backend,/lolite_record_game_launch/);
  assert.match(backend,/lolite_get_popular_games/);
  assert.match(backend,/allowedOrigins/);
+});
+
+test('Anonymous counting defaults off, including invalid settings and inaccessible storage',async()=>{
+ const h=harness([{file:'clgdbreeze.html',plays:5}]);
+ for(const value of [null,'','true','invalid','off']){
+  if(value===null)h.store.delete('loliteAnonymousPlayCounts');else h.store.set('loliteAnonymousPlayCounts',value);
+  assert.equal(h.api.shareEnabled(),false);
+  assert.equal(await h.api.record('clgdbreeze.html'),false);
+ }
+ await h.api.refresh();
+ assert.equal(h.api.countFor('clgdbreeze.html'),5);
+ h.window.localStorage.getItem=()=>{throw Error('Storage blocked')};
+ h.window.localStorage.setItem=()=>{throw Error('Storage blocked')};
+ assert.equal(h.api.setSharingEnabled(true),false);
+ assert.equal(await h.api.record('clgdbreeze.html'),false);
+ assert.equal(h.requests.filter(r=>r.method==='POST').length,0);
+});
+test('Explicit saved opt-in works and switching off stops subsequent launches',async()=>{
+ const h=harness();
+ h.store.set('loliteAnonymousPlayCounts','on');
+ assert.equal(h.api.shareEnabled(),true);
+ assert.equal(await h.api.record('slope.html'),true);
+ assert.equal(h.api.setSharingEnabled(false),false);
+ assert.equal(await h.api.record('clgdbreeze.html'),false);
+ assert.equal(h.requests.filter(r=>r.method==='POST').length,1);
 });

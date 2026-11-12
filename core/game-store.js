@@ -453,7 +453,7 @@
    const artworkURL=value=>{try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password?u.href:''}catch{return ''}};
    const iconUrl=artworkURL(item.icon_url),backgroundUrl=artworkURL(item.background_url);
    const game={file:'admin-'+item.id,title:item.title.slice(0,90),url:item.url,
-    adminSharedGame:true,external:true,local:false,source:'Admin library',
+    adminSharedGame:true,external:true,local:false,source:'Admin library',description:item.description,
     iconUrl,backgroundUrl,addedAt:item.created_at||'',category:categorize({title:item.title})};
    games.push(game);
    adminGameArtwork.set(game.file,{icon:iconUrl,background:backgroundUrl});
@@ -691,13 +691,56 @@
   return known.every(source=>!!window.LoliteGameHealth?.isUnavailable?.({url:source.url}));
  };
  const healthy=list=>list.filter(g=>!broken(g));
- let sortOrder='az';
+ const sortOptions={default:'Default',az:'A–Z',za:'Z–A',random:'Random',servers:'Most servers',popular:'Most launched'};
+ let sortOrder='default',lastSortedGames=[];
+ try{const saved=localStorage.getItem('loliteGameSortV1');if(Object.hasOwn(sortOptions,saved))sortOrder=saved}catch{}
+ const randomGameRanks=new Map();
+ function shuffleGames(items){
+  const ids=[...new Set(items.map(g=>g.file))];
+  for(const id of ids)if(!randomGameRanks.has(id))randomGameRanks.set(id,randomGameRanks.size);
+  ids.sort((a,b)=>randomGameRanks.get(a)-randomGameRanks.get(b));
+  const before=[...ids],positions=ids.map(id=>randomGameRanks.get(id));
+  for(let i=ids.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]]}
+  if(ids.length>1&&ids.every((id,i)=>id===before[i]))ids.push(ids.shift());
+  ids.forEach((id,i)=>randomGameRanks.set(id,positions[i]));
+ }
  const sortGames=list=>{
+  if(sortOrder==='random'){
+   // Add newly loaded titles without disturbing the order already being browsed.
+   shuffleGames(games.filter(g=>!randomGameRanks.has(g.file)));
+   return list.sort((a,b)=>randomGameRanks.get(a.file)-randomGameRanks.get(b.file));
+  }
+  if(sortOrder==='default')return list;
   if(sortOrder==='za')return list.sort((a,b)=>b.title.localeCompare(a.title,undefined,{numeric:true}));
   if(sortOrder==='servers')return list.sort((a,b)=>availableServers(b).length-availableServers(a).length||a.title.localeCompare(b.title));
   if(sortOrder==='popular')return list.sort((a,b)=>playCount(b)-playCount(a)||a.title.localeCompare(b.title));
   return list.sort((a,b)=>a.title.localeCompare(b.title,undefined,{numeric:true}));
  };
+ const gameDescriptions=[
+  [/geometry\s*dash/i,'Jump and fly through obstacle courses, timing each move to the beat. Keep practising to make it through each level.'],
+  [/minecraft|eaglercraft/i,'Explore a block-built world, gather resources and build your own creations.'],
+  [/angry\s*birds/i,'Aim your slingshot and launch birds at precarious structures. Find the right angle to bring them tumbling down.'],
+  [/baldi/i,'Explore the schoolhouse, collect notebooks and try to escape while avoiding Baldi and the other characters.'],
+  [/cookie\s*clicker/i,'Click to bake cookies, buy upgrades and grow your cookie-making empire.'],
+  [/^slope(?:\s|$)/i,'Steer a ball down a fast-moving course, dodge obstacles and see how long you can stay on the track.'],
+  [/^2048(?:\s|$)/i,'Slide matching numbered tiles together to double their value. Plan your moves and work towards the 2048 tile.'],
+  [/tetris/i,'Rotate and place falling blocks to complete horizontal lines before the stack reaches the top.'],
+  [/^snake(?:\s|$)/i,'Guide a growing snake towards food while keeping clear of the edges and its own tail.'],
+  [/pac[ -]?man/i,'Navigate a maze, collect pellets and dodge the ghosts. Power pellets give you a brief chance to turn the tables.'],
+  [/subway\s*surfers/i,'Dash along railway tracks, dodge trains and obstacles, and collect coins as you run.'],
+  [/flappy\s*bird/i,'Tap to keep your bird in the air and steer through the gaps between pipes.'],
+  [/moto\s*x3m/i,'Ride through obstacle-filled motorcycle courses. Balance your bike and time your jumps to reach the finish.'],
+  [/retro\s*bowl/i,'Manage an American football team and take control of its offence as you work towards the championship.'],
+  [/five\s*nights\s*at\s*freddy|^fnaf\b/i,'Survive a tense night with animatronic characters. Watch for danger and use the tools available in this version to stay safe.'],
+  [/vice\s*city/i,'Explore Vice City, drive vehicles and take on missions in an open-world action game.']
+ ];
+ function descriptionFor(game){
+  const provided=[game.description,game.summary,game.ugsEntry?.description,game.gamefilesRecord?.description]
+   .find(value=>typeof value==='string'&&value.trim());
+  if(provided)return provided.trim().slice(0,2000);
+  const description=gameDescriptions.find(([pattern])=>pattern.test(game.title))?.[1];
+  return description||game.title+' is part of Lolite’s '+(game.category||'games')+' collection. Choose a server below to play, or copy the game to share it in Lolite Chat.';
+ }
  function closeGameDetail(){
   const node=document.querySelector('#loliteGameDetail');if(node){node.remove();document.querySelector('[data-store-details-return="true"]')?.focus();document.querySelector('[data-store-details-return="true"]')?.removeAttribute('data-store-details-return')}
  }
@@ -716,6 +759,7 @@
    '<button type="button" class="lolite-game-detail-close" data-game-detail-close aria-label="Close game details">×</button></div>'+
    '<div class="store-detail-artwork"><img class="lolite-game-detail-image" src="'+encodeLabel(game.backgroundUrl||game.iconUrl||coverFor(game.file)||posterForGame(game))+'" alt="Game artwork">'+
    (game.iconUrl?'<img class="store-detail-icon" src="'+encodeLabel(game.iconUrl)+'" alt="Game icon">':'')+'</div>'+
+   '<div class="lolite-game-description"><h3>About this game</h3><p>'+encodeLabel(descriptionFor(game))+'</p></div>'+
    '<div class="lolite-game-detail-stat">Source: '+encodeLabel(game.source||'Lolite OS')+'</div>'+
    '<div class="lolite-game-detail-stat">Recent launches: '+playCount(game).toLocaleString()+' in the last 30 days (when available)</div>'+
    '<div class="lolite-game-detail-stat">Your playtime: '+(window.LoliteActivity?.duration(window.LoliteActivity?.statsFor(game.file)?.total_seconds||0)||'0 sec')+'</div>'+
@@ -787,7 +831,7 @@
    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4.5L5 21V4.5a1 1 0 0 1 1-1Z"/></svg></button></div>'+
    '<div class="store-card-body"><h3 title="'+title+'">'+title+'</h3>'+plays+
    '<div class="store-card-actions"><button class="store-play" type="button" data-store-launch="'+file+'" aria-label="Play '+title+'">'+launchText+'</button>'+
-   serverPickerMarkup(g)+'<button class="store-details" type="button" data-store-details="'+file+'" aria-label="Details for '+title+'">Info</button></div></div></article>';
+   serverPickerMarkup(g)+'<button class="store-details" type="button" data-store-details="'+file+'" aria-label="Details for '+title+'" title="About this game"><span aria-hidden="true">ⓘ</span></button></div></div></article>';
  };
  const ugsDiscoveredArt=new Map();
  const coverFor=file=>{
@@ -921,7 +965,9 @@
   const hiddenCount=games.length-totalGames.length;
   const healthText=hiddenCount?hiddenCount+' missing hidden':'Check game files';
   const totalPlayable=playableVersionCount(totalGames);
-  const sortMenu='<label class="store-sort-label">Sort <select data-store-sort aria-label="Sort games"><option value="az"'+(sortOrder==='az'?' selected':'')+'>A–Z</option><option value="za"'+(sortOrder==='za'?' selected':'')+'>Z–A</option><option value="servers"'+(sortOrder==='servers'?' selected':'')+'>Most servers</option><option value="popular"'+(sortOrder==='popular'?' selected':'')+'>Most launched</option></select></label>';
+  const sortMenu='<label class="store-sort-label">Sort by <select data-store-sort aria-label="Sort games">'+
+   Object.entries(sortOptions).map(([value,label])=>'<option value="'+value+'"'+(sortOrder===value?' selected':'')+'>'+label+'</option>').join('')+
+   '</select></label><button type="button" class="store-reshuffle" data-store-reshuffle '+(sortOrder==='random'?'':'hidden')+'>Reshuffle</button>';
   const categoryJump='<label class="store-category-jump">Collection <select data-store-category-jump aria-label="Choose game collection">'+
     categoryNames.map(name=>'<option value="'+encodeLabel(name)+'"'+(active===name?' selected':'')+'>'+encodeLabel(name)+'</option>').join('')+
     '</select></label>';
@@ -935,7 +981,7 @@
   else list=filtered(totalGames);
   // Featured can add titles from the full catalogue; verify they are playable.
   if(active==='Featured'&&!query.trim())list=healthy(list);
-  if(query.trim()||active==='All Games'||active==='My Library'||active==='Favorites'||active==='UGS')list=sortGames(list);
+  list=sortGames(list);lastSortedGames=list;
   const showFeatured=!query.trim()&&active==='Featured';
   const livePopularity=active==='Popular Games'&&!query.trim();
   const popularityStatus=popularity()?.getStatus()?.status||'loading';
@@ -950,13 +996,10 @@
         ?'Live popularity counts are unavailable. Try reopening this category.'
         :'No game launches counted yet. Popular Games will fill in as people play.')
       :'No games found. Try another search or category.';
-  const privacy=livePopularity
-    ?'<div class="store-popularity-privacy"><label><input type="checkbox" onchange="window.LoliteGamePopularity?.setSharingEnabled(this.checked)" '+(popularity()?.shareEnabled()?'checked':'')+'> Count my game launches anonymously</label><small>Only game launch totals are kept, not player accounts or profiles.</small></div>'
-    :'';
   const content=(showFeatured?heroMarkup():'')+
     '<section class="store-section"><div class="store-section-head"><div><h2>'+
     (query.trim()?'Search results for “'+encodeLabel(query.trim())+'”':encodeLabel(active))+'</h2><p>'+summary+'</p></div></div>'+
-    privacy+(list.length?listCards(list):'<div class="store-empty">'+empty+'</div>')+
+    (list.length?listCards(list):'<div class="store-empty">'+empty+'</div>')+
     '</section>';
   const toolbar=root.querySelector('.store-top'),results=root.querySelector('.store-results');
   const searchFocused=!!document.activeElement?.matches?.('.store-v41 .store-search');
@@ -968,6 +1011,10 @@
    if(searchInput&&searchInput.value!==query)searchInput.value=query;
    const clear=toolbar.querySelector?.('[data-store-clear-search]');
    if(clear)clear.hidden=!query.trim();
+   const sort=toolbar.querySelector?.('[data-store-sort]');
+   if(sort)sort.value=sortOrder;
+   const reshuffle=toolbar.querySelector?.('[data-store-reshuffle]');
+   if(reshuffle)reshuffle.hidden=sortOrder!=='random';
    const category=toolbar.querySelector?.('[data-store-category-jump]');
    if(category&&category.value!==active)category.value=active;
    const count=toolbar.querySelector?.('.store-count-pill');
@@ -1145,6 +1192,11 @@
  document.addEventListener('click',event=>{
   const clear=event.target.closest?.('.store-v41 [data-store-clear-search]');
   if(clear){event.preventDefault();window.loliteStoreSearch('');document.querySelector('.store-v41 .store-search')?.focus?.();return}
+  const reshuffle=event.target.closest?.('.store-v41 [data-store-reshuffle]');
+  if(reshuffle&&sortOrder==='random'){
+   event.preventDefault();shuffleGames(lastSortedGames);visibleCount=query.trim()?30:60;
+   render({keepToolbar:true,resetScroll:true});return;
+  }
   const node=event.target.closest?.('.store-v41 [data-store-favorite],.store-v41 [data-store-launch],.store-v41 [data-store-details],.store-v41 [data-store-open-chat],.store-v41 [data-category]');
   if(!node)return;
   if(node.dataset.storeFavorite){toggleFavourite(node.dataset.storeFavorite);event.preventDefault();return}
@@ -1190,8 +1242,10 @@
   const category=event.target.closest?.('.store-v41 [data-store-category-jump]');
   if(category){window.loliteStoreCategory(category.value);return}
   const select=event.target.closest?.('.store-v41 [data-store-sort]');
-  if(select&&['az','za','servers','popular'].includes(select.value)){
-   sortOrder=select.value;render({keepToolbar:true});
+  if(select&&Object.hasOwn(sortOptions,select.value)){
+   sortOrder=select.value;visibleCount=query.trim()?30:60;
+   try{localStorage.setItem('loliteGameSortV1',sortOrder)}catch{}
+   render({keepToolbar:true,resetScroll:true});
   }
   const source=event.target.closest?.('.store-v41 .store-server-select');
   if(source)window.loliteStorePickServer(source.dataset.sourceGame,source.value);

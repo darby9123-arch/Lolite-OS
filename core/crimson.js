@@ -62,7 +62,7 @@
  function openSettings(section){tab=section||'appearance';launch('settings');renderSettings();if(tab==='wallpapers')void window.LoliteWallpapers?.discoverVideos?.(true)}
  window.page=function(id){if(id==='home')return homeMarkup();if(id==='settings')return settingsMarkup();return oldPage.apply(this,arguments)};
  document.addEventListener('click',e=>{
-  const b=e.target.closest('[data-cr-open],[data-cr-settings],[data-cr-tab],[data-wall-id],[data-wall-filter],[data-wall-favourite],[data-wall-favourite-current],[data-cr-action],[data-cr-sound],[data-cr-theme-mode],[data-cr-theme-select],[data-wall-retry],[data-cr-admin-open],[data-cr-website-library]');if(!b)return;
+  const b=e.target.closest('[data-cr-open],[data-cr-settings],[data-cr-tab],[data-wall-id],[data-wall-filter],[data-wall-favourite],[data-wall-favourite-current],[data-cr-action],[data-cr-sound],[data-cr-theme-mode],[data-cr-theme-select],[data-wall-retry],[data-wall-reshuffle],[data-cr-admin-open],[data-cr-website-library]');if(!b)return;
   if(b.dataset.crThemeMode){
    const panel=b.closest('[data-cr-theme-panel]');
    if(panel){panel.outerHTML=themePanel(b.dataset.crThemeMode);
@@ -92,6 +92,11 @@
    }
    if(b.dataset.wallId)window.LoliteWallpapers.apply(b.dataset.wallId);
    if(b.dataset.wallFilter){filter=b.dataset.wallFilter;const holder=document.querySelector('[data-cr-wall-library]');if(holder){holder.innerHTML=window.LoliteWallpapers.markup(filter,wallQuery);holder.querySelector(`[data-wall-filter="${filter}"]`)?.focus()}}
+  if(b.hasAttribute('data-wall-reshuffle')){
+   window.LoliteWallpapers.reshuffle(filter,wallQuery);
+   const grid=b.closest('[data-cr-wall-library]')?.querySelector('.cr-wall-grid');
+   if(grid)grid.innerHTML=window.LoliteWallpapers.cards(filter,wallQuery);
+  }
   if(b.hasAttribute('data-wall-retry'))window.LoliteWallpapers.retry();
   if(b.dataset.crSound)window.LoliteSounds.preview(b.dataset.crSound).then(played=>{const status=document.querySelector('[data-cr-sound-status]');if(status)status.textContent=played?'Previewing '+b.querySelector('strong').textContent:'Turn on sounds and raise the volume to preview'});
   if(b.dataset.crAction==='layout')window.LoliteDeviceMode?.showChooser();
@@ -100,6 +105,14 @@
  document.addEventListener('change',e=>{
   const el=e.target;
   if(el.matches('[data-cr-sound-group]'))window.LoliteSounds.setGroup(el.dataset.crSoundGroup,el.checked);
+  if(el.matches('[data-wall-sort]')){
+   window.LoliteWallpapers.setSort(el.value);
+   const holder=el.closest('[data-cr-wall-library]');
+   const grid=holder?.querySelector('.cr-wall-grid');
+   if(grid)grid.innerHTML=window.LoliteWallpapers.cards(filter,wallQuery);
+   const reshuffle=holder?.querySelector('[data-wall-reshuffle]');
+   if(reshuffle)reshuffle.hidden=window.LoliteWallpapers.getSort()!=='random';
+  }
   if(el.matches('[data-wall-quality]'))window.LoliteWallpapers.setQuality(el.value);
   if(el.matches('[data-cr-sounds]')){window.LoliteSounds.setEnabled(el.checked);document.querySelectorAll('[data-cr-sound]').forEach(b=>b.disabled=!el.checked)}
   if(el.matches('[data-cr-reduce]')){window.toggleReduce(el.checked);window.LoliteWallpapers.sync();document.querySelectorAll('[data-cr-live]').forEach(n=>n.checked=!window.LoliteWallpapers.isPaused())}

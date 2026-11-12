@@ -134,3 +134,47 @@ test('Wallpaper Settings handles favourite clicks separately from applying cards
  assert.match(html,/core\/wallpapers\.js\?v=20261113/);
  assert.match(html,/core\/crimson\.js\?v=20261113/);
 });
+
+const wallIds=html=>[...html.matchAll(/data-wall-id="([^"]+)"/g)].map(match=>match[1]);
+function sortingHarness(){
+ const h=harness();
+ for(let i=0;i<110;i++)h.api.collection.push({id:'uploaded-'+i,name:'Landscape '+i,category:'Nature',src:'https://example.com/'+i+'.jpg'});
+ return h;
+}
+test('Wallpaper Random preserves pagination, filters, favourites and incoming uploads',()=>{
+ const {api}=sortingHarness();
+ const catalogueOrder=api.collection.map(w=>w.id).join(',');
+ api.setSort('random');
+ const first=wallIds(api.cards('All')),all=wallIds(api.cards('All','',200));
+ assert.equal(first.length,48);assert.equal(all.length,110);
+ assert.deepEqual(all.slice(0,48),first);
+ assert.equal(new Set(all).size,110);
+ assert.deepEqual(wallIds(api.cards('All')),first);
+ const matching=wallIds(api.cards('All','Landscape 1',200));
+ assert.deepEqual(matching,all.filter(id=>id.slice('uploaded-'.length).includes('1')));
+ for(const id of first.slice(0,3))api.toggleFavourite(id);
+ assert.deepEqual(wallIds(api.cards('Favourites')),first.slice(0,3));
+ assert.equal(api.collection.map(w=>w.id).join(','),catalogueOrder);
+ assert.ok(wallIds(api.cards('Embedded Wallpapers')).every(id=>!id.startsWith('uploaded-')));
+ api.syncAdminWallpapers([uploaded()]);
+ assert.deepEqual(wallIds(api.cards('All','',200)).filter(id=>all.includes(id)),all);
+ api.reshuffle('All');
+ const shuffled=wallIds(api.cards('All','',200));
+ assert.notDeepEqual(shuffled.slice(0,48),first);
+ assert.deepEqual(shuffled.filter(id=>all.includes(id)).sort(),[...all].sort());
+ assert.deepEqual(wallIds(api.cards('All')),shuffled.slice(0,48));
+});
+test('Wallpaper Sort by persists, uses numeric titles and shows Reshuffle only for Random',()=>{
+ const h=sortingHarness(),api=h.api;
+ assert.match(api.markup(),/data-wall-reshuffle hidden/);
+ api.setSort('za');
+ assert.deepEqual(wallIds(api.cards('All')).slice(0,3),['uploaded-109','uploaded-108','uploaded-107']);
+ assert.equal(h.storage.get('loliteWallpaperSortV1'),'za');
+ assert.equal(harness({storage:h.storage}).api.getSort(),'za');
+ api.setSort('az');
+ assert.deepEqual(wallIds(api.cards('All')).slice(0,3),['uploaded-0','uploaded-1','uploaded-2']);
+ api.setSort('random');
+ assert.doesNotMatch(api.markup(),/data-wall-reshuffle hidden/);
+ assert.match(api.markup(),/<option value="random" selected>/);
+ api.setSort('invalid');assert.equal(api.getSort(),'random');
+});

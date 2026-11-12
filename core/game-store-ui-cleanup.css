@@ -207,6 +207,16 @@ html.lolite-lite-mode .store.store-v41 .store-card:hover .store-cover-art{transf
  border-color:#ffffff30!important;
 }
 .store.store-v41 .store-clear-search[hidden]{display:none!important}
+.store.store-v41 .store-reshuffle{
+ min-height:36px;padding:7px 11px;border:1px solid #58496c;border-radius:7px;
+ background:#282239;color:#f1e7ff;font-family:inherit;font-size:12px;font-weight:600;line-height:1.3;cursor:pointer;white-space:nowrap;
+}
+.store.store-v41 .store-reshuffle:hover{background:#40344f}
+.store.store-v41 .store-reshuffle[hidden]{display:none!important}
+.store.store-v41 .store-reshuffle:focus-visible{outline:2px solid var(--wall-focus-ring,#cfa9ff);outline-offset:2px}
+.lolite-game-description{margin:18px 0;padding:15px;border:1px solid #ffffff1c;border-radius:10px;background:#ffffff05}
+.lolite-game-description h3{margin:0 0 8px;font-size:15px}
+.lolite-game-description p{margin:0;color:#ded5e9;font-size:14px;line-height:1.65;overflow-wrap:anywhere;white-space:pre-line}
 .store.store-v41 .store-search-wrap:focus-within .store-search{
  outline:2px solid var(--wall-focus-ring,#cfa9ff)!important;
  outline-offset:0!important;

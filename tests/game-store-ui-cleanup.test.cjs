@@ -146,7 +146,7 @@ test('Primary game-card Play buttons are larger and stay aligned with Info',()=>
  assert.match(infoRule,/min-height:52px!important/);
  assert.match(js,/class="store-play" type="button" data-store-launch/);
  assert.match(js,/class="store-details" type="button" data-store-details/);
- assert.match(read('index.html'),/core\/game-store-ui-cleanup\.css\?v=big-play-20261112/);
+ assert.match(read('index.html'),/core\/game-store-ui-cleanup\.css\?v=[^"\s]+/);
 });
 
 
