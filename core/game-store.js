@@ -1162,14 +1162,14 @@
  let searchTimer=0;
  const flushSearch=input=>{
   clearTimeout(searchTimer);searchTimer=0;
-  if(input&&input.isConnected!==false&&input.matches?.('.store-v41 .store-search'))
+  if(input)
    window.loliteStoreSearch(input.value);
  };
  document.addEventListener('input',event=>{
   const input=event.target.closest?.('.store-v41 .store-search');
   if(input&&!event.isComposing){
    clearTimeout(searchTimer);
-   searchTimer=setTimeout(()=>flushSearch(input),110);
+   searchTimer=setTimeout(()=>{if(input.isConnected!==false)flushSearch(input)},110);
   }
  });
  document.addEventListener('compositionend',event=>{
