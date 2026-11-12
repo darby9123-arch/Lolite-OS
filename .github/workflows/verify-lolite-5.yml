@@ -11,6 +11,9 @@ on:
       - 'core/spotlight.js'
       - 'core/game-player.js'
       - 'tests/lolite-5-integrations.test.cjs'
+      - 'tests/performance-hotfix.test.cjs'
+      - 'core/wallpaper-loop.js'
+      - 'core/game-store.js'
       - 'tests/wallpaper-colors.test.cjs'
       - 'core/motion.js'
       - 'core/crimson.js'
@@ -32,6 +35,9 @@ on:
       - 'core/spotlight.js'
       - 'core/game-player.js'
       - 'tests/lolite-5-integrations.test.cjs'
+      - 'tests/performance-hotfix.test.cjs'
+      - 'core/wallpaper-loop.js'
+      - 'core/game-store.js'
       - 'tests/wallpaper-colors.test.cjs'
       - 'core/motion.js'
       - 'core/crimson.js'
@@ -64,4 +70,4 @@ jobs:
           node --check core/accounts.js
           node --check core/wallpapers.js
       - name: Test desktop windows, accounts, wallpaper and Customization Studio
-        run: node --test tests/lolite-5-integrations.test.cjs tests/lolite-5.test.cjs tests/window-manager.test.cjs tests/accounts-activity.test.cjs tests/local-live-wallpapers.test.cjs tests/wallpaper-colors.test.cjs
+        run: node --test tests/performance-hotfix.test.cjs tests/lolite-5-integrations.test.cjs tests/lolite-5.test.cjs tests/window-manager.test.cjs tests/accounts-activity.test.cjs tests/local-live-wallpapers.test.cjs tests/wallpaper-colors.test.cjs
