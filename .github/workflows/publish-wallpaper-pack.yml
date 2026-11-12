@@ -1,4 +1,5 @@
 name: Publish original Lolite wallpaper pack
+# Use the stable release tag when publishing the final media manifest.
 on:
   push:
     branches: [main]

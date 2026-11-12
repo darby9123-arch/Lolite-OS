@@ -93,7 +93,8 @@ def main():
         time.sleep(15)
     if len(done) != 103:
         raise RuntimeError('The pack is incomplete; draft remains unpublished')
-    release = json.loads(gh('api', 'repos/' + REPO + '/releases/tags/' + TAG))
+    releases = json.loads(gh('api', 'repos/' + REPO + '/releases?per_page=100'))
+    release = next(row for row in releases if row['tag_name'] == TAG)
     assets = {}
     for page in range(1, 5):
         rows = json.loads(gh('api', 'repos/' + REPO + '/releases/' + str(release['id']) + '/assets?per_page=100&page=' + str(page)))
@@ -105,10 +106,12 @@ def main():
         asset = assets[entry['filename']]
         if asset['size'] != entry['bytes']:
             raise ValueError('Uploaded asset size mismatch')
-        entry['video'] = asset['browser_download_url']
-        entry['poster'] = assets[entry['posterFilename']]['browser_download_url']
+        entry['video'] = 'https://github.com/' + REPO + '/releases/download/' + TAG + '/' + entry['filename']
+        if not assets[entry['posterFilename']]['size']:
+            raise ValueError('Empty thumbnail')
+        entry['poster'] = 'https://github.com/' + REPO + '/releases/download/' + TAG + '/' + entry['posterFilename']
         entries.append(entry)
-    payload = {'version': '20261113', 'release': release['html_url'], 'total': len(entries), 'bytes': sum(x['bytes'] for x in entries), 'catalog': entries}
+    payload = {'version': '20261113', 'release': 'https://github.com/' + REPO + '/releases/tag/' + TAG, 'total': len(entries), 'bytes': sum(x['bytes'] for x in entries), 'catalog': entries}
     (ROOT / 'manifest.json').write_text(json.dumps(payload, indent=2) + '\n')
     (ROOT / 'SHA256SUMS').write_text(''.join(x['sha256'] + '  ' + x['filename'] + '\n' for x in entries))
     gh('release', 'upload', TAG, str(ROOT / 'manifest.json'), str(ROOT / 'SHA256SUMS'), '--repo', REPO, '--clobber')
