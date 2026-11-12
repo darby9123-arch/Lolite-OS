@@ -11,10 +11,16 @@ Lolite Clips is a built-in recording app in the desktop, modern Start menu, Cosm
 
 **Important browser limitations:** This records **from the time you start recording**; it does not retrieve the last 30 seconds retroactively (no background replay buffer). The keyboard shortcut works when Lolite or a same-origin game iframe has keyboard focus. Cross-origin game iframes can intercept it, so use the capture controls in those games. Screen/tab capture requires a supported browser and HTTPS. Game/tab audio is included only if the browser supports it and you choose to share audio. Capture will stop if you end browser screen sharing.
 
-## My Clips: private local library
-Recordings are saved as **WebM or MP4** in the browser's **IndexedDB** storage. They are not sent to Lolite servers automatically. **My Clips** lets you watch, download and delete each clip. Download any clip you want to preserve: clearing browser storage or changing devices may remove local videos. If browser storage fails when a recording ends, the app offers the recording as a download instead.
+## Clips 2.0 recording controls
+- **Pause / Resume:** While recording, select **Pause recording** to temporarily stop adding footage. Choose **Resume** to continue within the same file. The time limit counts actual recorded time, not paused time. **Stop & save** also works while paused.
+- **Live progress:** The Record page shows elapsed time, seconds left and a progress indicator. The always-visible recording status also says when recording is paused.
+- **Video quality:** Choose **Compact** (800 kbps), **Balanced** (1.5 Mbps, default), or **High** (3 Mbps). Higher quality can create larger files and may exceed the 20 MB community-sharing limit; saved local videos have no fixed 20 MB cap beyond browser storage.
+- Capture always requires choosing a source in the browser permission prompt. Settings never begin a capture by themselves.
 
-The recorder uses a moderate bitrate to limit storage and file size; actual size depends on gameplay. Browser storage quotas still apply.
+## My Clips: private local library
+Recordings are saved as **WebM or MP4** in the browser's **IndexedDB** storage. They are not sent to Lolite servers automatically. **My Clips** lets you watch, rename, favourite, search, sort, download and delete each clip. Favourites and new titles are stored alongside the private local clip and are not shared automatically. Download any clip you want to preserve: clearing browser storage or changing devices may remove local videos. If browser storage fails when a recording ends, the app offers the recording as a download instead.
+
+The library shows the total number of clips, local storage used and favourites. Sort newest/oldest, biggest file, or favourites first. Clip downloads use a readable filename based on your saved title. Actual bitrate/file size depends on the browser and gameplay. Browser storage quotas still apply.
 
 ## Share with the community
 To share a local clip, choose **Share**, set a title, confirm you have checked it for private details and have permission to share, and then select **Submit for review**. You must be signed into your existing Lolite account. **The recording stays private until you explicitly submit it**, and community clips appear publicly to signed-in Lolite members **only after an authorised admin approves them**.
