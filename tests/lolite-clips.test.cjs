@@ -73,13 +73,13 @@ function harness({captureSupported=true,withFrame=false}={}){
  }
  function change(setting,value){
   const field={dataset:{lcSetting:setting},value,closest(selector){
-   return selector==='[data-lc-setting]'?field:null;
+   return selector.includes('[data-lc-setting]')?field:null;
   }};
   for(const listener of listeners.change||[])listener({target:field});
  }
  function filter(name,value,checked=false){
   const field={dataset:{lcFilter:name},value,checked,closest(selector){
-   return selector==='[data-lc-filter]'?field:null;
+   return selector.includes('[data-lc-filter]')?field:null;
   }};
   for(const listener of listeners.change||[])listener({target:field});
  }
