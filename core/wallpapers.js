@@ -11,7 +11,39 @@
  const collection=[...catalog.catalog.map(wall=>({...wall})),...motionBGS.map(wall=>({...wall}))];
  const defaultId=catalog.defaultId;
  const live=wall=>Boolean(wall?.video||wall?.src4k||wall?.motion);
- const find=id=>collection.find(wall=>wall.id===id);
+ const CUSTOM_ID='custom';
+ const customWall=()=>{
+  const src=read('loliteCustomWallpaper');
+  return /^data:image\/(?:png|jpeg|webp);base64,/.test(src)?{id:CUSTOM_ID,name:'Your custom wallpaper',category:'Uploaded',src,poster:src}:null;
+ };
+ const find=id=>id===CUSTOM_ID?customWall():collection.find(wall=>wall.id===id);
+ const FAVOURITES_KEY='loliteWallpaperFavouritesV1';
+ function savedFavourites(){
+  try{
+   const items=JSON.parse(read(FAVOURITES_KEY,'[]'));
+   return new Set(Array.isArray(items)?items.filter(id=>typeof id==='string'&&id.length>0&&id.length<=140).slice(0,500):[]);
+  }catch{return new Set()}
+ }
+ const favourites=savedFavourites();
+ const isFavourite=id=>favourites.has(String(id));
+ const favouriteCount=()=>collection.filter(wall=>favourites.has(wall.id)).length+
+  (favourites.has(CUSTOM_ID)&&customWall()?1:0);
+ function toggleFavourite(id){
+  const wall=find(id);
+  if(!wall)return false;
+  const wasFavourite=favourites.has(id);
+  if(wasFavourite)favourites.delete(id);
+  else favourites.add(id);
+  if(!save(FAVOURITES_KEY,JSON.stringify([...favourites]))){
+   if(wasFavourite)favourites.add(id);
+   else favourites.delete(id);
+   window.toast?.('Could not save wallpaper favourites. Check browser storage.');
+   return false;
+  }
+  window.dispatchEvent(new CustomEvent('lolite:wallpaperfavouriteschange',
+   {detail:{id,favourite:!wasFavourite,count:favouriteCount()}}));
+  return true;
+ }
  // Replace saved selections once; custom images and later admin uploads still work.
  if(read('loliteWallpaperCollection')!==catalog.version){
   save('loliteWallpaperCollection',catalog.version);
@@ -448,7 +480,7 @@
   const selected=find(id);if(!selected)return false;
   if(persist){
    save('wallpaperId',selected.id);save('wallpaper',selected.id);
-   save('loliteWallpaperCustomActive','false');
+   save('loliteWallpaperCustomActive',selected.id===CUSTOM_ID?'true':'false');
   }
   show(selected);return true;
  }
@@ -464,11 +496,16 @@
   if(typeof image!=='string'||!/^data:image\/(?:png|jpeg|webp);base64,/.test(image))return false;
   if(!save('loliteCustomWallpaper',image)){window.toast?.('Image is too large to save.');return false}
   save('loliteWallpaperCustomActive','true');
-  show({id:'custom',name:'Your wallpaper',src:image});return true;
+  show({id:'custom',name:'Your custom wallpaper',category:'Uploaded',src:image,poster:image});
+  window.dispatchEvent(new CustomEvent('lolite:wallpapercollectionchange',
+   {detail:{custom:true,total:collection.length}}));
+  return true;
  }
  function matches(wall,filter,query=''){
-  // Embedded remote videos only appear in their own category, not All or other gallery filters.
-   const valid=(filter==='All'&&!wall.embedded)||(filter==='Embedded Wallpapers'&&!!wall.embedded)||
+  // Favourites includes selected embedded and uploaded wallpapers, while All
+  // keeps its existing rule of excluding remotely embedded wallpapers.
+   const valid=(filter==='Favourites'&&isFavourite(wall.id))||
+    (filter==='All'&&!wall.embedded&&wall.id!==CUSTOM_ID)||(filter==='Embedded Wallpapers'&&!!wall.embedded)||
     (!wall.embedded&&filter==='Live'&&live(wall))||
    (!wall.embedded&&filter==='4K'&&wall.resolution==='4K')||
    (!wall.embedded&&filter==='Special Live Wallpapers'&&wall.provider==='Admin Library')||
@@ -478,24 +515,32 @@
   return valid&&words.every(word=>text.includes(word));
  }
  function cards(filter='All',query='',limit=48){
-  const found=collection.filter(wall=>matches(wall,filter,query));
+  const found=(filter==='Favourites'?[...collection,...(customWall()?[customWall()]:[])]:
+   collection).filter(wall=>matches(wall,filter,query));
   if(!found.length)return '<p class="cr-wall-empty">No wallpapers match. Try a different category or search.</p>';
   const count=Math.min(found.length,Math.max(48,Number(limit)||48));
   return found.slice(0,count).map(wall=>{
    const dimensions=wall.width&&wall.height?wall.width+' × '+wall.height:'Custom';
+   const liked=isFavourite(wall.id);
    return '<article class="cr-wall-item"><button type="button" class="cr-wall-card" data-wall-id="'+escape(wall.id)+
     '" aria-pressed="'+(active?.id===wall.id)+'" aria-label="Apply '+escape(wall.name)+'">'+
     '<span class="cr-wall-image"><img data-wall-poster-for="'+escape(wall.id)+'" src="'+escape(wall.poster||wall.src)+'" alt="" loading="lazy" decoding="async">'+
     (live(wall)?'<span class="cr-live-label">'+escape(wall.embedded?'REMOTE':(wall.resolution||'LIVE'))+'</span>':'')+
     '<span class="cr-wall-check">✓</span></span><span class="cr-wall-caption"><strong>'+
     escape(wall.name)+'</strong><small>'+escape(wall.embedded?'Embedded · '+wall.group:wall.category)+' · '+dimensions+
-    '</small></span></button>'+(wall.source?'<a class="cr-wall-source" href="'+escape(wall.source)+
+    '</small></span></button>'+
+    '<button type="button" class="cr-wall-favourite'+(liked?' is-favourite':'')+
+    '" data-wall-favourite="'+escape(wall.id)+'" aria-pressed="'+liked+
+    '" aria-label="'+(liked?'Remove '+escape(wall.name)+' from favourites':'Add '+escape(wall.name)+' to favourites')+
+    '" title="'+(liked?'Remove from favourites':'Add to favourites')+
+    '"><span aria-hidden="true">'+(liked?'♥':'♡')+'</span></button>'+
+    (wall.source?'<a class="cr-wall-source" href="'+escape(wall.source)+
     '" target="_blank" rel="noopener noreferrer">'+(wall.embedded?'View on MotionBGS ↗':'Source & download ↗')+'</a>':'')+'</article>';
   }).join('')+(count<found.length?'<button type="button" class="cr-secondary cr-wall-more" data-wall-more="'+(count+48)+
    '" data-wall-more-filter="'+escape(filter)+'" data-wall-more-query="'+escape(query)+'">Show more · '+count+' of '+found.length+'</button>':'');
  }
  function markup(filter='All',query=''){
-  const cats=['All','4K','Games','Anime','Cars','Nature','Space','Art & Fantasy'];
+  const cats=['All','Favourites','4K','Games','Anime','Cars','Nature','Space','Art & Fantasy'];
    if(motionBGS.length)cats.push('Embedded Wallpapers');
   if(collection.some(w=>w.provider==='Admin Library'))cats.push('Special Live Wallpapers');
   if(filter==='Live'||!cats.includes(filter))filter='All';
@@ -504,7 +549,7 @@
    '<label class="cr-upload">Custom image<input type="file" accept="image/png,image/jpeg,image/webp" data-wall-upload hidden></label></div>'+
    '<div class="cr-wall-toolbar"><div class="cr-filter" role="group" aria-label="Wallpaper collection">'+
    cats.map(cat=>'<button type="button" data-wall-filter="'+cat+'" aria-pressed="'+(cat===filter)+'">'+
-   escape(cat)+' <small>'+collection.filter(w=>matches(w,cat)).length+'</small></button>').join('')+
+   escape(cat)+' <small>'+(cat==='Favourites'?favouriteCount():collection.filter(w=>matches(w,cat)).length)+'</small></button>').join('')+
    '</div></div><div class="cr-wall-grid">'+cards(filter,query)+'</div>'+
    '<p class="cr-help">Normal wallpapers stream from <a href="https://livelywallpaper.app/live-wallpapers/" target="_blank" rel="noopener noreferrer">LivelyWallpaper.app</a>. Embedded Wallpapers stream from <a href="https://motionbgs.com" target="_blank" rel="noopener noreferrer">MotionBGS</a> remote video links (not copied into Lolite). Playback may be blocked by MotionBGS (its HD links returned 403 in automated checks); if playback fails, a still placeholder remains visible. Motion pauses when the tab is hidden or Reduce Motion is enabled.</p>';
  }
@@ -587,6 +632,7 @@
  window.addEventListener('lolite:library-updated',event=>syncAdminWallpapers(event.detail?.items));
  window.LoliteWallpapers={
   collection,apply,restore,markup,cards,setCustom,discoverVideos,syncAdminWallpapers,getStatus:()=>status,
+  isFavourite,toggleFavourite,favouriteCount,
   getQuality:()=>quality,setQuality,retry:()=>{if(active)show(active,{force:true})},
   getTransitionMode:()=>transitionMode,setTransitionMode,
   isInteractiveEnabled:()=>interactionOn,
