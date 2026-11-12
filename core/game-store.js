@@ -875,9 +875,29 @@
  const artworkObserver=typeof IntersectionObserver==='function'
    ? new IntersectionObserver(entries=>{for(const entry of entries){if(!entry.isIntersecting)continue;const el=entry.target;artworkObserver.unobserve(el);window.loliteStorePreview(el,el.dataset.gameFile,el.closest('.store-card')?.querySelector('.store-card-body h3')?.textContent||'Game')}},{rootMargin:'900px 0px'})
    : {observe(el){window.loliteStorePreview(el,el.dataset.gameFile,el.closest('.store-card')?.querySelector('.store-card-body h3')?.textContent||'Game')},unobserve(){}};
- const artworkMutationObserver=new MutationObserver(()=>{const root=document.querySelector('.store-main');if(!root)return;root.querySelectorAll('.store-cover[data-game-file]').forEach(el=>{if(el.dataset.artObserved==='1')return;el.dataset.artObserved='1';artworkObserver.observe(el)})});
- const watchArtwork=()=>{const root=document.querySelector('.store-main');if(root&&root.dataset.artworkWatching!=='1'){root.dataset.artworkWatching='1';artworkMutationObserver.observe(root,{childList:true,subtree:true});root.querySelectorAll('.store-cover[data-game-file]').forEach(el=>{if(el.dataset.artObserved==='1')return;el.dataset.artObserved='1';artworkObserver.observe(el)})}};
- const storeFinder=new MutationObserver(watchArtwork);storeFinder.observe(document.documentElement,{childList:true,subtree:true});watchArtwork();
+ // Watch only the active Game Store results, not the entire OS document.
+ // Previously every DOM change (including notifications, chat and wallpaper UI)
+ // triggered a full Game Store lookup and a rescan of all visible game covers.
+ const registerArtwork=el=>{
+  if(el.dataset.artObserved==='1')return;
+  el.dataset.artObserved='1';artworkObserver.observe(el);
+ };
+ let artworkRoot=null;
+ const artworkMutationObserver=new MutationObserver(records=>{
+  for(const change of records)for(const node of change.addedNodes){
+   if(node.nodeType!==1)continue;
+   if(node.matches?.('.store-cover[data-game-file]'))registerArtwork(node);
+   node.querySelectorAll?.('.store-cover[data-game-file]').forEach(registerArtwork);
+  }
+ });
+ const watchArtwork=()=>{
+  const root=document.querySelector('.store-main');
+  if(root===artworkRoot)return;
+  artworkMutationObserver.disconnect();artworkRoot=root;
+  if(!root)return;
+  artworkMutationObserver.observe(root,{childList:true,subtree:true});
+  root.querySelectorAll('.store-cover[data-game-file]').forEach(registerArtwork);
+ };
  const listCards=list=>{const showing=list.slice(0,visibleCount);return '<div class="store-grid">'+showing.map(card).join('')+'</div>'+(showing.length<list.length?'<div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:28px 6px;color:#a9b6cb;font-size:12px">Showing '+showing.length+' of '+list.length+' <button class="store-play" type="button" style="max-width:170px" onclick="window.loliteStoreMore()">Load more games ↓</button></div>':'')};
  const section=(title,list)=>list.length?'<section class="store-section"><div class="store-section-head"><div><h2>'+title+'</h2><p>'+list.length+' games to explore</p></div><button type="button" onclick=\'window.loliteStoreCategory("'+title+'")\'>View collection →</button></div><div class="store-grid">'+list.slice(0,8).map(card).join('')+'</div></section>':'';
  const gallerySizer=typeof ResizeObserver==='function'?new ResizeObserver(entries=>{
@@ -956,6 +976,7 @@
    if(check){check.title=healthText;check.setAttribute('aria-label',healthText)}
   }else root.innerHTML=top+'<div class="store-results">'+content+'</div>';
   root.scrollTop=resetScroll?0:previousScroll;
+  watchArtwork();
   if(showFeatured)loadHeroArt();
   // The sidebar may contain thousands of games. Recomputing all 20+ category
   // thumbnails on every keypress caused a serious search typing slowdown.
