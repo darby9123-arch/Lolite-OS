@@ -1157,22 +1157,33 @@
   }
   if(node.dataset.category){window.loliteStoreCategory(node.dataset.category);event.preventDefault()}
  });
+ // Coalesce bursts of keystrokes. Rebuilding dozens of card DOM nodes for
+ // every keypress on a thousand-game library caused visible typing delays.
+ let searchTimer=0;
+ const flushSearch=input=>{
+  clearTimeout(searchTimer);searchTimer=0;
+  if(input?.isConnected&&input.matches?.('.store-v41 .store-search'))
+   window.loliteStoreSearch(input.value);
+ };
  document.addEventListener('input',event=>{
   const input=event.target.closest?.('.store-v41 .store-search');
-  if(input&&!event.isComposing)window.loliteStoreSearch(input.value);
+  if(input&&!event.isComposing){
+   clearTimeout(searchTimer);
+   searchTimer=setTimeout(()=>flushSearch(input),110);
+  }
  });
  document.addEventListener('compositionend',event=>{
   const input=event.target.closest?.('.store-v41 .store-search');
-  if(input)window.loliteStoreSearch(input.value);
+  if(input)flushSearch(input);
  });
  document.addEventListener('search',event=>{
   const input=event.target.closest?.('.store-v41 .store-search');
-  if(input)window.loliteStoreSearch(input.value);
+  if(input)flushSearch(input);
  });
  document.addEventListener('keydown',event=>{
   const input=event.target.closest?.('.store-v41 .store-search');
   if(input&&event.key==='Escape'&&input.value){
-   event.preventDefault();input.value='';window.loliteStoreSearch('');
+   event.preventDefault();input.value='';flushSearch(input);
   }
  });
  document.addEventListener('change',event=>{
