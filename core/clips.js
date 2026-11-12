@@ -8,7 +8,7 @@
  const QUALITIES=Object.freeze({compact:{label:'Compact · smaller files',bitrate:800000},
   balanced:{label:'Balanced · recommended',bitrate:1500000},
   high:{label:'High · sharper video',bitrate:3000000}});
- const S={tab:'library',local:[],remote:[],urls:new Map(),remoteUrls:new Map(),
+ const S={tab:'record',local:[],remote:[],urls:new Map(),remoteUrls:new Map(),
   user:null,admin:false,loading:false,busy:false,error:'',message:'',
   stream:null,recorder:null,recording:false,paused:false,requesting:false,saving:false,
   started:0,elapsedMs:0,timer:null,tick:null,duration:30,hotkey:'Alt+Shift+C',quality:'balanced',
