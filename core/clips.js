@@ -98,7 +98,7 @@
  }
  function activeStream(){return !!S.stream&&S.stream.getVideoTracks().some(track=>track.readyState==='live')}
  function stopCapture(){
-  if(S.recorder?.state==='recording')S.recorder.stop();
+  if(S.recorder&&S.recorder.state!=='inactive')S.recorder.stop();
   if(S.stream)for(const track of S.stream.getTracks())track.stop();
   S.stream=null;indicator();render();
  }
