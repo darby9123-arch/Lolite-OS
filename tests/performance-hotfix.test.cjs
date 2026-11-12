@@ -19,7 +19,7 @@ test('game artwork no longer monitors the entire OS document',()=>{
 test('Game Store stops animating its huge background and defers art until near viewport',()=>{
  assert.doesNotMatch(game,/animation:storeAurora 30s ease-in-out infinite/);
  assert.match(game,/rootMargin:'240px 0px'/);
- assert.match(game,/searchTimer=setTimeout\(\(\)=>flushSearch\(input\),110\)/);
+ assert.match(game,/searchTimer=setTimeout\(\(\)=>\{if\(input\.isConnected!==false\)flushSearch\(input\)\},110\)/);
  assert.doesNotMatch(game,/rootMargin:'900px 0px'/);
 });
 test('5.0 handles inserted cards by app instead of scanning all windows',()=>{
