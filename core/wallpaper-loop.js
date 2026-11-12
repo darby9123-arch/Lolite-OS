@@ -105,8 +105,7 @@
    if(active&&(loopTimer||!next))return;
    active=true;
    current.style.opacity='1';current.style.zIndex='2';
-   next.style.opacity='0';next.style.zIndex='1';
-   if(next)loopTimer=setInterval(check,85);
+   if(next){next.style.opacity='0';next.style.zIndex='1';loopTimer=setInterval(check,85)}
    Promise.resolve(current.play()).then(()=>{
     if(!destroyed&&active)onStatus?.(dual?'Playing · Buffered seamless video loop':'Playing · Efficient single video stream');
    }).catch(error=>{
