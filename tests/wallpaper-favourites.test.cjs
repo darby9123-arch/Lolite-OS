@@ -66,7 +66,7 @@ test('Favouriting and unfavouriting persists by wallpaper ID without applying it
  assert.equal(api.current(),null);
  assert.equal(api.toggleFavourite('nature-one'),true);
  assert.equal(api.isFavourite('nature-one'),false);
- assert.match(api.cards('Favourites'),/No wallpapers match/);
+ assert.match(api.cards('Favourites'),/No favourite wallpapers yet/);
  assert.equal(h.events.filter(e=>e.type==='lolite:wallpaperfavouriteschange').length,2);
 });
 test('Saved favourites survive reloading and wallpaper catalog version changes',()=>{
