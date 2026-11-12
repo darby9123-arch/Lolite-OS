@@ -37,7 +37,8 @@
     active=false;stop();for(const el of els)el.style.opacity='0';
     return;
    }
-   sourceIndex++;stop();changeSource();if(active)sync(true);
+   const restart=active;
+   sourceIndex++;stop();active=false;changeSource();if(restart)sync(true);
   }
   function check(){
    if(destroyed||!active||!next||swapping||current.paused||!Number.isFinite(current.duration))return;
@@ -107,7 +108,7 @@
    next.style.opacity='0';next.style.zIndex='1';
    if(next)loopTimer=setInterval(check,85);
    Promise.resolve(current.play()).then(()=>{
-    if(!destroyed&&active)onStatus?.('Playing · Buffered seamless video loop');
+    if(!destroyed&&active)onStatus?.(dual?'Playing · Buffered seamless video loop':'Playing · Efficient single video stream');
    }).catch(error=>{
     if(!destroyed&&error?.name!=='AbortError')onStatus?.('Playback paused · Try again');
    });
