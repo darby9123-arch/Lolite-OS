@@ -23,8 +23,9 @@
    root.classList.contains('reduce')||root.classList.contains('reduce-motion')||root.classList.contains('lolite-lite-mode');
  const visible=()=>!document.hidden&&!root.classList.contains('browsing-mode');
  const validQuality=new Set(['max','balanced','lite']);
- const initialQuality=read('loliteWallpaperQuality','max');
- let quality=validQuality.has(initialQuality)?initialQuality:'max';
+ // Default to HD/one decoder for new installations; keep explicitly saved Max settings.
+ const initialQuality=read('loliteWallpaperQuality','balanced');
+ let quality=validQuality.has(initialQuality)?initialQuality:'balanced';
  let active=null,canvas=null,ctx=null,video=null,loopController=null,raf=0,last=0,elapsed=0;
  let width=1,height=1,scale=1,status='Still wallpaper',frames=0,playSerial=0;
  let fallbackIndex=0;
@@ -413,10 +414,10 @@
    ctx=canvas.getContext('2d',{alpha:false,desynchronized:true});
    if(ctx){resize();sync()}else report('Live effects unavailable in this browser');
   }else if(wall.video||wall.src4k||wall.src1080){
-   // Preload two decoders and crossfade at the wrap to avoid black loop flashes.
+   // Use one decoder in HD; two-decoder crossfade remains available in Max mode.
    if(wall.video&&!wall.embedded&&window.LoliteSeamlessVideo){
     loopController=window.LoliteSeamlessVideo.create({
-     target,sources:sources(wall),poster,onStatus:report
+     target,sources:sources(wall),poster,onStatus:report,dual:quality==='max'
     });
     sync();
    }else{
