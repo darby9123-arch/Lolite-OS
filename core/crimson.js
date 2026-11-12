@@ -132,7 +132,12 @@
    if(count)count.textContent=String(api.favouriteCount());
    if(filter==='Favourites'){
     const grid=holder.querySelector('.cr-wall-grid');
-    if(grid)grid.innerHTML=api.cards(filter,wallQuery);
+    if(grid){
+     const focusWasInGrid=grid.contains(document.activeElement);
+     grid.innerHTML=api.cards(filter,wallQuery);
+     if(focusWasInGrid)(grid.querySelector('[data-wall-favourite]')||
+       holder.querySelector('[data-wall-filter="Favourites"]'))?.focus({preventScroll:true});
+    }
    }else holder.querySelectorAll('[data-wall-favourite]').forEach(button=>{
     if(button.dataset.wallFavourite!==e.detail.id)return;
     const liked=api.isFavourite(e.detail.id);
