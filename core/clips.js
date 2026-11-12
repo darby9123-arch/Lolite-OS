@@ -241,9 +241,12 @@
    b.createdAt-a.createdAt);
   return list;
  }
+ function libraryStats(){
+  return '<span>'+S.local.length+' saved clips</span><span>'+size(localSize())+' stored locally</span>'+
+   '<span>'+S.local.filter(item=>item.favorite).length+' favourites</span>';
+ }
  function libraryToolbar(){
-  return '<div class="lclip-library-stats"><span>'+S.local.length+' saved clips</span><span>'+size(localSize())+' stored locally</span>'+
-   '<span>'+S.local.filter(item=>item.favorite).length+' favourites</span></div>'+
+  return '<div class="lclip-library-stats" data-lclip-stats>'+libraryStats()+'</div>'+
    '<div class="lclip-library-tools"><label>Find a clip<input type="search" data-lclip-filter="search" placeholder="Search your recordings" value="'+esc(S.libraryQuery)+'"></label>'+
    '<label>Sort by<select data-lclip-filter="sort">'+[
     ['newest','Newest first'],['oldest','Oldest first'],['largest','Largest files'],['favorites','Favourites first']
@@ -271,6 +274,41 @@
     '<small>Community uploads require a Lolite account and admin approval. Maximum upload: 20 MB.</small>'+
     '<button type="submit" class="lclip-primary" '+(S.busy?'disabled':'')+'>Submit for review</button></form>':'')+
    '</div></article>';
+ }
+ // Keep existing player nodes alive when editing or filtering other clips.
+ function updateLibraryGrid(changedId=''){
+  const container=root(),grid=container?.querySelector('[data-lclip-library-grid]');
+  if(!grid||typeof grid.replaceChildren!=='function'||typeof grid.querySelectorAll!=='function'){
+   render();return;
+  }
+  pruneVideoURLs();
+  const stats=container.querySelector('[data-lclip-stats]');
+  if(stats)stats.innerHTML=libraryStats();
+  const clips=visibleClips(),existing=[...grid.querySelectorAll('[data-lclip-local-id]')];
+  const byId=new Map(existing.map(item=>[item.dataset.lclipLocalId,item]));
+  const same=existing.length===clips.length&&clips.every((clip,index)=>
+   existing[index].dataset.lclipLocalId===clip.id);
+  if(same&&!changedId)return;
+  const make=clip=>{
+   const template=document.createElement('template');
+   template.innerHTML=localCard(clip);
+   return template.content.firstElementChild;
+  };
+  if(same&&changedId){
+   const old=byId.get(changedId),clip=clips.find(item=>item.id===changedId);
+   if(old&&clip){old.replaceWith(make(clip));return}
+   if(!old&&!clip)return;
+  }
+  const fragment=document.createDocumentFragment();
+  if(!clips.length){
+   const empty=document.createElement('div');
+   empty.className='lclip-empty';
+   empty.textContent=S.local.length?'No clips match your filters. Try a different search.':
+    'No clips yet. Open Record and capture your first game moment.';
+   fragment.appendChild(empty);
+  }else for(const clip of clips)fragment.appendChild(
+   clip.id!==changedId&&byId.has(clip.id)?byId.get(clip.id):make(clip));
+  grid.replaceChildren(fragment);
  }
  function remoteCard(clip){
   const mine=clip.uploader_id===S.user?.id,url=S.remoteUrls.get(clip.id);
@@ -394,13 +432,13 @@
  async function updateLocal(clipId,changes){
   const clip=S.local.find(item=>item.id===clipId);if(!clip)return;
   await saveLocal({...clip,...changes});
-  await refreshLocal();render();
+  await refreshLocal();updateLibraryGrid(clipId);
  }
  async function renameClip(form){
   const clipId=safeUUID(form.dataset.lclipRename);
   const title=String(form.elements.title.value||'').trim().replace(/\s+/g,' ');
   if(!clipId||!title||title.length>100){notify('Choose a clip name up to 100 characters.',true);return}
-  try{await updateLocal(clipId,{title});S.renameId=null;render();notify('Clip renamed.')}
+  try{S.renameId=null;await updateLocal(clipId,{title});notify('Clip renamed.')}
   catch(e){notify('Could not rename the clip: '+(e?.message||e),true)}
  }
  function download(clip){
@@ -425,15 +463,15 @@
   if(!clipId)return;
   const clip=S.local.find(c=>c.id===clipId);
   if(action==='download'&&clip){download(clip);return}
-  if(action==='rename'&&clip){S.renameId=S.renameId===clipId?null:clipId;render();return}
+  if(action==='rename'&&clip){S.renameId=S.renameId===clipId?null:clipId;S.shareId=null;updateLibraryGrid(clipId);return}
   if(action==='favorite'&&clip){
    void updateLocal(clipId,{favorite:!clip.favorite}).then(()=>notify(clip.favorite?'Removed from favourites.':'Added to favourites.'))
     .catch(e=>notify('Could not update favourites: '+(e?.message||e),true));return;
   }
-  if(action==='share'&&clip){S.shareId=S.shareId===clipId?null:clipId;render();return}
+  if(action==='share'&&clip){S.shareId=S.shareId===clipId?null:clipId;S.renameId=null;updateLibraryGrid(clipId);return}
   if(action==='delete-local'&&clip){
    if(confirm('Delete this clip from this browser? Download it first if you want to keep it.')){
-    void deleteLocal(clip.id).then(()=>refreshLocal()).then(()=>{notify('Local clip deleted.');render()})
+    void deleteLocal(clip.id).then(()=>refreshLocal()).then(()=>{notify('Local clip deleted.');updateLibraryGrid()})
      .catch(e=>notify('Cannot delete clip: '+(e?.message||e),true));
    }return;
   }
@@ -450,10 +488,7 @@
   const input=event.target.closest?.('#loliteClipsRoot [data-lclip-filter="search"]');
   if(!input)return;
   S.libraryQuery=input.value;
-  const cursor=input.selectionStart;
-  render();
-  const restored=root()?.querySelector('[data-lclip-filter="search"]');
-  if(restored){restored.focus();if(Number.isInteger(cursor))restored.setSelectionRange(cursor,cursor)}
+  updateLibraryGrid();
  });
  document.addEventListener('change',event=>{
   const filter=event.target.closest?.('#loliteClipsRoot [data-lclip-filter]');
@@ -461,7 +496,7 @@
    if(filter.dataset.lclipFilter==='sort'&&['newest','oldest','largest','favorites'].includes(filter.value))
     S.librarySort=filter.value;
    if(filter.dataset.lclipFilter==='favorites')S.favoriteOnly=filter.checked;
-   render();return;
+   updateLibraryGrid();return;
   }
   const field=event.target.closest?.('#loliteClipsRoot [data-lclip-setting]');if(!field)return;
   if(field.dataset.lclipSetting==='duration'&&LENGTHS.includes(Number(field.value))){
