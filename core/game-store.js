@@ -884,7 +884,7 @@
  };
  let artworkRoot=null;
  const artworkMutationObserver=new MutationObserver(records=>{
-  for(const change of records)for(const node of change.addedNodes){
+  for(const change of records)for(const node of change.addedNodes||[]){
    if(node.nodeType!==1)continue;
    if(node.matches?.('.store-cover[data-game-file]'))registerArtwork(node);
    node.querySelectorAll?.('.store-cover[data-game-file]').forEach(registerArtwork);
@@ -893,10 +893,10 @@
  const watchArtwork=()=>{
   const root=document.querySelector('.store-main');
   if(root===artworkRoot)return;
-  artworkMutationObserver.disconnect();artworkRoot=root;
+  artworkMutationObserver.disconnect?.();artworkRoot=root;
   if(!root)return;
   artworkMutationObserver.observe(root,{childList:true,subtree:true});
-  root.querySelectorAll('.store-cover[data-game-file]').forEach(registerArtwork);
+  root.querySelectorAll?.('.store-cover[data-game-file]').forEach(registerArtwork);
  };
  const listCards=list=>{const showing=list.slice(0,visibleCount);return '<div class="store-grid">'+showing.map(card).join('')+'</div>'+(showing.length<list.length?'<div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:28px 6px;color:#a9b6cb;font-size:12px">Showing '+showing.length+' of '+list.length+' <button class="store-play" type="button" style="max-width:170px" onclick="window.loliteStoreMore()">Load more games ↓</button></div>':'')};
  const section=(title,list)=>list.length?'<section class="store-section"><div class="store-section-head"><div><h2>'+title+'</h2><p>'+list.length+' games to explore</p></div><button type="button" onclick=\'window.loliteStoreCategory("'+title+'")\'>View collection →</button></div><div class="store-grid">'+list.slice(0,8).map(card).join('')+'</div></section>':'';
