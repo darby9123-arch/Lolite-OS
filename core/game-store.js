@@ -61,7 +61,7 @@
  @keyframes storeCoverDrift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
  @keyframes storeRingPulse{0%,100%{opacity:.35;transform:scale(.94)}50%{opacity:.8;transform:scale(1.08)}}
  @keyframes storeTextShimmer{0%{background-position:180% 0}100%{background-position:-180% 0}}
- .store-main{background-image:radial-gradient(ellipse at 84% -12%,#1b2540 0,transparent 34%),radial-gradient(ellipse at 12% 35%,#17132b55 0,transparent 35%),linear-gradient(120deg,#0b0e13,#0c1018,#0b0e13);background-size:100% 100%,180% 180%,220% 220%;animation:storeAurora 30s ease-in-out infinite}
+ .store-main{background-image:radial-gradient(ellipse at 84% -12%,#1b2540 0,transparent 34%),radial-gradient(ellipse at 12% 35%,#17132b55 0,transparent 35%),linear-gradient(120deg,#0b0e13,#0c1018,#0b0e13);background-size:100% 100%,180% 180%,220% 220%;animation:none}
  .store-hero{background-image:radial-gradient(ellipse at 88% 15%,#51468a55,transparent 36%),linear-gradient(112deg,#19243a 0%,#151a28 56%,#201d3a 100%),linear-gradient(120deg,#19243a,#28234a,#19243a);background-size:180% 180%,100% 100%,220% 220%;animation:storeAurora 22s ease-in-out infinite}
  .store-hero:before{animation:storeOrbit 18s ease-in-out infinite}
  .store-hero:after{animation:storeRingPulse 7s ease-in-out infinite}
@@ -873,7 +873,7 @@
  window.loliteStoreHeroSelect=index=>{heroIndex=(Number(index)+featuredGames.length)%featuredGames.length;const hero=document.getElementById('store-featured-hero');if(!hero)return;hero.outerHTML=heroMarkup();loadHeroArt()};
  setInterval(()=>{if(document.getElementById('store-featured-hero'))window.loliteStoreHeroSelect(heroIndex+1)},20000);
  const artworkObserver=typeof IntersectionObserver==='function'
-   ? new IntersectionObserver(entries=>{for(const entry of entries){if(!entry.isIntersecting)continue;const el=entry.target;artworkObserver.unobserve(el);window.loliteStorePreview(el,el.dataset.gameFile,el.closest('.store-card')?.querySelector('.store-card-body h3')?.textContent||'Game')}},{rootMargin:'900px 0px'})
+   ? new IntersectionObserver(entries=>{for(const entry of entries){if(!entry.isIntersecting)continue;const el=entry.target;artworkObserver.unobserve(el);window.loliteStorePreview(el,el.dataset.gameFile,el.closest('.store-card')?.querySelector('.store-card-body h3')?.textContent||'Game')}},{rootMargin:'240px 0px'})
    : {observe(el){window.loliteStorePreview(el,el.dataset.gameFile,el.closest('.store-card')?.querySelector('.store-card-body h3')?.textContent||'Game')},unobserve(){}};
  // Watch only the active Game Store results, not the entire OS document.
  // Previously every DOM change (including notifications, chat and wallpaper UI)
