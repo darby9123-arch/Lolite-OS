@@ -29,6 +29,14 @@ A Lolite-branded browser desktop with the original Cosmos space interface, apps,
 
 ## Update Log
 
+### Lolite Clips 3.0 — UI and stability fixes (2026-11-13)
+- Rebuilt the Clips interface with its own responsive styling. Fixed broken layouts caused by accidental reuse of Lolite Chat CSS classes, DOM IDs and event selectors.
+- Fixed an unresponsive Stop & save button after granting browser capture permission.
+- Kept local video URLs and player elements stable while searching, sorting, favouriting and renaming clips; background account refreshes no longer restart local playback.
+- Community clips now support loading missing previews individually; sharing displays a clear uploading state.
+- Preserved existing locally saved clips and cloud sharing permissions. [Details](docs/LOLITE-CLIPS.md).
+
+
 ### Wallpaper Favourites — 2026-11-12
 - Added a heart button to every wallpaper and a **Favourites** gallery category under **Settings → Wallpapers**.
 - Save regular, live, embedded, admin-uploaded or custom wallpapers without applying them; favourite the currently active wallpaper too.
