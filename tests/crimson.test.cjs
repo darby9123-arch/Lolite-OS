@@ -35,25 +35,30 @@ test('the replacement migrates old selections and contains only the 840 source v
  assert.equal(new Set(all.map(w=>w.id)).size,all.length);
  for(const id of ['cosmos-orbit','crimson-dunes','live-starfield','interactive-gravity-well','user-minecraft-aquarium'])assert.equal(e.c.loliteWallpaper(id),false);
 });
-test('switching wallpapers releases old videos and keeps only two seamless-loop decoders',()=>{
+test('Balanced wallpapers use one decoder, while explicitly selected Max retains seamless dual decoders',()=>{
  const e=wallpapers(),api=e.c.LoliteWallpapers;
+ assert.equal(api.getQuality(),'balanced');
  for(const wall of api.collection.slice(0,12)){
   const previous=e.children.filter(el=>el.tag==='video');
   assert.equal(api.apply(wall.id),true);
   const decoders=e.children.filter(el=>el.tag==='video');
-  assert.equal(decoders.length,2,'Crossfade can add a passive transition layer, but only two video decoders');
+  assert.equal(decoders.length,1,'Balanced mode must use exactly one streaming video');
   assert.ok(decoders.every(el=>el.muted&&el.loop&&el.playsInline));
-  assert.equal(decoders[0].src,wall.video);
+  assert.equal(decoders[0].src,wall.src1080||wall.video);
   assert.equal(api.debug().canvasCount,0);
   if(previous[0]!==e.children.find(el=>el.tag==='video'))assert.ok(previous.every(el=>el.paused&&!el.src));
  }
+ api.setQuality('max');
+ assert.equal(api.getQuality(),'max');
+ assert.equal(e.children.filter(el=>el.tag==='video').length,2,'Max mode preserves seamless crossfade');
+ assert.equal(e.children.find(el=>el.tag==='video').src,api.current().video);
 });
 test('quality selects original, verified HD, and small preview without inventing missing HD sources',()=>{
  const e=wallpapers(),api=e.c.LoliteWallpapers,wall=api.current();
- assert.equal(api.getQuality(),'max');assert.equal(e.children[0].src,wall.video);
- api.setQuality('balanced');assert.equal(e.children[0].src,wall.src1080);
+ assert.equal(api.getQuality(),'balanced');assert.equal(e.children[0].src,wall.src1080||wall.video);
  api.setQuality('lite');assert.equal(e.children[0].src,wall.preview);
  api.setQuality('max');assert.equal(e.children[0].src,wall.video);
+ api.setQuality('balanced');assert.equal(e.children[0].src,wall.src1080||wall.video);
  const noHD=api.collection.find(w=>!w.src1080);
  api.apply(noHD.id);api.setQuality('balanced');assert.equal(e.children[0].src,noHD.video);
 });
@@ -89,12 +94,13 @@ test('custom images still work after migration and stop video playback',()=>{
 });
 test('failed video sources fall back in order, then leave the poster and expose a retry',()=>{
  const e=wallpapers(),api=e.c.LoliteWallpapers,wall=api.current();
- e.children[0].emit('error');assert.equal(e.children[0].src,wall.src1080);
+ e.children[0].emit('error');assert.equal(e.children[0].src,wall.video);
  e.children[0].emit('error');assert.equal(e.children[0].src,wall.preview);
  e.children[0].emit('error');assert.match(api.getStatus(),/Video unavailable/);
- assert.ok(e.children.every(el=>el.style.opacity==='0'));
+ assert.ok(e.children.filter(el=>el.tag==='video').every(el=>el.style.opacity==='0'));
  assert.ok(e.wallpaper.style.background.includes(wall.poster));
- api.retry();assert.equal(e.children.length,2);assert.equal(e.children[0].src,wall.video);
+ api.retry();assert.equal(e.children.filter(el=>el.tag==='video').length,1);
+ assert.equal(e.children.find(el=>el.tag==='video').src,wall.src1080||wall.video);
 });
 test('older admin wallpapers stay retired while new uploads can be selected and restored',()=>{
  const e=wallpapers(),api=e.c.LoliteWallpapers;
