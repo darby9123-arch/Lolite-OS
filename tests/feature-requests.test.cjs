@@ -122,7 +122,7 @@ test('App is registered with desktop, Cosmos, App Store and matching generated i
  assert.match(cosmos,/feature-requests','Feature Requests'/);
  assert.match(shell,/feature-requests','Feature Requests','Suggest new Lolite OS features/);
  assert.match(store,/id:'feature-requests',name:'Feature Requests'/);
- assert.match(store,/basics=new Set\(\['academy','life-rp','lolite-quests','music','feature-requests'\]\)/);
+ assert.match(store,/basics=new Set\(\['academy','life-rp','lolite-quests','music','feature-requests','clips'\]\)/);
  assert.match(png,/"feature-requests":"feedback"/);
  assert.match(html,/core\/feature-requests\.css/);
  assert.match(html,/core\/feature-requests\.js/);
