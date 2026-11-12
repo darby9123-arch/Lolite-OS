@@ -25,11 +25,13 @@ function harness({captureSupported=true,withFrame=false}={}){
  };
  class MockRecorder{
   static isTypeSupported(t){return t.includes('webm')}
-  constructor(s,options){this.stream=s;this.mimeType=options.mimeType;this.state='inactive';this.handlers={};
+  constructor(s,options){this.stream=s;this.mimeType=options.mimeType;this.options=options;this.state='inactive';this.handlers={};
    lastRecorder=this;recorderCount++}
   addEventListener(name,cb){(this.handlers[name]??=[]).push(cb)}
   emit(name,event){for(const f of this.handlers[name]||[])f(event)}
   start(){this.state='recording'}
+  pause(){if(this.state!=='recording')throw Error('Not recording');this.state='paused'}
+  resume(){if(this.state!=='paused')throw Error('Not paused');this.state='recording'}
   stop(){this.state='inactive';this.emit('dataavailable',{data:new Blob(['test game clip'],{type:'video/webm'})});this.emit('stop',{})}
  }
  const indexedDB={
@@ -63,7 +65,32 @@ function harness({captureSupported=true,withFrame=false}={}){
   for(const handler of (inFrame?frameListeners:listeners).keydown||[])handler(event);
   return prevented;
  }
- return {browser,root,saved,key,get captures(){return captures},get recorderCount(){return recorderCount},
+ function click(action,clipId=''){
+  const button={dataset:{lcAction:action,lcId:clipId},closest(selector){
+   return selector==='#lcRoot'||selector==='[data-lc-action]'?button:null;
+  }};
+  for(const listener of listeners.click||[])listener({target:button});
+ }
+ function change(setting,value){
+  const field={dataset:{lcSetting:setting},value,closest(selector){
+   return selector==='[data-lc-setting]'?field:null;
+  }};
+  for(const listener of listeners.change||[])listener({target:field});
+ }
+ function filter(name,value,checked=false){
+  const field={dataset:{lcFilter:name},value,checked,closest(selector){
+   return selector==='[data-lc-filter]'?field:null;
+  }};
+  for(const listener of listeners.change||[])listener({target:field});
+ }
+ function submitRename(clipId,title){
+  const form={dataset:{lcRename:clipId},elements:{title:{value:title}}};
+  const event={target:{closest:selector=>selector.includes('data-lc-rename')?form:null},
+   preventDefault(){}};
+  for(const listener of listeners.submit||[])listener(event);
+ }
+ return {browser,root,saved,key,click,change,filter,submitRename,storage,
+  get captures(){return captures},get recorderCount(){return recorderCount},
   get recorder(){return lastRecorder},track,messages};
 }
 
@@ -166,4 +193,72 @@ test('Cloud clips use protected, limited uploads and admin-only approval',()=>{
  assert.match(sql,/clips owner can unshare or admin remove/);
  assert.match(sql,/clips owner or admin delete upload/);
  assert.match(sql,/storage_path = uploader_id::text/);
+});
+
+
+test('Clips 2.0 can pause and resume without losing the recording',async()=>{
+ const h=harness();h.browser.page('clips');await pause();
+ h.key();await pause();
+ assert.equal(h.browser.LoliteClips.status().recording,true);
+ assert.match(h.root.innerHTML,/Pause recording/);
+ h.click('pause');
+ assert.equal(h.recorder.state,'paused');
+ assert.equal(h.browser.LoliteClips.status().paused,true);
+ assert.match(h.root.innerHTML,/Resume recording/);
+ h.click('resume');
+ assert.equal(h.recorder.state,'recording');
+ assert.equal(h.browser.LoliteClips.status().paused,false);
+ h.key();await pause();await pause();
+ assert.equal(h.saved.size,1);
+ assert.equal(h.browser.LoliteClips.status().recording,false);
+});
+test('Stop screen sharing while paused finalizes the clip and releases the captured track',async()=>{
+ const h=harness();h.browser.page('clips');await pause();
+ h.key();await pause();h.click('pause');
+ assert.equal(h.recorder.state,'paused');
+ h.click('stop-capture');await pause();await pause();
+ assert.equal(h.recorder.state,'inactive');
+ assert.equal(h.track.readyState,'ended');
+ assert.equal(h.browser.LoliteClips.status().captureActive,false);
+ assert.equal(h.saved.size,1);
+});
+test('Quality choices change recorder bitrate without automatic screen capture',async()=>{
+ const h=harness();h.browser.page('clips');await pause();
+ h.change('quality','high');
+ assert.equal(h.browser.LoliteClips.status().quality,'high');
+ assert.equal(h.captures,0);
+ assert.equal(h.storage.get('loliteClipsQuality'),'high');
+ h.key();await pause();
+ assert.equal(h.recorder.options.videoBitsPerSecond,3000000);
+ assert.match(h.root.innerHTML,/Video quality/);
+ h.key();await pause();await pause();
+});
+test('Clips can be renamed and favourited without changing video data',async()=>{
+ const h=harness();h.browser.page('clips');await pause();
+ h.key();await pause();h.key();await pause();await pause();
+ const original=[...h.saved.values()][0],blob=original.blob;
+ h.click('favorite',original.id);await pause();await pause();
+ assert.equal(h.saved.get(original.id).favorite,true);
+ assert.match(h.root.innerHTML,/Favourited/);
+ h.click('rename',original.id);
+ assert.match(h.root.innerHTML,/New clip name/);
+ h.submitRename(original.id,'My best drift');await pause();await pause();await pause();
+ assert.equal(h.saved.get(original.id).title,'My best drift');
+ assert.equal(h.saved.get(original.id).blob,blob);
+ assert.match(h.root.innerHTML,/My best drift/);
+ assert.match(h.root.innerHTML,/favourites/);
+});
+test('Local library adds search, sorting, favourite filtering and size totals',async()=>{
+ const h=harness();h.browser.page('clips');await pause();
+ h.key();await pause();h.key();await pause();await pause();
+ assert.match(h.root.innerHTML,/data-lc-filter="search"/);
+ assert.match(h.root.innerHTML,/data-lc-filter="sort"/);
+ assert.match(h.root.innerHTML,/data-lc-filter="favorites"/);
+ assert.match(h.root.innerHTML,/stored locally/);
+ h.filter('favorites','',true);
+ assert.match(h.root.innerHTML,/No clips match your filters/);
+ h.filter('favorites','',false);
+ assert.match(h.root.innerHTML,/Gameplay/);
+ h.filter('sort','largest');
+ assert.match(h.root.innerHTML,/Largest files/);
 });
