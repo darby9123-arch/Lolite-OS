@@ -91,7 +91,7 @@ function harness({captureSupported=true,withFrame=false}={}){
  }
  return {browser,root,saved,key,click,change,filter,submitRename,storage,
   get captures(){return captures},get recorderCount(){return recorderCount},
-  get recorder(){return lastRecorder},track,messages};
+  get recorder(){return lastRecorder},track,messages,objectUrls:objURLs};
 }
 
 test('A new Lolite Clips app mounts without asking for capture permission',async()=>{
@@ -261,4 +261,46 @@ test('Local library adds search, sorting, favourite filtering and size totals',a
  assert.match(h.root.innerHTML,/Gameplay/);
  h.filter('sort','largest');
  assert.match(h.root.innerHTML,/Largest files/);
+});
+
+test('Clips UI cannot inherit the Chat app root, action handlers or shared CSS classes',()=>{
+ const code=read('core/clips.js'),css=read('core/clips.css');
+ assert.match(code,/id="loliteClipsRoot"/);
+ assert.match(code,/data-lclip-action="toggle"/);
+ assert.doesNotMatch(code,/#lcRoot|data-lc-action/);
+ assert.match(css,/\.window\[data-window-id="clips"\]>\.content/);
+ assert.match(css,/\.lclip-main\{/);
+ assert.match(css,/container-type:inline-size/);
+ assert.match(css,/@container \(max-width:450px\)/);
+ assert.doesNotMatch(css,/\.lc-(?:shell|main|card|nav|header)\b|#lcRoot/);
+});
+test('Stop and save button is enabled as soon as the screen chooser succeeds',async()=>{
+ const h=harness();h.browser.page('clips');await pause();h.key();await pause();
+ const button=h.root.innerHTML.match(/<button class="lclip-primary" data-lclip-action="toggle"([^>]*)>/);
+ assert.ok(button,'Stop & save button is rendered');
+ assert.doesNotMatch(button[1],/disabled/);
+ assert.match(h.root.innerHTML,/Stop & save clip/);
+ h.key();await pause();await pause();
+});
+test('Clip video URLs are stable across library edits and revoked only after deletion',async()=>{
+ const h=harness();h.browser.page('clips');await pause();
+ h.key();await pause();h.key();await pause();await pause();
+ const clip=[...h.saved.values()][0],urls=[...h.objectUrls.keys()];
+ assert.equal(urls.length,1);
+ h.click('rename',clip.id);await pause();
+ h.click('share',clip.id);await pause();
+ h.filter('sort','oldest');await pause();
+ h.filter('favorites','',false);await pause();
+ assert.deepEqual([...h.objectUrls.keys()],urls);
+ h.click('delete-local',clip.id);await pause();await pause();
+ assert.equal(h.saved.size,0);
+ assert.equal(h.objectUrls.has(urls[0]),false);
+});
+test('Community preview can be requested individually without exposing private clips',()=>{
+ const code=read('core/clips.js');
+ assert.match(code,/async function loadPreview\(clipId\)/);
+ assert.match(code,/data-lclip-action="load-preview"/);
+ assert.match(code,/clip\.status==='approved'\|\|S\.admin\|\|clip\.uploader_id===S\.user\.id/);
+ assert.match(code,/const showCloud=\(\)=>\{if\(S\.tab==='community'\|\|S\.tab==='review'\)render\(\)\}/);
+ assert.match(code,/updateLibraryGrid\(\)/);
 });
