@@ -29,6 +29,12 @@ A Lolite-branded browser desktop with the original Cosmos space interface, apps,
 
 ## Update Log
 
+### Wallpaper Favourites — 2026-11-12
+- Added a heart button to every wallpaper and a **Favourites** gallery category under **Settings → Wallpapers**.
+- Save regular, live, embedded, admin-uploaded or custom wallpapers without applying them; favourite the currently active wallpaper too.
+- Saved favourites persist locally across reloads and wallpaper catalogue updates. [Guide](docs/LIVELY-WALLPAPERS.md).
+
+
 ### Lolite Clips — 2026-11-12
 - Added **Lolite Clips** to the desktop, Cosmos, modern Start menu and App Store (free).
 - Press **Alt+Shift+C** to start/stop permissioned gameplay recording. View, download or delete locally stored clips; choose a 15–90 second limit.
