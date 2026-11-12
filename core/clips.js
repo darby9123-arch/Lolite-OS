@@ -65,7 +65,22 @@
  const allLocal=()=>withStore('readonly',store=>store.getAll());
  const saveLocal=item=>withStore('readwrite',store=>store.put(item));
  const deleteLocal=item=>withStore('readwrite',store=>store.delete(item));
- const revoke=()=>{for(const url of S.urls.values())URL.revokeObjectURL(url);S.urls.clear()};
+ // Keep local video URLs valid while playback is in progress. Recreating and
+ // revoking them on each render caused flickering and broken seek/play buttons.
+ const localVideoURL=clip=>{
+  const existing=S.urls.get(clip.id);
+  if(existing?.blob===clip.blob)return existing.url;
+  if(existing)URL.revokeObjectURL(existing.url);
+  const url=URL.createObjectURL(clip.blob);
+  S.urls.set(clip.id,{url,blob:clip.blob});
+  return url;
+ };
+ const pruneVideoURLs=()=>{
+  const valid=new Map(S.local.map(clip=>[clip.id,clip.blob]));
+  for(const [id,entry] of S.urls)if(valid.get(id)!==entry.blob){
+   URL.revokeObjectURL(entry.url);S.urls.delete(id);
+  }
+ };
  async function refreshLocal(){
   try{S.local=(await allLocal()).sort((a,b)=>b.createdAt-a.createdAt)}
   catch(e){S.local=[];notify(e?.message||'Unable to read saved clips',true)}
@@ -184,7 +199,7 @@
    // Do not leave an active capture source behind after a start failure.
    if(S.stream){for(const track of S.stream.getTracks())track.stop();S.stream=null}
    indicator();render();
-  }finally{S.requesting=false}
+  }finally{S.requesting=false;render()}
  }
  const supportedMime=type=>type==='video/webm'||type==='video/mp4';
  async function refreshCloud(){
@@ -237,8 +252,8 @@
    (S.favoriteOnly?' checked':'')+'> Favourites only</label></div>';
  }
  function localCard(clip){
-  const url=URL.createObjectURL(clip.blob);S.urls.set(clip.id,url);
-  return '<article class="lclip-card"><video controls playsinline preload="metadata" src="'+esc(url)+'" aria-label="'+esc(clip.title)+'"></video>'+
+  const url=localVideoURL(clip);
+  return '<article class="lclip-card" data-lclip-local-id="'+esc(clip.id)+'"><video controls playsinline preload="metadata" src="'+esc(url)+'" aria-label="'+esc(clip.title)+'"></video>'+
    '<div class="lclip-card-body"><div class="lclip-clip-heading"><h3>'+esc(clip.title)+'</h3>'+
    (clip.favorite?'<span class="lclip-favorite-mark" title="Favourite clip">★</span>':'')+'</div>'+
    '<p>'+esc(stamp(clip.createdAt))+' · '+formatTime(clip.duration)+' · '+size(clip.bytes)+'</p>'+
@@ -297,7 +312,7 @@
  }
  function render(){
   const el=root();indicator();if(!el)return;
-  revoke();
+  pruneVideoURLs();
   const tabs=[['record','Record'],['library','My Clips'],['community','Community']];
   if(S.admin)tabs.push(['review','Admin review']);
   const published=S.remote.filter(c=>c.status==='approved'),pending=S.remote.filter(c=>c.status==='pending');
@@ -313,7 +328,7 @@
    (S.tab==='record'?capturePanel():
     S.tab==='library'?'<div class="lclip-section-heading"><h2>My Clips</h2><p>Saved only in this browser. Download any important clips as backup.</p></div>'+
      libraryToolbar()+
-     '<div class="lclip-grid">'+(visibleClips().length?visibleClips().map(localCard).join(''):
+     '<div class="lclip-grid" data-lclip-library-grid>'+(visibleClips().length?visibleClips().map(localCard).join(''):
       '<div class="lclip-empty">'+(S.local.length?'No clips match your filters. Try a different search.':
       'No clips yet. Open Record and capture your first game moment.')+'</div>')+'</div>':
     '<div class="lclip-section-heading"><h2>'+(S.tab==='review'?'Clip moderation':'Community Clips')+'</h2>'+
