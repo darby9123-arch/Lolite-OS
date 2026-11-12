@@ -1,4 +1,4 @@
-/* Lolite wallpaper collection: LivelyWallpaper.app MP4s, source previews and saved choices. */
+/* Lolite wallpaper collection: original uploads, remote videos and saved choices. */
 (()=>{
  'use strict';
  const root=document.documentElement;
@@ -8,7 +8,8 @@
  const catalog=window.LoliteLivelyWallpapers;
  if(!catalog?.catalog?.length)return;
  const motionBGS=Array.isArray(window.LoliteMotionBGSEmbeds?.catalog)?window.LoliteMotionBGSEmbeds.catalog:[];
- const collection=[...catalog.catalog.map(wall=>({...wall,group:wall.category,embedded:true})),...motionBGS.map(wall=>({...wall}))];
+ const uploadedPack=Array.isArray(window.LoliteWallpaperPack?.catalog)?window.LoliteWallpaperPack.catalog:[];
+ const collection=[...uploadedPack.map(wall=>({...wall,embedded:false})),...catalog.catalog.map(wall=>({...wall,group:wall.category,embedded:true})),...motionBGS.map(wall=>({...wall}))];
  const defaultId=catalog.defaultId;
  const live=wall=>Boolean(wall?.video||wall?.src4k||wall?.motion);
  const CUSTOM_ID='custom';
@@ -574,7 +575,7 @@
  function markup(filter='All',query=''){
   const cats=['All','Favourites','4K','Games','Anime','Cars','Nature','Space','Art & Fantasy'].filter(cat=>cat==='All'||cat==='Favourites'||collection.some(w=>matches(w,cat)));
    if(collection.some(w=>w.embedded))cats.push('Embedded Wallpapers');
-  if(collection.some(w=>w.provider==='Admin Library'))cats.push('Special Live Wallpapers');
+  if(collection.some(w=>matches(w,'Special Live Wallpapers')))cats.push('Special Live Wallpapers');
   if(filter==='Live'||!cats.includes(filter))filter='All';
   return '<div class="cr-wall-browse"><label class="cr-wall-search"><span aria-hidden="true">⌕</span>'+
    '<input type="search" data-wall-search placeholder="Search wallpapers" aria-label="Search wallpapers" value="'+escape(query)+'"></label>'+

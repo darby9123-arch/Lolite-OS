@@ -37,7 +37,7 @@ test('Embedding never loads MotionBGS pages as iframe and never republishes the 
 });
 test('Embedded collection remains out of All and non-embedded categories',()=>{
  assert.match(player,/const motionBGS=Array\.isArray\(window\.LoliteMotionBGSEmbeds\?\.catalog\)/);
- assert.match(player,/collection=\[\.\.\.catalog\.catalog\.map/);
+ assert.match(player,/\.\.\.catalog\.catalog\.map/);
  assert.match(player,/filter==='All'&&!wall\.embedded/);
  assert.match(player,/filter==='Embedded Wallpapers'&&!!wall\.embedded/);
  assert.match(player,/!wall\.embedded&&filter==='4K'/);

@@ -7,7 +7,7 @@ const vm=require('node:vm');
 const read=file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8');
 
 const adminId='11111111-1111-4111-8111-111111111111';
-function harness({storage=new Map(),version='v1',failWrites=false}={}){
+function harness({storage=new Map(),version='v1',failWrites=false,pack=false}={}){
  const events=[],listeners={};
  const localStorage={
   getItem:key=>storage.has(key)?storage.get(key):null,
@@ -39,6 +39,7 @@ function harness({storage=new Map(),version='v1',failWrites=false}={}){
   CustomEvent,Event:CustomEvent,MutationObserver:class{observe(){}},addEventListener(){},
   Set,Map,Math,Date,Number,Array,String,Boolean,Promise,innerWidth:1280,innerHeight:720,
   cancelAnimationFrame(){},requestAnimationFrame:()=>1,clearTimeout(){},setTimeout:()=>1};
+ if(pack)vm.runInNewContext(read('core/wallpaper-pack-catalog.js'),ctx,{timeout:2500});
  vm.runInNewContext(read('core/wallpapers.js'),ctx,{timeout:2500});
  return {api:win.LoliteWallpapers,events,storage,win,doc};
 }
@@ -136,6 +137,26 @@ test('Wallpaper Settings handles favourite clicks separately from applying cards
 });
 
 const wallIds=html=>[...html.matchAll(/data-wall-id="([^"]+)"/g)].map(match=>match[1]);
+test('Original wallpaper pack appears in All and Special Live Wallpapers, survives admin refresh and supports favourites',()=>{
+ const {api,win}=harness({pack:true});
+ const expected=Array.from(win.LoliteWallpaperPack.catalog,wall=>wall.id);
+ assert.equal(expected.length,103);
+ assert.deepEqual(wallIds(api.cards('All','',200)),expected);
+ assert.deepEqual(wallIds(api.cards('Special Live Wallpapers','',200)),expected);
+ assert.ok(wallIds(api.cards('Embedded Wallpapers','',200)).every(id=>!expected.includes(id)));
+ assert.match(api.markup(),/data-wall-filter="Special Live Wallpapers"/);
+ api.syncAdminWallpapers([uploaded()]);
+ api.syncAdminWallpapers([]);
+ assert.deepEqual(wallIds(api.cards('All','',200)),expected);
+ api.toggleFavourite(expected[0]);
+ assert.deepEqual(wallIds(api.cards('Favourites')),expected.slice(0,1));
+ api.setSort('random');
+ const shuffled=wallIds(api.cards('All','',200));
+ assert.deepEqual([...shuffled].sort(),[...expected].sort());
+ assert.deepEqual(wallIds(api.cards('All','',200)),shuffled);
+ api.reshuffle();
+ assert.notDeepEqual(wallIds(api.cards('All','',200)),shuffled);
+});
 function sortingHarness(){
  const h=harness();
  for(let i=0;i<110;i++)h.api.collection.push({id:'uploaded-'+i,name:'Landscape '+i,category:'Nature',src:'https://example.com/'+i+'.jpg'});

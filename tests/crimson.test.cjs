@@ -14,15 +14,30 @@ function environment(seed={}){
  return {c,data,classes,root,document,media,queue,children,wallpaper,emit:(name,detail)=>c.dispatchEvent({type:name,detail}),docEmit:(name,event)=>(docEvents[name]||[]).forEach(f=>f(event)),flush:()=>{const jobs=[...timers.values()];timers.clear();jobs.forEach(f=>f())},mutate:()=>observer?.(),step:now=>{const jobs=[...queue.values()];queue.clear();jobs.forEach(f=>f(now))}};
 }
 const run=(env,name)=>vm.runInContext(fs.readFileSync('core/'+name+'.js','utf8'),env.c);
-function wallpapers(seed){
+function wallpapers(seed,withPack=false){
  const env=environment(seed);
  run(env,'lively-wallpapers-catalog');
+ if(withPack)run(env,'wallpaper-pack-catalog');
  run(env,'wallpaper-loop');
  run(env,'wallpapers');
  return env;
 }
 const DEFAULT='lively-minecraft-aurora-night-cabin';
 const CURRENT={'loliteWallpaperCollection':'lively-20261111'};
+test('saved original MP4 selections restore through the native loop player and keep motion preferences',()=>{
+ const id='pack-sukuna-fuga-flames';
+ const e=wallpapers({...CURRENT,wallpaperId:id,loliteWallpaperQuality:'max'},true);
+ assert.equal(e.c.LoliteWallpapers.current().id,id);
+ const videos=e.children.filter(el=>el.tag==='video');
+ assert.equal(videos.length,2);
+ assert.ok(videos.every(el=>el.src.endsWith('/wallpapers-20261113/sukuna-fuga-flames.3840x2160.mp4')));
+ assert.ok(videos.every(el=>el.muted&&el.loop&&el.playsInline));
+ assert.equal(e.children.filter(el=>el.tag==='iframe').length,0);
+ const paused=wallpapers({...CURRENT,wallpaperId:id,loliteWallpaperPaused:'true'},true);
+ assert.equal(paused.c.LoliteWallpapers.current().id,id);
+ assert.ok(paused.children.filter(el=>el.tag==='video').every(el=>el.paused));
+ assert.equal(paused.data.get('loliteWallpaperPaused'),'true');
+});
 test('the replacement migrates old selections and contains only the 840 source videos',()=>{
  const e=wallpapers({wallpaperId:'ocean-dawn',loliteAccent:'#e85c64',loliteCustomWallpaper:'data:image/png;base64,AAAA',loliteWallpaperCustomActive:'true'});
  assert.equal(e.c.LoliteWallpapers.current().id,DEFAULT);
