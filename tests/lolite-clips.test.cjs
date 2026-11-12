@@ -16,9 +16,9 @@ function harness({captureSupported=true,withFrame=false}={}){
  const stream={getTracks:()=>[track],getVideoTracks:()=>[track]};
  const document={
   body:{appendChild(x){if(x.id)elements.set(x.id,x)}},
-  getElementById(id){return id==='lcRoot'?root:id==='windows'?{}:elements.get(id)||null},
+  getElementById(id){return id==='loliteClipsRoot'?root:id==='windows'?{}:elements.get(id)||null},
   querySelectorAll(selector){return selector==='#windows iframe'&&withFrame?[gameFrame]:[]}, 
-  querySelector(q){return q.includes('#lcRoot')?root:null},
+  querySelector(q){return q.includes('#loliteClipsRoot')?root:null},
   addEventListener(name,fn){(listeners[name]??=[]).push(fn)},
   createElement(){return {hidden:true,id:'',textContent:'',className:'',title:'',
    setAttribute(){},addEventListener(){},appendChild(){},click(){},remove(){}}},
@@ -66,26 +66,26 @@ function harness({captureSupported=true,withFrame=false}={}){
   return prevented;
  }
  function click(action,clipId=''){
-  const button={dataset:{lcAction:action,lcId:clipId},closest(selector){
-   return selector==='#lcRoot'||selector==='[data-lc-action]'?button:null;
+  const button={dataset:{lclipAction:action,lclipId:clipId},closest(selector){
+   return selector==='#loliteClipsRoot'||selector==='[data-lclip-action]'?button:null;
   }};
   for(const listener of listeners.click||[])listener({target:button});
  }
  function change(setting,value){
-  const field={dataset:{lcSetting:setting},value,closest(selector){
-   return selector.includes('[data-lc-setting]')?field:null;
+  const field={dataset:{lclipSetting:setting},value,closest(selector){
+   return selector.includes('[data-lclip-setting]')?field:null;
   }};
   for(const listener of listeners.change||[])listener({target:field});
  }
  function filter(name,value,checked=false){
-  const field={dataset:{lcFilter:name},value,checked,closest(selector){
-   return selector.includes('[data-lc-filter]')?field:null;
+  const field={dataset:{lclipFilter:name},value,checked,closest(selector){
+   return selector.includes('[data-lclip-filter]')?field:null;
   }};
   for(const listener of listeners.change||[])listener({target:field});
  }
  function submitRename(clipId,title){
-  const form={dataset:{lcRename:clipId},elements:{title:{value:title}}};
-  const event={target:{closest:selector=>selector.includes('data-lc-rename')?form:null},
+  const form={dataset:{lclipRename:clipId},elements:{title:{value:title}}};
+  const event={target:{closest:selector=>selector.includes('data-lclip-rename')?form:null},
    preventDefault(){}};
   for(const listener of listeners.submit||[])listener(event);
  }
@@ -97,7 +97,7 @@ function harness({captureSupported=true,withFrame=false}={}){
 test('A new Lolite Clips app mounts without asking for capture permission',async()=>{
  const h=harness();
  assert.equal(h.captures,0);
- assert.match(h.browser.page('clips'),/id="lcRoot"/);
+ assert.match(h.browser.page('clips'),/id="loliteClipsRoot"/);
  await pause();
  assert.match(h.root.innerHTML,/Lolite Clips/);
  assert.match(h.root.innerHTML,/My Clips/);
@@ -163,7 +163,7 @@ test('Game capture and cloud sharing are opt-in and do not post private clips au
  const code=read('core/clips.js');
  for(const marker of ['navigator.mediaDevices.getDisplayMedia','new MediaRecorder','indexedDB.open',
   "form.elements.confirm.checked","status:'pending'","createSignedUrl(r.storage_path,900)",
-  'if(!S.user)','data-lc-action="share"','data-lc-action="stop-capture"'])
+  'if(!S.user)','data-lclip-action="share"','data-lclip-action="stop-capture"'])
   assert.ok(code.includes(marker),'Missing '+marker);
  assert.doesNotMatch(code,/service_role|sb_secret_/);
  assert.match(code,/does <strong>not<\/strong> retroactively capture gameplay/);
@@ -251,9 +251,9 @@ test('Clips can be renamed and favourited without changing video data',async()=>
 test('Local library adds search, sorting, favourite filtering and size totals',async()=>{
  const h=harness();h.browser.page('clips');await pause();
  h.key();await pause();h.key();await pause();await pause();
- assert.match(h.root.innerHTML,/data-lc-filter="search"/);
- assert.match(h.root.innerHTML,/data-lc-filter="sort"/);
- assert.match(h.root.innerHTML,/data-lc-filter="favorites"/);
+ assert.match(h.root.innerHTML,/data-lclip-filter="search"/);
+ assert.match(h.root.innerHTML,/data-lclip-filter="sort"/);
+ assert.match(h.root.innerHTML,/data-lclip-filter="favorites"/);
  assert.match(h.root.innerHTML,/stored locally/);
  h.filter('favorites','',true);
  assert.match(h.root.innerHTML,/No clips match your filters/);
