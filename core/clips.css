@@ -1,124 +1,101 @@
-/* Lolite Clips — scoped recording and gallery UI. */
-.window[data-window-id="clips"]>.content{padding:0!important;overflow:hidden!important;min-height:0!important}
-.lclip-shell{box-sizing:border-box;height:100%;width:100%;margin:0;overflow-y:auto;overflow-x:hidden;min-height:0;background:#0f1420;color:#f0f3ff;font:13px/1.5 "Segoe UI",system-ui,sans-serif}
-.lclip-shell *{box-sizing:border-box}.lclip-shell button,.lclip-shell input,.lclip-shell select{font:inherit}
-.lclip-shell button{cursor:pointer}.lclip-shell button:disabled{opacity:.55;cursor:not-allowed}
-.lclip-header{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:24px 28px;background:#17182b;border-bottom:1px solid #ffffff1b}
-.lclip-header small,.lclip-kicker{font-size:10px;font-weight:800;letter-spacing:2px;color:#ad9dff}
-.lclip-header h1{font-size:29px;letter-spacing:-.8px;margin:5px 0 3px}
-.lclip-header p{color:#abb9d5;margin:0;font-size:12px}.lclip-count{flex:0 0 auto;color:#cfc3f1;border:1px solid #6f608a;border-radius:9px;padding:7px 10px;font-size:11px}
-.lclip-nav{display:flex;gap:6px;align-items:center;overflow-x:auto;background:#17182b;padding:10px 22px;border-bottom:1px solid #ffffff18}
-.lclip-nav button{padding:9px 14px;white-space:nowrap;color:#afb7d0;background:transparent;border:1px solid transparent;border-radius:8px;font-weight:700}
-.lclip-nav button.active{color:#fff;background:#644d96;border-color:#886cb2}.lclip-nav button:not(.active):hover{background:#ffffff13}
-.lclip-nav .lclip-refresh{margin-left:auto}
-.lclip-main{padding:22px 26px 42px;min-width:0}
-.lclip-message{min-height:0;padding:0;margin:0 0 13px;color:#9be4bc;font-size:12px}
-.lclip-message:empty{display:none}.lclip-message.is-error{color:#ffb0b9}
-.lclip-hero{display:flex;justify-content:space-between;gap:16px;align-items:center;border:1px solid #514b79;border-radius:13px;background:radial-gradient(ellipse at 90% 0%,#624d965a,transparent 55%),#242439;padding:24px}
-.lclip-hero h2{margin:6px 0 8px;font-size:24px;letter-spacing:-.5px}.lclip-hero p{max-width:560px;margin:0;color:#bbc3df;line-height:1.65}
-.lclip-live{padding:8px 12px;background:#2b3147;color:#d7daf3;border-radius:99px;white-space:nowrap;border:1px solid #6b6a8c;font-size:11px}
-.lclip-live.on{color:#ffd5d8;background:#6a283a;border-color:#d35e7c}
-.lclip-controls{display:flex;gap:9px;flex-wrap:wrap;margin:17px 0}
-.lclip-controls button,.lclip-actions button,.lclip-empty button{background:#253045;border:1px solid #475a75;border-radius:8px;padding:10px 14px;color:#eaf0ff;font-weight:700}
-.lclip-controls button:not(:disabled):hover,.lclip-actions button:not(:disabled):hover{background:#384c69}
-.lclip-shell .lclip-primary{background:#7758c4!important;border:1px solid #8f78d6!important;color:#fff!important}
-.lclip-shell .lclip-primary:hover:not(:disabled){background:#9272e1!important}
-.lclip-settings{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px}
-.lclip-settings label{display:grid;gap:5px;color:#bcc8de;font-size:11px}
-.lclip-settings select,.lclip-share-form input[type=text],.lclip-share-form input:not([type]){min-width:140px;padding:9px 10px;border:1px solid #4b5b79;border-radius:8px;background:#1c283b;color:#eef0fb}
-.lclip-help{border:1px solid #36445c;border-radius:11px;background:#182334;padding:17px 19px;max-width:850px}
-.lclip-help h3{font-size:14px;margin:0 0 9px}.lclip-help p{color:#b1bfd6;margin:0 0 11px;line-height:1.65}
-.lclip-help p:last-child{margin-bottom:0}.lclip-help kbd{padding:2px 6px;background:#4c416a;color:#f3e6ff;border-radius:5px}
-.lclip-section-heading{margin:0 0 17px}.lclip-section-heading h2{margin:0 0 5px;font-size:21px}.lclip-section-heading p{margin:0;color:#9babc6;font-size:12px}
-.lclip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:13px}
-.lclip-card{border:1px solid #334360;border-radius:11px;background:#182132;min-width:0;overflow:hidden;display:flex;flex-direction:column}
-.lclip-card video{width:100%;height:172px;object-fit:contain;background:#080d17;display:block}
-.lclip-preview-missing{height:172px;display:grid;place-items:center;padding:16px;background:#101927;color:#a7b6cf;text-align:center}
-.lclip-card-body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
-.lclip-card h3{font-size:14px;line-height:1.4;margin:0;overflow-wrap:anywhere}
-.lclip-card p{color:#9eafc7;font-size:11px;margin:0}
-.lclip-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:auto;padding-top:8px}
-.lclip-actions button{font-size:11px;padding:8px 10px}
-.lclip-actions .lclip-danger{background:#412734;color:#ffc4d1;border-color:#7b4658}.lclip-actions .lclip-danger:hover{background:#6b3549}
-.lclip-topline{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.lclip-status{font-size:10px;border-radius:99px;padding:2px 8px;background:#34445f;color:#dce4fa;border:1px solid #506283}
-.lclip-status-approved{background:#234b3d;color:#a9f2ce;border-color:#38775e}
-.lclip-status-pending{background:#514225;color:#ffe2aa;border-color:#78633a}
-.lclip-status-rejected{background:#4a3036;color:#edc0d0;border-color:#74505c}
-.lclip-mine{font-size:10px;color:#b7a4e4}
-.lclip-share-form{display:grid;gap:11px;padding:13px;margin-top:8px;border:1px solid #7562a0;background:#242639;border-radius:9px}
-.lclip-share-form label:not(.lclip-consent){display:grid;gap:6px;color:#d8ceec;font-size:11px}
-.lclip-share-form input:not([type=checkbox]){width:100%}
-.lclip-share-form .lclip-consent{display:flex;align-items:flex-start;gap:8px;color:#c4cde4;font-size:11px}
-.lclip-share-form .lclip-consent input{margin:3px 0 0;accent-color:#9d7ef6}
-.lclip-share-form small{color:#a6b2ce;line-height:1.6}
-.lclip-note{font-size:11px;color:#b8a3dc;margin-top:16px}
-.lclip-empty{grid-column:1/-1;border:1px dashed #516180;background:#1b2538;padding:25px;border-radius:12px;color:#b9c9df;text-align:center}
-.lclip-capture-indicator{display:none}
-#loliteClipCaptureStatus.lclip-capture-indicator:not([hidden]){position:fixed;z-index:21000;right:18px;bottom:72px;display:block;padding:9px 13px;border-radius:99px;border:1px solid #685f88;background:#262842;color:#fff;box-shadow:0 8px 26px #05071077;font-size:11px;font-weight:800;cursor:pointer}
-#loliteClipCaptureStatus.lclip-capture-indicator.is-recording{background:#952b46;border-color:#eb6e88;color:#fff}
-.lclip-loading{padding:48px;color:#abbadb}
-@media(max-width:700px){.lclip-header{padding:20px 16px}.lclip-main{padding:17px}.lclip-hero{align-items:flex-start;flex-direction:column;padding:17px}.lclip-hero h2{font-size:20px}.lclip-nav{padding:10px}.lclip-count{display:none}.lclip-grid{grid-template-columns:1fr}}
-@media(prefers-reduced-motion:reduce){.lclip-shell *,#loliteClipCaptureStatus{transition:none!important;animation:none!important}}
-
-.lclip-my-uploads{margin-top:25px;padding-top:17px;border-top:1px solid #ffffff20}.lclip-my-uploads h3{font-size:15px;margin:0 0 5px}.lclip-my-uploads>p{margin:0 0 13px;color:#acbcd6;font-size:11px}
-
-
-/* Clips 2.0 — recording controls, readable local library, and useful compact layouts. */
-.lclip-shell{background:#101725;scrollbar-color:#53637b transparent}
-.lclip-header{background:#182132;border-color:#ffffff15}
-.lclip-header h1{font-size:clamp(22px,3vw,29px);letter-spacing:-.55px}
-.lclip-header p{line-height:1.55}
-.lclip-nav{background:#182132;border-color:#ffffff18}
-.lclip-nav button.active{background:#4c5883;border-color:#7486be}
-.lclip-shell :is(button,input,select,video):focus-visible{outline:2px solid #9cb6ff;outline-offset:2px}
+/* Lolite Clips UI — self-contained. Never reuse Lolite Chat's .lc-* selectors. */
+.window[data-window-id="clips"]>.content{padding:0!important;min-height:0!important;overflow:hidden!important;background:#101724!important}
+.lclip-shell{container-type:inline-size;box-sizing:border-box!important;display:block;width:100%;height:100%;min-width:0;min-height:0;margin:0!important;padding:0!important;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;background:#101724!important;color:#eef4ff!important;font:13px/1.5 "Segoe UI",system-ui,sans-serif;scrollbar-color:#526681 #101724}
+.lclip-shell *,.lclip-shell *::before,.lclip-shell *::after{box-sizing:border-box}
+.lclip-shell :is(h1,h2,h3,h4,p){margin-top:0;max-width:100%}
+.lclip-shell :is(h1,h2,h3,h4){line-height:1.25;letter-spacing:-.025em;color:#f0f5ff}
+.lclip-shell button{appearance:none;display:inline-flex;justify-content:center;align-items:center;gap:6px;flex:0 0 auto;max-width:100%;width:auto!important;min-width:0;padding:9px 12px;border:1px solid #49617f;border-radius:8px;background:#293c54;color:#edf4ff;font:650 12px/1.4 "Segoe UI",system-ui,sans-serif;cursor:pointer;box-shadow:none!important;text-align:center}
+.lclip-shell button:hover:not(:disabled){background:#395371;border-color:#7692b4}
+.lclip-shell button:disabled{opacity:.5;cursor:not-allowed}
+.lclip-shell :is(input,select){min-width:0;max-width:100%;padding:9px 10px;background:#111f31;border:1px solid #506886;border-radius:7px;color:#eef5ff;font:inherit}
+.lclip-shell input[type=checkbox]{width:16px;height:16px;padding:0;accent-color:#a3c0fc;cursor:pointer}
+.lclip-shell :is(button,input,select,video):focus-visible{outline:2px solid #b2c9ff!important;outline-offset:2px}
 .lclip-shell [hidden]{display:none!important}
-.lclip-hero{background:linear-gradient(120deg,#263449,#27283c);border:1px solid #536680}
-.lclip-kicker{color:#b6ceff}
-.lclip-shell .lclip-primary{background:#526da5!important;border-color:#718dcb!important}
-.lclip-shell .lclip-primary:hover:not(:disabled){background:#6585c1!important}
-.lclip-live.on{background:#632938;border-color:#b85b74;color:#ffe0e6}
-.lclip-record-progress{padding:14px 15px;margin:0 0 18px;background:#18263a;border:1px solid #3a516c;border-radius:10px;max-width:740px}
-.lclip-record-progress-top{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#dbe5f9;font-size:12px;margin-bottom:10px;font-variant-numeric:tabular-nums}
-.lclip-record-progress-top strong{font-size:18px;color:#fff;letter-spacing:.3px}
-.lclip-record-track{width:100%;height:7px;background:#101827;border-radius:99px;overflow:hidden}
-.lclip-record-track [data-lclip-record-fill]{height:100%;border-radius:inherit;background:linear-gradient(90deg,#ec7892,#97b3ed);transition:width .2s linear}
-.lclip-library-stats{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:-4px 0 14px}
-.lclip-library-stats span{color:#b9cbe5;background:#202c40;border:1px solid #354760;border-radius:7px;padding:7px 10px;font-size:11px}
-.lclip-library-tools{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin:0 0 18px;padding:13px 14px;background:#192538;border:1px solid #334762;border-radius:10px}
-.lclip-library-tools label{min-width:150px;display:grid;gap:5px;font-size:11px;color:#bdcbe1}
-.lclip-library-tools label:first-child{flex:1 1 220px}
-.lclip-library-tools input[type=search],.lclip-library-tools select{width:100%;max-width:100%;min-height:35px;border:1px solid #4a5d79;background:#111c2d;color:#f1f6ff;border-radius:7px;padding:7px 10px}
-.lclip-library-tools .lclip-favorites-only{display:flex;align-items:center;gap:8px;min-width:0;white-space:nowrap;min-height:35px;cursor:pointer}
-.lclip-library-tools input[type=checkbox]{width:16px;height:16px;accent-color:#88a6ee}
-.lclip-clip-heading{display:flex;align-items:flex-start;gap:9px;justify-content:space-between}
-.lclip-clip-heading h3{min-width:0;flex:1;max-width:100%}
-.lclip-favorite-mark{font-size:18px;color:#f0c87f;line-height:1}
-.lclip-rename-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px;margin-top:9px;padding:11px;border-radius:9px;background:#233147;border:1px solid #5a7194}
-.lclip-rename-form label{display:grid;gap:5px;min-width:0;color:#c9d8ef;font-size:11px}
-.lclip-rename-form input{width:100%;min-width:0;padding:9px 10px;border:1px solid #526682;border-radius:7px;background:#111c2d;color:#f1f6ff}
-.lclip-rename-form button{align-self:end;white-space:nowrap;padding:9px 11px;border-radius:7px;cursor:pointer}
-.lclip-card{border-color:#344861;background:#1a2535}
-.lclip-card video{background:#0a121e}
-.lclip-actions button[aria-pressed=true]{background:#465c7d;border-color:#7e98c4}
-#loliteClipCaptureStatus.lclip-capture-indicator.is-paused{background:#4b3f50;border-color:#b29ab6}
-@media(max-width:700px){
- .lclip-main{padding:18px 15px 32px}
- .lclip-header{padding:19px 15px}
- .lclip-library-tools{padding:12px;gap:9px}
- .lclip-library-tools label{flex:1 1 160px}
- .lclip-library-tools label:first-child{flex-basis:100%}
- .lclip-rename-form{grid-template-columns:1fr}
-}
-@media(prefers-reduced-motion:reduce){.lclip-record-track [data-lclip-record-fill]{transition:none}}
-
-/* Isolated Clips styles: never reuse Chat's #lcRoot or .lc-* selectors. */
-.window[data-window-id="clips"] .lclip-shell :is(h1,h2,h3,p){max-width:100%}
-.window[data-window-id="clips"] .lclip-shell :is(button,input,select){box-sizing:border-box}
-.window[data-window-id="clips"] .lclip-shell button:not(.lclip-capture-indicator){width:auto;max-width:100%;min-height:32px}
-.window[data-window-id="clips"] .lclip-header,.window[data-window-id="clips"] .lclip-nav{position:relative}
-.window[data-window-id="clips"] .lclip-shell .lclip-grid{min-width:0}
-.window[data-window-id="clips"] .lclip-shell .lclip-card{min-width:0}
-.window[data-window-id="clips"] .lclip-shell .lclip-card video{width:100%;max-width:100%}
-.window[data-window-id="clips"] .lclip-shell .lclip-main{min-height:0}
-@media(max-width:650px){.window[data-window-id="clips"] .lclip-shell .lclip-grid{grid-template-columns:minmax(0,1fr)}}
+.lclip-shell button.lclip-primary{background:#4d6cab!important;border-color:#7c9ad7!important;color:#fff!important;font-weight:750}
+.lclip-shell button.lclip-primary:hover:not(:disabled){background:#6386c4!important}
+.lclip-shell button.lclip-danger{background:#492f40;border-color:#825065;color:#ffd4df}
+.lclip-shell button.lclip-danger:hover:not(:disabled){background:#673e52}
+.lclip-header{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:20px 23px;background:#182437;border-bottom:1px solid #32465e}
+.lclip-header>div{min-width:0}
+.lclip-header small,.lclip-kicker{font-size:10px;letter-spacing:1.4px;color:#9ebdf3;font-weight:800;display:block;margin-bottom:4px}
+.lclip-header h1{font-size:25px;margin:0 0 4px}
+.lclip-header p{font-size:12px;color:#bccbe1;margin:0}
+.lclip-count{padding:7px 11px;border-radius:30px;border:1px solid #485f7e;background:#243750;white-space:nowrap;font-size:11px;color:#d8e4f5}
+.lclip-nav{display:flex;align-items:center;gap:5px;overflow-x:auto;padding:9px 17px;background:#182437;border-bottom:1px solid #32465e;min-height:54px}
+.lclip-nav button{white-space:nowrap;border-color:transparent;color:#bfcee0;background:transparent;flex-shrink:0}
+.lclip-nav button.active{border-color:#7296c4;background:#335579;color:#fff}
+.lclip-nav button.lclip-refresh{margin-left:auto}
+.lclip-main{display:block;min-width:0;padding:20px 23px 34px}
+.lclip-message{color:#a3e3c8;font-size:12px;margin:0 0 13px}
+.lclip-message:empty{display:none}
+.lclip-message.is-error{color:#ffbac4}
+.lclip-hero{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:22px;background:#203148;border:1px solid #476184;border-radius:12px}
+.lclip-hero>div{min-width:0}
+.lclip-hero h2{font-size:23px;margin:5px 0 9px}
+.lclip-hero p{color:#c2d0e4;font-size:12px;line-height:1.65;max-width:580px;margin:0}
+.lclip-live{flex-shrink:0;white-space:nowrap;border-radius:30px;padding:7px 11px;background:#293b52;border:1px solid #536c90;font-size:11px;color:#d4e1f5;font-weight:750}
+.lclip-live.on{background:#613244;border-color:#cb748f;color:#ffe5e9}
+.lclip-controls{display:flex;flex-wrap:wrap;gap:9px;margin:16px 0;align-items:center}
+.lclip-controls button{min-height:40px;padding:10px 15px}
+.lclip-controls button.lclip-primary{min-width:175px}
+.lclip-settings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px;background:#1a2a3e;border:1px solid #3b526f;border-radius:10px;margin-bottom:16px}
+.lclip-settings label{display:flex;flex-direction:column;min-width:0;gap:7px;color:#c8d6e9;font-size:11px}
+.lclip-settings select{width:100%;min-height:37px;font-size:12px}
+.lclip-record-progress{padding:15px;background:#1c2e46;border:1px solid #476181;border-radius:10px;margin-bottom:16px;max-width:850px}
+.lclip-record-progress-top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11px;color:#ccdaec;margin-bottom:9px;font-variant-numeric:tabular-nums}
+.lclip-record-progress-top strong{font-size:16px;color:#fff}
+.lclip-record-track{height:7px;border-radius:20px;background:#0b1625;overflow:hidden}
+.lclip-record-track>div{height:100%;background:#d46e91;border-radius:inherit;transition:width .2s linear}
+.lclip-help{max-width:850px;padding:17px 18px;background:#172539;border:1px solid #354a64;border-radius:10px}
+.lclip-help h3{font-size:13px;margin:0 0 9px}
+.lclip-help p{font-size:12px;line-height:1.65;color:#b3c3d9;margin:0 0 9px}
+.lclip-help p:last-child{margin-bottom:0}
+.lclip-help kbd{display:inline-block;border:1px solid #697eaa;border-radius:5px;padding:2px 6px;background:#314561;color:#fff;font-size:11px}
+.lclip-section-heading{margin:0 0 15px}
+.lclip-section-heading h2{font-size:20px;margin:0 0 5px}
+.lclip-section-heading p{font-size:12px;color:#acbfd6;margin:0}
+.lclip-library-stats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.lclip-library-stats span{font-size:11px;color:#ccdaed;background:#203047;border:1px solid #405674;border-radius:8px;padding:6px 10px}
+.lclip-library-tools{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr) auto;align-items:end;gap:12px;margin-bottom:17px;padding:14px;border:1px solid #394f6e;border-radius:10px;background:#19283c}
+.lclip-library-tools label{display:flex;flex-direction:column;gap:6px;min-width:0;font-size:11px;color:#c4d3e8}
+.lclip-library-tools :is(input[type=search],select){width:100%;min-height:38px;font-size:12px}
+.lclip-library-tools label.lclip-favorites-only{display:flex;flex-direction:row;align-items:center;min-height:38px;gap:8px;white-space:nowrap}
+.lclip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:14px;min-width:0}
+.lclip-card{min-width:0;overflow:hidden;display:flex;flex-direction:column;border:1px solid #3b526e;background:#1e2d42;border-radius:11px}
+.lclip-card video{display:block;max-width:100%;width:100%;height:auto;aspect-ratio:16/9;max-height:260px;object-fit:contain;background:#0b1422}
+.lclip-card-body{display:flex;flex-direction:column;flex:1;gap:9px;min-width:0;padding:14px}
+.lclip-card h3{margin:0;font-size:13px;line-height:1.4;overflow-wrap:anywhere}
+.lclip-card p{margin:0;font-size:11px;color:#b2c2d8;overflow-wrap:anywhere}
+.lclip-clip-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.lclip-clip-heading h3{flex:1;min-width:0}
+.lclip-favorite-mark{font-size:18px;line-height:1;color:#e6c37d}
+.lclip-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:auto}
+.lclip-actions button{font-size:11px;min-height:33px;padding:7px 10px}
+.lclip-actions button[aria-pressed=true]{background:#375a80;border-color:#8da8cf}
+.lclip-topline{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.lclip-status{padding:3px 8px;border-radius:30px;background:#334661;border:1px solid #617696;color:#ebf2ff;font-size:10px}
+.lclip-status-approved{background:#24543f;border-color:#438266;color:#b9f7d3}
+.lclip-status-pending{background:#4e412a;border-color:#806b43;color:#ffe7b5}
+.lclip-status-rejected{background:#49313e;border-color:#855b71;color:#f8ccdf}
+.lclip-mine{font-size:10px;color:#b9c7ef}
+.lclip-preview-missing{display:grid;place-items:center;min-height:160px;padding:16px;text-align:center;background:#142036;color:#b9cadf;font-size:12px}
+.lclip-rename-form,.lclip-share-form{display:grid;gap:11px;padding:12px;margin-top:4px;border:1px solid #506b8e;border-radius:9px;background:#253952}
+.lclip-rename-form label,.lclip-share-form label:not(.lclip-consent){display:flex;flex-direction:column;gap:6px;min-width:0;color:#d4e2f5;font-size:11px}
+.lclip-rename-form input,.lclip-share-form input:not([type=checkbox]){width:100%;min-height:38px}
+.lclip-rename-form button,.lclip-share-form button{justify-self:start}
+.lclip-consent{display:flex;flex-direction:row;align-items:flex-start;gap:8px;color:#cddbec;font-size:11px}
+.lclip-consent input{flex-shrink:0;margin:3px 0 0}
+.lclip-share-form small{font-size:11px;color:#b9c7dc}
+.lclip-my-uploads{margin:24px 0 0;padding-top:17px;border-top:1px solid #3c526f}
+.lclip-my-uploads h3{margin:0 0 5px;font-size:15px}
+.lclip-my-uploads>p{color:#b8c8de;font-size:11px;margin:0 0 14px}
+.lclip-empty{grid-column:1/-1;padding:25px;text-align:center;border:1px dashed #526b88;background:#1b2b40;border-radius:10px;color:#c2d0e4}
+.lclip-empty button{margin-top:8px}
+.lclip-loading{padding:40px 22px;color:#b9cbe2}
+#loliteClipCaptureStatus.lclip-capture-indicator{display:none}
+#loliteClipCaptureStatus.lclip-capture-indicator:not([hidden]){display:block;position:fixed;z-index:21000;right:15px;bottom:72px;padding:10px 13px;background:#243d59;border:1px solid #6882a6;color:#fff;border-radius:30px;box-shadow:0 8px 25px #0008;font:750 11px/1.2 "Segoe UI",system-ui,sans-serif;cursor:pointer}
+#loliteClipCaptureStatus.lclip-capture-indicator.is-recording{background:#943b55;border-color:#ef92a7}
+#loliteClipCaptureStatus.lclip-capture-indicator.is-paused{background:#62475e;border-color:#cbaac4}
+@container (max-width:700px){.lclip-header{padding:16px}.lclip-main{padding:16px}.lclip-hero{align-items:flex-start;flex-direction:column;padding:17px}.lclip-hero h2{font-size:20px}.lclip-nav{padding:8px 12px}.lclip-library-tools{grid-template-columns:repeat(2,minmax(0,1fr))}.lclip-library-tools label:first-child{grid-column:1/-1}.lclip-settings{grid-template-columns:repeat(2,minmax(0,1fr))}.lclip-settings label:last-child{grid-column:1/-1}}
+@container (max-width:450px){.lclip-count{display:none}.lclip-header{padding:15px 13px}.lclip-main{padding:15px 12px 28px}.lclip-nav{padding:8px}.lclip-nav button{padding:8px 10px;font-size:11px}.lclip-controls{display:grid;grid-template-columns:1fr}.lclip-controls button{width:100%!important}.lclip-library-tools{grid-template-columns:1fr}.lclip-library-tools label:first-child{grid-column:auto}.lclip-settings{grid-template-columns:1fr}.lclip-settings label:last-child{grid-column:auto}.lclip-grid{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){.lclip-shell button{transition:none!important}.lclip-record-track>div{transition:none!important}}
