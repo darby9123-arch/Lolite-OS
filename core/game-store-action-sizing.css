@@ -1,0 +1,117 @@
+/* Lolite Game Store: a clear, oversized primary Play action.
+ * Loaded after legacy Game Store + 5.0 panels to prevent old compact card rules
+ * from making Play tiny or stacking Info and Rate/Report in the same grid cell.
+ */
+.store.store-v41 .store-gallery-card .store-card-actions{
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ grid-template-rows:auto auto auto!important;
+ gap:7px!important;
+ align-items:stretch!important;
+ min-width:0!important;
+ max-height:none!important;
+ opacity:1!important;
+ visibility:visible!important;
+ transform:none!important;
+ pointer-events:auto!important;
+}
+/* First row: make Play the dominant full-width action on every game card. */
+.store.store-v41 .store-gallery-card .store-card-actions > .store-play{
+ grid-column:1 / -1!important;
+ grid-row:1!important;
+ box-sizing:border-box!important;
+ display:flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ width:100%!important;
+ min-width:0!important;
+ min-height:76px!important;
+ padding:16px 12px!important;
+ border-radius:11px!important;
+ font-size:21px!important;
+ font-weight:850!important;
+ line-height:1.2!important;
+ letter-spacing:.15px!important;
+ white-space:nowrap!important;
+ background:#8157d1!important;
+ border:1px solid #b19aef!important;
+ color:#fff!important;
+ box-shadow:0 3px 12px #4c2b8645!important;
+}
+.store.store-v41 .store-gallery-card .store-card-actions > .store-play:hover{
+ background:#9c70e4!important;
+ border-color:#dfc8ff!important;
+}
+/* Second row: the existing server selector remains accessible. */
+.store.store-v41 .store-gallery-card .store-card-actions > .store-server-picker{
+ grid-column:1 / -1!important;
+ grid-row:2!important;
+ min-width:0!important;
+}
+/* Third row: Info and reporting remain present but visually secondary. */
+.store.store-v41 .store-gallery-card .store-card-actions > .store-details:not(.l5-feedback-button){
+ grid-column:1!important;
+ grid-row:3!important;
+}
+.store.store-v41 .store-gallery-card .store-card-actions > .l5-feedback-button{
+ grid-column:2!important;
+ grid-row:3!important;
+}
+.store.store-v41 .store-gallery-card .store-card-actions > :is(.store-details,.l5-feedback-button){
+ box-sizing:border-box!important;
+ display:flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ width:100%!important;
+ min-width:0!important;
+ min-height:33px!important;
+ height:auto!important;
+ padding:6px 5px!important;
+ font-size:10px!important;
+ font-weight:650!important;
+ line-height:1.2!important;
+ border-radius:7px!important;
+ white-space:normal!important;
+ text-align:center!important;
+ background:#342a46!important;
+ border:1px solid #584c70!important;
+ color:#d9cce9!important;
+ box-shadow:none!important;
+}
+.store.store-v41 .store-gallery-card .store-card-actions > :is(.store-details,.l5-feedback-button):hover{
+ background:#4c3b62!important;
+ color:#fff!important;
+}
+/* Smaller stars in the Game Store feedback dialog, still easy to tap. */
+.l5-modal .l5-stars{
+ display:flex;
+ flex-wrap:wrap;
+ justify-content:center;
+ gap:4px;
+}
+.l5-modal .l5-stars [data-l5-rate]{
+ flex:0 0 38px!important;
+ width:38px!important;
+ min-width:38px!important;
+ min-height:36px!important;
+ padding:4px!important;
+ font-size:19px!important;
+ line-height:1!important;
+}
+.l5-modal .l5-panel [data-l5-game-copy]{
+ min-height:32px!important;
+ padding:6px 10px!important;
+ font-size:11px!important;
+}
+/* Even in a very narrow Lolite window, Play stays obvious and controls don't collide. */
+@media(max-width:600px){
+ .store.store-v41 .store-gallery-card .store-card-actions > .store-play{
+  min-height:68px!important;
+  font-size:19px!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .store.store-v41 .store-gallery-card .store-card-actions > .store-play{
+  transition:none!important;
+ }
+}
