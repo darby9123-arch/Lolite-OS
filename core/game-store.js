@@ -1162,7 +1162,7 @@
  let searchTimer=0;
  const flushSearch=input=>{
   clearTimeout(searchTimer);searchTimer=0;
-  if(input?.isConnected&&input.matches?.('.store-v41 .store-search'))
+  if(input&&input.isConnected!==false&&input.matches?.('.store-v41 .store-search'))
    window.loliteStoreSearch(input.value);
  };
  document.addEventListener('input',event=>{
