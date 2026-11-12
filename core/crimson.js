@@ -39,7 +39,12 @@
   const api=window.LoliteWallpapers,w=api.current(),q=api.getQuality();
   const options=[['max','Original · up to 4K'],['balanced','Balanced · HD when available'],['lite','Performance · smaller preview']];
   return '<div class="cr-now-playing"><div><span class="cr-eyebrow">ON YOUR DESKTOP</span><strong data-cr-wall-name>'+
-    (w?.name||'Live wallpaper')+'</strong><small data-cr-wall-status role="status">'+api.getStatus()+'</small></div>'+
+    (w?.name||'Live wallpaper')+'</strong><small data-cr-wall-status role="status">'+api.getStatus()+'</small>'+
+    (w?'<button type="button" class="cr-wall-current-favourite'+(api.isFavourite(w.id)?' is-favourite':'')+
+     '" data-wall-favourite-current aria-pressed="'+api.isFavourite(w.id)+'" aria-label="'+
+     (api.isFavourite(w.id)?'Remove current wallpaper from favourites':'Add current wallpaper to favourites')+
+     '"><span aria-hidden="true">'+(api.isFavourite(w.id)?'♥':'♡')+'</span> <span data-cr-current-favourite-label>'+
+     (api.isFavourite(w.id)?'Favourited':'Add to favourites')+'</span></button>':'')+'</div>'+
     '<label class="cr-inline-toggle"><input type="checkbox" data-cr-live '+(api.isPaused()?'':'checked')+'> Live motion</label></div>'+
     '<div class="cr-video-options"><label class="cr-wall-quality">Rendering quality <select data-wall-quality aria-label="Live wallpaper rendering quality">'+
     options.map(([key,title])=>'<option value="'+key+'" '+(q===key?'selected':'')+'>'+title+'</option>').join('')+
@@ -57,7 +62,7 @@
  function openSettings(section){tab=section||'appearance';launch('settings');renderSettings();if(tab==='wallpapers')void window.LoliteWallpapers?.discoverVideos?.(true)}
  window.page=function(id){if(id==='home')return homeMarkup();if(id==='settings')return settingsMarkup();return oldPage.apply(this,arguments)};
  document.addEventListener('click',e=>{
-  const b=e.target.closest('[data-cr-open],[data-cr-settings],[data-cr-tab],[data-wall-id],[data-wall-filter],[data-cr-action],[data-cr-sound],[data-cr-theme-mode],[data-cr-theme-select],[data-wall-retry],[data-cr-admin-open],[data-cr-website-library]');if(!b)return;
+  const b=e.target.closest('[data-cr-open],[data-cr-settings],[data-cr-tab],[data-wall-id],[data-wall-filter],[data-wall-favourite],[data-wall-favourite-current],[data-cr-action],[data-cr-sound],[data-cr-theme-mode],[data-cr-theme-select],[data-wall-retry],[data-cr-admin-open],[data-cr-website-library]');if(!b)return;
   if(b.dataset.crThemeMode){
    const panel=b.closest('[data-cr-theme-panel]');
    if(panel){panel.outerHTML=themePanel(b.dataset.crThemeMode);
@@ -79,7 +84,13 @@
   if(b.dataset.crOpen)launch(b.dataset.crOpen);
   if(b.dataset.crSettings)openSettings(b.dataset.crSettings);
   if(b.dataset.crTab){tab=b.dataset.crTab;renderSettings();if(tab==='wallpapers')void window.LoliteWallpapers?.discoverVideos?.(true);document.querySelector(`[data-cr-tab="${tab}"]`)?.focus()}
-  if(b.dataset.wallId)window.LoliteWallpapers.apply(b.dataset.wallId);
+  if(b.hasAttribute('data-wall-favourite')||b.hasAttribute('data-wall-favourite-current')){
+    const api=window.LoliteWallpapers;
+    const id=b.hasAttribute('data-wall-favourite-current')?api.current()?.id:b.dataset.wallFavourite;
+    if(id)api.toggleFavourite(id);
+    return;
+   }
+   if(b.dataset.wallId)window.LoliteWallpapers.apply(b.dataset.wallId);
    if(b.dataset.wallFilter){filter=b.dataset.wallFilter;const holder=document.querySelector('[data-cr-wall-library]');if(holder){holder.innerHTML=window.LoliteWallpapers.markup(filter,wallQuery);holder.querySelector(`[data-wall-filter="${filter}"]`)?.focus()}}
   if(b.hasAttribute('data-wall-retry'))window.LoliteWallpapers.retry();
   if(b.dataset.crSound)window.LoliteSounds.preview(b.dataset.crSound).then(played=>{const status=document.querySelector('[data-cr-sound-status]');if(status)status.textContent=played?'Previewing '+b.querySelector('strong').textContent:'Turn on sounds and raise the volume to preview'});
@@ -103,7 +114,44 @@
   if(typing){const grid=holder.querySelector('.cr-wall-grid');if(grid)grid.innerHTML=window.LoliteWallpapers.cards(filter,wallQuery)}
   else holder.innerHTML=window.LoliteWallpapers.markup(filter,wallQuery);
  });
- addEventListener('lolite:wallpaperchange',e=>{document.querySelectorAll('[data-wall-id]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.wallId===e.detail.id)));document.querySelectorAll('[data-cr-wall-name]').forEach(n=>n.textContent=e.detail.name);document.querySelectorAll('[data-wall-retry]').forEach(n=>n.hidden=!window.LoliteWallpapers.current()?.video)});
+ function syncCurrentFavourite(){
+  const api=window.LoliteWallpapers,wall=api?.current(),liked=!!wall&&api.isFavourite(wall.id);
+  document.querySelectorAll('[data-wall-favourite-current]').forEach(button=>{
+   button.hidden=!wall;
+   button.classList.toggle('is-favourite',liked);
+   button.setAttribute('aria-pressed',String(liked));
+   button.setAttribute('aria-label',liked?'Remove current wallpaper from favourites':'Add current wallpaper to favourites');
+   const heart=button.querySelector('[aria-hidden]');if(heart)heart.textContent=liked?'♥':'♡';
+   const label=button.querySelector('[data-cr-current-favourite-label]');if(label)label.textContent=liked?'Favourited':'Add to favourites';
+  });
+ }
+ addEventListener('lolite:wallpaperfavouriteschange',e=>{
+  const api=window.LoliteWallpapers,holder=document.querySelector('[data-cr-wall-library]');
+  if(holder){
+   const count=holder.querySelector('[data-wall-filter="Favourites"] small');
+   if(count)count.textContent=String(api.favouriteCount());
+   if(filter==='Favourites'){
+    const grid=holder.querySelector('.cr-wall-grid');
+    if(grid)grid.innerHTML=api.cards(filter,wallQuery);
+   }else holder.querySelectorAll('[data-wall-favourite]').forEach(button=>{
+    if(button.dataset.wallFavourite!==e.detail.id)return;
+    const liked=api.isFavourite(e.detail.id);
+    button.classList.toggle('is-favourite',liked);
+    button.setAttribute('aria-pressed',String(liked));
+    const name=api.collection.find(w=>w.id===e.detail.id)?.name||'wallpaper';
+    button.setAttribute('aria-label',(liked?'Remove ':'Add ')+name+(liked?' from favourites':' to favourites'));
+    button.title=liked?'Remove from favourites':'Add to favourites';
+    const heart=button.querySelector('[aria-hidden]');if(heart)heart.textContent=liked?'♥':'♡';
+   });
+  }
+  syncCurrentFavourite();
+ });
+ addEventListener('lolite:wallpaperchange',e=>{
+  document.querySelectorAll('[data-wall-id]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.wallId===e.detail.id)));
+  document.querySelectorAll('[data-cr-wall-name]').forEach(n=>n.textContent=e.detail.name);
+  document.querySelectorAll('[data-wall-retry]').forEach(n=>n.hidden=!window.LoliteWallpapers.current()?.video);
+  syncCurrentFavourite();
+ });
  addEventListener('lolite:wallpaperstatus',e=>{document.querySelectorAll('[data-cr-wall-status]').forEach(n=>n.textContent=e.detail.status)});
  // Keep the older Crimson design opt-in. Cosmos must not inherit Crimson's
  // hard-coded red buttons, focus rings, or backgrounds.
