@@ -148,3 +148,39 @@ test('Primary game-card Play buttons are larger and stay aligned with Info',()=>
  assert.match(js,/class="store-details" type="button" data-store-details/);
  assert.match(read('index.html'),/core\/game-store-ui-cleanup\.css\?v=big-play-20261112/);
 });
+
+
+test('Game Store Play takes the prominent full-width row while rating and reporting stay small',()=>{
+ const css=read('core/game-store-action-sizing.css');
+ const html=read('index.html');
+ const feedback=read('core/lolite-5.js');
+ const block=(selector)=>css.split(selector+'{')[1]?.split('}')[0]||'';
+ const cardLayout=block('.store.store-v41 .store-gallery-card .store-card-actions');
+ const play=block('.store.store-v41 .store-gallery-card .store-card-actions > .store-play');
+ const info=block('.store.store-v41 .store-gallery-card .store-card-actions > .store-details:not(.l5-feedback-button)');
+ const report=block('.store.store-v41 .store-gallery-card .store-card-actions > .l5-feedback-button');
+ const picker=block('.store.store-v41 .store-gallery-card .store-card-actions > .store-server-picker');
+ assert.match(cardLayout,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important/);
+ assert.match(play,/grid-column:1 \/ -1!important/);
+ assert.match(play,/grid-row:1!important/);
+ assert.match(play,/min-height:76px!important/);
+ assert.match(play,/font-size:21px!important/);
+ assert.match(picker,/grid-row:2!important/);
+ assert.match(info,/grid-column:1!important/);
+ assert.match(info,/grid-row:3!important/);
+ assert.match(report,/grid-column:2!important/);
+ assert.match(report,/grid-row:3!important/);
+ const secondary=block('.store.store-v41 .store-gallery-card .store-card-actions > :is(.store-details,.l5-feedback-button)');
+ assert.match(secondary,/min-height:33px!important/);
+ assert.match(secondary,/font-size:10px!important/);
+ const stars=block('.l5-modal .l5-stars [data-l5-rate]');
+ assert.match(stars,/font-size:19px!important/);
+ assert.match(stars,/min-height:36px!important/);
+ assert.match(css,/\.l5-modal \.l5-panel \[data-l5-game-copy\]/);
+ assert.match(feedback,/button\.textContent='★ Rate \/ Bug'/);
+ assert.match(feedback,/button\.setAttribute\('aria-label','Rate or report a bug for '/);
+ const custom='core/game-store-action-sizing.css?v=play-hero-20261113-1';
+ assert.ok(html.includes(custom));
+ assert.ok(html.indexOf(custom)>html.indexOf('core/lolite-5-panels.css'), 'game actions must override modal defaults');
+ assert.ok(html.indexOf(custom)>html.indexOf('core/game-store-ui-cleanup.css'), 'game actions must override old card rules');
+});
