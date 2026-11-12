@@ -114,17 +114,30 @@ test('older admin wallpapers stay retired while new uploads can be selected and 
 });
 test('search covers all pages and tags while gallery batches stay small',()=>{
  const e=wallpapers(),api=e.c.LoliteWallpapers;
- assert.equal((api.cards().match(/data-wall-id=/g)||[]).length,48);
- assert.equal((api.cards('All','',96).match(/data-wall-id=/g)||[]).length,96);
- assert.equal((api.cards('All','',1000).match(/data-wall-id=/g)||[]).length,840);
- assert.equal((api.cards('4K','',1000).match(/data-wall-id=/g)||[]).length,750);
- assert.match(api.cards('All','samurai girl rain'),/lively-samurai-girl-in-the-rain/);
+ assert.equal((api.cards('Embedded Wallpapers').match(/data-wall-id=/g)||[]).length,48);
+ assert.equal((api.cards('Embedded Wallpapers','',96).match(/data-wall-id=/g)||[]).length,96);
+ assert.equal((api.cards('Embedded Wallpapers','',1000).match(/data-wall-id=/g)||[]).length,840);
+ assert.equal((api.cards('4K','',1000).match(/data-wall-id=/g)||[]).length,0);
+ assert.match(api.cards('Embedded Wallpapers','samurai girl rain'),/lively-samurai-girl-in-the-rain/);
  assert.doesNotMatch(api.cards('Cars','minecraft'),/lively-minecraft-aurora-night-cabin/);
- assert.match(api.cards('Nature','aurora cabin'),/lively-minecraft-aurora-night-cabin/);
- const markup=api.markup();
- assert.match(markup,/Search 840 wallpapers/);assert.match(markup,/Source & download/);
+ assert.match(api.cards('Embedded Wallpapers','aurora cabin'),/lively-minecraft-aurora-night-cabin/);
+ const markup=api.markup('Embedded Wallpapers');
+ assert.match(markup,/Search wallpapers/);assert.match(markup,/View source/);
  assert.doesNotMatch(markup,/data-wall-filter="Interactive"|data-wall-filter="Signature"|data-wall-filter="Special Live Wallpapers"/);
  assert.match(api.cards('All','no-such-wallpaper-987654321'),/No wallpapers match/);
+});
+test('All excludes both providers and remote admin links while Lolite uploads remain normal',()=>{
+ const e=wallpapers(),api=e.c.LoliteWallpapers;
+ assert.doesNotMatch(api.cards('All'),/data-wall-id=/);
+ const base={kind:'wallpaper',created_at:'2026-11-13T00:00:00Z'};
+ api.syncAdminWallpapers([
+  {...base,id:'11111111-1111-4111-8111-111111111111',title:'Hosted upload',url:'https://rztxhwfdbrzuhdqpegar.supabase.co/storage/v1/object/public/lolite-library/owned.mp4'},
+  {...base,id:'22222222-2222-4222-8222-222222222222',title:'Remote upload',url:'https://videos.example/remote.mp4'}
+ ]);
+ assert.match(api.cards('All'),/Hosted upload/);
+ assert.doesNotMatch(api.cards('All'),/Remote upload|lively-/);
+ assert.match(api.cards('Embedded Wallpapers','Remote upload'),/Remote upload/);
+ assert.match(api.cards('Special Live Wallpapers'),/Hosted upload/);
 });
 function soundEnvironment(seed){const e=environment(seed);let created=0,starts=0;const param=()=>({value:0,setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}});e.c.AudioContext=class{constructor(){created++;this.state='running';this.currentTime=0;this.destination={}}createGain(){return {gain:param(),connect(){},disconnect(){}}}createOscillator(){return {frequency:param(),connect(){},disconnect(){},start(){starts++},stop(){}}}resume(){return Promise.resolve()}};return {...e,counts:()=>({created,starts})}}
 test('sounds wait for interaction; mute and zero volume do not schedule tones',()=>{const e=soundEnvironment();run(e,'system-sounds');assert.equal(e.c.LoliteSounds.play('startup'),false);assert.equal(e.counts().created,0);e.c.LoliteSounds.unlock();assert.equal(e.c.LoliteSounds.play('startup',true),true);assert.equal(e.counts().starts,3);e.c.LoliteSounds.setEnabled(false);assert.equal(e.c.LoliteSounds.play('startup',true),false);e.c.LoliteSounds.setEnabled(true);e.c.LoliteSounds.setVolume(0);assert.equal(e.c.LoliteSounds.play('open',true),false);assert.equal(e.counts().created,1);assert.equal(e.counts().starts,3)});

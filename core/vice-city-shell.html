@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en-us">
+
+<head>
+    <base href="https://cdn.jsdelivr.net/gh/web-ports/vice-city@796678be4ed26a13c1256be98781ca9b90beb981/">
+    <meta charset="utf-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
+    <title>Grand Theft Auto: Vice City — Lolite OS</title>
+    <link rel="stylesheet" href="style.css">
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080b13;color:#fff;font:15px system-ui,sans-serif}
+#canvas{display:block;width:100vw;height:100vh}
+#vc-loading{position:fixed;z-index:30;top:20px;left:20px;right:20px;max-width:660px;margin:auto;background:#141b2cef;border:1px solid #46547c;border-radius:14px;padding:20px;box-sizing:border-box}
+#loading-text{font-size:21px;font-weight:650;margin-bottom:10px}#vc-detail{line-height:1.5;overflow-wrap:anywhere}
+#vc-progress{display:block;width:100%;height:14px;margin-top:14px;accent-color:#9c86ff}
+#vc-retry,#vc-start{font:600 16px system-ui;padding:12px 24px;color:white;background:#6953d5;border:0;border-radius:9px;cursor:pointer;margin-top:14px}
+.intro-container{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:#080b1399}
+.loader-container{align-items:center;flex-direction:column;gap:12px}#status{font:17px system-ui;text-align:center}
+[hidden],.intro-container[hidden],#vc-loading[hidden],#vc-progress[hidden]{display:none!important}
+</style></head>
+
+<body
+    data-is-touch="0"
+    data-state-car="0"
+    data-state-car-gun="0"
+    data-state-gun="0"
+    data-state-bike="0"
+    data-state-menu="1"
+    data-state-cutscene="0"
+    data-state-mobring="0"
+    data-state-job="0"
+    data-state-disable-controls="0"
+    data-state-panzer="0"
+    data-state-car-with-weapon="0"
+    data-state-hunter="0"
+    data-state-scope-mode="0"
+    data-state-scope-gun="0"
+>
+    <section id="vc-loading" aria-live="polite"><div id="loading-text">Preparing Vice City</div><div id="vc-detail">Checking graphics and engine files…</div><progress id="vc-progress" value="0" max="36" aria-label="Resources downloaded"></progress><button id="vc-retry" hidden>Retry loading</button></section>
+    <div class="wasted-container" hidden>
+
+    </div>
+    <div class="intro-container" hidden>
+
+
+        <div class="loader-container">
+            <div class="progress-bar-container" id='spinner'>
+                <div class="progress-bar-fill"></div>
+            </div>
+            <div id="status">Preparing game…</div><button id="vc-start">Play Vice City</button>
+            <div>
+                <progress id="progress"></progress>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="original-game-file" hidden>
+
+
+    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+
+    <div class="touch-controls-wrapper">
+        <div id="move"></div>
+        <div id="look"></div>
+
+        <div class="touch-control radio"></div>
+        <div class="touch-control weapon"></div>
+        <div class="touch-control menu"></div>
+        <div class="touch-control fist"></div>
+        <div class="touch-control drift"></div>
+        <div class="touch-control run"></div>
+        <div class="touch-control car getIn"></div>
+        <div class="touch-control left"></div>
+        <div class="touch-control right"></div>
+        <div class="touch-control jump"></div>
+        <div class="touch-control car getOut"></div>
+        <div class="touch-control camera"></div>
+        <div class="touch-control mobile"></div>
+        <div class="touch-control job"></div>
+        <div class="touch-control horn"></div>
+        <div class="touch-control fireRight"></div>
+        <div class="touch-control fireLeft"></div>
+    </div>
+
+<!-- LOLITE_VICE_BUNDLES -->
+</body>
+</html>

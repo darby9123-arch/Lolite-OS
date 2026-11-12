@@ -47,12 +47,13 @@ const uploaded=()=>({id:adminId,kind:'wallpaper',title:'My Uploaded Video',
  created_at:'2026-11-12T00:00:00Z'});
 test('Wallpaper gallery has independent accessible heart buttons and a Favourites filter',()=>{
  const {api}=harness();
- const all=api.markup('All');
+ const all=api.markup('Embedded Wallpapers');
  assert.match(all,/data-wall-filter="Favourites"/);
  assert.match(all,/data-wall-favourite="nature-one"/);
  assert.match(all,/aria-pressed="false" aria-label="Add Forest Sunrise to favourites"/);
  assert.match(all,/<\/button><button type="button" class="cr-wall-favourite/);
- assert.doesNotMatch(all,/data-wall-id="embed-city"/);
+ assert.match(all,/data-wall-id="embed-city"/);
+ assert.doesNotMatch(api.cards('All'),/data-wall-id=/);
 });
 test('Favouriting and unfavouriting persists by wallpaper ID without applying it',()=>{
  const h=harness(),api=h.api;
@@ -130,6 +131,6 @@ test('Wallpaper Settings handles favourite clicks separately from applying cards
  assert.match(crimson,/api\.cards\(filter,wallQuery\)/);
  const html=read('index.html');
  assert.match(html,/core\/wallpaper-favourites\.css/);
- assert.match(html,/core\/wallpapers\.js\?v=favourites-20261112/);
- assert.match(html,/core\/crimson\.js\?v=favourites-20261112/);
+ assert.match(html,/core\/wallpapers\.js\?v=20261113/);
+ assert.match(html,/core\/crimson\.js\?v=20261113/);
 });

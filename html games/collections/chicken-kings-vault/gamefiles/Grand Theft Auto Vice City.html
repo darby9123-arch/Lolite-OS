@@ -2,23 +2,23 @@
 <html lang="en-us">
 
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-LM67KGEJRK"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-LM67KGEJRK');
-</script>
-
     <base href="https://cdn.jsdelivr.net/gh/web-ports/vice-city@796678be4ed26a13c1256be98781ca9b90beb981/">
     <meta charset="utf-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
-    <title>University of Adelaide</title>
+    <title>Grand Theft Auto: Vice City — Lolite OS</title>
     <link rel="stylesheet" href="style.css">
-</head>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080b13;color:#fff;font:15px system-ui,sans-serif}
+#canvas{display:block;width:100vw;height:100vh}
+#vc-loading{position:fixed;z-index:30;top:20px;left:20px;right:20px;max-width:660px;margin:auto;background:#141b2cef;border:1px solid #46547c;border-radius:14px;padding:20px;box-sizing:border-box}
+#loading-text{font-size:21px;font-weight:650;margin-bottom:10px}#vc-detail{line-height:1.5;overflow-wrap:anywhere}
+#vc-progress{display:block;width:100%;height:14px;margin-top:14px;accent-color:#9c86ff}
+#vc-retry,#vc-start{font:600 16px system-ui;padding:12px 24px;color:white;background:#6953d5;border:0;border-radius:9px;cursor:pointer;margin-top:14px}
+.intro-container{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:#080b1399}
+.loader-container{align-items:center;flex-direction:column;gap:12px}#status{font:17px system-ui;text-align:center}
+[hidden],.intro-container[hidden],#vc-loading[hidden],#vc-progress[hidden]{display:none!important}
+</style></head>
 
 <body
     data-is-touch="0"
@@ -37,18 +37,18 @@
     data-state-scope-mode="0"
     data-state-scope-gun="0"
 >
-    <div id="loading-text" style="color: white; font-size: 48px; font-family: cursive; text-align: center; margin-top: 20px;"> LOADING... </div>
+    <section id="vc-loading" aria-live="polite"><div id="loading-text">Preparing Vice City</div><div id="vc-detail">Checking graphics and engine files…</div><progress id="vc-progress" value="0" max="36" aria-label="Resources downloaded"></progress><button id="vc-retry" hidden>Retry loading</button></section>
     <div class="wasted-container" hidden>
 
     </div>
     <div class="intro-container" hidden>
-        </video>
+
 
         <div class="loader-container">
             <div class="progress-bar-container" id='spinner'>
                 <div class="progress-bar-fill"></div>
             </div>
-            <div id="status">Downloading...</div>
+            <div id="status">Preparing game…</div><button id="vc-start">Play Vice City</button>
             <div>
                 <progress id="progress"></progress>
             </div>
@@ -83,167 +83,1796 @@
         <div class="touch-control fireLeft"></div>
     </div>
 
-    <script>
-    </script>
-<script>
-alert("Thank Bread from GN-Math for this web-port of gta vice city!");
-const loadingText = document.querySelector("#loading-text");
-let loadedBytes = 0;
-const DB_NAME = "gameFilesDB";
-const STORE_NAME = "files";
+<script type="text/plain" id="vc-gamepad">
+/* GamepadEmulator — locally hosted copy for Lolite OS Vice City.
+ * Original upstream: https://github.com/KW-M/virtual-gamepad-lib (MIT)
+ * Source distribution: https://github.com/joncodeofficial/gta-vice-city-wasm/blob/main/public/GamepadEmulator.js
+ * See html games/gamepademulator.LICENSE.txt for attribution and license notices.
+ */
+const defineProperty = Object.defineProperty;
+const defineProperties = Object.defineProperties;
+const getOwnPropertyDescriptors = Object.getOwnPropertyDescriptors;
+const getOwnPropertySymbols = Object.getOwnPropertySymbols;
+const hasOwnProperty = Object.prototype.hasOwnProperty;
+const propertyIsEnumerable = Object.prototype.propertyIsEnumerable;
 
-// Open or create IndexedDB
-function openDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, 1);
-        request.onupgradeneeded = e => {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-                db.createObjectStore(STORE_NAME);
-            }
-        };
-        request.onsuccess = e => resolve(e.target.result);
-        request.onerror = e => reject(e.target.error);
-    });
+const setProperty = (obj, key, value) => key in obj ? defineProperty(obj, key, {
+	enumerable: true,
+	configurable: true,
+	writable: true,
+	value: value
+}) : obj[key] = value;
+
+const mergeObjects = (target, source) => {
+	for (var key in source || (source = {})) {
+		if (hasOwnProperty.call(source, key)) {
+			setProperty(target, key, source[key]);
+		}
+	}
+	if (getOwnPropertySymbols) {
+		for (var symbol of getOwnPropertySymbols(source)) {
+			if (propertyIsEnumerable.call(source, symbol)) {
+				setProperty(target, symbol, source[symbol]);
+			}
+		}
+	}
+	return target;
+};
+
+const definePropertiesFromSource = (target, source) => defineProperties(target, getOwnPropertyDescriptors(source));
+
+const definePublicProperty = (obj, key, value) => setProperty(obj, typeof key !== "symbol" ? key + "" : key, value);
+
+// Polyfill for modulepreload
+(function() {
+	const relList = document.createElement("link").relList;
+	if (relList && relList.supports && relList.supports("modulepreload")) return;
+
+	function getFetchOptions(link) {
+		const options = {};
+		if (link.integrity) options.integrity = link.integrity;
+		if (link.referrerPolicy) options.referrerPolicy = link.referrerPolicy;
+		if (link.crossOrigin === "use-credentials") {
+			options.credentials = "include";
+		} else if (link.crossOrigin === "anonymous") {
+			options.credentials = "omit";
+		} else {
+			options.credentials = "same-origin";
+		}
+		return options;
+	}
+
+	function processModulePreload(link) {
+		if (link.ep) return;
+		link.ep = true;
+		const options = getFetchOptions(link);
+		fetch(link.href, options);
+	}
+
+	for (const link of document.querySelectorAll('link[rel="modulepreload"]')) {
+		processModulePreload(link);
+	}
+
+	new MutationObserver(mutations => {
+		for (const mutation of mutations) {
+			if (mutation.type === "childList") {
+				for (const node of mutation.addedNodes) {
+					if (node.tagName === "LINK" && node.rel === "modulepreload") {
+						processModulePreload(node);
+					}
+				}
+			}
+		}
+	}).observe(document, {
+		childList: true,
+		subtree: true
+	});
+})();
+
+var Direction = (dir => {
+	dir.up = "up";
+	dir.down = "down";
+	dir.left = "left";
+	dir.right = "right";
+	return dir;
+})(Direction || {});
+
+var ControlType = (type => {
+	type.onOff = "onOff";
+	type.variable = "variable";
+	return type;
+})(ControlType || {});
+
+var EmulationMode = (mode => {
+	mode.real = "real";
+	mode.emulated = "emulated";
+	mode.overlay = "overlay";
+	return mode;
+})(EmulationMode || {});
+
+var GamepadButton = (btn => {
+	btn[btn.A = 0] = "A";
+	btn[btn.B = 1] = "B";
+	btn[btn.X = 2] = "X";
+	btn[btn.Y = 3] = "Y";
+	btn[btn.LShoulder = 4] = "LShoulder";
+	btn[btn.RShoulder = 5] = "RShoulder";
+	btn[btn.LTrigger = 6] = "LTrigger";
+	btn[btn.RTrigger = 7] = "RTrigger";
+	btn[btn.Back = 8] = "Back";
+	btn[btn.Start = 9] = "Start";
+	btn[btn.LStick = 10] = "LStick";
+	btn[btn.RStick = 11] = "RStick";
+	btn[btn.DPadUp = 12] = "DPadUp";
+	btn[btn.DPadDown = 13] = "DPadDown";
+	btn[btn.DPadLeft = 14] = "DPadLeft";
+	btn[btn.DPadRight = 15] = "DPadRight";
+	btn[btn.Vendor = 16] = "Vendor";
+	return btn;
+})(GamepadButton || {});
+
+var GamepadAxis = (axis => {
+	axis[axis.LStickX = 0] = "LStickX";
+	axis[axis.LStickY = 1] = "LStickY";
+	axis[axis.RStickX = 2] = "RStickX";
+	axis[axis.RStickY = 3] = "RStickY";
+	return axis;
+})(GamepadAxis || {});
+
+var GamepadElementClass = (cls => {
+	cls.TapTarget = "gpad-tap-target";
+	cls.ButtonIcon = "gpad-btn-icon";
+	cls.ButtonShadow = "gpad-shadow";
+	cls.ButtonHighlight = "gpad-highlight";
+	cls.ButtonBackground = "gpad-btn-bg";
+	cls.DirectionHighlight = "gpad-direction-highlight";
+	cls.Thumbstick = "gpad-thumbstick";
+	cls.GpadBaseShape = "gpad-base";
+	cls.StickBaseShape = "gpad-stick-base";
+	return cls;
+})(GamepadElementClass || {});
+
+const BUTTON_NAMES = [
+	"button_1", "button_2", "button_3", "button_4",
+	"shoulder_button_front_left", "shoulder_button_front_right",
+	"shoulder_trigger_back_left", "shoulder_trigger_back_right",
+	"select_button", "start_button",
+	"stick_button_left", "stick_button_right",
+	"dpad_up", "dpad_down", "dpad_left", "dpad_right"
+];
+
+const TAP_TARGET_NAMES = BUTTON_NAMES.map(name => name + "_tap_target");
+
+const DIAGONAL_DPAD_MAPPING = {
+	dpad_up_left_tap_target: [GamepadButton.DPadUp, GamepadButton.DPadLeft],
+	dpad_up_right_tap_target: [GamepadButton.DPadUp, GamepadButton.DPadRight],
+	dpad_down_left_tap_target: [GamepadButton.DPadDown, GamepadButton.DPadLeft],
+	dpad_down_right_tap_target: [GamepadButton.DPadDown, GamepadButton.DPadRight]
+};
+
+class GamepadStateTracker {
+	constructor(config) {
+		definePublicProperty(this, "updateDelay");
+		definePublicProperty(this, "axisDeadZone");
+		definePublicProperty(this, "buttonConfigs");
+		definePublicProperty(this, "currentStateOfGamepads");
+		definePublicProperty(this, "gamepadConnectListeners");
+		definePublicProperty(this, "gamepadDisconnectListeners");
+		definePublicProperty(this, "gamepadButtonChangeListeners");
+		definePublicProperty(this, "gamepadAxisChangeListeners");
+		definePublicProperty(this, "_requestAnimationFrame");
+		definePublicProperty(this, "_getGamepads");
+
+		this.updateDelay = config.updateDelay || 0;
+		this.axisDeadZone = config.axisDeadZone || 0;
+		this.buttonConfigs = config.buttonConfigs || [];
+		this.currentStateOfGamepads = [];
+		this.gamepadConnectListeners = [];
+		this.gamepadDisconnectListeners = [];
+		this.gamepadButtonChangeListeners = [];
+		this.gamepadAxisChangeListeners = [];
+
+		navigator.gamepadInputEmulation = "gamepad";
+
+		this._requestAnimationFrame = window.requestAnimationFrame ||
+			window.mozRequestAnimationFrame ||
+			window.webkitRequestAnimationFrame ||
+			window.msRequestAnimationFrame;
+
+		this._getGamepads = navigator.getGamepads ||
+			navigator.webkitGetGamepads ||
+			navigator.mozGetGamepads ||
+			navigator.msGetGamepads;
+
+		if (this.gamepadApiSupported() || navigator.getNativeGamepads !== undefined) {
+			this.tickLoop();
+		}
+	}
+
+	setButtonsConfig(config) {
+		this.buttonConfigs = config;
+	}
+
+	setUpdateDelay(delay) {
+		this.updateDelay = delay;
+	}
+
+	onGamepadConnect(listener) {
+		this.gamepadConnectListeners.push(listener);
+		window.addEventListener("gamepadconnected", listener, true);
+		return listener;
+	}
+
+	offGamepadConnect(listener) {
+		this.gamepadConnectListeners = this.gamepadConnectListeners.filter(l => l !== listener);
+		window.removeEventListener("gamepadconnected", listener, true);
+	}
+
+	onGamepadDisconnect(listener) {
+		this.gamepadDisconnectListeners.push(listener);
+		window.addEventListener("gamepaddisconnected", listener, true);
+		return listener;
+	}
+
+	offGamepadDisconnect(listener) {
+		this.gamepadDisconnectListeners = this.gamepadDisconnectListeners.filter(l => l !== listener);
+		window.removeEventListener("gamepaddisconnected", listener, true);
+	}
+
+	onGamepadAxisChange(listener) {
+		this.gamepadAxisChangeListeners.push(listener);
+		return listener;
+	}
+
+	offGamepadAxisChange(listener) {
+		this.gamepadAxisChangeListeners = this.gamepadAxisChangeListeners.filter(l => l !== listener);
+	}
+
+	onGamepadButtonChange(listener) {
+		this.gamepadButtonChangeListeners.push(listener);
+		return listener;
+	}
+
+	offGamepadButtonChange(listener) {
+		this.gamepadButtonChangeListeners = this.gamepadButtonChangeListeners.filter(l => l !== listener);
+	}
+
+	gamepadApiSupported() {
+		const getGamepads = navigator.getNativeGamepads ||
+			navigator.getGamepads ||
+			navigator.webkitGetGamepads ||
+			navigator.mozGetGamepads ||
+			navigator.msGetGamepads;
+
+		if (getGamepads != null && typeof getGamepads === "function") {
+			try {
+				const gamepads = getGamepads.apply(navigator);
+				return gamepads != null && (gamepads[0] !== undefined || gamepads.length !== 0 || window.isSecureContext);
+			} catch (e) {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+
+	getGamepads() {
+		const getGamepads = navigator.getGamepads ||
+			navigator.webkitGetGamepads ||
+			navigator.mozGetGamepads ||
+			navigator.msGetGamepads;
+
+		return (getGamepads && typeof getGamepads === "function") ? (getGamepads.apply(navigator) || []) : [];
+	}
+
+	getCurrentGamepadStates(forceCheck = false) {
+		if (forceCheck) {
+			this.checkForGamepadChanges();
+		}
+		return this.currentStateOfGamepads;
+	}
+
+	cleanup() {
+		this.updateDelay = -1;
+		this.gamepadConnectListeners.forEach(l => window.removeEventListener("gamepadconnected", l, true));
+		this.gamepadDisconnectListeners.forEach(l => window.removeEventListener("gamepaddisconnected", l, true));
+		this.gamepadConnectListeners = [];
+		this.gamepadDisconnectListeners = [];
+		this.gamepadButtonChangeListeners = [];
+		this.gamepadAxisChangeListeners = [];
+	}
+
+	tickLoop() {
+		if (this.updateDelay < 0) return;
+
+		this.checkForGamepadChanges();
+
+		if (this.updateDelay === 0) {
+			requestAnimationFrame(this.tickLoop.bind(this));
+		} else {
+			setTimeout(() => {
+				requestAnimationFrame(this.tickLoop.bind(this));
+			}, this.updateDelay);
+		}
+	}
+
+	checkForGamepadChanges() {
+		let gamepads = this.getGamepads();
+		for (let i = 0; i < gamepads.length; i++) {
+			let gamepad = gamepads[i];
+			if (gamepad) {
+				this.checkForAxisChanges(i, gamepad);
+				this.checkForButtonChanges(i, gamepad);
+				this.currentStateOfGamepads[i] = gamepad;
+			}
+		}
+	}
+
+	checkForAxisChanges(index, gamepad) {
+		let axes = gamepad.axes;
+		if (axes.length === 0) return;
+
+		const prevState = this.currentStateOfGamepads[index];
+		let prevAxes = (prevState?.axes) || [];
+		let changedAxes = [];
+		let hasChanges = false;
+
+		for (let i = 0; i < axes.length; i++) {
+			let currentVal = axes[i] || 0;
+			let prevVal = prevAxes[i] || 0;
+
+			if (currentVal !== prevVal) {
+				if (Math.abs(currentVal) < this.axisDeadZone && Math.abs(prevVal) < this.axisDeadZone) {
+					continue;
+				}
+				changedAxes[i] = true;
+				hasChanges = true;
+			} else {
+				changedAxes[i] = false;
+			}
+		}
+
+		if (hasChanges) {
+			this.gamepadAxisChangeListeners.forEach(listener => listener(index, gamepad, changedAxes));
+		}
+	}
+
+	checkForButtonChanges(index, gamepad) {
+		let buttons = gamepad.buttons;
+		if (buttons.length === 0) return;
+
+		const prevState = this.currentStateOfGamepads[index];
+		const prevButtons = (prevState?.buttons) || buttons;
+		const changedButtons = new Array(buttons.length).fill(false);
+		let hasChanges = false;
+
+		for (let i = 0; i < buttons.length; i++) {
+			let changed = false;
+			const currentBtn = buttons[i] || {
+				pressed: false,
+				value: 0,
+				touched: false
+			};
+			const prevBtn = prevButtons[i] || {
+				pressed: false,
+				value: 0,
+				touched: false
+			};
+			const config = this.buttonConfigs[i] || {};
+			const changes = {};
+
+			if (currentBtn.touched && !prevBtn.touched) {
+				changes.touchDown = true;
+				changed = true;
+			} else if (!currentBtn.touched && prevBtn.touched) {
+				changes.touchUp = true;
+				changed = true;
+			}
+
+			if (currentBtn.pressed && !prevBtn.pressed) {
+				changes.pressed = true;
+				changed = true;
+			} else if (!currentBtn.pressed && prevBtn.pressed) {
+				changes.released = true;
+				changed = true;
+			}
+
+			if (config.fireWhileHolding && currentBtn.pressed && prevBtn.pressed) {
+				changes.heldDown = true;
+				changed = true;
+			}
+
+			if (currentBtn.value !== prevBtn.value) {
+				changes.valueChanged = true;
+				changed = true;
+			}
+
+			if (changed) {
+				hasChanges = true;
+				changedButtons[i] = changes;
+			} else {
+				changedButtons[i] = false;
+			}
+		}
+
+		if (hasChanges) {
+			this.gamepadButtonChangeListeners.forEach(listener => listener(index, gamepad, changedButtons));
+		}
+	}
 }
 
-// Save file to IndexedDB
-async function saveFile(name, buffer) {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, "readwrite");
-        const store = tx.objectStore(STORE_NAME);
-        store.put(buffer, name);
-        tx.oncomplete = () => resolve();
-        tx.onerror = e => reject(e.target.error);
-    });
+function normalizeVector(x, y, maxDistance) {
+	const distance = Math.sqrt(x * x + y * y);
+	if (distance > maxDistance) {
+		return {
+			x: x / distance,
+			y: y / distance
+		};
+	} else {
+		return {
+			x: x / maxDistance,
+			y: y / maxDistance
+		};
+	}
 }
 
-// Get file from IndexedDB
-async function getFile(name) {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, "readonly");
-        const store = tx.objectStore(STORE_NAME);
-        const request = store.get(name);
-        request.onsuccess = e => resolve(e.target.result);
-        request.onerror = e => reject(e.target.error);
-    });
+function setTransformOriginToCenter(element) {
+	if (element instanceof SVGGraphicsElement) {
+		if (element.getAttribute("transform")) {
+			console.warn("VirtualGamepadLib: Setting Transform origin on an element that already has a transform attribute. This may break the transform!", element);
+		}
+		const bbox = element.getBBox();
+		element.style.transformOrigin = `${bbox.x + bbox.width / 2}px ${bbox.y + bbox.height / 2}px`;
+	} else if (element instanceof HTMLElement) {
+		console.warn("VirtualGamepadLib: Setting Transform origin on an element that is not an SVG element. This may break the transform!", element);
+		const rect = element.getBoundingClientRect();
+		element.style.transformOrigin = `${rect.width / 2}px ${rect.height / 2}px`;
+	}
 }
 
-// Fetch with progress and caching
-async function fetchWithCache(name, url) {
-    let cached = await getFile(name);
-    if (cached) return cached; // Return cached version
+const DEFAULT_BUTTON_COUNT = 18;
+const DEFAULT_AXIS_COUNT = 4;
 
-    const response = await fetch(url);
+class GamepadEmulator {
+	constructor(buttonPressThreshold) {
+		definePublicProperty(this, "getNativeGamepads");
+		definePublicProperty(this, "buttonPressThreshold", 0.1);
+		definePublicProperty(this, "realGpadToPatchedIndexMap", []);
+		definePublicProperty(this, "patchedGpadToRealIndexMap", []);
+		definePublicProperty(this, "emulatedGamepads", []);
+		definePublicProperty(this, "emulatedGamepadsMetadata", []);
+		definePublicProperty(this, "undoEventPatch", () => {});
+
+		definePublicProperty(this, "AddDisplayButtonEventListeners", this.AddButtonTouchEventListeners);
+		definePublicProperty(this, "AddDisplayJoystickEventListeners", this.AddJoystickTouchEventListeners);
+		definePublicProperty(this, "ClearDisplayButtonEventListeners", this.ClearButtonTouchEventListeners);
+		definePublicProperty(this, "ClearDisplayJoystickEventListeners", this.ClearJoystickTouchEventListeners);
+
+		this.buttonPressThreshold = buttonPressThreshold || this.buttonPressThreshold;
+
+		if (GamepadEmulator.instanceRunning) {
+			throw new Error("Only one GamepadEmulator instance may exist at a time!");
+		}
+		GamepadEmulator.instanceRunning = true;
+
+		this.undoEventPatch = this.monkeyPatchGamepadEvents();
+		this.monkeyPatchGetGamepads();
+	}
+
+	gamepadApiNativelySupported() {
+		return !!this.getNativeGamepads && !!this.getNativeGamepads.apply(navigator);
+	}
+
+	AddEmulatedGamepad(index, overlayMode, buttonCount = DEFAULT_BUTTON_COUNT, axisCount = DEFAULT_AXIS_COUNT) {
+		if ((index === -1 || (!index && index !== 0))) {
+			index = this.nextEmptyEGpadIndex(overlayMode);
+		}
+
+		if (this.emulatedGamepads[index]) return false;
+
+		const gamepad = {
+			emulation: EmulationMode.emulated,
+			connected: true,
+			timestamp: performance.now(),
+			displayId: "Emulated Gamepad " + index,
+			id: "Emulated Gamepad " + index + " (Xinput STANDARD GAMEPAD)",
+			mapping: "standard",
+			index: index,
+			buttons: new Array(buttonCount).fill({
+				pressed: false,
+				value: 0,
+				touched: false
+			}, 0, buttonCount),
+			axes: new Array(axisCount).fill(0, 0, axisCount),
+			hapticActuators: []
+		};
+
+		this.emulatedGamepads[index] = gamepad;
+		this.emulatedGamepadsMetadata[index] = {
+			overlayMode: overlayMode
+		};
+
+		const event = new Event("gamepadconnected");
+		event.gamepad = gamepad;
+		window.dispatchEvent(event);
+
+		return gamepad;
+	}
+
+	RemoveEmulatedGamepad(index) {
+		this.ClearButtonTouchEventListeners(index);
+		this.ClearJoystickTouchEventListeners(index);
+
+		const gamepad = this.emulatedGamepads[index];
+		if (gamepad) {
+			delete this.emulatedGamepads[index];
+			delete this.emulatedGamepadsMetadata[index];
+
+			const disconnectedGamepad = definePropertiesFromSource(mergeObjects({}, gamepad), {
+				connected: false,
+				timestamp: performance.now()
+			});
+
+			const event = new Event("gamepaddisconnected");
+			event.gamepad = disconnectedGamepad;
+			window.dispatchEvent(event);
+		} else {
+			console.warn("GamepadEmulator Error: Cannot remove emulated gamepad. No emulated gamepad exists at index " + index);
+		}
+	}
+
+	PressButton(gamepadIndex, buttonIndexOrIndices, value, touched) {
+		if (this.emulatedGamepads[gamepadIndex] == null) {
+			throw new Error("Error: PressButton() - no emulated gamepad at index " + gamepadIndex + ", pass a valid index, or call AddEmulatedGamepad() first to create an emulated gamepad at that index");
+		}
+
+		const buttons = [...(this.emulatedGamepads[gamepadIndex]?.buttons || [])];
+		const isPressed = value > this.buttonPressThreshold;
+
+		if (Array.isArray(buttonIndexOrIndices)) {
+			const isTouched = isPressed || (touched ?? buttons[buttonIndexOrIndices[0]]?.touched) || false;
+			for (let i = 0; i < buttonIndexOrIndices.length; i++) {
+				const idx = buttonIndexOrIndices[i];
+				if (idx < 0 || idx >= this.emulatedGamepads[gamepadIndex].buttons.length) {
+					console.error("Error: PressButton() - button index " + idx + " out of range, pass a valid index between 0 and " + (this.emulatedGamepads[gamepadIndex].buttons.length - 1));
+					continue;
+				}
+				buttons[idx] = {
+					pressed: isPressed,
+					value: value || 0,
+					touched: isTouched
+				};
+			}
+		} else {
+			const isTouched = isPressed || (touched ?? buttons[buttonIndexOrIndices]?.touched) || false;
+			if (buttonIndexOrIndices < 0 || buttonIndexOrIndices >= this.emulatedGamepads[gamepadIndex].buttons.length) {
+				console.error("Error: PressButton() - button index " + buttonIndexOrIndices + " out of range, pass a valid index between 0 and " + (this.emulatedGamepads[gamepadIndex].buttons.length - 1));
+				return;
+			}
+			buttons[buttonIndexOrIndices] = {
+				pressed: isPressed,
+				value: value || 0,
+				touched: isTouched
+			};
+		}
+
+		defineProperty(this.emulatedGamepads[gamepadIndex], "buttons", {
+			value: buttons,
+			enumerable: true,
+			configurable: true
+		});
+	}
+
+	MoveAxis(gamepadIndex, axisIndex, value) {
+		if (this.emulatedGamepads[gamepadIndex] == null) {
+			throw new Error("Error: MoveAxis() - no emulated gamepad at index " + gamepadIndex + ", pass a valid index, or call AddEmulatedGamepad() first to create an emulated gamepad at that index");
+		}
+
+		const axes = [...(this.emulatedGamepads[gamepadIndex]?.axes || [])];
+		axes[axisIndex] = value;
+
+		defineProperty(this.emulatedGamepads[gamepadIndex], "axes", {
+			value: axes,
+			enumerable: true,
+			configurable: true
+		});
+	}
+
+	AddButtonTouchEventListeners(gamepadIndex, buttonConfigs) {
+		if (!this.emulatedGamepads[gamepadIndex]) {
+			throw new Error("Error: AddJoystickTouchEventListeners() - no emulated gamepad at index " + gamepadIndex + ", pass a valid index, or call AddEmulatedGamepad() first to create an emulated gamepad at that index");
+		}
+
+		let cleanupFuncs = [];
+
+		for (let i = 0; i < buttonConfigs.length; i++) {
+			const config = buttonConfigs[i];
+			if (!config) continue;
+
+			const buttonIndices = config.buttonIndexes ?? config.buttonIndex;
+			const tapTarget = config.tapTarget;
+
+			if (!tapTarget) {
+				console.warn("GamepadEmulator: No tap target in gamepad " + gamepadIndex + " display config for button " + buttonIndices + ", skipping...");
+				continue;
+			}
+
+			const onTouchStart = (e) => {
+				const target = e.changedTouches[0].target;
+				if (target === tapTarget || target.parentElement === tapTarget) {
+					e.preventDefault();
+				}
+			};
+			window.addEventListener("touchstart", onTouchStart, {
+				passive: false
+			});
+
+			const onPointerEnter = (e) => {
+				const isPressed = e.buttons === 1 ? 1 : 0;
+				if (!config.lockTargetWhilePressed || isPressed === 0) {
+					this.PressButton(gamepadIndex, buttonIndices, isPressed, true);
+				}
+			};
+			tapTarget.addEventListener("pointerenter", onPointerEnter);
+
+			const onPointerLeave = (e) => {
+				const isPressed = e.buttons === 1 ? 1 : 0;
+				if (!config.lockTargetWhilePressed || isPressed === 0) {
+					this.PressButton(gamepadIndex, buttonIndices, 0, false);
+				}
+			};
+			tapTarget.addEventListener("pointerleave", onPointerLeave);
+
+			const onPointerCancel = (e) => {
+				this.PressButton(gamepadIndex, buttonIndices, 0, false);
+			};
+			tapTarget.addEventListener("pointercancel", onPointerCancel);
+
+			if (config.type === ControlType.onOff) {
+				const onPointerDown = (e) => {
+					e.preventDefault();
+					this.PressButton(gamepadIndex, buttonIndices, 1, true);
+					if (config.lockTargetWhilePressed) {
+						tapTarget.setPointerCapture(e.pointerId);
+					} else {
+						tapTarget.releasePointerCapture(e.pointerId);
+					}
+				};
+				tapTarget.addEventListener("pointerdown", onPointerDown);
+
+				const onPointerUp = () => {
+					this.PressButton(gamepadIndex, buttonIndices, 0);
+				};
+				tapTarget.addEventListener("pointerup", onPointerUp);
+
+				cleanupFuncs.push(() => {
+					window.removeEventListener("touchstart", onTouchStart);
+					tapTarget.removeEventListener("pointerenter", onPointerEnter);
+					tapTarget.removeEventListener("pointerleave", onPointerLeave);
+					tapTarget.removeEventListener("pointerdown", onPointerDown);
+					tapTarget.removeEventListener("pointerup", onPointerUp);
+					tapTarget.removeEventListener("pointercancel", onPointerCancel);
+				});
+			} else if (config.type === ControlType.variable) {
+				const removeDragListener = this.AddDragControlListener(config, (isDragging, x, y) => {
+					let val = isDragging ? this.buttonPressThreshold + 0.00001 : 0;
+					val += (config.directions[Direction.left] || config.directions[Direction.right]) ? Math.abs(x) : 0;
+					val += (config.directions[Direction.up] || config.directions[Direction.down]) ? Math.abs(y) : 0;
+					this.PressButton(gamepadIndex, buttonIndices, Math.min(val, 1));
+				});
+
+				cleanupFuncs.push(() => {
+					window.removeEventListener("touchstart", onTouchStart);
+					tapTarget.removeEventListener("pointerenter", onPointerEnter);
+					tapTarget.removeEventListener("pointerleave", onPointerLeave);
+					tapTarget.removeEventListener("pointercancel", onPointerCancel);
+					removeDragListener();
+				});
+			}
+		}
+
+		this.emulatedGamepadsMetadata[gamepadIndex].removeButtonListenersFunc = () => {
+			cleanupFuncs.forEach(fn => fn());
+		};
+	}
+
+	AddJoystickTouchEventListeners(gamepadIndex, joystickConfigs) {
+		if (!this.emulatedGamepads[gamepadIndex]) {
+			throw new Error("Error: AddJoystickTouchEventListeners() - no emulated gamepad at index " + gamepadIndex + ", pass a valid index, or call AddEmulatedGamepad() first to create an emulated gamepad at that index");
+		}
+
+		let cleanupFuncs = [];
+
+		for (let i = 0; i < joystickConfigs.length; i++) {
+			const config = joystickConfigs[i];
+			if (!config) continue;
+
+			if (config.tapTarget == null) {
+				console.warn("GamepadEmulator: No tap target in gamepad " + gamepadIndex + " display config for joystick " + i + ", skipping...");
+				continue;
+			}
+
+			const removeDragListener = this.AddDragControlListener(config, (isDragging, x, y) => {
+				if (config.xAxisIndex !== undefined) {
+					this.MoveAxis(gamepadIndex, config.xAxisIndex, x);
+				}
+				if (config.yAxisIndex !== undefined) {
+					this.MoveAxis(gamepadIndex, config.yAxisIndex, y);
+				}
+			});
+			cleanupFuncs.push(removeDragListener);
+		}
+
+		this.emulatedGamepadsMetadata[gamepadIndex].removeJoystickListenersFunc = () => {
+			cleanupFuncs.forEach(fn => fn());
+		};
+	}
+
+	ClearButtonTouchEventListeners(gamepadIndex) {
+		const metadata = this.emulatedGamepadsMetadata[gamepadIndex];
+		if (metadata && metadata.removeButtonListenersFunc) {
+			metadata.removeButtonListenersFunc();
+		}
+	}
+
+	ClearJoystickTouchEventListeners(gamepadIndex) {
+		const metadata = this.emulatedGamepadsMetadata[gamepadIndex];
+		if (metadata && metadata.removeJoystickListenersFunc) {
+			metadata.removeJoystickListenersFunc();
+		}
+	}
+
+	AddDragControlListener(config, callback) {
+		let startPos = {
+			startX: 0,
+			startY: 0
+		};
+		let activePointerId = -1;
+
+		const onPointerMove = (e) => {
+			if (activePointerId === e.pointerId) {
+				const minX = config.directions[Direction.left] ? -1 : 0;
+				const maxX = config.directions[Direction.right] ? 1 : 0;
+				const minY = config.directions[Direction.up] ? -1 : 0;
+				const maxY = config.directions[Direction.down] ? 1 : 0;
+
+				const deltaX = e.clientX - startPos.startX;
+				const deltaY = e.clientY - startPos.startY;
+
+				let {
+					x,
+					y
+				} = normalizeVector(deltaX, deltaY, config.dragDistance);
+
+				x = Math.max(Math.min(x, maxX), minX);
+				y = Math.max(Math.min(y, maxY), minY);
+
+				callback(true, x, y);
+			}
+		};
+
+		const onPointerUp = (e) => {
+			if (activePointerId === e.pointerId) {
+				document.removeEventListener("pointermove", onPointerMove, false);
+				document.removeEventListener("pointerup", onPointerUp, false);
+				activePointerId = -1;
+				callback(false, 0, 0);
+			}
+		};
+
+		config.tapTarget.addEventListener("pointerdown", (e) => {
+			e.preventDefault();
+			startPos.startX = e.clientX;
+			startPos.startY = e.clientY;
+			activePointerId = e.pointerId;
+
+			if (config.lockTargetWhilePressed) {
+				config.tapTarget.setPointerCapture(e.pointerId);
+			} else {
+				config.tapTarget.releasePointerCapture(e.pointerId);
+			}
+
+			callback(true, 0, 0);
+			document.addEventListener("pointermove", onPointerMove, false);
+			document.addEventListener("pointerup", onPointerUp, false);
+		});
+
+		const onTouchStart = (e) => {
+			if (e.changedTouches[0].target === config.tapTarget) {
+				e.preventDefault();
+			}
+		};
+
+		window.addEventListener("touchstart", onTouchStart, {
+			passive: false
+		});
+
+		return function cleanup() {
+			window.removeEventListener("touchstart", onTouchStart);
+			config.tapTarget.removeEventListener("pointerdown", onPointerMove); // Note: This looks like a bug in original code, should probably be the pointerdown listener
+		};
+	}
+
+	cloneGamepad(gamepad) {
+		if (!gamepad) return gamepad;
+
+		const axisCount = gamepad.axes ? gamepad.axes.length : 0;
+		const buttonCount = gamepad.buttons ? gamepad.buttons.length : 0;
+		const clone = {};
+
+		for (let key in gamepad) {
+			if (key === "axes") {
+				const axes = new Array(axisCount);
+				for (let i = 0; i < axisCount; i++) {
+					axes[i] = Number(gamepad.axes[i]);
+				}
+				defineProperty(clone, "axes", {
+					value: axes,
+					enumerable: true,
+					configurable: true
+				});
+			} else if (key === "buttons") {
+				const buttons = new Array(buttonCount);
+				for (let i = 0; i < buttonCount; i++) {
+					const btn = gamepad.buttons[i];
+					if (btn == null) {
+						buttons[i] = btn;
+					} else {
+						buttons[i] = {
+							pressed: btn.pressed,
+							value: btn.value,
+							touched: btn.touched || false
+						};
+					}
+				}
+				defineProperty(clone, "buttons", {
+					value: buttons,
+					enumerable: true,
+					configurable: true
+				});
+			} else {
+				defineProperty(clone, key, {
+					get: () => gamepad[key],
+					configurable: true,
+					enumerable: true
+				});
+			}
+		}
+
+		if (!clone.emulation) {
+			defineProperty(clone, "emulation", {
+				value: EmulationMode.real,
+				configurable: true,
+				enumerable: true
+			});
+		}
+
+		return clone;
+	}
+
+	nextEmptyEGpadIndex(overlayMode) {
+		let index = 0;
+		if (overlayMode) {
+			do {
+				if (!this.emulatedGamepads[index]) break;
+				index++;
+			} while (index < this.emulatedGamepads.length);
+		} else {
+			const maxLen = Math.max(this.emulatedGamepads.length, this.patchedGpadToRealIndexMap.length);
+			do {
+				if (!this.emulatedGamepads[index] && this.patchedGpadToRealIndexMap[index] == null) break;
+				index++;
+			} while (index < maxLen);
+		}
+		return index;
+	}
+
+	nextEmptyRealGpadIndex(startIndex) {
+		let index = startIndex;
+		const maxLen = Math.max(this.emulatedGamepads.length, this.patchedGpadToRealIndexMap.length);
+		do {
+			const metadata = this.emulatedGamepadsMetadata[index];
+			const isFree = this.realGpadToPatchedIndexMap[index] == null && this.patchedGpadToRealIndexMap[index] == null;
+			if ((metadata && metadata.overlayMode && this.patchedGpadToRealIndexMap[index] == null) || (!metadata && isFree)) break;
+			index++;
+		} while (index < maxLen);
+		return index;
+	}
+
+	// From 0, not the real index: the game reads only pad 0, where the touch overlay sits. Lazy, so pads
+	// connected before the emulator existed get mapped too.
+	patchedIndexFor(realIndex) {
+		let patchedIndex = this.realGpadToPatchedIndexMap[realIndex];
+		if (patchedIndex == null) {
+			patchedIndex = this.nextEmptyRealGpadIndex(0);
+			this.realGpadToPatchedIndexMap[realIndex] = patchedIndex;
+			this.patchedGpadToRealIndexMap[patchedIndex] = realIndex;
+		}
+		return patchedIndex;
+	}
+
+	monkeyPatchGamepadEvents() {
+		let originalOnConnectDescriptor, originalOnDisconnectDescriptor;
+		let onConnectHandler, onDisconnectHandler;
+
+		if (window.hasOwnProperty("ongamepadconnected")) {
+			originalOnConnectDescriptor = Object.getOwnPropertyDescriptor(window, "ongamepadconnected");
+			originalOnConnectDescriptor.configurable = true;
+			onConnectHandler = window.ongamepadconnected;
+			window.ongamepadconnected = null;
+
+			Object.defineProperty(window, "ongamepadconnected", {
+				get: () => function(e) {},
+				set: (handler) => {
+					onConnectHandler = handler;
+				},
+				configurable: true
+			});
+		}
+
+		if (window.hasOwnProperty("ongamepaddisconnected")) {
+			originalOnDisconnectDescriptor = Object.getOwnPropertyDescriptor(window, "ongamepaddisconnected");
+			originalOnDisconnectDescriptor.configurable = true;
+			onDisconnectHandler = window.ongamepaddisconnected;
+			window.ongamepaddisconnected = null;
+
+			Object.defineProperty(window, "ongamepaddisconnected", {
+				get: () => function(e) {},
+				set: (handler) => {
+					onDisconnectHandler = handler;
+				},
+				configurable: true
+			});
+		}
+
+		const handleConnect = (event) => {
+			const gamepad = event.gamepad;
+			if (gamepad && gamepad.emulation === undefined) {
+				event.stopImmediatePropagation();
+				event.preventDefault();
+
+				const cloned = this.cloneGamepad(event.gamepad);
+				const patchedIndex = this.patchedIndexFor(cloned.index);
+
+				Object.defineProperty(cloned, "index", {
+					get: () => patchedIndex
+				});
+				Object.defineProperty(cloned, "emulation", {
+					get: () => EmulationMode.real
+				});
+
+				const newEvent = new Event(event.type || "gamepadconnected");
+				newEvent.gamepad = cloned;
+				window.dispatchEvent(newEvent);
+			}
+			if (onConnectHandler) onConnectHandler.call(window, event);
+		};
+		window.addEventListener("gamepadconnected", handleConnect);
+
+		const handleDisconnect = (event) => {
+			const gamepad = event.gamepad;
+			if (gamepad && gamepad.emulation === undefined) {
+				event.stopImmediatePropagation();
+				event.preventDefault();
+
+				const cloned = this.cloneGamepad(event.gamepad);
+				const patchedIndex = this.realGpadToPatchedIndexMap[cloned.index] ?? cloned.index;
+
+				Object.defineProperty(cloned, "index", {
+					get: () => patchedIndex
+				});
+				Object.defineProperty(cloned, "emulation", {
+					get: () => EmulationMode.real
+				});
+
+				delete this.realGpadToPatchedIndexMap[gamepad.index];
+				delete this.patchedGpadToRealIndexMap[patchedIndex];
+
+				const newEvent = new Event(event.type || "gamepaddisconnected");
+				newEvent.gamepad = cloned;
+				window.dispatchEvent(newEvent);
+			}
+			if (onDisconnectHandler) onDisconnectHandler.call(window, event);
+		};
+		window.addEventListener("gamepaddisconnected", handleDisconnect);
+
+		return function undo() {
+			window.removeEventListener("gamepadconnected", handleConnect);
+			if (window.hasOwnProperty("ongamepadconnected")) {
+				Object.defineProperty(window, "ongamepadconnected", originalOnConnectDescriptor);
+				window.ongamepadconnected = onConnectHandler;
+			}
+			window.removeEventListener("gamepaddisconnected", handleDisconnect);
+			if (window.hasOwnProperty("ongamepaddisconnected")) {
+				Object.defineProperty(window, "ongamepaddisconnected", originalOnDisconnectDescriptor);
+				window.ongamepaddisconnected = onDisconnectHandler;
+			}
+		};
+	}
+
+	monkeyPatchGetGamepads() {
+		const self = this;
+		const originalGetGamepads = navigator.getGamepads ||
+			navigator.webkitGetGamepads ||
+			navigator.mozGetGamepads ||
+			navigator.msGetGamepads;
+
+		this.getNativeGamepads = originalGetGamepads;
+		navigator.getNativeGamepads = originalGetGamepads || function() {
+			return [];
+		};
+
+		Object.defineProperty(navigator, "getGamepads", {
+			configurable: true,
+			value: function() {
+				const emulated = self.emulatedGamepads;
+				const real = originalGetGamepads ? (originalGetGamepads.apply(navigator) || []) : [];
+				const result = new Array(Math.max(real.length, emulated.length)).fill(null);
+
+				for (let i = 0; i < real.length; i++) {
+					const gamepad = real[i];
+					if (!gamepad) continue;
+
+					let cloned = self.cloneGamepad(gamepad);
+					let patchedIndex = self.patchedIndexFor(cloned.index);
+
+					Object.defineProperty(cloned, "index", {
+						get: () => patchedIndex
+					});
+					result[patchedIndex] = cloned;
+				}
+
+				for (let i = 0; i < emulated.length; i++) {
+					let existing = result[i];
+					let emu = emulated[i];
+
+					if (emu && existing) {
+						Object.defineProperty(result[i], "emulation", {
+							value: EmulationMode.overlay,
+							configurable: true
+						});
+
+						let btnCount = Math.max(existing.buttons?.length || 0, emu.buttons.length);
+						let buttons = new Array(btnCount);
+
+						for (let j = 0; j < btnCount; j++) {
+							const emuBtn = emu.buttons[j] || {
+								touched: false,
+								pressed: false,
+								value: 0
+							};
+							const realBtn = existing.buttons[j] || {
+								touched: false,
+								pressed: false,
+								value: 0
+							};
+							buttons[j] = {
+								touched: emuBtn.touched || realBtn.touched || false,
+								pressed: emuBtn.pressed || realBtn.pressed || false,
+								value: Math.max(emuBtn.value, realBtn.value) || 0
+							};
+						}
+
+						Object.defineProperty(result[i], "buttons", {
+							value: buttons,
+							enumerable: true,
+							configurable: true
+						});
+
+						let axisCount = Math.max(emu.axes.length, existing.axes.length);
+						let axes = new Array(axisCount);
+
+						for (let j = 0; j < axisCount; j++) {
+							const emuAxis = emu.axes[j] ?? 0;
+							const realAxis = existing.axes[j] ?? 0;
+							axes[j] = Math.abs(emuAxis) > Math.abs(realAxis) ? emuAxis : realAxis;
+						}
+
+						Object.defineProperty(result[i], "axes", {
+							value: axes,
+							enumerable: true,
+							configurable: true
+						});
+					} else if (emu) {
+						Object.defineProperty(emu, "emulation", {
+							value: EmulationMode.emulated,
+							enumerable: true,
+							configurable: true
+						});
+						Object.defineProperty(emu, "timestamp", {
+							value: performance.now(),
+							enumerable: true,
+							configurable: true
+						});
+						result[i] = self.cloneGamepad(emu);
+					}
+				}
+				return result;
+			}
+		});
+	}
+
+	cleanup() {
+		for (let i = 0; i < this.emulatedGamepads.length; i++) {
+			this.ClearButtonTouchEventListeners(i);
+			this.ClearJoystickTouchEventListeners(i);
+		}
+		this.emulatedGamepads = [];
+		this.undoEventPatch();
+
+		if (this.getNativeGamepads) {
+			Object.defineProperty(navigator, "getGamepads", {
+				value: this.getNativeGamepads,
+				configurable: true
+			});
+		} else {
+			Object.defineProperty(navigator, "getGamepads", {
+				value: undefined,
+				configurable: true
+			});
+		}
+
+		GamepadEmulator.instanceRunning = false;
+		delete navigator.getNativeGamepads;
+	}
+}
+
+definePublicProperty(GamepadEmulator, "instanceRunning", false);
+
+</script>
+<script type="text/plain" id="vc-runtime">
+/* Adapted from web-ports/vice-city@796678be game.js; see docs/VICE-CITY.md. */
+const cloudSavesStatus = document.getElementById('cloud-saves-status');
+var statusElement = document.getElementById("status");
+var progressElement = document.getElementById("progress");
+var spinnerElement = document.getElementById('spinner');
+var data_content;
+var wasm_content;
+
+const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+let isTouch = isMobile && window.matchMedia('(pointer: coarse)').matches;
+
+document.body.dataset.isTouch = isTouch ? 1 : 0;
+
+const dataSize = 130 * 1024 * 1024;
+const textDecoder = new TextDecoder();
+const params = new URLSearchParams(window.location.search);
+let haveOriginalGame = true;
+(function () {
+    const translations = {
+        clickToPlayDemo: "Click to play demo",
+            clickToPlayFull: "Click to play",
+            invalidKey: "invalid key",
+            checking: "checking...",
+            cloudSaves: "Cloud saves:",
+            enabled: "enabled",
+            disabled: "disabled",
+            playDemoText: "You can play the DEMO version, or provide the original game files to play the full version.",
+            disclaimer: "DISCLAIMER:",
+            disclaimerSources: "This game is based on an open source version of GTA: Vice City. It is not a commercial release and is not affiliated with Rockstar Games.",
+            disclaimerCheckbox: "I own the original game",
+            disclaimerPrompt: "You need to provide a file from the original game to confirm ownership of the original game.",
+            cantContinuePlaying: "You can't continue playing in DEMO version. Please provide the original game files to continue playing.",
+            demoAlert: "The demo version is intended only for familiarizing yourself with the game technology. All features are available, but you won’t be able to progress through the game’s storyline. Please provide the original game files to launch the full version.",
+            downloading: "Downloading",
+            enterKey: "enter your key",
+            clickToContinue: "Click to continue...",
+            enterJsDosKey: "Enter js-dos key",
+            portBy: "HTML5 port by:",
+            ruTranslate: "",
+
+    };
+
+    let currentLanguage = "en";
+
+    window.t = function (key) {
+        return translations[key];
+    }
+})();
+
+data_content = "index.data";
+wasm_content = "index.wasm";
+
+var dataPromise = (async function loadData() {
+    let cache;
+    try {
+        cache = await caches.open(location.hostname);
+        const cached = await cache.match(data_content);
+        if (cached && data_content !== "index.data") {
+            return new Uint8Array(await cached.arrayBuffer());
+        }
+    } catch (e) {
+        console.error('Failed to open cache:', e);
+    }
+    const response = await fetch(data_content);
     const reader = response.body.getReader();
+    let receivedLength = 0;
     let chunks = [];
-    let received = 0;
-
     while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
-        received += value.length;
-        loadedBytes += value.length;
+        if (done) {
+            break;
+        }
         chunks.push(value);
-
-        let mbDone = (loadedBytes / (1024 * 1024)).toFixed(2);
-        let mbTotal = '633.45';
-        loadingText.textContent = `LOADING... ${mbDone} MB / ${mbTotal} MB`;
+        receivedLength += value.length;
+        if (typeof setStatus === "function") {
+            setStatus(`Downloading...(${receivedLength}/${dataSize})`);
+        }
     }
-
-    let fullBuffer = new Uint8Array(received);
-    let offset = 0;
+    let buffer = new Uint8Array(receivedLength);
+    let position = 0;
     for (let chunk of chunks) {
-        fullBuffer.set(chunk, offset);
-        offset += chunk.length;
+        buffer.set(chunk, position);
+        position += chunk.length;
     }
+    buffer = buffer.buffer;
+    if (cache) {
+        try {
+            await cache.put(data_content, new Response(buffer, { headers: { 'Content-Type': 'application/octet-stream' } }));
+        } catch (e) {
+            console.error('Failed to cache data:', e.message);
+        }
+    }
+    return new Uint8Array(buffer);
+})();
 
-    await saveFile(name, fullBuffer.buffer); // Cache it
-    return fullBuffer.buffer;
+async function startGame() {
+
+    const loaderContainer = document.querySelector('.loader-container');
+    loaderContainer.style.display = "flex";
+
+    const dataBuffer = await dataPromise;
+    dataPromise = null;
+    spinnerElement.hidden = true;
+    setStatus(t("clickToContinue"));
+    const clickHandler = () => {
+        document.getElementById('vc-start').disabled = true;
+        window.LoliteViceCity.stage('Starting game engine');
+        loadGame(dataBuffer).catch(window.LoliteViceCity.fail);
+    };
+    document.querySelector('.intro-container').hidden = false;
+    document.getElementById('vc-start').addEventListener('click', clickHandler, {once:true});
 }
 
-// Merge multiple parts
-async function mergeFiles(fileParts, namePrefix) {
-    const buffers = [];
-    for (let i = 0; i < fileParts.length; i++) {
-        const buffer = await fetchWithCache(`${namePrefix}.part${i+1}`, fileParts[i]);
-        buffers.push(buffer);
+function setStatus(text) {
+    if (!text) {
+        progressElement.hidden = true;
+        spinnerElement.hidden = true;
+        return;
     }
-    const mergedBlob = new Blob(buffers);
-    return URL.createObjectURL(mergedBlob);
-}
-
-// Generate part URLs
-function getParts(file, start, end) {
-    let parts = [];
-    for (let i = start; i <= end; i++) {
-        parts.push(file + ".part" + i);
+    const match = text.match(/(.+)\((\d+\.?\d*)\/(\d+)\)/);
+    if (match) {
+        const [current, total] = match.slice(2, 4).map(Number);
+        const percent = (current / total * 100).toFixed(0);
+        statusElement.textContent = t("downloading") + ` ${percent}%`;
+        progressElement.value = current;
+        progressElement.max = total;
+        progressElement.hidden = false;
+        spinnerElement.hidden = false;
+        const progressBarFill = spinnerElement.querySelector('.progress-bar-fill');
+        if (progressBarFill) {
+            progressBarFill.style.width = percent + '%';
+        }
+    } else {
+        statusElement.textContent = text;
     }
-    return parts;
-}
+};
 
-// Start fetching and caching
-Promise.all([
-    mergeFiles(getParts("index.data", 1, 7), "index.data"),
-    mergeFiles(getParts("audio/emotion.adf", 1, 3), "emotion.adf"),
-    mergeFiles(getParts("audio/espant.adf", 1, 3), "espant.adf"),
-    mergeFiles(getParts("audio/fever.adf", 1, 3), "fever.adf"),
-    mergeFiles(getParts("audio/flash.adf", 1, 3), "flash.adf"),
-    mergeFiles(getParts("audio/kchat.adf", 1, 3), "kchat.adf"),
-    mergeFiles(getParts("audio/vcpr.adf", 1, 2), "vcpr.adf"),
-    mergeFiles(getParts("audio/vrock.adf", 1, 4), "vrock.adf"),
-    mergeFiles(getParts("audio/wave.adf", 1, 4), "wave.adf"),
-    mergeFiles(getParts("audio/wild.adf", 1, 4), "wild.adf"),
-]).then(([indexdataurl, EMOTIONadfurl, ESPANTadfurl, FEVERadfurl, FLASHadfurl, KCHATadfurl, VCPRadfurl, VROCKadfurl, WAVEadfurl, WILDadfurl]) => {
-    
-    // Override fetch to use cached URLs
-    const originalFetch = window.fetch;
-    window.fetch = async function(input, init) {
-        let urlString = input instanceof Request ? input.url : String(input);
-
-        if (urlString.toLowerCase().includes("index.data".toLowerCase())) input = indexdataurl;
-        else if (urlString.toLowerCase().includes("emotion.adf".toLowerCase())) input = EMOTIONadfurl;
-        else if (urlString.toLowerCase().includes("espant.adf".toLowerCase())) input = ESPANTadfurl;
-        else if (urlString.toLowerCase().includes("fever.adf".toLowerCase())) input = FEVERadfurl;
-        else if (urlString.toLowerCase().includes("flash.adf".toLowerCase())) input = FLASHadfurl;
-        else if (urlString.toLowerCase().includes("kchat.adf".toLowerCase())) input = KCHATadfurl;
-        else if (urlString.toLowerCase().includes("VCPR.adf".toLowerCase())) input = VCPRadfurl;
-        else if (urlString.toLowerCase().includes("VROCK.adf".toLowerCase())) input = VROCKadfurl;
-        else if (urlString.toLowerCase().includes("WAVE.adf".toLowerCase())) input = WAVEadfurl;
-        else if (urlString.toLowerCase().includes("WILD.adf".toLowerCase())) input = WILDadfurl;
-
-        return originalFetch(input.toLowerCase(), init);
+async function loadGame(data) {
+    var Module = {
+        mainCalled: () => {
+            window.LoliteViceCity.ready();
+            try {
+                Module.FS.unlink("/vc-assets/local/revc.ini");
+                Module.FS.createDataFile("/vc-assets/local/revc.ini", 0, revc_ini, revc_ini.length);
+            } catch (e) {
+                console.error('mainCalled error:', e);
+            }
+        },
+        syncRevcIni: () => {
+            try {
+                const path = Module.FS.lookupPath("/vc-assets/local/revc.ini");
+                if (path && path.node && path.node.contents) {
+                    localStorage.setItem('vcsky.revc.ini', textDecoder.decode(path.node.contents));
+                }
+            } catch (e) {
+                console.error('syncRevcIni error:', e);
+            }
+        },
+        onAbort: reason => window.LoliteViceCity.fail(Error(String(reason))),
+        preRun: [],
+        postRun: [],
+        print: (...args) => console.log(args.join(' ')),
+        printErr: (...args) => console.error(args.join(' ')),
+        getPreloadedPackage: () => {
+            return data.buffer;
+        },
+        canvas: function () {
+            const canvas = document.getElementById('canvas');
+            canvas.addEventListener('webglcontextlost', (e) => {
+                window.LoliteViceCity.fail(Error('WebGL context lost. Reload Vice City to continue.'));
+                e.preventDefault();
+            });
+            return canvas;
+        }(),
+        setStatus,
+        totalDependencies: 0,
+        monitorRunDependencies: (num) => {
+            Module.totalDependencies = Math.max(Module.totalDependencies, num);
+            Module.setStatus(`Preparing... (${Module.totalDependencies - num}/${Module.totalDependencies})`);
+        },
+        hotelMission: () => {
+            if (!haveOriginalGame) {
+                showWasted();
+                alert(t("cantContinuePlaying"));
+                throw new Error(t("cantContinuePlaying"));
+            }
+        },
+    };
+    Module.log = Module.print;
+    Module.instantiateWasm = async (
+        info,
+        receiveInstance,
+    ) => {
+        try {
+            const response = await fetch(wasm_content || 'index.wasm');
+            if (!response.ok) throw Error('Game engine download failed (HTTP ' + response.status + ').');
+            const wasm = await response.arrayBuffer();
+            const module = await WebAssembly.instantiate(wasm, info);
+            return receiveInstance(module.instance, module);
+        } catch (error) { window.LoliteViceCity.fail(error); return {}; }
+    };
+    window.onerror = (message) => {
+        window.LoliteViceCity.fail(Error(String(message)));
+        spinnerElement.hidden = true;
+    };
+    Module.arguments = window.location.search
+        .slice(1)
+        .split('&')
+        .filter(Boolean)
+        .map(decodeURIComponent);
+    window.onbeforeunload = function (event) {
+        event.preventDefault();
+        return '';
     };
 
-    // Similarly override XHR
-    const originalOpen = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function(method, url, ...rest) {
-        if (url.includes("https://cdn.dos.zone/vcsky/fetched/".toLowerCase())) url = url.replace("https://cdn.dos.zone/vcsky/fetched/", "")
-        if (url.toLowerCase().includes("index.data".toLowerCase())) url = indexdataurl;
-        else if (url.toLowerCase().includes("emotion.adf".toLowerCase())) url = EMOTIONadfurl;
-        else if (url.toLowerCase().includes("espant.adf".toLowerCase())) url = ESPANTadfurl;
-        else if (url.toLowerCase().includes("fever.adf".toLowerCase())) url = FEVERadfurl;
-        else if (url.toLowerCase().includes("flash.adf".toLowerCase())) url = FLASHadfurl;
-        else if (url.toLowerCase().includes("KCHAT.adf".toLowerCase())) url = KCHATadfurl;
-        else if (url.toLowerCase().includes("VCPR.adf".toLowerCase())) url = VCPRadfurl;
-        else if (url.toLowerCase().includes("VROCK.adf".toLowerCase())) url = VROCKadfurl;
-        else if (url.toLowerCase().includes("WAVE.adf".toLowerCase())) url = WAVEadfurl;
-        else if (url.toLowerCase().includes("WILD.adf".toLowerCase())) url = WILDadfurl;
-        return originalOpen.call(this, method, url.toLowerCase(), ...rest);
+    window.Module = Module;
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = 'index.js';
+    script.crossOrigin = 'anonymous';
+    const engineTimer = setTimeout(() => window.LoliteViceCity.fail(Error('The engine script timed out. Please retry.')), 30000);
+    script.onload = () => clearTimeout(engineTimer);
+    script.onerror = () => { clearTimeout(engineTimer); window.LoliteViceCity.fail(Error('Could not load index.js. Please retry.')); };
+    document.body.appendChild(script);
+
+    document.body.classList.add('gameIsStarted');
+
+    const emulator = new GamepadEmulator();
+    const gamepad = emulator.AddEmulatedGamepad(null, true);
+    const gamepadEmulatorConfig = {
+        directions: { up: true, down: true, left: true, right: true },
+        dragDistance: 100,
+        tapTarget: move,
+        lockTargetWhilePressed: true,
+        xAxisIndex: 0,
+        yAxisIndex: 1,
+        swapAxes: false,
+        invertX: false,
+        invertY: false,
     };
+    emulator.AddDisplayJoystickEventListeners(0, [gamepadEmulatorConfig]);
+    const gamepadEmulatorConfig1 = {
+        directions: { up: true, down: true, left: true, right: true },
+        dragDistance: 100,
+        tapTarget: look,
+        lockTargetWhilePressed: true,
+        xAxisIndex: 2,
+        yAxisIndex: 3,
+        swapAxes: false,
+        invertX: false,
+        invertY: false,
+    };
+    emulator.AddDisplayJoystickEventListeners(0, [gamepadEmulatorConfig1]);
 
-    // Load game scripts
-    ["gamepademulator.js", "idbfs.js", "game.js"].forEach(src => {
-        const script = document.createElement("script");
-        script.src = src;
-        document.body.appendChild(script);
-    });
+    emulator.AddDisplayButtonEventListeners(0, [{
+        buttonIndex: 9,
+        lockTargetWhilePressed: false,
+        tapTarget: document.querySelector('.touch-control.menu'),
+    }]);
+    emulator.AddDisplayButtonEventListeners(0, [{
+        buttonIndex: 3,
+        lockTargetWhilePressed: false,
+        tapTarget: document.querySelector('.touch-control.car.getIn'),
+    }]);
+    emulator.AddDisplayButtonEventListeners(0, [{
+        buttonIndex: 0,
+        lockTargetWhilePressed: false,
+        tapTarget: document.querySelector('.touch-control.run'),
+    }]);
+    emulator.AddDisplayButtonEventListeners(0, [{
+        buttonIndex: 1,
+        lockTargetWhilePressed: false,
+        tapTarget: document.querySelector('.touch-control.fist'),
+    }]);
+    emulator.AddDisplayButtonEventListeners(0, [{
+        buttonIndex: 5,
+        lockTargetWhilePressed: false,
+        tapTarget: document.querySelector('.touch-control.drift'),
+    }]);
+    emulator.AddDisplayButtonEventListeners(0, [{
+        buttonIndex: 2,
+        lockTargetWhilePressed: false,
+        tapTarget: document.querySelector('.touch-control.jump'),
+    }]);
+    emulator.AddDisplayButtonEventListeners(0, [{
+        buttonIndex: 4,
+        lockTargetWhilePressed: false,
+        tapTarget: document.querySelector('.touch-control.mobile'),
+    }]);
+    emulator.AddDisplayButtonEventListeners(0, [{
+        buttonIndex: 11,
+        lockTargetWhilePressed: false,
+        tapTarget: document.querySelector('.touch-control.job'),
+    }]);
+    emulator.AddDisplayButtonEventListeners(0, [{
+        buttonIndex: 4,
+        lockTargetWhilePressed: false,
+        tapTarget: document.querySelector('.touch-control.radio'),
+    }]);
+    emulator.AddDisplayButtonEventListeners(0, [{
+        buttonIndex: 7,
+        lockTargetWhilePressed: false,
+        tapTarget: document.querySelector('.touch-control.weapon'),
+    }]);
+    emulator.AddDisplayButtonEventListeners(0, [{
+        buttonIndex: 8,
+        lockTargetWhilePressed: false,
+        tapTarget: document.querySelector('.touch-control.camera'),
+    }]);
+    emulator.AddDisplayButtonEventListeners(0, [{
+        buttonIndex: 10,
+        lockTargetWhilePressed: false,
+        tapTarget: document.querySelector('.touch-control.horn'),
+    }]);
+    emulator.AddDisplayButtonEventListeners(0, [{
+        buttonIndex: 7,
+        buttonIndexes: [1, 7],
+        lockTargetWhilePressed: false,
+        tapTarget: document.querySelector('.touch-control.fireRight'),
+    }]);
+    emulator.AddDisplayButtonEventListeners(0, [{
+        buttonIndex: 6,
+        buttonIndexes: [1, 6],
+        lockTargetWhilePressed: false,
+        tapTarget: document.querySelector('.touch-control.fireLeft'),
+    }]);
+}
 
-    loadingText.remove();
-});
+
+startGame().catch(window.LoliteViceCity.fail);
+if (!isMobile) {
+    function lockMouseIfNeeded() {
+        if (!document.pointerLockElement && typeof Module !== 'undefined' && Module.canvas) {
+            Module.canvas.requestPointerLock({
+                unadjustedMovement: true,
+            }).catch(() => {
+                console.warn('Failed to lock in unadjusted movement mode');
+                Module.canvas.requestPointerLock().catch(() => {
+                    console.error('Failed to lock in default mode');
+                });
+            });
+        }
+    }
+    document.addEventListener("mousedown", lockMouseIfNeeded, { capture: true });
+    if (navigator.keyboard && navigator.keyboard.lock) {
+        navigator.keyboard.lock(["Escape", "KeyW"]).catch(() => {});
+    }
+}
+
+try { localStorage.setItem('vcsky.haveOriginalGame', 'true'); } catch {}
+haveOriginalGame = true;
+
+function showWasted() {
+    const wastedContainer = document.querySelector('.wasted-container');
+    wastedContainer.hidden = false;
+}
+
+const revc_iniDefault = `
+[VideoMode]
+Width=800
+Height=600
+Depth=32
+Subsystem=0
+Windowed=0
+[Controller]
+HeadBob1stPerson=0
+HorizantalMouseSens=0.002500
+InvertMouseVertically=1
+DisableMouseSteering=1
+Vibration=0
+Method=${isTouch ? '1' : '0'}
+InvertPad=0
+JoystickName=
+PadButtonsInited=0
+[Audio]
+SfxVolume=36
+MusicVolume=37
+MP3BoostVolume=0
+Radio=0
+SpeakerType=0
+Provider=0
+DynamicAcoustics=1
+[Display]
+Brightness=256
+DrawDistance=1.800000
+Subtitles=0
+ShowHud=1
+RadarMode=0
+ShowLegends=0
+PedDensity=1.200000
+CarDensity=1.200000
+CutsceneBorders=1
+FreeCam=0
+[Graphics]
+AspectRatio=0
+VSync=1
+Trails=1
+FrameLimiter=0
+MultiSampling=0
+IslandLoading=0
+PS2AlphaTest=1
+ColourFilter=2
+MotionBlur=0
+VehiclePipeline=0
+NeoRimLight=0
+NeoLightMaps=0
+NeoRoadGloss=0
+[General]
+SkinFile=$$""
+Language=0
+DrawVersionText=0
+NoMovies=0
+[CustomPipesValues]
+PostFXIntensity=1.000000
+NeoVehicleShininess=1.000000
+NeoVehicleSpecularity=1.000000
+RimlightMult=1.000000
+LightmapMult=1.000000
+GlossMult=1.000000
+[Rendering]
+BackfaceCulling=1
+NewRenderer=1
+[Draw]
+ProperScaling=1
+FixRadar=1
+FixSprites=1
+[Bindings]
+PED_FIREWEAPON=mouse:LEFT,2ndKbd:PAD5
+PED_CYCLE_WEAPON_RIGHT=2ndKbd:PADENTER,mouse:WHLDOWN,kbd:E
+PED_CYCLE_WEAPON_LEFT=kbd:PADDEL,mouse:WHLUP,2ndKbd:Q
+GO_FORWARD=kbd:UP,2ndKbd:W
+GO_BACK=kbd:DOWN,2ndKbd:S
+GO_LEFT=2ndKbd:A,kbd:LEFT
+GO_RIGHT=kbd:RIGHT,2ndKbd:D
+PED_SNIPER_ZOOM_IN=kbd:PGUP,2ndKbd:Z,mouse:WHLUP
+PED_SNIPER_ZOOM_OUT=kbd:PGDN,2ndKbd:X,mouse:WHLDOWN
+VEHICLE_ENTER_EXIT=kbd:ENTER,2ndKbd:F
+CAMERA_CHANGE_VIEW_ALL_SITUATIONS=kbd:HOME,2ndKbd:V
+PED_JUMPING=kbd:RCTRL,2ndKbd:SPC
+PED_SPRINT=2ndKbd:LSHIFT,kbd:RSHIFT
+PED_LOOKBEHIND=2ndKbd:CAPSLK,mouse:MIDDLE,kbd:PADINS
+PED_DUCK=kbd:C
+PED_ANSWER_PHONE=kbd:TAB
+VEHICLE_FIREWEAPON=kbd:PADINS,2ndKbd:LCTRL,mouse:LEFT
+VEHICLE_ACCELERATE=2ndKbd:W
+VEHICLE_BRAKE=2ndKbd:S
+VEHICLE_CHANGE_RADIO_STATION=kbd:INS,2ndKbd:R
+VEHICLE_HORN=2ndKbd:LSHIFT,kbd:RSHIFT
+TOGGLE_SUBMISSIONS=kbd:PLUS,2ndKbd:CAPSLK
+VEHICLE_HANDBRAKE=kbd:RCTRL,2ndKbd:SPC,mouse:RIGHT
+PED_1RST_PERSON_LOOK_LEFT=kbd:PADLEFT
+PED_1RST_PERSON_LOOK_RIGHT=kbd:PADHOME
+VEHICLE_LOOKLEFT=kbd:PADEND,2ndKbd:Q
+VEHICLE_LOOKRIGHT=kbd:PADDOWN,2ndKbd:E
+VEHICLE_LOOKBEHIND=mouse:MIDDLE
+VEHICLE_TURRETLEFT=kbd:PADLEFT
+VEHICLE_TURRETRIGHT=kbd:PAD5
+VEHICLE_TURRETUP=kbd:PADPGUP,2ndKbd:UP
+VEHICLE_TURRETDOWN=kbd:PADRIGHT,2ndKbd:DOWN
+PED_CYCLE_TARGET_LEFT=kbd:[,2ndKbd:PADEND
+PED_CYCLE_TARGET_RIGHT=2ndKbd:],kbd:PADDOWN
+PED_CENTER_CAMERA_BEHIND_PLAYER=kbd:#
+PED_LOCK_TARGET=kbd:DEL,mouse:RIGHT,2ndKbd:PADRIGHT
+NETWORK_TALK=kbd:T
+PED_1RST_PERSON_LOOK_UP=kbd:PADPGUP
+PED_1RST_PERSON_LOOK_DOWN=kbd:PADUP
+_CONTROLLERACTION_36=
+TOGGLE_DPAD=
+SWITCH_DEBUG_CAM_ON=
+TAKE_SCREEN_SHOT=
+SHOW_MOUSE_POINTER_TOGGLE=
+UNKNOWN_ACTION=
+
+`;
+
+const revc_ini = (() => {
+    let cached;
+    try { cached = localStorage.getItem('vcsky.revc.ini'); } catch {}
+    if (cached) {
+        return cached;
+    }
+    return revc_iniDefault;
+})();
+
 </script>
+<script>
+/* Bundled into both Vice City launch pages by scripts/build-vice-city.py. */
+(() => {
+ 'use strict';
+ const panel = document.getElementById('vc-loading');
+ const title = document.getElementById('loading-text');
+ const detail = document.getElementById('vc-detail');
+ const progress = document.getElementById('vc-progress');
+ const retry = document.getElementById('vc-retry');
+ const nativeFetch = window.fetch.bind(window);
+ const controllers = new Set();
+ const groups = [['index.data',7],['audio/emotion.adf',3],['audio/espant.adf',3],
+  ['audio/fever.adf',3],['audio/flash.adf',3],['audio/kchat.adf',3],
+  ['audio/vcpr.adf',2],['audio/vrock.adf',4],['audio/wave.adf',4],['audio/wild.adf',4]];
+ const total = groups.reduce((n, [,count]) => n + count, 0);
+ const resources = new Map();
+ let downloaded = 0, cached = 0, completed = 0, failed = false;
+ function update(stage = 'Downloading resources') {
+  if (failed) return;
+  title.textContent = stage;
+  detail.textContent = `${completed} / ${total} resource files · ${(downloaded/1048576).toFixed(1)} MB downloaded` +
+   (cached ? ` · ${(cached/1048576).toFixed(1)} MB cached` : '');
+  progress.max = total; progress.value = completed;
+ }
+ function fail(error) {
+  if (failed) return;
+  failed = true;
+  for (const controller of controllers) controller.abort();
+  panel.hidden = false;
+  title.textContent = 'Unable to start Vice City';
+  detail.textContent = error?.message || String(error || 'Please try again.');
+  progress.hidden = true; retry.hidden = false;
+  document.querySelector('.intro-container').hidden = true;
+ }
+ window.LoliteViceCity = {
+  fail, stage:update,
+  ready() { if (!failed) { panel.hidden = true; document.querySelector('.intro-container').hidden = true; } }
+ };
+ retry.addEventListener('click', () => location.reload());
+ window.addEventListener('unhandledrejection', event => fail(event.reason));
+ // Storage is optional: opaque game frames intentionally cannot use Lolite's storage.
+ const database = new Promise(resolve => {
+  let settled = false;
+  const finish = value => { if (settled) { value?.close(); return; } settled = true; clearTimeout(timer); resolve(value); };
+  const timer = setTimeout(() => finish(null), 1500);
+  try {
+   const request = indexedDB.open('lolite-vice-city-796678be', 1);
+   request.onupgradeneeded = () => request.result.createObjectStore('files');
+   request.onsuccess = () => finish(request.result);
+   request.onerror = request.onblocked = () => finish(null);
+  } catch { finish(null); }
+ });
+ async function cacheRead(name) {
+  const db = await database;
+  if (!db) return null;
+  return new Promise(resolve => {
+   const timer = setTimeout(() => resolve(null), 1500);
+   const finish = value => { clearTimeout(timer); resolve(value); };
+   try {
+    const request = db.transaction('files').objectStore('files').get(name);
+    request.onsuccess = () => finish(request.result);
+    request.onerror = () => finish(null);
+   } catch { finish(null); }
+  });
+ }
+ async function cacheWrite(name, buffer) {
+  const db = await database;
+  if (!db) return;
+  try {
+   const transaction = db.transaction('files', 'readwrite');
+   transaction.onerror = () => {}; transaction.onabort = () => {};
+   transaction.objectStore('files').put(buffer, name);
+  } catch { /* Quota/storage failure must not stop a completed download. */ }
+ }
+ async function download(name, stage = 'Downloading resources') {
+  let lastError;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+   if (failed) throw Error('Loading cancelled.');
+   const controller = new AbortController(); controllers.add(controller);
+   let timer;
+   const reset = () => { clearTimeout(timer); timer = setTimeout(() => controller.abort(), 30000); };
+   try {
+    reset();
+    const response = await nativeFetch(new URL(name, document.baseURI), {signal:controller.signal, credentials:'omit'});
+    if (!response.ok) throw Error(`${name}: download failed (HTTP ${response.status}).`);
+    if (/text\/html/i.test(response.headers?.get('content-type') || '')) throw Error(`${name}: the host returned a web page instead of game data.`);
+    const chunks = []; let size = 0;
+    if (response.body?.getReader) {
+     const reader = response.body.getReader();
+     while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      reset(); chunks.push(value); size += value.byteLength; downloaded += value.byteLength; update(stage);
+     }
+    } else {
+     const value = new Uint8Array(await response.arrayBuffer());
+     chunks.push(value); size = value.byteLength; downloaded += size; update(stage);
+    }
+    if (!size) throw Error(`${name}: the downloaded file is empty.`);
+    const buffer = new Uint8Array(size); let offset = 0;
+    for (const chunk of chunks) { buffer.set(chunk, offset); offset += chunk.byteLength; }
+    return buffer.buffer;
+   } catch (error) {
+    lastError = error.name === 'AbortError' ? Error(`${name}: download stalled for 30 seconds. Check your connection and retry.`) : error;
+    if (attempt < 3) update(`Retrying ${name} (${attempt + 1}/3)`);
+   } finally { clearTimeout(timer); controllers.delete(controller); }
+  }
+  throw lastError;
+ }
+ async function part(name) {
+  let buffer = await cacheRead(name);
+  if (buffer?.byteLength) { cached += buffer.byteLength; }
+  else { buffer = await download(name); void cacheWrite(name, buffer); }
+  completed++; update();
+  return buffer;
+ }
+ function script(src) {
+  return new Promise((resolve, reject) => {
+   const el = document.createElement('script');
+   const timer = setTimeout(() => reject(Error('An engine script timed out. Please retry.')), 20000);
+   el.async = false; el.crossOrigin = 'anonymous'; el.src = src;
+   el.onload = () => { clearTimeout(timer); resolve(); };
+   el.onerror = () => { clearTimeout(timer); reject(Error('Could not load the Vice City engine. Please retry.')); };
+   document.body.appendChild(el);
+  });
+ }
+ const bundledScript = id => URL.createObjectURL(new Blob([document.getElementById(id).textContent], {type:'text/javascript'}));
+ function mapped(input) {
+  const raw = input instanceof Request ? input.url : String(input);
+  const name = new URL(raw, document.baseURI).pathname.split('/').pop().toLowerCase();
+  return resources.get(name) || raw;
+ }
+ async function boot() {
+  const probe = document.createElement('canvas');
+  const graphics = probe.getContext('webgl2') || probe.getContext('webgl');
+  if (!graphics) throw Error('WebGL is unavailable. Enable hardware acceleration in your browser, restart it, and retry Vice City.');
+  graphics.getExtension('WEBGL_lose_context')?.loseContext();
+  // A missing script should fail before the large resource transfer.
+  await script(bundledScript('vc-gamepad'));
+  await script(new URL('idbfs.js', document.baseURI).href);
+  let next = 0;
+  await Promise.all(Array.from({length:3}, async () => {
+   while (next < groups.length && !failed) {
+    const [name, count] = groups[next++], buffers = [];
+    for (let i = 1; i <= count; i++) buffers.push(await part(`${name}.part${i}`));
+    resources.set(name.split('/').pop(), URL.createObjectURL(new Blob(buffers)));
+   }
+  }));
+  const originalOpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+   return originalOpen.call(this, method, mapped(String(url).replace('https://cdn.dos.zone/vcsky/fetched/', '')), ...rest);
+  };
+  window.fetch = async (input, init) => {
+   const raw = input instanceof Request ? input.url : String(input);
+   if (new URL(raw, document.baseURI).pathname.endsWith('/index.wasm')) {
+    const buffer = await download('index.wasm', 'Downloading game engine');
+    update('Compiling game engine');
+    return new Response(buffer, {headers:{'Content-Type':'application/wasm'}});
+   }
+   return nativeFetch(mapped(input), init);
+  };
+  update('Resources ready');
+  await script(bundledScript('vc-runtime'));
+ }
+ void boot().catch(fail);
+})();
 
-
-
+</script>
+</body>
+</html>

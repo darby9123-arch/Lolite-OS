@@ -1,0 +1,29 @@
+name: Verify browser and wallpaper runtime fixes
+on:
+  push:
+    paths:
+      - 'browser/uv-static/**'
+      - 'core/uv-static-client.js'
+      - 'core/ultraviolet.js'
+      - 'core/vice-city*'
+      - 'html games/Grand Theft Auto Vice City.html'
+      - 'html games/collections/chicken-kings-vault/gamefiles/Grand Theft Auto Vice City.html'
+      - 'core/wallpapers.js'
+      - 'core/motionbgs-embeds.js'
+      - 'tests/vice-city-loader.test.cjs'
+      - 'tests/uv-static.test.cjs'
+      - 'scripts/build-vice-city.py'
+      - '.github/workflows/verify-browser-wallpaper-runtime.yml'
+  pull_request:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python3 scripts/build-vice-city.py --check
+      - run: node --test tests/vice-city-loader.test.cjs tests/uv-static.test.cjs tests/game-account-browser-bugfixes.test.cjs tests/crimson.test.cjs tests/local-live-wallpapers.test.cjs tests/wallpaper-favourites.test.cjs tests/motionbgs-embeds.test.cjs tests/performance-hotfix.test.cjs

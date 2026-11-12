@@ -8,7 +8,7 @@
  const catalog=window.LoliteLivelyWallpapers;
  if(!catalog?.catalog?.length)return;
  const motionBGS=Array.isArray(window.LoliteMotionBGSEmbeds?.catalog)?window.LoliteMotionBGSEmbeds.catalog:[];
- const collection=[...catalog.catalog.map(wall=>({...wall})),...motionBGS.map(wall=>({...wall}))];
+ const collection=[...catalog.catalog.map(wall=>({...wall,group:wall.category,embedded:true})),...motionBGS.map(wall=>({...wall}))];
  const defaultId=catalog.defaultId;
  const live=wall=>Boolean(wall?.video||wall?.src4k||wall?.motion);
  const CUSTOM_ID='custom';
@@ -447,7 +447,7 @@
    if(ctx){resize();sync()}else report('Live effects unavailable in this browser');
   }else if(wall.video||wall.src4k||wall.src1080){
    // Use one decoder in HD; two-decoder crossfade remains available in Max mode.
-   if(wall.video&&!wall.embedded&&window.LoliteSeamlessVideo){
+   if(wall.video&&wall.provider!=='MotionBGS · Remote Embed'&&window.LoliteSeamlessVideo){
     loopController=window.LoliteSeamlessVideo.create({
      target,sources:sources(wall),poster,onStatus:report,dual:quality==='max'
     });
@@ -520,7 +520,7 @@
   if(!found.length)return '<p class="cr-wall-empty">'+
    (filter==='Favourites'&&!query.trim()?
     'No favourite wallpapers yet. Tap ♡ on any wallpaper to save it here.':
-    'No wallpapers match. Try a different category or search.')+'</p>';
+    (filter==='All'&&!query.trim()?'No uploaded wallpapers yet. Online videos are in Embedded Wallpapers.':'No wallpapers match. Try a different category or search.'))+'</p>';
   const count=Math.min(found.length,Math.max(48,Number(limit)||48));
   return found.slice(0,count).map(wall=>{
    const dimensions=wall.width&&wall.height?wall.width+' × '+wall.height:'Custom';
@@ -530,7 +530,7 @@
     '<span class="cr-wall-image"><img data-wall-poster-for="'+escape(wall.id)+'" src="'+escape(wall.poster||wall.src)+'" alt="" loading="lazy" decoding="async">'+
     (live(wall)?'<span class="cr-live-label">'+escape(wall.embedded?'REMOTE':(wall.resolution||'LIVE'))+'</span>':'')+
     '<span class="cr-wall-check">✓</span></span><span class="cr-wall-caption"><strong>'+
-    escape(wall.name)+'</strong><small>'+escape(wall.embedded?'Embedded · '+wall.group:wall.category)+' · '+dimensions+
+    escape(wall.name)+'</strong><small>'+escape(wall.embedded?'Embedded · '+(wall.group||wall.provider||wall.category):wall.category)+' · '+dimensions+
     '</small></span></button>'+
     '<button type="button" class="cr-wall-favourite'+(liked?' is-favourite':'')+
     '" data-wall-favourite="'+escape(wall.id)+'" aria-pressed="'+liked+
@@ -538,23 +538,23 @@
     '" title="'+(liked?'Remove from favourites':'Add to favourites')+
     '"><span aria-hidden="true">'+(liked?'♥':'♡')+'</span></button>'+
     (wall.source?'<a class="cr-wall-source" href="'+escape(wall.source)+
-    '" target="_blank" rel="noopener noreferrer">'+(wall.embedded?'View on MotionBGS ↗':'Source & download ↗')+'</a>':'')+'</article>';
+    '" target="_blank" rel="noopener noreferrer">'+(wall.embedded?'View source ↗':'Source & download ↗')+'</a>':'')+'</article>';
   }).join('')+(count<found.length?'<button type="button" class="cr-secondary cr-wall-more" data-wall-more="'+(count+48)+
    '" data-wall-more-filter="'+escape(filter)+'" data-wall-more-query="'+escape(query)+'">Show more · '+count+' of '+found.length+'</button>':'');
  }
  function markup(filter='All',query=''){
-  const cats=['All','Favourites','4K','Games','Anime','Cars','Nature','Space','Art & Fantasy'];
-   if(motionBGS.length)cats.push('Embedded Wallpapers');
+  const cats=['All','Favourites','4K','Games','Anime','Cars','Nature','Space','Art & Fantasy'].filter(cat=>cat==='All'||cat==='Favourites'||collection.some(w=>matches(w,cat)));
+   if(collection.some(w=>w.embedded))cats.push('Embedded Wallpapers');
   if(collection.some(w=>w.provider==='Admin Library'))cats.push('Special Live Wallpapers');
   if(filter==='Live'||!cats.includes(filter))filter='All';
   return '<div class="cr-wall-browse"><label class="cr-wall-search"><span aria-hidden="true">⌕</span>'+
-   '<input type="search" data-wall-search placeholder="Search '+collection.length+' wallpapers" aria-label="Search wallpapers" value="'+escape(query)+'"></label>'+
+   '<input type="search" data-wall-search placeholder="Search wallpapers" aria-label="Search wallpapers" value="'+escape(query)+'"></label>'+
    '<label class="cr-upload">Custom image<input type="file" accept="image/png,image/jpeg,image/webp" data-wall-upload hidden></label></div>'+
    '<div class="cr-wall-toolbar"><div class="cr-filter" role="group" aria-label="Wallpaper collection">'+
    cats.map(cat=>'<button type="button" data-wall-filter="'+cat+'" aria-pressed="'+(cat===filter)+'">'+
    escape(cat)+' <small>'+(cat==='Favourites'?favouriteCount():collection.filter(w=>matches(w,cat)).length)+'</small></button>').join('')+
    '</div></div><div class="cr-wall-grid">'+cards(filter,query)+'</div>'+
-   '<p class="cr-help">Normal wallpapers stream from <a href="https://livelywallpaper.app/live-wallpapers/" target="_blank" rel="noopener noreferrer">LivelyWallpaper.app</a>. Embedded Wallpapers stream from <a href="https://motionbgs.com" target="_blank" rel="noopener noreferrer">MotionBGS</a> remote video links (not copied into Lolite). Playback may be blocked by MotionBGS (its HD links returned 403 in automated checks); if playback fails, a still placeholder remains visible. Motion pauses when the tab is hidden or Reduce Motion is enabled.</p>';
+   '<p class="cr-help">All Wallpapers contains files uploaded to Lolite. Embedded Wallpapers contains online videos from LivelyWallpaper.app and MotionBGS. Choose Original for the highest available quality, up to 4K. Motion pauses when the tab is hidden or Reduce Motion is enabled.</p>';
  }
  document.addEventListener('click',event=>{
   const button=event.target.closest?.('[data-wall-more]');
@@ -578,7 +578,7 @@
  };
  const posterRequests=new Map();
  function requestPoster(wall){
-  if(!wall?.video||wall.provider==='LivelyWallpaper.app'||!window.LoliteWallpaperThumbnails)return;
+  if(!wall?.video||wall.embedded||wall.provider==='LivelyWallpaper.app'||!window.LoliteWallpaperThumbnails)return;
   const url=wall.video;
   if(posterRequests.has(url)){
    const stored=posterRequests.get(url);
@@ -615,6 +615,7 @@
    collection.push({
     id:'admin-'+item.id,name:String(item.title||'Community wallpaper').slice(0,90),
     category:videoFile?'Special Live Wallpapers':'Signature',provider:'Admin Library',
+    embedded:!/^https:\/\/rztxhwfdbrzuhdqpegar\.supabase\.co\/storage\/v1\/object\/public\//i.test(item.url),
     src:videoFile?collection[0].poster:item.url,
     poster:videoFile?(item.poster_url||collection[0].poster):item.url,
     ...(videoFile?{video:item.url}:{})
