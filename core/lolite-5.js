@@ -227,7 +227,8 @@
   storeFeedback();gamePanel.classList.add('hidden');announce('Game feedback saved','Your feedback is saved locally.');
  }
  const gameCards=()=>{
-  for(const card of $$('.store-gallery-card[data-game-file],.store-card[data-game-file]')){
+  const store=$('.store-main');if(!store)return;
+  for(const card of store.querySelectorAll('.store-gallery-card[data-game-file],.store-card[data-game-file]')){
    if(card.querySelector('[data-l5-feedback]'))continue;
    const actions=card.querySelector('.store-card-actions');if(!actions)continue;
    const button=document.createElement('button');button.type='button';button.className='store-details l5-feedback-button';button.dataset.l5Feedback=card.dataset.gameFile;
@@ -237,10 +238,23 @@
  };
  let gameQueued=false;
  const scheduleGames=()=>{if(gameQueued)return;gameQueued=true;requestAnimationFrame(()=>{gameQueued=false;gameCards()})};
+ // A single cheap observer discovers store mount points. Only scan the
+ // corresponding app, not the entire OS, when its cards actually change.
  const observer=new MutationObserver(mutations=>{
-  if(mutations.some(m=>Array.from(m.addedNodes).some(n=>n.nodeType===1&&(n.matches?.('.store-card,.store-gallery-card,.appstore,.appstore-card')||n.querySelector?.('.store-card,.store-gallery-card,.appstore'))))){
-   scheduleGames();scheduleAppStore();
+  let gamesChanged=false,appsChanged=false;
+  for(const mutation of mutations){
+   for(const node of mutation.addedNodes){
+    if(node.nodeType!==1)continue;
+    if(!gamesChanged&&(node.matches?.('.store-main,.store-card,.store-gallery-card')||
+      node.querySelector?.('.store-main,.store-card,.store-gallery-card')))gamesChanged=true;
+    if(!appsChanged&&(node.matches?.('.appstore,.appstore-card')||
+      node.querySelector?.('.appstore,.appstore-card')))appsChanged=true;
+    if(gamesChanged&&appsChanged)break;
+   }
+   if(gamesChanged&&appsChanged)break;
   }
+  if(gamesChanged)scheduleGames();
+  if(appsChanged)scheduleAppStore();
  });
  const initObserver=()=>{if(document.body)observer.observe(document.body,{childList:true,subtree:true})};
 
@@ -260,7 +274,7 @@
    row.innerHTML='<label>Sort <select data-l5-app-sort><option value="default">Featured first</option><option value="name">Name A–Z</option><option value="name-desc">Name Z–A</option></select></label><button data-l5-app-faves>Show favourites</button><button data-l5-app-all>Show all</button>';
    toolbar.appendChild(row);row.querySelector('select').value=appSort;
   }
-  for(const card of $$('.appstore-card')){
+  for(const card of container.querySelectorAll('.appstore-card')){
    const name=appId(card);if(!name||card.querySelector('[data-l5-app-fav]'))continue;
    const b=document.createElement('button');b.type='button';b.className='l5-app-favourite';b.dataset.l5AppFav=name;
    b.textContent=favApps.includes(name)?'♥ Saved':'♡ Save';b.setAttribute('aria-pressed',String(favApps.includes(name)));
