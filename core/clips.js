@@ -5,10 +5,14 @@
 (()=>{'use strict';
  const BUCKET='lolite-clips',DB_NAME='lolite-clips-local-v1',MAX_UPLOAD=20*1024*1024;
  const LENGTHS=[15,30,60,90],KEYS=['Alt+Shift+C','Ctrl+Shift+Y'];
+ const QUALITIES=Object.freeze({compact:{label:'Compact · smaller files',bitrate:800000},
+  balanced:{label:'Balanced · recommended',bitrate:1500000},
+  high:{label:'High · sharper video',bitrate:3000000}});
  const S={tab:'library',local:[],remote:[],urls:new Map(),remoteUrls:new Map(),
   user:null,admin:false,loading:false,busy:false,error:'',message:'',
-  stream:null,recorder:null,recording:false,requesting:false,saving:false,started:0,timer:null,
-  duration:30,hotkey:'Alt+Shift+C',shareId:null};
+  stream:null,recorder:null,recording:false,paused:false,requesting:false,saving:false,
+  started:0,elapsedMs:0,timer:null,tick:null,duration:30,hotkey:'Alt+Shift+C',quality:'balanced',
+  shareId:null,renameId:null,libraryQuery:'',librarySort:'newest',favoriteOnly:false};
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const safeUUID=x=>/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(String(x||''))?String(x):'';
  const id=()=>typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():
@@ -32,7 +36,8 @@
  };
  function settings(){
   try{const d=localStorage.getItem('loliteClipsDuration');if(LENGTHS.includes(Number(d)))S.duration=Number(d);
-   const key=localStorage.getItem('loliteClipsHotkey');if(KEYS.includes(key))S.hotkey=key;}catch(_){}
+   const key=localStorage.getItem('loliteClipsHotkey');if(KEYS.includes(key))S.hotkey=key;
+   const quality=localStorage.getItem('loliteClipsQuality');if(QUALITIES[quality])S.quality=quality;}catch(_){}
  }
  function storeSetting(key,value){try{localStorage.setItem(key,String(value))}catch(_){}}
  function db(){
@@ -65,6 +70,19 @@
   try{S.local=(await allLocal()).sort((a,b)=>b.createdAt-a.createdAt)}
   catch(e){S.local=[];notify(e?.message||'Unable to read saved clips',true)}
  }
+ function recordedMs(){
+  return Math.max(0,S.elapsedMs+(S.recording&&!S.paused?Date.now()-S.started:0));
+ }
+ function remainingSeconds(){return Math.max(0,Math.ceil((S.duration*1000-recordedMs())/1000))}
+ function updateRecordingProgress(){
+  const container=root();
+  const time=container?.querySelector('[data-lc-record-time]');
+  if(time)time.textContent=formatTime(Math.floor(recordedMs()/1000))+' / '+formatTime(S.duration);
+  const bar=container?.querySelector('[data-lc-record-fill]');
+  if(bar)bar.style.width=Math.min(100,100*recordedMs()/(S.duration*1000))+'%';
+  const left=container?.querySelector('[data-lc-record-left]');
+  if(left)left.textContent=S.paused?'Recording paused':remainingSeconds()+' seconds left';
+ }
  function indicator(){
   let button=document.getElementById('loliteClipCaptureStatus');
   if(!button){button=document.createElement('button');button.id='loliteClipCaptureStatus';button.type='button';
@@ -72,9 +90,10 @@
    button.addEventListener('click',()=>window.openApp?.('clips','Lolite Clips',1020,720));
   }
   button.hidden=!S.stream&&!S.recording&&!S.saving;
-  button.className='lc-capture-indicator'+(S.recording?' is-recording':'');
-  button.textContent=S.recording?'● REC · '+Math.max(0,Math.ceil((S.duration*1000-(Date.now()-S.started))/1000))+'s':
+  button.className='lc-capture-indicator'+(S.recording?(S.paused?' is-paused':' is-recording'):'');
+  button.textContent=S.recording?(S.paused?'Ⅱ PAUSED · ':'● REC · ')+remainingSeconds()+'s':
    S.saving?'Saving clip…':'Screen capture on';
+  updateRecordingProgress();
   button.title='Open Lolite Clips to stop recording or capture';
  }
  function activeStream(){return !!S.stream&&S.stream.getVideoTracks().some(track=>track.readyState==='live')}
@@ -84,9 +103,28 @@
   S.stream=null;indicator();render();
  }
  function finish(){
-  S.recording=false;
+  if(S.recording)S.elapsedMs=recordedMs();
+  S.recording=false;S.paused=false;
   clearTimeout(S.timer);clearInterval(S.tick);S.timer=null;S.tick=null;
   indicator();render();
+ }
+ function pauseClip(){
+  if(!S.recording||S.paused||S.recorder?.state!=='recording')return;
+  if(typeof S.recorder.pause!=='function'){notify('Pause is not supported by this browser.',true);return}
+  try{
+   S.elapsedMs=recordedMs();S.recorder.pause();S.paused=true;
+   clearTimeout(S.timer);S.timer=null;
+   indicator();render();notify('Clip paused. Resume when you are ready.');
+  }catch(e){notify('Could not pause: '+(e?.message||e),true)}
+ }
+ function resumeClip(){
+  if(!S.recording||!S.paused||S.recorder?.state!=='paused')return;
+  try{
+   S.recorder.resume();S.started=Date.now();S.paused=false;
+   clearTimeout(S.timer);
+   S.timer=setTimeout(stopClip,Math.max(1,S.duration*1000-S.elapsedMs));
+   indicator();render();notify('Clip recording resumed.');
+  }catch(e){notify('Could not resume: '+(e?.message||e),true)}
  }
  function stopClip(){
   if(!S.recorder||S.recorder.state==='inactive')return;
@@ -111,7 +149,7 @@
      S.stream=null;indicator();render();
     },{once:true});
    }
-   const recorder=new MediaRecorder(S.stream,{mimeType:type,videoBitsPerSecond:1500000,audioBitsPerSecond:96000});
+   const recorder=new MediaRecorder(S.stream,{mimeType:type,videoBitsPerSecond:QUALITIES[S.quality].bitrate,audioBitsPerSecond:96000});
    const chunks=[];S.recorder=recorder;
    const started=Date.now();
    recorder.addEventListener('dataavailable',event=>{if(event.data?.size)chunks.push(event.data)});
@@ -123,7 +161,7 @@
     const blob=new Blob(chunks,{type:recorder.mimeType?.split(';')[0]||type.split(';')[0]});
     if(blob.size){
      const clip={id:id(),title:'Gameplay · '+stamp(started),createdAt:started,
-      duration:Math.max(1,Math.round((Date.now()-started)/1000)),mimeType:blob.type,bytes:blob.size,blob};
+      duration:Math.max(1,Math.round(S.elapsedMs/1000)),mimeType:blob.type,bytes:blob.size,blob,favorite:false};
      try{await saveLocal(clip);S.tab='library';await refreshLocal();notify('Clip saved privately in My Clips.')}
      catch(e){
       const url=URL.createObjectURL(blob),link=document.createElement('a');
@@ -135,9 +173,9 @@
     S.saving=false;S.recorder=null;indicator();render();
    },{once:true});
    recorder.start(1000);
-   S.started=started;S.recording=true;S.tab='record';
-   S.timer=setTimeout(()=>stopClip(),S.duration*1000);
-   S.tick=setInterval(indicator,1000);
+   S.started=started;S.elapsedMs=0;S.paused=false;S.recording=true;S.tab='record';
+   S.timer=setTimeout(stopClip,S.duration*1000);
+   S.tick=setInterval(indicator,500);
    notify('Recording started. Press '+S.hotkey+' again to save your clip.');
    indicator();render();
   }catch(e){
@@ -175,14 +213,43 @@
   }catch(e){S.error=e?.message||'Cannot load shared clips';notify(S.error,true)}
   finally{S.loading=false;render()}
  }
- const formatTime=n=>Math.floor(n/60)+':'+String(Math.floor(n%60)).padStart(2,'0');
+ const formatTime=n=>Math.floor(Number(n||0)/60)+':'+String(Math.floor(Number(n||0)%60)).padStart(2,'0');
+ const localSize=()=>S.local.reduce((total,clip)=>total+(Number(clip.bytes)||0),0);
+ function visibleClips(){
+  const query=S.libraryQuery.trim().toLowerCase();
+  const list=S.local.filter(clip=>(!S.favoriteOnly||!!clip.favorite)&&
+   (!query||String(clip.title||'').toLowerCase().includes(query)));
+  const sort=S.librarySort;
+  list.sort((a,b)=>sort==='oldest'?a.createdAt-b.createdAt:
+   sort==='largest'?b.bytes-a.bytes:
+   sort==='favorites'?Number(!!b.favorite)-Number(!!a.favorite)||b.createdAt-a.createdAt:
+   b.createdAt-a.createdAt);
+  return list;
+ }
+ function libraryToolbar(){
+  return '<div class="lc-library-stats"><span>'+S.local.length+' saved clips</span><span>'+size(localSize())+' stored locally</span>'+
+   '<span>'+S.local.filter(item=>item.favorite).length+' favourites</span></div>'+
+   '<div class="lc-library-tools"><label>Find a clip<input type="search" data-lc-filter="search" placeholder="Search your recordings" value="'+esc(S.libraryQuery)+'"></label>'+
+   '<label>Sort by<select data-lc-filter="sort">'+[
+    ['newest','Newest first'],['oldest','Oldest first'],['largest','Largest files'],['favorites','Favourites first']
+   ].map(([id,label])=>'<option value="'+id+'"'+(S.librarySort===id?' selected':'')+'>'+label+'</option>').join('')+
+   '</select></label><label class="lc-favorites-only"><input type="checkbox" data-lc-filter="favorites"'+
+   (S.favoriteOnly?' checked':'')+'> Favourites only</label></div>';
+ }
  function localCard(clip){
   const url=URL.createObjectURL(clip.blob);S.urls.set(clip.id,url);
   return '<article class="lc-card"><video controls playsinline preload="metadata" src="'+esc(url)+'" aria-label="'+esc(clip.title)+'"></video>'+
-   '<div class="lc-card-body"><h3>'+esc(clip.title)+'</h3><p>'+esc(stamp(clip.createdAt))+' · '+formatTime(clip.duration)+' · '+size(clip.bytes)+'</p>'+
+   '<div class="lc-card-body"><div class="lc-clip-heading"><h3>'+esc(clip.title)+'</h3>'+
+   (clip.favorite?'<span class="lc-favorite-mark" title="Favourite clip">★</span>':'')+'</div>'+
+   '<p>'+esc(stamp(clip.createdAt))+' · '+formatTime(clip.duration)+' · '+size(clip.bytes)+'</p>'+
    '<div class="lc-actions"><button data-lc-action="download" data-lc-id="'+esc(clip.id)+'">Download</button>'+
+   '<button data-lc-action="rename" data-lc-id="'+esc(clip.id)+'">Rename</button>'+
+   '<button data-lc-action="favorite" data-lc-id="'+esc(clip.id)+'" aria-pressed="'+!!clip.favorite+'">'+(clip.favorite?'★ Favourited':'☆ Favourite')+'</button>'+
    '<button data-lc-action="share" data-lc-id="'+esc(clip.id)+'" '+(clip.bytes>MAX_UPLOAD?'disabled title="Clip exceeds the 20 MB sharing limit"':'')+'>Share</button>'+
    '<button class="lc-danger" data-lc-action="delete-local" data-lc-id="'+esc(clip.id)+'">Delete</button></div>'+
+   (S.renameId===clip.id?'<form data-lc-rename="'+esc(clip.id)+'" class="lc-rename-form">'+
+    '<label>New clip name<input name="title" required maxlength="100" value="'+esc(clip.title.slice(0,100))+'"></label>'+
+    '<button class="lc-primary" type="submit">Save name</button></form>':'')+
    (S.shareId===clip.id?'<form data-lc-share="'+esc(clip.id)+'" class="lc-share-form">'+
     '<label>Clip title<input name="title" required minlength="3" maxlength="100" value="'+esc(clip.title.slice(0,100))+'"></label>'+
     '<label class="lc-consent"><input type="checkbox" name="confirm" required> I checked that this clip contains no private information and I have permission to share it.</label>'+
@@ -211,9 +278,17 @@
    '<span class="lc-live '+(S.recording?'on':'')+'">'+(S.recording?'● REC':activeStream()?'Capture active':'Not recording')+'</span></section>'+
    '<div class="lc-controls"><button class="lc-primary" data-lc-action="toggle" '+(S.saving||S.requesting?'disabled':'')+'>'+
     (S.recording?'■ Stop & save clip':'● Start recording')+'</button>'+
+   (S.recording?'<button data-lc-action="'+(S.paused?'resume':'pause')+'">'+
+    (S.paused?'▶ Resume recording':'Ⅱ Pause recording')+'</button>':'')+
    (activeStream()?'<button data-lc-action="stop-capture">Stop sharing screen</button>':'')+'</div>'+
-   '<div class="lc-settings"><label>Recording limit<select data-lc-setting="duration">'+
+   (S.recording?'<div class="lc-record-progress"><div class="lc-record-progress-top"><strong data-lc-record-time>'+
+    formatTime(Math.floor(recordedMs()/1000))+' / '+formatTime(S.duration)+'</strong><span data-lc-record-left>'+
+    (S.paused?'Recording paused':remainingSeconds()+' seconds left')+'</span></div>'+
+    '<div class="lc-record-track"><div data-lc-record-fill style="width:'+Math.min(100,100*recordedMs()/(S.duration*1000))+'%"></div></div></div>':'')+
+   '<div class="lc-settings"><label>Recording limit<select data-lc-setting="duration" '+(S.recording?'disabled':'')+'>'+
     LENGTHS.map(n=>'<option value="'+n+'"'+(n===S.duration?' selected':'')+'>'+n+' seconds</option>').join('')+
+   '</select></label><label>Video quality<select data-lc-setting="quality" '+(S.recording?'disabled':'')+'>'+
+    Object.entries(QUALITIES).map(([name,info])=>'<option value="'+name+'"'+(name===S.quality?' selected':'')+'>'+info.label+'</option>').join('')+
    '</select></label><label>Keyboard shortcut<select data-lc-setting="hotkey">'+KEYS.map(k=>'<option'+(k===S.hotkey?' selected':'')+'>'+k+'</option>').join('')+
    '</select></label></div>'+
    '<div class="lc-help"><h3>How it works</h3><p>Press <kbd>'+esc(S.hotkey)+'</kbd> while Lolite has keyboard focus, or use the button above. Choose the game tab or window when your browser asks. Press the shortcut again to stop, or the clip will finish automatically at your limit.</p>'+
@@ -237,7 +312,10 @@
    '<main class="lc-main"><div data-lc-message role="status" aria-live="polite" class="lc-message'+(S.error?' is-error':'')+'">'+esc(S.message)+'</div>'+
    (S.tab==='record'?capturePanel():
     S.tab==='library'?'<div class="lc-section-heading"><h2>My Clips</h2><p>Saved only in this browser. Download any important clips as backup.</p></div>'+
-     '<div class="lc-grid">'+(S.local.length?S.local.map(localCard).join(''):'<div class="lc-empty">No clips yet. Open Record and capture your first game moment.</div>')+'</div>':
+     libraryToolbar()+
+     '<div class="lc-grid">'+(visibleClips().length?visibleClips().map(localCard).join(''):
+      '<div class="lc-empty">'+(S.local.length?'No clips match your filters. Try a different search.':
+      'No clips yet. Open Record and capture your first game moment.')+'</div>')+'</div>':
     '<div class="lc-section-heading"><h2>'+(S.tab==='review'?'Clip moderation':'Community Clips')+'</h2>'+
      '<p>'+(S.tab==='review'?'Approve videos before they become visible to the community.':'Only admin-approved clips appear here. Uploads are shared only when you explicitly submit them.')+'</p></div>'+
     (!S.user?'<div class="lc-empty">Sign in with your Lolite account to see and share community clips. <button data-lc-action="signin">Open Lolite Chat</button></div>':
@@ -298,9 +376,23 @@
   }catch(e){notify('Could not remove shared clip: '+(e?.message||e),true)}
   finally{S.busy=false;render()}
  }
+ async function updateLocal(clipId,changes){
+  const clip=S.local.find(item=>item.id===clipId);if(!clip)return;
+  await saveLocal({...clip,...changes});
+  await refreshLocal();render();
+ }
+ async function renameClip(form){
+  const clipId=safeUUID(form.dataset.lcRename);
+  const title=String(form.elements.title.value||'').trim().replace(/\s+/g,' ');
+  if(!clipId||!title||title.length>100){notify('Choose a clip name up to 100 characters.',true);return}
+  try{await updateLocal(clipId,{title});S.renameId=null;render();notify('Clip renamed.')}
+  catch(e){notify('Could not rename the clip: '+(e?.message||e),true)}
+ }
  function download(clip){
   const url=URL.createObjectURL(clip.blob),a=document.createElement('a');
-  a.href=url;a.download='lolite-clip-'+clip.createdAt+(clip.mimeType==='video/mp4'?'.mp4':'.webm');
+  const name=String(clip.title||'clip').normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
+   .replace(/[^a-zA-Z0-9 -]/g,'').trim().replace(/\s+/g,'-').slice(0,64)||'clip';
+  a.href=url;a.download=name+'-'+clip.createdAt+(clip.mimeType==='video/mp4'?'.mp4':'.webm');
   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
  }
  document.addEventListener('click',event=>{
@@ -310,12 +402,19 @@
   const button=event.target.closest('[data-lc-action]');if(!button)return;
   const action=button.dataset.lcAction,clipId=safeUUID(button.dataset.lcId);
   if(action==='toggle'){if(S.recording)stopClip();else void beginClip();return}
+  if(action==='pause'){pauseClip();return}
+  if(action==='resume'){resumeClip();return}
   if(action==='stop-capture'){stopCapture();return}
   if(action==='refresh'){void refreshLocal().then(()=>refreshCloud());return}
   if(action==='signin'){window.openApp?.('chatroom','Lolite Chat',1000,680);return}
   if(!clipId)return;
   const clip=S.local.find(c=>c.id===clipId);
   if(action==='download'&&clip){download(clip);return}
+  if(action==='rename'&&clip){S.renameId=S.renameId===clipId?null:clipId;render();return}
+  if(action==='favorite'&&clip){
+   void updateLocal(clipId,{favorite:!clip.favorite}).then(()=>notify(clip.favorite?'Removed from favourites.':'Added to favourites.'))
+    .catch(e=>notify('Could not update favourites: '+(e?.message||e),true));return;
+  }
   if(action==='share'&&clip){S.shareId=S.shareId===clipId?null:clipId;render();return}
   if(action==='delete-local'&&clip){
    if(confirm('Delete this clip from this browser? Download it first if you want to keep it.')){
@@ -327,13 +426,33 @@
   if(action==='remove-cloud')void removeCloud(clipId);
  });
  document.addEventListener('submit',event=>{
+  const rename=event.target.closest?.('#lcRoot form[data-lc-rename]');
+  if(rename){event.preventDefault();void renameClip(rename);return}
   const form=event.target.closest?.('#lcRoot form[data-lc-share]');if(!form)return;
   event.preventDefault();void share(form);
  });
+ document.addEventListener('input',event=>{
+  const input=event.target.closest?.('#lcRoot [data-lc-filter="search"]');
+  if(!input)return;
+  S.libraryQuery=input.value;
+  const cursor=input.selectionStart;
+  render();
+  const restored=root()?.querySelector('[data-lc-filter="search"]');
+  if(restored){restored.focus();if(Number.isInteger(cursor))restored.setSelectionRange(cursor,cursor)}
+ });
  document.addEventListener('change',event=>{
+  const filter=event.target.closest?.('#lcRoot [data-lc-filter]');
+  if(filter){
+   if(filter.dataset.lcFilter==='sort'&&['newest','oldest','largest','favorites'].includes(filter.value))
+    S.librarySort=filter.value;
+   if(filter.dataset.lcFilter==='favorites')S.favoriteOnly=filter.checked;
+   render();return;
+  }
   const field=event.target.closest?.('#lcRoot [data-lc-setting]');if(!field)return;
   if(field.dataset.lcSetting==='duration'&&LENGTHS.includes(Number(field.value))){
    S.duration=Number(field.value);storeSetting('loliteClipsDuration',S.duration);
+  }else if(field.dataset.lcSetting==='quality'&&QUALITIES[field.value]&&!S.recording){
+   S.quality=field.value;storeSetting('loliteClipsQuality',S.quality);
   }else if(field.dataset.lcSetting==='hotkey'&&KEYS.includes(field.value)){
    S.hotkey=field.value;storeSetting('loliteClipsHotkey',S.hotkey);
   }
@@ -389,5 +508,6 @@
  settings();
  client()?.auth.onAuthStateChange(()=>{setTimeout(()=>{if(root())void refreshCloud()},0)});
  window.LoliteClips=Object.freeze({open:()=>window.openApp?.('clips','Lolite Clips',1020,720),stop:stopClip,stopCapture,
-  status:()=>({recording:S.recording,captureActive:activeStream(),shortcut:S.hotkey})});
+  status:()=>({recording:S.recording,paused:S.paused,elapsedSeconds:Math.floor(recordedMs()/1000),
+   captureActive:activeStream(),shortcut:S.hotkey,quality:S.quality})});
 })();
