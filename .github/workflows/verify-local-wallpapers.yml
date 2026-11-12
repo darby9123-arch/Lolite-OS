@@ -10,6 +10,7 @@ on:
       - 'core/interactive-wallpapers.js'
       - 'core/uploaded-wallpapers-catalog.js'
       - 'core/wallpapers.js'
+      - 'core/wallpaper-loop.js'
       - 'core/wallpaper-colors.js'
       - 'core/wallpaper-colors.css'
       - 'core/settings-enhanced.js'
@@ -31,6 +32,7 @@ on:
       - 'core/interactive-wallpapers.js'
       - 'core/uploaded-wallpapers-catalog.js'
       - 'core/wallpapers.js'
+      - 'core/wallpaper-loop.js'
       - 'core/wallpaper-colors.js'
       - 'core/wallpaper-colors.css'
       - 'core/settings-enhanced.js'
@@ -60,6 +62,7 @@ jobs:
           node --check core/interactive-wallpapers.js
           node --check core/uploaded-wallpapers-catalog.js
           node --check core/wallpapers.js
+          node --check core/wallpaper-loop.js
           node --check core/wallpaper-colors.js
           node --check core/crimson.js
       - name: Verify 840 wallpaper entries, playback, preferences and sound compatibility
