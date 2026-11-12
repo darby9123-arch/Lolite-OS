@@ -26,7 +26,7 @@ function harness({storage=new Map(),version='v1',failWrites=false}={}){
   group:'MotionBGS',video:'https://example.com/city.mp4',poster:'https://example.com/city.jpg',src:'https://example.com/city.jpg'};
  const win={
   LoliteLivelyWallpapers:catalog,LoliteMotionBGSEmbeds:{catalog:[embedded]},
-  page:()=>'<div>old app</div>',dispatchEvent:event=>events.push(event),toast:message=>events.push({type:'toast',message})
+  page:()=>'<div>old app</div>',dispatchEvent:event=>events.push(event),addEventListener(){},toast:message=>events.push({type:'toast',message})
  };
  const doc={
   documentElement:{classList:{contains:()=>false},dataset:{},style:{}},
