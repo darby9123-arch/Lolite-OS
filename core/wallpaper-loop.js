@@ -2,16 +2,18 @@
  * previous decoder seeks back to frame zero. No reloading video elements on loop. */
 (()=>{
  'use strict';
- function create({target,sources,poster,onStatus}){
+ function create({target,sources,poster,onStatus,dual=true}){
   const urls=(Array.isArray(sources)?sources:[]).filter(Boolean);
   if(!target||!urls.length)throw Error('Missing hosted wallpaper video.');
   let destroyed=false,active=false,swapping=false,loopTimer=0,fadeTimer=0,serial=0,sourceIndex=0;
-  const els=[document.createElement('video'),document.createElement('video')];
-  let current=els[0],next=els[1];
+  // A single decoder is sufficient for Balanced and Performance playback.
+  // Keep the two-decoder seamless crossfade only for explicitly selected Max quality.
+  const els=dual?[document.createElement('video'),document.createElement('video')]:[document.createElement('video')];
+  let current=els[0],next=els[1]||null;
   function configure(el){
    el.className='lolite-live-video';
    el.muted=true;el.defaultMuted=true;el.playsInline=true;el.loop=true;
-   el.preload='auto';el.poster=poster||'';
+   el.preload=dual?'auto':'metadata';el.poster=poster||'';
    el.setAttribute('playsinline','');
    el.setAttribute('aria-hidden','true');
    el.setAttribute('disablepictureinpicture','');
@@ -38,7 +40,7 @@
    sourceIndex++;stop();changeSource();if(active)sync(true);
   }
   function check(){
-   if(destroyed||!active||swapping||current.paused||!Number.isFinite(current.duration))return;
+   if(destroyed||!active||!next||swapping||current.paused||!Number.isFinite(current.duration))return;
    const duration=current.duration;
    if(duration<.9)return; // Avoid two simultaneous decoders for extremely short clips.
    const lead=Math.max(.25,Math.min(.55,duration*.085));
@@ -46,7 +48,7 @@
    swap();
   }
   async function swap(){
-   if(swapping||destroyed||!active)return;
+   if(!next||swapping||destroyed||!active)return;
    swapping=true;
    const ticket=++serial,leaving=current,entering=next;
    try{
@@ -89,7 +91,7 @@
    ++serial;clearInterval(loopTimer);loopTimer=0;
    clearTimeout(fadeTimer);fadeTimer=0;
    for(const el of els)el.pause();
-   if(swapping){
+   if(swapping&&next){
     current.style.opacity='1';current.style.zIndex='2';
     next.style.opacity='0';next.style.zIndex='1';
     swapping=false;
@@ -99,11 +101,11 @@
    if(destroyed)return;
    const shouldPlay=Boolean(enabled);
    if(!shouldPlay){active=false;stop();onStatus?.('Paused · Live motion is off');return}
-   if(active&&loopTimer)return;
+   if(active&&(loopTimer||!next))return;
    active=true;
    current.style.opacity='1';current.style.zIndex='2';
    next.style.opacity='0';next.style.zIndex='1';
-   loopTimer=setInterval(check,85);
+   if(next)loopTimer=setInterval(check,85);
    Promise.resolve(current.play()).then(()=>{
     if(!destroyed&&active)onStatus?.('Playing · Buffered seamless video loop');
    }).catch(error=>{
