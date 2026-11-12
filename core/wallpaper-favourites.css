@@ -1,0 +1,34 @@
+/* Wallpaper favourites — scoped to the Settings wallpaper collection. */
+.cr-wall-item{position:relative}
+.cr-wall-item .cr-wall-favourite{
+ position:absolute;top:9px;right:9px;z-index:5;
+ width:35px;height:35px;display:grid;place-items:center;
+ border:1px solid #ffffff73;border-radius:10px;
+ background:#111824dc;color:#f9fbff;box-shadow:0 3px 10px #0007;
+ font:700 23px/1 system-ui;cursor:pointer;
+ backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+ transition:background-color .15s,border-color .15s,transform .15s;
+}
+.cr-wall-item .cr-wall-favourite:hover{background:#38304de8;border-color:#ffe2ff;transform:translateY(-1px)}
+.cr-wall-item .cr-wall-favourite.is-favourite{
+ color:#ffb4d3;border-color:#ff91be;background:#3d203fe8;
+}
+.cr-wall-item .cr-wall-favourite:focus-visible,
+.cr-now-playing .cr-wall-current-favourite:focus-visible{
+ outline:2px solid var(--accent,#86a5ee);outline-offset:3px;
+}
+.cr-now-playing .cr-wall-current-favourite{
+ display:inline-flex;align-items:center;gap:7px;width:fit-content;
+ margin:10px 0 0;padding:7px 11px;border:1px solid #77768c;
+ border-radius:8px;background:#ffffff13;color:#f1e9f6;
+ font:650 11px/1.2 system-ui;cursor:pointer;
+}
+.cr-now-playing .cr-wall-current-favourite span[aria-hidden]{font-size:17px;line-height:1}
+.cr-now-playing .cr-wall-current-favourite.is-favourite{
+ border-color:#d87fa6;background:#b94b7d28;color:#ffcee5;
+}
+.cr-filter [data-wall-filter="Favourites"][aria-pressed="true"]{
+ border-color:var(--accent,#d68bb3);
+}
+@media(hover:none){.cr-wall-item .cr-wall-favourite{min-width:40px;min-height:40px}}
+@media(prefers-reduced-motion:reduce){.cr-wall-item .cr-wall-favourite{transition:none!important}}
