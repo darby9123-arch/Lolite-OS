@@ -17,7 +17,7 @@
  const safeUUID=x=>/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(String(x||''))?String(x):'';
  const id=()=>typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():
   'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>Math.floor(c==='x'?Math.random()*16:8+Math.random()*4).toString(16));
- const root=()=>document.querySelector('.window[data-window-id="clips"] #lcRoot')||document.getElementById('lcRoot');
+ const root=()=>document.querySelector('.window[data-window-id="clips"] #loliteClipsRoot')||document.getElementById('loliteClipsRoot');
  const client=()=>window.LoliteBrowserAccounts?.getClient?.();
  const media=()=>typeof MediaRecorder!=='undefined'&&!!navigator.mediaDevices?.getDisplayMedia;
  const mime=()=>{
@@ -31,7 +31,7 @@
  const size=n=>(n/1048576).toFixed(1)+' MB';
  const notify=(message,error=false)=>{
   S.message=message;S.error=error?message:'';
-  const area=root()?.querySelector('[data-lc-message]');if(area){area.textContent=message;area.classList.toggle('is-error',error)}
+  const area=root()?.querySelector('[data-lclip-message]');if(area){area.textContent=message;area.classList.toggle('is-error',error)}
   window.toast?.(message);
  };
  function settings(){
@@ -76,11 +76,11 @@
  function remainingSeconds(){return Math.max(0,Math.ceil((S.duration*1000-recordedMs())/1000))}
  function updateRecordingProgress(){
   const container=root();
-  const time=container?.querySelector('[data-lc-record-time]');
+  const time=container?.querySelector('[data-lclip-record-time]');
   if(time)time.textContent=formatTime(Math.floor(recordedMs()/1000))+' / '+formatTime(S.duration);
-  const bar=container?.querySelector('[data-lc-record-fill]');
+  const bar=container?.querySelector('[data-lclip-record-fill]');
   if(bar)bar.style.width=Math.min(100,100*recordedMs()/(S.duration*1000))+'%';
-  const left=container?.querySelector('[data-lc-record-left]');
+  const left=container?.querySelector('[data-lclip-record-left]');
   if(left)left.textContent=S.paused?'Recording paused':remainingSeconds()+' seconds left';
  }
  function indicator(){
@@ -90,7 +90,7 @@
    button.addEventListener('click',()=>window.openApp?.('clips','Lolite Clips',1020,720));
   }
   button.hidden=!S.stream&&!S.recording&&!S.saving;
-  button.className='lc-capture-indicator'+(S.recording?(S.paused?' is-paused':' is-recording'):'');
+  button.className='lclip-capture-indicator'+(S.recording?(S.paused?' is-paused':' is-recording'):'');
   button.textContent=S.recording?(S.paused?'Ⅱ PAUSED · ':'● REC · ')+remainingSeconds()+'s':
    S.saving?'Saving clip…':'Screen capture on';
   updateRecordingProgress();
@@ -227,71 +227,71 @@
   return list;
  }
  function libraryToolbar(){
-  return '<div class="lc-library-stats"><span>'+S.local.length+' saved clips</span><span>'+size(localSize())+' stored locally</span>'+
+  return '<div class="lclip-library-stats"><span>'+S.local.length+' saved clips</span><span>'+size(localSize())+' stored locally</span>'+
    '<span>'+S.local.filter(item=>item.favorite).length+' favourites</span></div>'+
-   '<div class="lc-library-tools"><label>Find a clip<input type="search" data-lc-filter="search" placeholder="Search your recordings" value="'+esc(S.libraryQuery)+'"></label>'+
-   '<label>Sort by<select data-lc-filter="sort">'+[
+   '<div class="lclip-library-tools"><label>Find a clip<input type="search" data-lclip-filter="search" placeholder="Search your recordings" value="'+esc(S.libraryQuery)+'"></label>'+
+   '<label>Sort by<select data-lclip-filter="sort">'+[
     ['newest','Newest first'],['oldest','Oldest first'],['largest','Largest files'],['favorites','Favourites first']
    ].map(([id,label])=>'<option value="'+id+'"'+(S.librarySort===id?' selected':'')+'>'+label+'</option>').join('')+
-   '</select></label><label class="lc-favorites-only"><input type="checkbox" data-lc-filter="favorites"'+
+   '</select></label><label class="lclip-favorites-only"><input type="checkbox" data-lclip-filter="favorites"'+
    (S.favoriteOnly?' checked':'')+'> Favourites only</label></div>';
  }
  function localCard(clip){
   const url=URL.createObjectURL(clip.blob);S.urls.set(clip.id,url);
-  return '<article class="lc-card"><video controls playsinline preload="metadata" src="'+esc(url)+'" aria-label="'+esc(clip.title)+'"></video>'+
-   '<div class="lc-card-body"><div class="lc-clip-heading"><h3>'+esc(clip.title)+'</h3>'+
-   (clip.favorite?'<span class="lc-favorite-mark" title="Favourite clip">★</span>':'')+'</div>'+
+  return '<article class="lclip-card"><video controls playsinline preload="metadata" src="'+esc(url)+'" aria-label="'+esc(clip.title)+'"></video>'+
+   '<div class="lclip-card-body"><div class="lclip-clip-heading"><h3>'+esc(clip.title)+'</h3>'+
+   (clip.favorite?'<span class="lclip-favorite-mark" title="Favourite clip">★</span>':'')+'</div>'+
    '<p>'+esc(stamp(clip.createdAt))+' · '+formatTime(clip.duration)+' · '+size(clip.bytes)+'</p>'+
-   '<div class="lc-actions"><button data-lc-action="download" data-lc-id="'+esc(clip.id)+'">Download</button>'+
-   '<button data-lc-action="rename" data-lc-id="'+esc(clip.id)+'">Rename</button>'+
-   '<button data-lc-action="favorite" data-lc-id="'+esc(clip.id)+'" aria-pressed="'+!!clip.favorite+'">'+(clip.favorite?'★ Favourited':'☆ Favourite')+'</button>'+
-   '<button data-lc-action="share" data-lc-id="'+esc(clip.id)+'" '+(clip.bytes>MAX_UPLOAD?'disabled title="Clip exceeds the 20 MB sharing limit"':'')+'>Share</button>'+
-   '<button class="lc-danger" data-lc-action="delete-local" data-lc-id="'+esc(clip.id)+'">Delete</button></div>'+
-   (S.renameId===clip.id?'<form data-lc-rename="'+esc(clip.id)+'" class="lc-rename-form">'+
+   '<div class="lclip-actions"><button data-lclip-action="download" data-lclip-id="'+esc(clip.id)+'">Download</button>'+
+   '<button data-lclip-action="rename" data-lclip-id="'+esc(clip.id)+'">Rename</button>'+
+   '<button data-lclip-action="favorite" data-lclip-id="'+esc(clip.id)+'" aria-pressed="'+!!clip.favorite+'">'+(clip.favorite?'★ Favourited':'☆ Favourite')+'</button>'+
+   '<button data-lclip-action="share" data-lclip-id="'+esc(clip.id)+'" '+(clip.bytes>MAX_UPLOAD?'disabled title="Clip exceeds the 20 MB sharing limit"':'')+'>Share</button>'+
+   '<button class="lclip-danger" data-lclip-action="delete-local" data-lclip-id="'+esc(clip.id)+'">Delete</button></div>'+
+   (S.renameId===clip.id?'<form data-lclip-rename="'+esc(clip.id)+'" class="lclip-rename-form">'+
     '<label>New clip name<input name="title" required maxlength="100" value="'+esc(clip.title.slice(0,100))+'"></label>'+
-    '<button class="lc-primary" type="submit">Save name</button></form>':'')+
-   (S.shareId===clip.id?'<form data-lc-share="'+esc(clip.id)+'" class="lc-share-form">'+
+    '<button class="lclip-primary" type="submit">Save name</button></form>':'')+
+   (S.shareId===clip.id?'<form data-lclip-share="'+esc(clip.id)+'" class="lclip-share-form">'+
     '<label>Clip title<input name="title" required minlength="3" maxlength="100" value="'+esc(clip.title.slice(0,100))+'"></label>'+
-    '<label class="lc-consent"><input type="checkbox" name="confirm" required> I checked that this clip contains no private information and I have permission to share it.</label>'+
+    '<label class="lclip-consent"><input type="checkbox" name="confirm" required> I checked that this clip contains no private information and I have permission to share it.</label>'+
     '<small>Community uploads require a Lolite account and admin approval. Maximum upload: 20 MB.</small>'+
-    '<button type="submit" class="lc-primary" '+(S.busy?'disabled':'')+'>Submit for review</button></form>':'')+
+    '<button type="submit" class="lclip-primary" '+(S.busy?'disabled':'')+'>Submit for review</button></form>':'')+
    '</div></article>';
  }
  function remoteCard(clip){
   const mine=clip.uploader_id===S.user?.id,url=S.remoteUrls.get(clip.id);
-  return '<article class="lc-card lc-cloud-card">'+
+  return '<article class="lclip-card lclip-cloud-card">'+
    (url?'<video controls playsinline preload="metadata" src="'+esc(url)+'" aria-label="'+esc(clip.title)+'"></video>':
-    '<div class="lc-preview-missing">Video preview unavailable. Refresh to retry.</div>')+
-   '<div class="lc-card-body"><div class="lc-topline"><span class="lc-status lc-status-'+esc(clip.status)+'">'+
+    '<div class="lclip-preview-missing">Video preview unavailable. Refresh to retry.</div>')+
+   '<div class="lclip-card-body"><div class="lclip-topline"><span class="lclip-status lclip-status-'+esc(clip.status)+'">'+
     (clip.status==='approved'?'Published':clip.status==='pending'?'Pending review':'Not approved')+'</span>'+
-    (mine?'<span class="lc-mine">Your upload</span>':'')+'</div>'+
+    (mine?'<span class="lclip-mine">Your upload</span>':'')+'</div>'+
    '<h3>'+esc(clip.title)+'</h3><p>'+esc(stamp(clip.created_at))+' · '+formatTime(clip.duration_seconds)+' · '+size(clip.file_bytes)+'</p>'+
-   '<div class="lc-actions">'+
-    (mine||S.admin?'<button class="lc-danger" data-lc-action="remove-cloud" data-lc-id="'+esc(clip.id)+'">Remove</button>':'')+
-    (S.admin&&clip.status==='pending'?'<button data-lc-action="moderate" data-lc-status="approved" data-lc-id="'+esc(clip.id)+'">Approve</button>'+
-    '<button class="lc-danger" data-lc-action="moderate" data-lc-status="rejected" data-lc-id="'+esc(clip.id)+'">Reject</button>':'')+
+   '<div class="lclip-actions">'+
+    (mine||S.admin?'<button class="lclip-danger" data-lclip-action="remove-cloud" data-lclip-id="'+esc(clip.id)+'">Remove</button>':'')+
+    (S.admin&&clip.status==='pending'?'<button data-lclip-action="moderate" data-lclip-status="approved" data-lclip-id="'+esc(clip.id)+'">Approve</button>'+
+    '<button class="lclip-danger" data-lclip-action="moderate" data-lclip-status="rejected" data-lclip-id="'+esc(clip.id)+'">Reject</button>':'')+
    '</div></div></article>';
  }
  function capturePanel(){
-  return '<section class="lc-hero"><div><div class="lc-kicker">RECORD · SAVE · SHARE</div><h2>Clip your gameplay.</h2>'+
+  return '<section class="lclip-hero"><div><div class="lclip-kicker">RECORD · SAVE · SHARE</div><h2>Clip your gameplay.</h2>'+
    '<p>Choose the game tab or screen in the browser permission window. Your recording stays on this device unless you choose to upload it.</p></div>'+
-   '<span class="lc-live '+(S.recording?'on':'')+'">'+(S.recording?'● REC':activeStream()?'Capture active':'Not recording')+'</span></section>'+
-   '<div class="lc-controls"><button class="lc-primary" data-lc-action="toggle" '+(S.saving||S.requesting?'disabled':'')+'>'+
+   '<span class="lclip-live '+(S.recording?'on':'')+'">'+(S.recording?'● REC':activeStream()?'Capture active':'Not recording')+'</span></section>'+
+   '<div class="lclip-controls"><button class="lclip-primary" data-lclip-action="toggle" '+(S.saving||S.requesting?'disabled':'')+'>'+
     (S.recording?'■ Stop & save clip':'● Start recording')+'</button>'+
-   (S.recording?'<button data-lc-action="'+(S.paused?'resume':'pause')+'">'+
+   (S.recording?'<button data-lclip-action="'+(S.paused?'resume':'pause')+'">'+
     (S.paused?'▶ Resume recording':'Ⅱ Pause recording')+'</button>':'')+
-   (activeStream()?'<button data-lc-action="stop-capture">Stop sharing screen</button>':'')+'</div>'+
-   (S.recording?'<div class="lc-record-progress"><div class="lc-record-progress-top"><strong data-lc-record-time>'+
-    formatTime(Math.floor(recordedMs()/1000))+' / '+formatTime(S.duration)+'</strong><span data-lc-record-left>'+
+   (activeStream()?'<button data-lclip-action="stop-capture">Stop sharing screen</button>':'')+'</div>'+
+   (S.recording?'<div class="lclip-record-progress"><div class="lclip-record-progress-top"><strong data-lclip-record-time>'+
+    formatTime(Math.floor(recordedMs()/1000))+' / '+formatTime(S.duration)+'</strong><span data-lclip-record-left>'+
     (S.paused?'Recording paused':remainingSeconds()+' seconds left')+'</span></div>'+
-    '<div class="lc-record-track"><div data-lc-record-fill style="width:'+Math.min(100,100*recordedMs()/(S.duration*1000))+'%"></div></div></div>':'')+
-   '<div class="lc-settings"><label>Recording limit<select data-lc-setting="duration" '+(S.recording?'disabled':'')+'>'+
+    '<div class="lclip-record-track"><div data-lclip-record-fill style="width:'+Math.min(100,100*recordedMs()/(S.duration*1000))+'%"></div></div></div>':'')+
+   '<div class="lclip-settings"><label>Recording limit<select data-lclip-setting="duration" '+(S.recording?'disabled':'')+'>'+
     LENGTHS.map(n=>'<option value="'+n+'"'+(n===S.duration?' selected':'')+'>'+n+' seconds</option>').join('')+
-   '</select></label><label>Video quality<select data-lc-setting="quality" '+(S.recording?'disabled':'')+'>'+
+   '</select></label><label>Video quality<select data-lclip-setting="quality" '+(S.recording?'disabled':'')+'>'+
     Object.entries(QUALITIES).map(([name,info])=>'<option value="'+name+'"'+(name===S.quality?' selected':'')+'>'+info.label+'</option>').join('')+
-   '</select></label><label>Keyboard shortcut<select data-lc-setting="hotkey">'+KEYS.map(k=>'<option'+(k===S.hotkey?' selected':'')+'>'+k+'</option>').join('')+
+   '</select></label><label>Keyboard shortcut<select data-lclip-setting="hotkey">'+KEYS.map(k=>'<option'+(k===S.hotkey?' selected':'')+'>'+k+'</option>').join('')+
    '</select></label></div>'+
-   '<div class="lc-help"><h3>How it works</h3><p>Press <kbd>'+esc(S.hotkey)+'</kbd> while Lolite has keyboard focus, or use the button above. Choose the game tab or window when your browser asks. Press the shortcut again to stop, or the clip will finish automatically at your limit.</p>'+
+   '<div class="lclip-help"><h3>How it works</h3><p>Press <kbd>'+esc(S.hotkey)+'</kbd> while Lolite has keyboard focus, or use the button above. Choose the game tab or window when your browser asks. Press the shortcut again to stop, or the clip will finish automatically at your limit.</p>'+
    '<p>Keep the chosen game tab visible and check what you are sharing. Game sound is captured only when the browser supports it and you allow audio. Cross-origin games may still block keyboard shortcuts while their iframe has focus; use the capture controls in that case.</p>'+
    '<p>This records from when you start it; it does <strong>not</strong> retroactively capture gameplay before the shortcut was pressed.</p></div>';
  }
@@ -304,28 +304,28 @@
   const mineUploads=S.remote.filter(c=>c.uploader_id===S.user?.id&&c.status!=='approved');
   const remoteItems=S.tab==='review'?(S.admin?S.remote:[]):
    S.tab==='community'?published:[];
-  el.innerHTML='<div class="lc-header"><div><small>LOLITE OS · GAMING</small><h1>Lolite Clips</h1><p>Record moments, save them privately and share the best ones.</p></div>'+
-   '<span class="lc-count">'+S.local.length+' local clips</span></div>'+
-   '<nav class="lc-nav">'+tabs.map(([tab,label])=>'<button data-lc-tab="'+tab+'" class="'+(S.tab===tab?'active':'')+'">'+label+
+  el.innerHTML='<div class="lclip-header"><div><small>LOLITE OS · GAMING</small><h1>Lolite Clips</h1><p>Record moments, save them privately and share the best ones.</p></div>'+
+   '<span class="lclip-count">'+S.local.length+' local clips</span></div>'+
+   '<nav class="lclip-nav">'+tabs.map(([tab,label])=>'<button data-lclip-tab="'+tab+'" class="'+(S.tab===tab?'active':'')+'">'+label+
     (tab==='review'&&S.admin&&pending.length?' ('+pending.length+')':'')+'</button>').join('')+
-   '<button class="lc-refresh" data-lc-action="refresh">↻ Refresh</button></nav>'+
-   '<main class="lc-main"><div data-lc-message role="status" aria-live="polite" class="lc-message'+(S.error?' is-error':'')+'">'+esc(S.message)+'</div>'+
+   '<button class="lclip-refresh" data-lclip-action="refresh">↻ Refresh</button></nav>'+
+   '<main class="lclip-main"><div data-lclip-message role="status" aria-live="polite" class="lclip-message'+(S.error?' is-error':'')+'">'+esc(S.message)+'</div>'+
    (S.tab==='record'?capturePanel():
-    S.tab==='library'?'<div class="lc-section-heading"><h2>My Clips</h2><p>Saved only in this browser. Download any important clips as backup.</p></div>'+
+    S.tab==='library'?'<div class="lclip-section-heading"><h2>My Clips</h2><p>Saved only in this browser. Download any important clips as backup.</p></div>'+
      libraryToolbar()+
-     '<div class="lc-grid">'+(visibleClips().length?visibleClips().map(localCard).join(''):
-      '<div class="lc-empty">'+(S.local.length?'No clips match your filters. Try a different search.':
+     '<div class="lclip-grid">'+(visibleClips().length?visibleClips().map(localCard).join(''):
+      '<div class="lclip-empty">'+(S.local.length?'No clips match your filters. Try a different search.':
       'No clips yet. Open Record and capture your first game moment.')+'</div>')+'</div>':
-    '<div class="lc-section-heading"><h2>'+(S.tab==='review'?'Clip moderation':'Community Clips')+'</h2>'+
+    '<div class="lclip-section-heading"><h2>'+(S.tab==='review'?'Clip moderation':'Community Clips')+'</h2>'+
      '<p>'+(S.tab==='review'?'Approve videos before they become visible to the community.':'Only admin-approved clips appear here. Uploads are shared only when you explicitly submit them.')+'</p></div>'+
-    (!S.user?'<div class="lc-empty">Sign in with your Lolite account to see and share community clips. <button data-lc-action="signin">Open Lolite Chat</button></div>':
-     '<div class="lc-grid">'+(remoteItems.length?remoteItems.map(remoteCard).join(''):'<div class="lc-empty">Nothing published here yet.</div>')+'</div>'+
-     (S.tab==='community'&&mineUploads.length?'<section class="lc-my-uploads"><h3>My submitted clips</h3><p>Only you and admins can see unapproved uploads.</p><div class="lc-grid">'+mineUploads.map(remoteCard).join('')+'</div></section>':'')))+
+    (!S.user?'<div class="lclip-empty">Sign in with your Lolite account to see and share community clips. <button data-lclip-action="signin">Open Lolite Chat</button></div>':
+     '<div class="lclip-grid">'+(remoteItems.length?remoteItems.map(remoteCard).join(''):'<div class="lclip-empty">Nothing published here yet.</div>')+'</div>'+
+     (S.tab==='community'&&mineUploads.length?'<section class="lclip-my-uploads"><h3>My submitted clips</h3><p>Only you and admins can see unapproved uploads.</p><div class="lclip-grid">'+mineUploads.map(remoteCard).join('')+'</div></section>':'')))+
    '</main>';
  }
  async function share(form){
   if(S.busy)return;
-  const clip=S.local.find(x=>x.id===form.dataset.lcShare);if(!clip)return;
+  const clip=S.local.find(x=>x.id===form.dataset.lclipShare);if(!clip)return;
   const title=String(form.elements.title.value||'').trim();
   if(title.length<3||title.length>100||!form.elements.confirm.checked){notify('Enter a title and confirm the clip is safe to share.',true);return}
   if(clip.bytes>MAX_UPLOAD||!supportedMime(clip.mimeType)){notify('Only WebM/MP4 clips up to 20 MB can be shared.',true);return}
@@ -382,7 +382,7 @@
   await refreshLocal();render();
  }
  async function renameClip(form){
-  const clipId=safeUUID(form.dataset.lcRename);
+  const clipId=safeUUID(form.dataset.lclipRename);
   const title=String(form.elements.title.value||'').trim().replace(/\s+/g,' ');
   if(!clipId||!title||title.length>100){notify('Choose a clip name up to 100 characters.',true);return}
   try{await updateLocal(clipId,{title});S.renameId=null;render();notify('Clip renamed.')}
@@ -396,11 +396,11 @@
   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
  }
  document.addEventListener('click',event=>{
-  if(!event.target.closest?.('#lcRoot'))return;
-  const tab=event.target.closest('[data-lc-tab]');
-  if(tab){if(tab.dataset.lcTab==='review'&&!S.admin)return;S.tab=tab.dataset.lcTab;render();return}
-  const button=event.target.closest('[data-lc-action]');if(!button)return;
-  const action=button.dataset.lcAction,clipId=safeUUID(button.dataset.lcId);
+  if(!event.target.closest?.('#loliteClipsRoot'))return;
+  const tab=event.target.closest('[data-lclip-tab]');
+  if(tab){if(tab.dataset.lclipTab==='review'&&!S.admin)return;S.tab=tab.dataset.lclipTab;render();return}
+  const button=event.target.closest('[data-lclip-action]');if(!button)return;
+  const action=button.dataset.lclipAction,clipId=safeUUID(button.dataset.lclipId);
   if(action==='toggle'){if(S.recording)stopClip();else void beginClip();return}
   if(action==='pause'){pauseClip();return}
   if(action==='resume'){resumeClip();return}
@@ -422,38 +422,38 @@
      .catch(e=>notify('Cannot delete clip: '+(e?.message||e),true));
    }return;
   }
-  if(action==='moderate')void moderate(clipId,button.dataset.lcStatus);
+  if(action==='moderate')void moderate(clipId,button.dataset.lclipStatus);
   if(action==='remove-cloud')void removeCloud(clipId);
  });
  document.addEventListener('submit',event=>{
-  const rename=event.target.closest?.('#lcRoot form[data-lc-rename]');
+  const rename=event.target.closest?.('#loliteClipsRoot form[data-lclip-rename]');
   if(rename){event.preventDefault();void renameClip(rename);return}
-  const form=event.target.closest?.('#lcRoot form[data-lc-share]');if(!form)return;
+  const form=event.target.closest?.('#loliteClipsRoot form[data-lclip-share]');if(!form)return;
   event.preventDefault();void share(form);
  });
  document.addEventListener('input',event=>{
-  const input=event.target.closest?.('#lcRoot [data-lc-filter="search"]');
+  const input=event.target.closest?.('#loliteClipsRoot [data-lclip-filter="search"]');
   if(!input)return;
   S.libraryQuery=input.value;
   const cursor=input.selectionStart;
   render();
-  const restored=root()?.querySelector('[data-lc-filter="search"]');
+  const restored=root()?.querySelector('[data-lclip-filter="search"]');
   if(restored){restored.focus();if(Number.isInteger(cursor))restored.setSelectionRange(cursor,cursor)}
  });
  document.addEventListener('change',event=>{
-  const filter=event.target.closest?.('#lcRoot [data-lc-filter]');
+  const filter=event.target.closest?.('#loliteClipsRoot [data-lclip-filter]');
   if(filter){
-   if(filter.dataset.lcFilter==='sort'&&['newest','oldest','largest','favorites'].includes(filter.value))
+   if(filter.dataset.lclipFilter==='sort'&&['newest','oldest','largest','favorites'].includes(filter.value))
     S.librarySort=filter.value;
-   if(filter.dataset.lcFilter==='favorites')S.favoriteOnly=filter.checked;
+   if(filter.dataset.lclipFilter==='favorites')S.favoriteOnly=filter.checked;
    render();return;
   }
-  const field=event.target.closest?.('#lcRoot [data-lc-setting]');if(!field)return;
-  if(field.dataset.lcSetting==='duration'&&LENGTHS.includes(Number(field.value))){
+  const field=event.target.closest?.('#loliteClipsRoot [data-lclip-setting]');if(!field)return;
+  if(field.dataset.lclipSetting==='duration'&&LENGTHS.includes(Number(field.value))){
    S.duration=Number(field.value);storeSetting('loliteClipsDuration',S.duration);
-  }else if(field.dataset.lcSetting==='quality'&&QUALITIES[field.value]&&!S.recording){
+  }else if(field.dataset.lclipSetting==='quality'&&QUALITIES[field.value]&&!S.recording){
    S.quality=field.value;storeSetting('loliteClipsQuality',S.quality);
-  }else if(field.dataset.lcSetting==='hotkey'&&KEYS.includes(field.value)){
+  }else if(field.dataset.lclipSetting==='hotkey'&&KEYS.includes(field.value)){
    S.hotkey=field.value;storeSetting('loliteClipsHotkey',S.hotkey);
   }
   render();
@@ -501,7 +501,7 @@
  window.page=function(app){
   if(app==='clips'){
    setTimeout(()=>{settings();void refreshLocal().then(()=>refreshCloud()).then(render)},0);
-   return '<div class="lc-shell" id="lcRoot"><div class="lc-loading">Opening Lolite Clips…</div></div>';
+   return '<div class="lclip-shell" id="loliteClipsRoot"><div class="lclip-loading">Opening Lolite Clips…</div></div>';
   }
   return originalPage(app);
  };
