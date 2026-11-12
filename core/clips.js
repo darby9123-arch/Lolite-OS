@@ -202,13 +202,16 @@
   }finally{S.requesting=false;render()}
  }
  const supportedMime=type=>type==='video/webm'||type==='video/mp4';
+ const showCloud=()=>{if(S.tab==='community'||S.tab==='review')render()};
+ let cloudTicket=0;
  async function refreshCloud(){
-  const sb=client();
-  if(!sb){S.remote=[];S.user=null;S.admin=false;return}
-  S.loading=true;S.error='';render();
+  const ticket=++cloudTicket,sb=client();
+  if(!sb){S.remote=[];S.user=null;S.admin=false;showCloud();return}
+  S.loading=true;S.error='';showCloud();
   try{
    const {data:{user},error:authError}=await sb.auth.getUser();
    if(authError&&authError.name!=='AuthSessionMissingError')throw authError;
+   if(ticket!==cloudTicket)return;
    S.user=user||null;
    if(!user){S.remote=[];S.admin=false;S.remoteUrls.clear();return}
    const [role,clips]=await Promise.all([
@@ -218,15 +221,19 @@
    ]);
    if(role.error)throw role.error;
    if(clips.error)throw clips.error;
+   if(ticket!==cloudTicket)return;
    S.admin=role.data?.user_id===user.id;S.remote=clips.data||[];
    S.remoteUrls.clear();
    const visible=S.remote.filter(r=>r.status==='approved'||S.admin||r.uploader_id===user.id);
-   await Promise.all(visible.slice(0,30).map(async r=>{
-    const res=await sb.storage.from(BUCKET).createSignedUrl(r.storage_path,900);
-    if(!res.error&&res.data?.signedUrl)S.remoteUrls.set(r.id,res.data.signedUrl);
+   // Limit initial signed URLs; remaining videos can be loaded on demand.
+   await Promise.all(visible.slice(0,24).map(async r=>{
+    try{
+     const res=await sb.storage.from(BUCKET).createSignedUrl(r.storage_path,900);
+     if(ticket===cloudTicket&&!res.error&&res.data?.signedUrl)S.remoteUrls.set(r.id,res.data.signedUrl);
+    }catch(error){console.warn('Clip preview unavailable:',error?.message||error)}
    }));
-  }catch(e){S.error=e?.message||'Cannot load shared clips';notify(S.error,true)}
-  finally{S.loading=false;render()}
+  }catch(e){if(ticket===cloudTicket){S.error=e?.message||'Cannot load shared clips';notify(S.error,true)}}
+  finally{if(ticket===cloudTicket){S.loading=false;showCloud()}}
  }
  const formatTime=n=>Math.floor(Number(n||0)/60)+':'+String(Math.floor(Number(n||0)%60)).padStart(2,'0');
  const localSize=()=>S.local.reduce((total,clip)=>total+(Number(clip.bytes)||0),0);
@@ -312,9 +319,10 @@
  }
  function remoteCard(clip){
   const mine=clip.uploader_id===S.user?.id,url=S.remoteUrls.get(clip.id);
-  return '<article class="lclip-card lclip-cloud-card">'+
+  return '<article class="lclip-card lclip-cloud-card" data-lclip-cloud-id="'+esc(clip.id)+'">'+
    (url?'<video controls playsinline preload="metadata" src="'+esc(url)+'" aria-label="'+esc(clip.title)+'"></video>':
-    '<div class="lclip-preview-missing">Video preview unavailable. Refresh to retry.</div>')+
+    '<div class="lclip-preview-missing"><span>Preview not loaded yet.</span>'+
+    '<button type="button" data-lclip-action="load-preview" data-lclip-id="'+esc(clip.id)+'">Load video</button></div>')+
    '<div class="lclip-card-body"><div class="lclip-topline"><span class="lclip-status lclip-status-'+esc(clip.status)+'">'+
     (clip.status==='approved'?'Published':clip.status==='pending'?'Pending review':'Not approved')+'</span>'+
     (mine?'<span class="lclip-mine">Your upload</span>':'')+'</div>'+
@@ -375,6 +383,28 @@
      '<div class="lclip-grid">'+(remoteItems.length?remoteItems.map(remoteCard).join(''):'<div class="lclip-empty">Nothing published here yet.</div>')+'</div>'+
      (S.tab==='community'&&mineUploads.length?'<section class="lclip-my-uploads"><h3>My submitted clips</h3><p>Only you and admins can see unapproved uploads.</p><div class="lclip-grid">'+mineUploads.map(remoteCard).join('')+'</div></section>':'')))+
    '</main>';
+ }
+ async function loadPreview(clipId){
+  const clip=S.remote.find(item=>item.id===clipId);
+  if(!clip||!S.user||!(clip.status==='approved'||S.admin||clip.uploader_id===S.user.id))return;
+  const card=root()?.querySelector('[data-lclip-cloud-id="'+clipId+'"]');
+  const button=card?.querySelector('[data-lclip-action="load-preview"]');
+  if(button){button.disabled=true;button.textContent='Loading…'}
+  try{
+   const {data,error}=await client().storage.from(BUCKET).createSignedUrl(clip.storage_path,900);
+   if(error||!data?.signedUrl)throw error||Error('Video unavailable');
+   S.remoteUrls.set(clipId,data.signedUrl);
+   if(card&&card.isConnected){
+    const player=document.createElement('video');
+    player.controls=true;player.playsInline=true;player.preload='metadata';
+    player.src=data.signedUrl;player.setAttribute('aria-label',clip.title);
+    const placeholder=card.querySelector('.lclip-preview-missing');
+    placeholder?.replaceWith(player);
+   }else showCloud();
+  }catch(e){
+   if(button&&button.isConnected){button.textContent='Retry video';button.disabled=false}
+   notify('Could not load that clip. Please retry.',true);
+  }
  }
  async function share(form){
   if(S.busy)return;
@@ -458,8 +488,9 @@
   if(action==='pause'){pauseClip();return}
   if(action==='resume'){resumeClip();return}
   if(action==='stop-capture'){stopCapture();return}
-  if(action==='refresh'){void refreshLocal().then(()=>refreshCloud());return}
+  if(action==='refresh'){void refreshLocal().then(()=>refreshCloud()).then(()=>render());return}
   if(action==='signin'){window.openApp?.('chatroom','Lolite Chat',1000,680);return}
+  if(action==='load-preview'&&clipId){void loadPreview(clipId);return}
   if(!clipId)return;
   const clip=S.local.find(c=>c.id===clipId);
   if(action==='download'&&clip){download(clip);return}
