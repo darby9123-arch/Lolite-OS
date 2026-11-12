@@ -414,6 +414,8 @@
   if(clip.bytes>MAX_UPLOAD||!supportedMime(clip.mimeType)){notify('Only WebM/MP4 clips up to 20 MB can be shared.',true);return}
   if(!S.user){notify('Sign in with Lolite Chat before sharing a clip.',true);window.openApp?.('chatroom','Lolite Chat',1000,680);return}
   const sb=client();S.busy=true;
+  const uploadButton=form.querySelector?.('[type="submit"]');
+  if(uploadButton){uploadButton.disabled=true;uploadButton.textContent='Uploading clip…'}
   const clipId=id(),ext=clip.mimeType==='video/mp4'?'.mp4':'.webm';
   const storagePath=S.user.id+'/'+clipId+ext;
   let uploaded=false;
@@ -425,11 +427,15 @@
     mime_type:clip.mimeType,file_bytes:clip.bytes,duration_seconds:Math.min(120,Math.max(1,clip.duration)),status:'pending'});
    if(metadata.error)throw metadata.error;
    S.shareId=null;notify('Clip sent for admin review. Your local copy is unchanged.');
-   await refreshCloud();render();
+   await refreshCloud();
   }catch(e){
    if(uploaded)try{await sb.storage.from(BUCKET).remove([storagePath])}catch(_){}
    notify('Clip was not shared: '+(e?.message||e),true);
-  }finally{S.busy=false;render()}
+  }finally{
+   S.busy=false;
+   if(uploadButton?.isConnected){uploadButton.disabled=false;uploadButton.textContent='Submit for review'}
+   updateLibraryGrid(clip.id);
+  }
  }
  async function moderate(clipId,status){
   if(S.busy||!S.admin||!['approved','rejected'].includes(status))return;
