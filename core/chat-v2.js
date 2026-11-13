@@ -30,6 +30,7 @@ const lcIcon=(key,size=18)=>'<svg xmlns="http://www.w3.org/2000/svg" width="'+si
 
 // Keep unsent messages in memory per conversation. Background refreshes must never erase typing.
 const messageDrafts=new Map();
+const pendingSends=new Set();
 const draftKey=()=>activeConv()?.id||null;
 function captureDraft(){
  const input=root()?.querySelector('[data-lc-message-input]');
@@ -74,7 +75,7 @@ function restoreInputs(snapshot){
   }catch(e){console.debug('Could not restore chat caret',e)}
  }
 }
-const state={user:null,me:null,profiles:[],conversations:[],members:[],requests:[],blocks:[],messages:[],reactions:[],view:'browse',channel:'general',conversationId:null,replyTo:null,authTab:'login',authError:'',search:'',sidebarQuery:'',modal:null,showPins:false,error:'',busy:false,again:false,loading:true,adminIds:[]};
+const state={user:null,me:null,profiles:[],conversations:[],members:[],requests:[],blocks:[],messages:[],reactions:[],view:'browse',channel:'general',conversationId:null,replyTo:null,authTab:'login',authError:'',search:'',searchOpen:false,sidebarQuery:'',modal:null,showPins:false,error:'',busy:false,again:false,loading:true,adminIds:[]};
 const meId=()=>state.user?.id;
 const isAdmin=()=>state.adminIds.includes(meId());
 const canModerate=()=>isAdmin()&&activeConv()?.type==='channel';
@@ -86,7 +87,7 @@ const avatar=p=>'<span class="lc-avatar">'+esc(initials(p))+'</span>';
 const friends=()=>[...new Map(state.requests.filter(r=>r.status==='accepted').map(r=>person(r.from_id===meId()?r.to_id:r.from_id)).filter(Boolean).map(p=>[p.id,p])).values()];
 const blocked=id=>state.blocks.some(b=>b.blocked_id===id);
 const isFriend=id=>friends().some(p=>p.id===id);
-const activeConv=()=>state.view==='channel'?state.conversations.find(c=>c.type==='channel'&&c.name===state.channel):state.conversations.find(c=>c.id===state.conversationId);
+const activeConv=()=>state.view==='channel'?state.conversations.find(c=>c.type==='channel'&&c.name===state.channel):state.view==='conversation'?state.conversations.find(c=>c.id===state.conversationId):null;
 const memberIds=id=>state.members.filter(m=>m.conversation_id===id).map(m=>m.user_id);
 const convLabel=c=>{if(!c)return 'Messages';if(c.type==='channel')return '# '+(c.name||'chat');if(c.type==='group')return c.name||'Group chat';return label(person(memberIds(c.id).find(id=>id!==meId())))};
 const check=r=>{if(r?.error){const err=r.error;throw Error((err.message||'Something went wrong.')+(err.code?' ['+err.code+']':''))}return r?.data};
@@ -178,13 +179,13 @@ function chatHtml(){
  '<div class="lc-head-identity"><div class="lc-head-title">'+esc(convLabel(c))+'</div><span class="lc-head-sub">'+desc+'</span></div>'+
  '<div class="lc-head-tools"><button class="lc-iconbtn '+(state.showPins?'active':'')+'" title="Show pinned messages" aria-label="Show pinned messages" data-lc-action="pins" aria-pressed="'+state.showPins+'">'+lcIcon('pin',18)+'</button>'+
  '<button class="lc-iconbtn" title="Search messages" aria-label="Search messages" data-lc-action="search">'+lcIcon('search',19)+'</button></div></header>'+
- (state.search!==''?'<div class="lc-message-search">'+lcIcon('search',17)+'<input aria-label="Search loaded messages" data-lc-search value="'+esc(state.search)+'" placeholder="Search messages in this chat"></div>':'')+
+ (state.searchOpen?'<div class="lc-message-search">'+lcIcon('search',17)+'<input aria-label="Search loaded messages" data-lc-search value="'+esc(state.search)+'" placeholder="Search messages in this chat"><button type="button" class="lc-iconbtn" data-lc-action="search" aria-label="Close search">×</button></div>':'')+
  '<section class="lc-message-scroll" aria-label="Chat messages">'+
  (list.length?list.map(messageHtml).join(''):'<div class="lc-placeholder lc-message-empty"><div class="lc-empty-symbol">'+lcIcon('chat',27)+'</div><h2>'+ (state.search?'No matching messages':state.showPins?'No pinned messages':'No messages yet')+'</h2><p>'+ (state.search?'Try a different search.':state.showPins?'Pin a message to keep it handy.':'Say hello to start the conversation.')+'</p></div>')+
  '</section><form class="lc-composer" data-lc-form="send">'+
  (reply?'<div class="lc-reply-bar"><span>Replying to '+esc(label(person(reply.sender_id)))+'</span><button type="button" class="lc-iconbtn" data-lc-action="cancelReply" aria-label="Cancel reply">×</button></div>':'')+
  '<div class="lc-compose-wrap"><textarea rows="1" maxlength="4000" name="message" data-lc-message-input data-lc-draft-conv="'+esc(c.id)+'" placeholder="Write a message…" aria-label="Message text" required></textarea>'+
- '<button class="lc-send" type="submit" title="Send message" aria-label="Send message">'+lcIcon('send',19)+'<span>Send</span></button></div>'+
+ '<button class="lc-send" type="submit" title="Send message" aria-label="Send message" '+(pendingSends.has(c.id)?'disabled':'')+'>'+lcIcon('send',19)+'<span>Send</span></button></div>'+
  '<div class="lc-compose-help">Enter to send · Shift + Enter for a new line</div></form></main>';
 }
 
@@ -245,11 +246,18 @@ function render(quiet=false){
  const snapshot=snapshotInputs();
  if(!sb){r.innerHTML='<div class="lc-placeholder"><div><h2>Chat library unavailable</h2><p>Check the network connection, then reopen Lolite Chat.</p></div></div>';return}
  if(state.loading){r.innerHTML='<div class="lc-loader">Connecting to Lolite Chat…</div>';return}
- if(state.error){r.innerHTML='<div class="lc-placeholder"><div><h2>Could not connect</h2><p>'+esc(state.error)+'</p><button class="lc-primary" data-lc-action="retry">Retry</button></div></div>';return}
+ if(state.error&&!r.querySelector('.lc-shell')){r.innerHTML='<div class="lc-placeholder"><div><h2>Could not connect</h2><p>'+esc(state.error)+'</p><button class="lc-primary" data-lc-action="retry">Retry</button></div></div>';return}
  if(!state.user){r.innerHTML=authHtml();return}
  // Refresh chat messages in place when possible, so an active textarea never
  // gets destroyed while the user types (including IME composition).
  const shell=r.querySelector('.lc-shell');
+ let warning=r.querySelector('.lc-connection-warning');
+ if(state.error&&shell){
+  if(!warning){warning=document.createElement('div');warning.className='lc-connection-warning';warning.setAttribute('role','status');shell.appendChild(warning)}
+  warning.innerHTML='Chat could not refresh. Your draft is safe. <button type="button" data-lc-action="retry">Retry</button>';
+ }else warning?.remove();
+ // A background update must not reset an unfinished profile, group or report form.
+ if(quiet&&shell&&r.querySelector('.lc-modal-layer'))return;
  const c=activeConv(),oldScroll=r.querySelector('.lc-message-scroll');
  if(quiet&&shell&&c&&oldScroll&&
     shell.dataset.lcView===state.view&&
@@ -262,10 +270,25 @@ function render(quiet=false){
   if(newScroll){
    const atBottom=oldScroll.scrollHeight-oldScroll.scrollTop-oldScroll.clientHeight<90;
    const previousTop=oldScroll.scrollTop;
-   oldScroll.innerHTML=newScroll.innerHTML;
+   // Retain unchanged message nodes: selection, open menus and focus survive polling.
+   const fresh=[...newScroll.children],existing=new Map([...oldScroll.children].map(el=>[el.dataset.lcMessage,el]));
+   let cursor=oldScroll.firstElementChild;
+   for(const item of fresh){
+    const old=item.dataset.lcMessage&&existing.get(item.dataset.lcMessage);
+    let node=item;
+    if(old){
+     const clone=old.cloneNode(true);clone.querySelectorAll('.lc-seen-by').forEach(el=>el.remove());
+     clone.querySelectorAll('details[open]').forEach(el=>el.removeAttribute('open'));
+     if(clone.outerHTML===item.outerHTML)node=old;
+     else if(old.querySelector('details[open]'))item.querySelector('details')?.setAttribute('open','');
+    }
+    if(node!==cursor)oldScroll.insertBefore(node,cursor);
+    cursor=node.nextElementSibling;
+   }
+   while(cursor){const next=cursor.nextElementSibling;cursor.remove();cursor=next}
    oldScroll.scrollTop=atBottom?oldScroll.scrollHeight:previousTop;
    const sidebar=r.querySelector('[data-lc-sidebar-content]');
-   if(sidebar)sidebar.innerHTML=sideContents();
+   if(sidebar){const html=sideContents();if(sidebar.innerHTML!==html)sidebar.innerHTML=html}
    window.LoliteChatExtra?.afterRender?.();window.LoliteChatCalls?.afterRender?.();
    return;
   }
@@ -276,53 +299,72 @@ function render(quiet=false){
   window.LoliteChatExtra?.afterRender?.();window.LoliteChatCalls?.afterRender?.();
 }
 async function loadMessages(){
- const c=activeConv();
+ const c=activeConv(),userId=meId();
  if(!c){state.messages=[];state.reactions=[];return}
  const msgs=check(await sb.from('messages').select('id,conversation_id,sender_id,content,created_at,reply_to,edited_at,is_pinned').eq('conversation_id',c.id).order('created_at',{ascending:false}).limit(100));
- state.messages=(msgs||[]).reverse();
- const ids=state.messages.map(m=>m.id);
- state.reactions=ids.length?(check(await sb.from('message_reactions').select('message_id,user_id,emoji').in('message_id',ids))||[]):[];
+ const messages=(msgs||[]).slice().reverse(),ids=messages.map(m=>m.id);
+ const reactions=ids.length?(check(await sb.from('message_reactions').select('message_id,user_id,emoji').in('message_id',ids))||[]):[];
+ if(meId()!==userId||activeConv()?.id!==c.id){state.again=true;return}
+ state.messages=messages;state.reactions=reactions;
 }
-let reloadLater=null,subscription=null,ticker=null;
+let reloadLater=null,subscription=null,subscriptionKey='',ticker=null,refreshJob=null,authGeneration=0;
 function triggerReload(){clearTimeout(reloadLater);reloadLater=setTimeout(()=>refresh(true),340)}
-async function subscribe(){
- if(subscription){await sb.removeChannel(subscription);subscription=null}
- if(!state.user)return;
- const c=activeConv();
- subscription=sb.channel('lc-live-'+meId()+'-'+(c?.id||'friends'));
+function subscribe(){
+ const key=state.user?'lc-live-'+meId()+'-'+(activeConv()?.id||'friends'):'';
+ if(key===subscriptionKey)return;
+ const old=subscription;subscription=null;subscriptionKey=key;
+ if(old)sb.removeChannel(old).catch(console.error);
+ if(!key)return;
+ const c=activeConv();subscription=sb.channel(key);
  if(c){subscription.on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:'conversation_id=eq.'+c.id},triggerReload);
-   subscription.on('postgres_changes',{event:'*',schema:'public',table:'message_reactions'},triggerReload)}
+  subscription.on('postgres_changes',{event:'*',schema:'public',table:'message_reactions'},triggerReload)}
  subscription.on('postgres_changes',{event:'*',schema:'public',table:'friend_requests'},triggerReload);
  subscription.subscribe();
 }
-async function refresh(quiet=false){
- if(state.busy){state.again=true;return}
- state.busy=true;state.error='';
+function refresh(quiet=false){
+ if(refreshJob){state.again=true;return refreshJob}
+ state.busy=true;
  if(!quiet){state.loading=true;render()}
- try{
-  const authResponse=await sb.auth.getUser();
-  if(authResponse.error&&authResponse.error.name!=='AuthSessionMissingError')throw authResponse.error;
-  const usr=authResponse.data?.user||null;
-  state.user=usr||null;
-  if(usr){
-   const a=await Promise.all([
-    sb.from('profiles').select('id,username,display_name,about,avatar,status').order('username').limit(1000),
-    sb.from('conversations').select('id,type,name,created_by,created_at').order('created_at',{ascending:false}),
-    sb.from('conversation_members').select('conversation_id,user_id'),
-    sb.from('friend_requests').select('id,from_id,to_id,status,created_at'),
-    sb.from('blocks').select('blocked_id'),
-    sb.from('lolite_admins').select('user_id')
-   ]);
-   a.forEach(check);
-   [state.profiles,state.conversations,state.members,state.requests,state.blocks]=a.slice(0,5).map(x=>x.data||[]);
-   state.adminIds=(a[5].data||[]).map(row=>row.user_id);
-   state.me=person(usr.id)||null;
-   await loadMessages();
-  }else{
-   state.profiles=[];state.conversations=[];state.members=[];state.requests=[];state.blocks=[];state.messages=[];state.reactions=[];state.me=null;state.adminIds=[];
-  }
- }catch(e){state.error=String(e.message||e);console.error('Lolite Chat:',e)}
- finally{state.busy=false;state.loading=false;render(quiet);if(state.user&&!state.error){subscribe().catch(console.error)}if(state.again){state.again=false;queueMicrotask(()=>refresh(true))}}
+ refreshJob=(async()=>{
+  do{
+   state.again=false;state.error='';const generation=authGeneration;
+   try{
+    const authResponse=await sb.auth.getUser();
+    if(generation!==authGeneration){state.again=true;continue}
+    if(authResponse.error&&authResponse.error.name!=='AuthSessionMissingError')throw authResponse.error;
+    const usr=authResponse.data?.user||null;
+    if(state.user?.id!==usr?.id){
+     messageDrafts.clear();state.modal=null;state.messages=[];state.reactions=[];
+     state.view='browse';state.conversationId=null;state.replyTo=null;state.search='';state.searchOpen=false;state.showPins=false;
+     // The old account's composer must not be captured or reused by render().
+     root()?.replaceChildren();
+    }
+    state.user=usr;
+    if(usr){
+     const a=await Promise.all([
+      sb.from('profiles').select('id,username,display_name,about,avatar,status').order('username').limit(1000),
+      sb.from('conversations').select('id,type,name,created_by,created_at').order('created_at',{ascending:false}),
+      sb.from('conversation_members').select('conversation_id,user_id'),
+      sb.from('friend_requests').select('id,from_id,to_id,status,created_at'),
+      sb.from('blocks').select('blocked_id'),sb.from('lolite_admins').select('user_id')
+     ]);
+     if(generation!==authGeneration){state.again=true;continue}
+     a.forEach(check);
+     [state.profiles,state.conversations,state.members,state.requests,state.blocks]=a.slice(0,5).map(x=>x.data||[]);
+     state.adminIds=(a[5].data||[]).map(row=>row.user_id);state.me=person(usr.id)||null;
+     await loadMessages();
+    }else{
+     state.profiles=[];state.conversations=[];state.members=[];state.requests=[];state.blocks=[];state.messages=[];state.reactions=[];state.me=null;state.adminIds=[];
+    }
+   }catch(e){state.error=String(e.message||e);console.error('Lolite Chat:',e)}
+   if(generation!==authGeneration){state.again=true;continue}
+   state.loading=false;render(quiet);subscribe();
+  }while(state.again);
+ })().finally(()=>{state.busy=false;state.loading=false;refreshJob=null});
+ return refreshJob;
+}
+function navigate(){
+ state.messages=[];state.reactions=[];state.searchOpen=false;render();return refresh(true);
 }
 async function login(username,password){
  return check(await sb.auth.signInWithPassword({email:username.toLowerCase()+'@accounts.lolite.chat',password}));
@@ -334,6 +376,7 @@ async function register(username,display,password){
  return login(username,password);
 }
 async function createDM(otherId){
+ captureDraft();
  if(!otherId||otherId===meId())throw Error('Choose someone else to message.');
  if(blocked(otherId))throw Error('Unblock this person before messaging.');
  if(!isFriend(otherId))throw Error('Add this person as a friend before sending a private message.');
@@ -364,16 +407,17 @@ async function react(messageId,emoji){
  return refresh(true);
 }
 async function dispatch(action,id,button){
+ captureDraft();
  switch(action){
- case 'retry':return refresh();
+ case 'retry':return refresh(!!root()?.querySelector('.lc-shell'));
  case 'tabLogin':state.authTab='login';state.authError='';return render();
  case 'tabRegister':state.authTab='register';state.authError='';return render();
- case 'browse':state.view='browse';state.conversationId=null;state.replyTo=null;return refresh(true);
- case 'friends':state.view='friends';state.replyTo=null;return refresh(true);
-  case 'calls':state.view='calls';state.conversationId=null;state.replyTo=null;return refresh(true);
+ case 'browse':state.view='browse';state.conversationId=null;state.replyTo=null;return navigate();
+ case 'friends':state.view='friends';state.replyTo=null;return navigate();
+  case 'calls':state.view='calls';state.conversationId=null;state.replyTo=null;return navigate();
  case 'profileView':state.view='profile';state.replyTo=null;return render();
- case 'channel':state.view='channel';state.channel=id;state.conversationId=null;state.search='';state.showPins=false;state.replyTo=null;return refresh(true);
- case 'openConv':state.view='conversation';state.conversationId=id;state.search='';state.showPins=false;state.replyTo=null;return refresh(true);
+ case 'channel':state.view='channel';state.channel=id;state.conversationId=null;state.search='';state.showPins=false;state.replyTo=null;return navigate();
+ case 'openConv':state.view='conversation';state.conversationId=id;state.search='';state.showPins=false;state.replyTo=null;return navigate();
  case 'addFriend':state.modal={type:'addFriend'};return render();
  case 'group':state.modal={type:'group'};return render();
  case 'profile':state.modal={type:'profile'};return render();
@@ -385,7 +429,7 @@ async function dispatch(action,id,button){
  case 'pins':state.showPins=!state.showPins;return render();
  case 'cancelReply':state.replyTo=null;return render();
  case 'react':return react(Number(id),button.dataset.lcEmoji);
- case 'search':state.search=state.search?'':' ';return render();
+ case 'search':state.searchOpen=!state.searchOpen;state.search='';render();if(state.searchOpen)$('[data-lc-search]')?.focus();return;
  case 'edit':{const m=state.messages.find(m=>m.id===Number(id));if(!m||m.sender_id!==meId())return;const value=prompt('Edit your message:',m.content);if(value===null||!value.trim()||value===m.content)return;check(await sb.from('messages').update({content:value.trim(),edited_at:new Date().toISOString()}).eq('id',m.id));return refresh(true)}
  case 'delete':{
   const m=state.messages.find(m=>m.id===Number(id)),own=m?.sender_id===meId();
@@ -424,9 +468,12 @@ async function handleForm(form){
  }
  if(type==='send'){
   const c=activeConv(),text=String(fd.get('message')||'').trim();
-  if(!c||!text)return;
+  if(!c||!text||pendingSends.has(c.id)||form.querySelector('[data-lc-message-input]')?.dataset.lcDraftConv!==c.id)return;
   if(text.length>4000)throw Error('Messages must be 4,000 characters or less.');
-  check(await sb.from('messages').insert({conversation_id:c.id,sender_id:meId(),content:text,reply_to:state.replyTo||null}));
+  const replyTo=state.replyTo,userId=meId();pendingSends.add(c.id);
+  try{
+  check(await sb.from('messages').insert({conversation_id:c.id,sender_id:userId,content:text,reply_to:replyTo||null}));
+  if(meId()!==userId)return;
   // Clear only the message that was actually sent. Keep any newer typing.
   const current=root()?.querySelector('[data-lc-message-input]');
   if(current?.dataset.lcDraftConv===c.id&&current.value.trim()===text){
@@ -436,7 +483,11 @@ async function handleForm(form){
   }else if(messageDrafts.get(c.id)?.trim()===text){
    messageDrafts.delete(c.id);
   }
-  state.replyTo=null;state.search='';return refresh(true);
+  if(activeConv()?.id===c.id&&state.replyTo===replyTo)state.replyTo=null;
+  }finally{
+   pendingSends.delete(c.id);const button=root()?.querySelector('.lc-send');if(button)button.disabled=pendingSends.has(activeConv()?.id);
+  }
+  return refresh(true);
  }
  if(type==='addFriend'){await requestFriend(String(fd.get('username')||''));state.modal=null;await refresh(true);return flash('Friend request sent!')}
  if(type==='group'){
@@ -483,7 +534,7 @@ document.addEventListener('keydown',e=>{
  e.preventDefault();e.target.form?.requestSubmit()
  }
  if(e.key==='Escape'&&state.modal&&root()){state.modal=null;render()}
- if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&root()&&state.user){e.preventDefault();state.search=' ';render();$('[data-lc-search]')?.focus()}
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&root()&&state.user){e.preventDefault();state.searchOpen=true;state.search='';render();$('[data-lc-search]')?.focus()}
 });
 document.addEventListener('input',e=>{
  if(e.target.matches('[data-lc-message-input]')&&e.target.dataset.lcDraftConv)
@@ -501,7 +552,7 @@ async function activate(){
  if(!sb){state.loading=false;render();return}
  if(!initialized){
   initialized=true;
-  sb.auth.onAuthStateChange(()=>{setTimeout(()=>{if(root())refresh(true)},50)});
+  sb.auth.onAuthStateChange((event)=>{if(event!=='TOKEN_REFRESHED')authGeneration++;setTimeout(()=>{if(root())refresh(true)},50)});
   ticker=setInterval(()=>{if(root()&&document.visibilityState==='visible'&&state.user&&!state.busy)refresh(true)},18000);
  }
  await refresh();

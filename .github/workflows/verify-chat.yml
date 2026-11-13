@@ -1,0 +1,19 @@
+name: Verify Chat and calls
+on:
+  push:
+    paths: ['core/chat-*.js', 'core/chat-*.css', 'tests/chat/**', '.github/workflows/verify-chat.yml']
+  pull_request:
+    paths: ['core/chat-*.js', 'core/chat-*.css', 'tests/chat/**', '.github/workflows/verify-chat.yml']
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - run: npm ci --prefix tests/chat --ignore-scripts --no-audit --no-fund
+      - run: node --check core/chat-v2.js && node --check core/chat-extras.js && node --check core/chat-calls.js
+      - run: npm test --prefix tests/chat

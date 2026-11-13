@@ -220,3 +220,20 @@
  .lc-active-call-control{min-height:61px}
 }
 @media(prefers-reduced-motion:reduce){.lc-active-avatar.is-ringing{animation:none}}
+
+.lc-call-pending{position:fixed;left:16px;bottom:76px;z-index:100300;display:flex;align-items:center;gap:14px;max-width:calc(100vw - 32px);padding:16px;border:1px solid #526b89;border-radius:12px;background:#182638;color:#eef5ff;font:14px/1.4 system-ui;box-shadow:0 12px 40px #0008}
+.lc-call-pending button{background:#75323e;color:white;border:1px solid #b86473;border-radius:8px;padding:10px 14px;font:inherit;cursor:pointer}
+.lc-active-call-status{flex-wrap:wrap;gap:8px}
+.lc-active-call-secondary p{font-size:12px;color:#bfcde0;margin:5px 0}
+.lc-active-call-control:focus-visible,.lc-call-dock button:focus-visible{outline:2px solid #b3d3ff;outline-offset:3px}
+
+#lcRoot .lc-chat-main>.lc-call-dock{position:static;transform:none;flex-shrink:0;width:auto;max-width:100%;min-width:0;margin:0;border-radius:0;padding:8px 10px;box-shadow:none;border-left:0;border-right:0;z-index:auto;gap:8px}
+#lcRoot .lc-call-dock-title{min-width:0;flex:1}
+#lcRoot .lc-call-dock-title>div:last-child{min-width:0}
+#lcRoot .lc-call-dock-title strong,#lcRoot .lc-call-dock-title small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+#lcRoot .lc-call-dock-actions{flex:none;width:auto}
+#lcRoot .lc-call-card{flex-wrap:wrap}
+.lc-incoming-wrapper,.lc-incoming-wrapper *,.lc-active-call,.lc-active-call *,.lc-mic-overlay,.lc-mic-overlay *,.lc-call-pending,.lc-call-pending *{box-sizing:border-box}
+.lc-incoming-call{max-height:calc(100dvh - 24px);overflow:auto}
+@media(max-width:620px){.lc-incoming-call{padding-left:18px;padding-right:18px}.lc-incoming-actions{gap:10px}}
+@media(max-width:620px){.lc-incoming-top{width:calc(100% + 36px);padding-left:18px;padding-right:18px}}

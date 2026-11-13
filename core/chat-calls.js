@@ -29,11 +29,23 @@ const members=id=>(s()?.members||[]).filter(x=>x.conversation_id===id).map(x=>x.
 const friends=()=>{const x=s();return (x?.requests||[]).filter(r=>r.status==='accepted').map(r=>r.from_id===uid()?r.to_id:r.from_id).filter(id=>id!==uid()&&!x.blocks.some(b=>b.blocked_id===id))};
 let signedIn=null,interval=null,subscription=null,checking=false,answerBusy=false;
 let currentCall=null,activeInvite=null,displayedInviteId=null,lastCallStatus='',sending=false;
-let callMinimized=false,callConnectedAt=0,callTicker=null;
+let callMinimized=false,callConnectedAt=0,callTicker=null,callGeneration=0,pendingCall=null;
 const profileCache=new Map();
 function say(txt){
  const parent=root()||document.body,d=document.createElement('div');
  d.className='lc-toast';d.textContent=txt;parent.appendChild(d);setTimeout(()=>d.remove(),3800);
+}
+function paint(el,html){
+ if(el._callHtml===html)return;
+ const focused=el.contains(document.activeElement)?document.activeElement?.dataset.lcCall:null;
+ el.innerHTML=html;el._callHtml=html;
+ if(focused)el.querySelector('[data-lc-call="'+focused+'"]')?.focus({preventScroll:true});
+}
+function renderPending(){
+ let el=document.getElementById('lcPendingCall');
+ if(!pendingCall){el?.remove();return}
+ if(!el){el=document.createElement('aside');el.id='lcPendingCall';el.className='lc-call-pending';document.body.appendChild(el)}
+ paint(el,'<span role="status">Connecting call… Allow microphone access if prompted.</span><button type="button" data-lc-call="hangup">Cancel</button>');
 }
 const check=(result)=>{if(result.error)throw Error(result.error.message||'Server unavailable');return result.data};
 function conversationName(convId){
@@ -65,7 +77,7 @@ function renderCallsHtml(){
  '<h3>Call friends</h3>'+(fs.length?'<div class="lc-call-grid">'+fs.map(user=>
  '<article class="lc-call-card"><div class="lc-avatar">'+esc((user.avatar||name(user.id).slice(0,2)).toUpperCase())+'</div><div class="lc-call-details"><strong>'+esc(name(user.id))+'</strong><small>@'+esc(user.username)+'</small></div><button type="button" class="lc-primary" data-lc-call="friend" data-lc-id="'+esc(user.id)+'">'+ico('phone',16)+' Call</button></article>').join('')+'</div>':'<p class="lc-muted">No friends added yet. Open Friends to send someone a request, then call them here.</p><button class="lc-secondary" data-lc-action="friends">Find friends</button>')+
  '<h3>Group calls</h3>'+(list.length?'<div class="lc-call-grid">'+list.map(c=>
- '<article class="lc-call-card"><div class="lc-call-group-icon">'+ico('users',20)+'</div><div class="lc-call-details"><strong>'+esc(c.name||'Group chat')+'</strong><small>'+members(c.id).length+' members</small></div><button type="button" class="lc-primary" data-lc-call="group" data-lc-id="'+esc(c.id)+'">'+ico('phone',16)+' Call group</button></article>').join('')+'</div>':'<p class="lc-muted">Start a group chat with your friends to call everyone together.</p><button class="lc-secondary" data-lc-action="group">Create group</button>')+
+ '<article class="lc-call-card"><div class="lc-call-group-icon">'+ico('users',20)+'</div><div class="lc-call-details"><strong>'+esc(c.name||'Group chat')+'</strong><small>'+members(c.id).length+' members</small></div><button type="button" class="lc-primary" data-lc-call="group" data-lc-id="'+esc(c.id)+'">'+ico('phone',16)+' Call group</button><button type="button" class="lc-secondary" data-lc-call="room" data-lc-id="'+esc(c.id)+'">Join room</button></article>').join('')+'</div>':'<p class="lc-muted">Start a group chat with your friends to call everyone together.</p><button class="lc-secondary" data-lc-action="group">Create group</button>')+
  '<div class="lc-calls-tools"><button type="button" data-lc-call="microphone">'+ico('settings',16)+' Microphone settings</button></div><div class="lc-calls-info">Calls use private-room signalling and WebRTC audio/video. Share screen is optional and your browser will ask what to share. You can stop at any time.</div></div></main>';
 }
 function afterRender(){
@@ -111,15 +123,12 @@ function callerVisual(id,extraClass=''){
 }
 function callStatus(){
  if(!currentCall)return '';
- const accepted=(currentCall.invites||[]).filter(i=>i.status==='accepted').length;
- const ringing=(currentCall.invites||[]).filter(i=>i.status==='ringing').length;
- if(currentCall.role==='caller'){
-  if(accepted){if(!callConnectedAt)callConnectedAt=Date.now();return 'Connected'+(ringing?' · '+ringing+' still ringing':'')}
-  if(ringing)return 'Ringing…';
-  return 'Waiting for someone to answer';
- }
- if(!callConnectedAt)callConnectedAt=Date.now();
- return 'Connected';
+ const audio=extra()?.connectionState?.()||{status:'connecting',connected:0};
+ if(audio.connected){if(!callConnectedAt)callConnectedAt=Date.now();return audio.audioBlocked?'Connected · enable sound':'Connected'}
+ if(audio.status==='failed')return 'Audio could not connect';
+ if(audio.status==='reconnecting')return 'Reconnecting audio…';
+ if(currentCall.role==='caller'&&!(currentCall.invites||[]).some(i=>i.status==='accepted'))return 'Ringing…';
+ return 'Connecting audio…';
 }
 function elapsed(){
  if(!callConnectedAt)return '00:00';
@@ -148,11 +157,11 @@ function renderCallWindow(){
  if(!el){el=document.createElement('section');el.id='lcActiveCall';el.className='lc-active-call';document.body.appendChild(el)}
  el.setAttribute('role','dialog');el.setAttribute('aria-label','Lolite call with '+title);
  const muted=extra()?.isMuted?.(),sharing=extra()?.hasScreen?.(),watching=extra()?.hasAnyScreen?.();
- el.innerHTML='<div class="lc-active-call-head"><span class="lc-call-live"><span class="lc-call-live-dot"></span> '+(status.startsWith('Ringing')?'CALLING':'IN CALL')+'</span><button type="button" data-lc-call="minimize" aria-label="Minimize call" title="Minimize">—</button></div>'+
+ paint(el,'<div class="lc-active-call-head"><span class="lc-call-live"><span class="lc-call-live-dot"></span> '+(status.startsWith('Ringing')?'CALLING':'IN CALL')+'</span><button type="button" data-lc-call="minimize" aria-label="Minimize call" title="Minimize">—</button></div>'+
  '<div class="lc-active-call-body"><div class="lc-active-avatar '+(status.startsWith('Ringing')?'is-ringing':'')+'">'+(group?ico('users',45):avatar(mainId))+'</div>'+
  '<div class="lc-active-call-label">'+(group?'GROUP CALL':call.role==='caller'?'VOICE CALL':'INCOMING CALL')+'</div>'+
  '<h2>'+esc(title)+'</h2><div class="lc-active-call-handle">'+esc(group?ids.length+' invited participant'+(ids.length===1?'':'s'):username(mainId))+'</div>'+
- '<div class="lc-active-call-status"><span>'+esc(status)+'</span><span class="lc-call-elapsed">'+elapsed()+'</span></div>'+
+ '<div class="lc-active-call-status"><span>'+esc(status)+'</span><span class="lc-call-elapsed">'+ '00:00' +'</span></div>'+
  (group?'<div class="lc-active-call-roster">'+ids.slice(0,12).map(id=>callerVisual(id)).join('')+'</div>':'')+
  '<div class="lc-active-call-actions">'+
  '<button type="button" data-lc-call="toggleMute" class="lc-active-call-control '+(muted?'is-selected':'')+'" title="'+(muted?'Unmute microphone':'Mute microphone')+'">'+callSvg(muted?'mute':'mic')+'<span>'+(muted?'Unmute':'Mute')+'</span></button>'+
@@ -160,7 +169,10 @@ function renderCallWindow(){
  '<button type="button" data-lc-call="microphone" class="lc-active-call-control" title="Choose microphone">'+callSvg('settings')+'<span>Mic</span></button>'+
  '<button type="button" data-lc-call="hangup" class="lc-active-call-control lc-active-hangup" title="End call">'+callSvg('hangup')+'<span>Leave</span></button></div>'+
  '<div class="lc-active-call-secondary">'+(watching?'<button type="button" data-lc-call="viewScreen">'+callSvg('screen')+' View shared screen</button>':'')+
- '<button type="button" data-lc-call="openActive">'+callSvg('chat')+' Open chat</button></div></div>';
+ (extra()?.connectionState?.().audioBlocked?'<button type="button" data-lc-call="enableAudio">Enable sound</button>':'')+
+ (extra()?.connectionState?.().status==='failed'?'<button type="button" data-lc-call="retryAudio">Retry audio</button><p>Try another network if audio still cannot connect.</p>':'')+
+ '<button type="button" data-lc-call="openActive">'+callSvg('chat')+' Open chat</button></div></div>');
+ const clock=el.querySelector('.lc-call-elapsed');if(clock)clock.textContent=elapsed();
 }
 function startCallTicker(){
  if(callTicker)return;
@@ -176,25 +188,37 @@ function stopCallTicker(){if(callTicker){clearInterval(callTicker);callTicker=nu
 function renderDock(){
  let el=document.getElementById('lcCallDock');
  if(!currentCall){el?.remove();renderCallWindow();stopCallTicker();return}
+ if(!callMinimized){el?.remove();renderCallWindow();startCallTicker();return}
  if(!el){el=document.createElement('div');el.id='lcCallDock';el.className='lc-call-dock';document.body.appendChild(el)}
+ const dockHost=root()?.querySelector('.lc-chat-main');
+ if(dockHost&&el.parentElement!==dockHost)dockHost.insertBefore(el,dockHost.querySelector('.lc-composer'));
+ else if(!dockHost&&el.parentElement!==document.body)document.body.appendChild(el);
  const status=callStatus();
  const {conv,ids}=callParticipants(currentCall);
  const target=conv?.type==='group'?(conv.name||'Group call'):name(currentCall.role==='caller'?ids[0]:currentCall.initiated_by);
  const muted=extra()?.isMuted?.(),sharing=extra()?.hasScreen?.();
- el.innerHTML='<div class="lc-call-dock-title"><div class="lc-call-icon lc-call-dock-avatar">'+(conv?.type==='group'?ico('users',19):avatar(currentCall.role==='caller'?ids[0]:currentCall.initiated_by))+'</div><div><strong>'+esc(target)+'</strong><small>'+esc(status)+' <span class="lc-call-dock-time">'+elapsed()+'</span></small></div></div>'+
+ paint(el,'<div class="lc-call-dock-title"><div class="lc-call-icon lc-call-dock-avatar">'+(conv?.type==='group'?ico('users',19):avatar(currentCall.role==='caller'?ids[0]:currentCall.initiated_by))+'</div><div><strong>'+esc(target)+'</strong><small>'+esc(status)+' <span class="lc-call-dock-time">'+ '00:00' +'</span></small></div></div>'+
  '<div class="lc-call-dock-actions">'+
  '<button type="button" data-lc-call="restore" title="Open call window">'+callSvg('screen')+'</button>'+
  '<button type="button" data-lc-call="toggleMute" title="'+(muted?'Unmute':'Mute')+' microphone" class="'+(muted?'is-selected':'')+'">'+callSvg(muted?'mute':'mic')+'</button>'+
  '<button type="button" data-lc-call="microphone" title="Microphone settings">'+callSvg('settings')+'</button>'+
  '<button type="button" data-lc-call="screen" title="'+(sharing?'Stop sharing':'Share screen')+'" class="'+(sharing?'is-selected':'')+'">'+callSvg('screen')+'</button>'+
- '<button type="button" data-lc-call="hangup" title="End call" class="lc-call-end">'+callSvg('hangup')+'</button></div>';
+ '<button type="button" data-lc-call="hangup" title="End call" class="lc-call-end">'+callSvg('hangup')+'</button></div>');
  startCallTicker();renderCallWindow();
 }
 function updateCallDock(){
- renderDock();
+ renderDock();renderPending();
  const el=root();if(!el)return;
  const voiceBtn=el.querySelector('.lc-voice-join');
- if(voiceBtn&&currentCall&&s()?.conversationId===currentCall.conversation_id)voiceBtn.title='This voice room is hosting a call';
+ if(voiceBtn&&currentCall)voiceBtn.remove();
+ if(currentCall)el.querySelector('.lc-voice-bar')?.remove();
+ const button=el.querySelector('.lc-call-header');
+ if(button&&s()?.view==='conversation'){
+  const active=currentCall?.conversation_id===s().conversationId;
+  button.dataset.lcCall=active?'restore':'group';button.disabled=!!pendingCall||!!(currentCall&&!active);
+  const label=active?'Show call':s().conversations.find(c=>c.id===s().conversationId)?.type==='group'?'Call group':'Call';
+  const html=ico('phone',15)+' '+label;if(button.innerHTML!==html)button.innerHTML=html;button.title=label;button.setAttribute('aria-label',label);
+ }
 }
 function cleanIncoming(){
  document.getElementById('lcIncomingCall')?.remove();
@@ -206,7 +230,7 @@ function renderIncoming(){
  const group=conv?.type==='group';
  let box=document.getElementById('lcIncomingCall');
  if(!box){box=document.createElement('div');box.id='lcIncomingCall';box.className='lc-incoming-wrapper';document.body.appendChild(box)}
- box.innerHTML='<div class="lc-incoming-call" role="dialog" aria-label="Incoming call from '+esc(name(caller))+'" aria-live="polite">'+
+ paint(box,'<div class="lc-incoming-call" role="dialog" aria-label="Incoming call from '+esc(name(caller))+'" aria-live="polite">'+
  '<div class="lc-incoming-top"><span class="lc-call-live"><span class="lc-call-live-dot"></span> INCOMING CALL</span><span>LOLITE CHAT</span></div>'+
  '<div class="lc-incoming-avatar">'+avatar(caller)+'</div>'+
  '<div class="lc-incoming-kicker">'+(group?'GROUP CALL':'VOICE CALL')+'</div>'+
@@ -215,7 +239,7 @@ function renderIncoming(){
  '<div class="lc-incoming-actions">'+
  '<button type="button" data-lc-call="decline" class="lc-call-decline">'+ico('phone',20)+'<span>Decline</span></button>'+
  '<button type="button" data-lc-call="answer" class="lc-call-answer">'+ico('phone',20)+'<span>Answer</span></button></div>'+
- '<div class="lc-incoming-foot">Your microphone only turns on if you answer.</div></div>';
+ '<div class="lc-incoming-foot">Your microphone only turns on if you answer.</div></div>');
 }
 async function callNotification(c){
  if(displayedInviteId===c.id)return;
@@ -237,7 +261,7 @@ async function checkIncoming(){
   if(ids.length)calls=check(await db.from('chat_calls').select('id,conversation_id,initiated_by,status,expires_at,created_at').in('id',ids));
   if(uidAtStart!==signedIn)return;
   const now=Date.now(),eligible=(calls||[]).filter(c=>['ringing','active'].includes(c.status)&&new Date(c.expires_at).getTime()>now&&c.initiated_by!==uidAtStart);
-  const next=eligible.sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)).find(c=>c.id!==currentCall?.id)||null;
+  const next=(currentCall||pendingCall)?null:eligible.sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)).find(c=>c.id!==currentCall?.id)||null;
   if(next){
    const changed=activeInvite?.id!==next.id;
    activeInvite=next;renderIncoming();
@@ -248,13 +272,19 @@ async function checkIncoming(){
    }else callNotification(next);
   }
   else if(activeInvite)cleanIncoming();
-  if(currentCall){
-   const r=await db.from('chat_calls').select('status,expires_at').eq('id',currentCall.id).maybeSingle();
+  const active=currentCall;
+  if(active){
+   const r=await db.from('chat_calls').select('status,expires_at').eq('id',active.id).maybeSingle();
+   if(currentCall!==active||signedIn!==uidAtStart)return;
    if(r.error)throw r.error;
    if(!r.data||r.data.status==='ended'||(r.data.status==='ringing'&&new Date(r.data.expires_at).getTime()<now)){
     say('The voice call has ended.');await hangup(false);return;
    }
-   const invites=check(await db.from('chat_call_invites').select('user_id,status').eq('call_id',currentCall.id));
+   const invites=check(await db.from('chat_call_invites').select('user_id,status').eq('call_id',active.id));
+   if(currentCall!==active||signedIn!==uidAtStart)return;
+   if(active.role==='caller'&&invites?.length&&invites.every(i=>!['ringing','accepted'].includes(i.status))){
+    say(invites.every(i=>i.status==='declined')?'Call declined.':'Everyone has left the call.');await hangup();return;
+   }
    if(currentCall){
     currentCall.invites=invites||[];
     if(currentCall.role==='recipient')currentCall.invites=currentCall.invites.filter(i=>i.user_id!==uid());
@@ -267,40 +297,46 @@ async function checkIncoming(){
  finally{checking=false}
 }
 async function hangup(update=true){
- const active=currentCall;currentCall=null;callMinimized=false;callConnectedAt=0;cleanIncoming();
+ const active=currentCall,owner=uid();callGeneration++;pendingCall=null;currentCall=null;callMinimized=false;callConnectedAt=0;cleanIncoming();
  extra()?.stopVoice?.();
  updateCallDock();
  if(update&&active&&sb()){
   try{
    const result=active.role==='caller'?
-    await sb().from('chat_calls').update({status:'ended',ended_at:new Date().toISOString()}).eq('id',active.id).eq('initiated_by',uid()):
-    await sb().from('chat_call_invites').update({status:'left',updated_at:new Date().toISOString()}).eq('call_id',active.id).eq('user_id',uid());
+    await sb().from('chat_calls').update({status:'ended',ended_at:new Date().toISOString()}).eq('id',active.id).eq('initiated_by',owner):
+    await sb().from('chat_call_invites').update({status:'left',updated_at:new Date().toISOString()}).eq('call_id',active.id).eq('user_id',owner);
    if(result.error)throw result.error;
   }catch(e){say('Could not update call status: '+e.message)}
  }
 }
 async function startCall(convId){
- if(sending)return;if(currentCall){say('Finish the current call before starting another.');return}
- let c=s()?.conversations.find(c=>c.id===convId);
- if(!c){await chat()?.refresh?.();c=s()?.conversations.find(c=>c.id===convId)}
- if(!c||!['dm','group'].includes(c.type))return say('Open a private chat or a group to call.');
- const targets=[...new Set(members(c.id))].filter(x=>x!==uid());
- if(!targets.length)return say('This chat has nobody else to call.');
- sending=true;
+ if(sending||answerBusy)return;
+ if(currentCall){say('Finish the current call before starting another.');return}
+ sending=true;const generation=++callGeneration,owner=uid();let created=null;
+ const valid=()=>generation===callGeneration&&owner===uid();
+ pendingCall={conversation_id:convId};renderPending();
  try{
-  extra()?.closeProfile?.();
-  await openConversation(c.id);
-  const ready=await extra()?.joinVoice?.();
-  if(!ready)throw Error('Microphone/voice chat unavailable. Allow microphone access, then retry.');
-  const created=check(await sb().from('chat_calls').insert({conversation_id:c.id,initiated_by:uid()}).select('id,conversation_id,initiated_by,status,expires_at').single());
-  try{check(await sb().from('chat_call_invites').insert(targets.map(id=>({call_id:created.id,user_id:id}))))}
-  catch(e){await sb().from('chat_calls').update({status:'ended'}).eq('id',created.id);throw e}
+  let c=s()?.conversations.find(c=>c.id===convId);
+  if(!c){await chat()?.refresh?.();c=s()?.conversations.find(c=>c.id===convId)}
+  if(!valid())return;
+  if(!c||!['dm','group'].includes(c.type))throw Error('Open a private chat or a group to call.');
+  const targets=[...new Set(members(c.id))].filter(x=>x!==owner);
+  if(!targets.length)throw Error('This chat has nobody else to call.');
+  extra()?.closeProfile?.();await openConversation(c.id);if(!valid())return;
+  const ready=await extra()?.joinVoice?.();if(!valid())return;
+  if(!ready)throw Error('Audio could not start. Check microphone access and try again.');
+  created=check(await sb().from('chat_calls').insert({conversation_id:c.id,initiated_by:owner}).select('id,conversation_id,initiated_by,status,expires_at').single());
+  if(!valid())return;
+  check(await sb().from('chat_call_invites').insert(targets.map(id=>({call_id:created.id,user_id:id}))));
+  if(!valid())return;
   currentCall={...created,role:'caller',invites:targets.map(user_id=>({user_id,status:'ringing'}))};
-  callMinimized=false;callConnectedAt=0;
-  fetchMissingProfiles(targets).catch(console.debug);
-  updateCallDock();checkIncoming();say('Calling '+(c.type==='group'?'group members…':conversationName(c.id)+'…'));
- }catch(e){extra()?.stopVoice?.();say(e.message||'Unable to start call')}
- finally{sending=false}
+  callMinimized=false;callConnectedAt=0;created=null;
+  fetchMissingProfiles(targets).catch(console.debug);updateCallDock();checkIncoming();
+ }catch(e){if(valid()){extra()?.stopVoice?.();say(e.message||'Unable to start call')}}
+ finally{
+  if(created)try{check(await sb().from('chat_calls').update({status:'ended',ended_at:new Date().toISOString()}).eq('id',created.id).eq('initiated_by',owner))}catch(e){console.warn('Could not close cancelled call',e)}
+  sending=false;if(valid())pendingCall=null;updateCallDock();
+ }
 }
 async function callFriend(id){
  if(!id)return;
@@ -308,19 +344,27 @@ async function callFriend(id){
  catch(e){say(e.message||'Unable to call this friend')}
 }
 async function answerCall(){
- if(answerBusy||!activeInvite)return;
- answerBusy=true;
- const call={...activeInvite};cleanIncoming();
+ if(answerBusy||sending||!activeInvite)return;
+ if(currentCall){say('End the current call before answering another.');return}
+ answerBusy=true;const call={...activeInvite},generation=++callGeneration,owner=uid();
+ const valid=()=>generation===callGeneration&&uid()===owner;
+ cleanIncoming();pendingCall=call;renderPending();let accepted=false;
  try{
-  if(currentCall)throw Error('End the current call before answering another.');
   if(new Date(call.expires_at).getTime()<=Date.now())throw Error('The call has expired.');
-  await openConversation(call.conversation_id);
-  const ready=await extra()?.joinVoice?.();
-  if(!ready)throw Error('Microphone permission is needed to answer. The call is still ringing.');
-  check(await sb().from('chat_call_invites').update({status:'accepted',updated_at:new Date().toISOString()}).eq('call_id',call.id).eq('user_id',uid()).select('call_id').single());
-  currentCall={...call,role:'recipient',invites:[]};callMinimized=false;callConnectedAt=Date.now();updateCallDock();say('Call connected');
- }catch(e){extra()?.stopVoice?.();say(e.message||'Could not answer call')}
- finally{answerBusy=false;checkIncoming()}
+  await openConversation(call.conversation_id);if(!valid())return;
+  const ready=await extra()?.joinVoice?.();if(!valid())return;
+  if(!ready)throw Error('Audio could not start. Check microphone access and answer again.');
+  const live=check(await sb().from('chat_calls').select('status,expires_at').eq('id',call.id).maybeSingle());
+  if(!valid())return;
+  if(!live||live.status==='ended'||new Date(live.expires_at).getTime()<=Date.now())throw Error('The caller has ended this call.');
+  check(await sb().from('chat_call_invites').update({status:'accepted',updated_at:new Date().toISOString()}).eq('call_id',call.id).eq('user_id',owner).eq('status','ringing').select('call_id').single());accepted=true;
+  if(!valid())return;
+  currentCall={...call,role:'recipient',invites:[]};callMinimized=false;callConnectedAt=0;updateCallDock();
+ }catch(e){if(valid()){extra()?.stopVoice?.();say(e.message||'Could not answer call')}}
+ finally{
+  if(accepted&&!valid())try{check(await sb().from('chat_call_invites').update({status:'left'}).eq('call_id',call.id).eq('user_id',owner))}catch(e){console.warn('Could not close cancelled invitation',e)}
+  answerBusy=false;if(valid())pendingCall=null;updateCallDock();checkIncoming();
+ }
 }
 async function declineCall(){
  const invitation=activeInvite;if(!invitation)return;cleanIncoming();
@@ -331,7 +375,7 @@ async function declineCall(){
 }
 function setAuth(id){
  if(signedIn===id)return;
- if(currentCall)hangup().catch(console.error);
+ if(currentCall||pendingCall)hangup().catch(console.error);
  signedIn=id;profileCache.clear();cleanIncoming();
  if(interval){clearInterval(interval);interval=null}
  if(subscription){sb()?.removeChannel(subscription)?.catch?.(()=>{});subscription=null}
@@ -352,12 +396,15 @@ document.addEventListener('click',async e=>{
   if(a==='show'){showCalls();return}
   if(a==='friend'){await callFriend(id);return}
   if(a==='group'){await startCall(id);return}
+  if(a==='room'){if(currentCall||pendingCall){say('Finish the current call first.');return}await openConversation(id);await extra()?.joinVoice?.();return}
   if(a==='answer'){await answerCall();return}
   if(a==='decline'){await declineCall();return}
   if(a==='hangup'){await hangup();return}
-  if(a==='openActive'){if(currentCall)await openConversation(currentCall.conversation_id);return}
-  if(a==='minimize'){callMinimized=true;renderCallWindow();return}
-  if(a==='restore'){callMinimized=false;renderCallWindow();return}
+  if(a==='openActive'){if(currentCall){callMinimized=true;updateCallDock();await openConversation(currentCall.conversation_id)}return}
+  if(a==='minimize'){callMinimized=true;updateCallDock();return}
+  if(a==='restore'){callMinimized=false;updateCallDock();return}
+  if(a==='enableAudio'){await extra()?.enableAudio?.();return}
+  if(a==='retryAudio'){extra()?.retryConnections?.();return}
   if(a==='toggleMute'){extra()?.toggleMute?.();updateCallDock();return}
   if(a==='microphone'){extra()?.openMicSettings?.();return}
   if(a==='screen'){if(extra()?.hasScreen?.())await extra()?.stopScreenShare?.();else await extra()?.startScreenShare?.();updateCallDock();return}
@@ -371,5 +418,5 @@ const boot=async()=>{
  db.auth.onAuthStateChange((_event,session)=>setTimeout(()=>setAuth(session?.user?.id||null),0));
 };
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-window.LoliteChatCalls={renderCallsHtml,afterRender,showCalls,callFriend,startCall,hangup,refreshDock:updateCallDock,voiceStopped:()=>{if(currentCall)hangup().catch(console.error)}};
+window.LoliteChatCalls={hasCall:()=>!!currentCall,renderCallsHtml,afterRender,showCalls,callFriend,startCall,hangup,refreshDock:updateCallDock,voiceStopped:()=>{if(currentCall)hangup().catch(console.error)}};
 })();

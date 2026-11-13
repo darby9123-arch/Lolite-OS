@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "jsdom": "^26.1.0"
+  },
+  "name": "lolite-chat-tests",
+  "private": true,
+  "scripts": {
+    "test": "node --test reliability.test.cjs"
+  }
+}

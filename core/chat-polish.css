@@ -438,3 +438,33 @@
  #lcRoot .lc-compose-wrap{padding:4px 6px 4px 9px}
  #lcRoot .lc-msg-more summary{opacity:.9;width:24px;height:22px}
 }
+
+/* Keep navigation and the composer usable at desktop and phone window sizes. */
+#lcRoot .lc-shell{position:relative}
+#lcRoot .lc-head,#lcRoot .lc-composer,#lcRoot .lc-message-search,#lcRoot .lc-voice-bar{flex-shrink:0}
+#lcRoot .lc-head-identity{min-width:0;flex:1}
+#lcRoot .lc-head-tools{flex-shrink:0}
+#lcRoot .lc-head .lc-call-header{flex-shrink:0;min-height:36px}
+#lcRoot .lc-compose-wrap textarea{font-size:14px;min-height:36px;max-height:130px;resize:vertical}
+#lcRoot .lc-send{min-height:40px;min-width:44px;font-size:13px}
+#lcRoot .lc-msg .lc-msg-content{font-size:14px;line-height:1.5}
+#lcRoot .lc-msg-title time{font-size:10px}
+#lcRoot .lc-msg-more summary{width:28px;height:26px}
+#lcRoot .lc-side-label strong{font-size:13px}
+#lcRoot .lc-side-label small{font-size:11px}
+#lcRoot .lc-side-row{min-height:46px}
+#lcRoot .lc-message-search input{min-width:0;flex:1}
+#lcRoot .lc-voice-bar{flex-wrap:wrap;gap:6px;padding:8px 12px}
+#lcRoot .lc-connection-warning{position:absolute;inset:0 0 auto auto;max-width:100%;padding:8px 12px;background:#44371f;color:#ffe9b3;z-index:5;font-size:12px;border-radius:0 0 0 8px}
+#lcRoot .lc-connection-warning button{margin-left:8px;border:1px solid currentColor;border-radius:5px;background:transparent;color:inherit;padding:3px 8px}
+#lcRoot button:focus-visible,#lcRoot summary:focus-visible{outline:2px solid #a6caff;outline-offset:2px}
+@container lolite-chat (max-width:635px){
+ #lcRoot .lc-head .lc-call-header{font-size:12px!important;max-width:110px}
+ #lcRoot .lc-chat-header-avatar{display:none}
+ #lcRoot .lc-head-sub{max-width:100%;overflow:hidden;text-overflow:ellipsis;display:block}
+ #lcRoot .lc-head-title{font-size:14px}
+ #lcRoot .lc-head-tools .lc-iconbtn{min-width:32px;min-height:36px}
+ #lcRoot .lc-msg,#lcRoot .lc-msg-own{max-width:94%}
+ #lcRoot .lc-composer{padding-bottom:10px}
+ #lcRoot .lc-msg-more summary{opacity:1}
+}

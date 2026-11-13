@@ -193,7 +193,7 @@ document.addEventListener('click',async e=>{
 });
 
 /* Private, members-only voice rooms. Audio goes directly over WebRTC, never into messages. */
-let voice=null;
+let voice=null,joinPending=null,voiceGeneration=0,voiceCleanup=Promise.resolve();
 
 let selectedMic='';
 try{selectedMic=localStorage.getItem('lolite-chat-microphone')||''}catch{}
@@ -293,12 +293,12 @@ function removeRemoteScreen(id){
  voice.screens.delete(id);if(voice.selectedScreen===id)voice.selectedScreen=null;screenChanged();
 }
 async function stopScreenShare(){
- const v=voice;if(!v?.screenStream)return;
+ const v=voice;if(!v)return;v.screenRequest=(v.screenRequest||0)+1;if(!v.screenStream)return;
  const stream=v.screenStream;v.screenStream=null;v.screens.delete(myId());
  if(v.selectedScreen===myId())v.selectedScreen=null;
  for(const track of stream.getTracks()){track.onended=null;track.stop()}
  for(const peer of v.peers.values()){
-  try{await peer.videoSender.replaceTrack(null);peer.videoTransceiver.direction='recvonly';offer(peer.id)}
+  try{await peer.videoSender.replaceTrack(null);if(voice!==v)return;peer.videoTransceiver.direction='recvonly';offer(peer.id,v)}
   catch(e){console.debug('Screen share stop:',e)}
  }
  v.channel.send({type:'broadcast',event:'screen',payload:{from:myId(),active:false}}).catch(()=>{});
@@ -306,156 +306,227 @@ async function stopScreenShare(){
 }
 async function startScreenShare(){
  const v=voice;if(!v)return notice('Join a voice call or voice room first.');
+ if(v.sharingPending)return;
  if(v.screenStream){v.selectedScreen=myId();v.hiddenScreen=false;screenChanged();return}
  if(!navigator.mediaDevices?.getDisplayMedia)return notice('Screen sharing needs a supported desktop browser.');
+ v.sharingPending=true;const request=v.screenRequest=(v.screenRequest||0)+1;
  let stream;
  try{stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:24},audio:false})}
- catch(e){if(!['NotAllowedError','AbortError'].includes(e.name))notice('Could not share screen: '+e.message);return}
- if(voice!==v){stream.getTracks().forEach(t=>t.stop());return}
+ catch(e){if(voice===v&&!['NotAllowedError','AbortError'].includes(e.name))notice('Could not share screen: '+e.message);return}
+ finally{v.sharingPending=false}
+ if(voice!==v||v.screenRequest!==request){stream.getTracks().forEach(t=>t.stop());return}
  const track=stream.getVideoTracks()[0];
  if(!track){stream.getTracks().forEach(t=>t.stop());return notice('No screen was selected.')}
  v.screenStream=stream;v.screens.set(myId(),stream);v.selectedScreen=myId();v.hiddenScreen=false;
  track.onended=()=>{if(voice===v)stopScreenShare()};
  for(const peer of v.peers.values()){
-  try{await peer.videoSender.replaceTrack(track);peer.videoTransceiver.direction='sendrecv';offer(peer.id)}
+  try{await peer.videoSender.replaceTrack(track);if(voice!==v)return;peer.videoTransceiver.direction='sendrecv';offer(peer.id,v)}
   catch(e){console.debug('Screen share peer:',e)}
  }
  v.channel.send({type:'broadcast',event:'screen',payload:{from:myId(),active:true}}).catch(()=>{});
  screenChanged();notice('Screen sharing started. Use Stop sharing to end it.');
 }
 
-function voiceUsers(){return voice?Object.keys(voice.channel.presenceState()).filter(id=>id!==myId()):[]}
+function voiceUsers(v=voice){return v?Object.keys(v.channel.presenceState()).filter(id=>id!==v.userId):[]}
+function connectionState(){
+ if(!voice)return {status:joinPending?'joining':'idle',connected:0};
+ const peers=[...voice.peers.values()],connected=peers.filter(p=>p.pc.connectionState==='connected').length;
+ const status=!voice.ready?'reconnecting':connected?'connected':voice.signalError||peers.some(p=>p.failed)?'failed':peers.some(p=>p.pc.connectionState==='disconnected')?'reconnecting':peers.length?'connecting':'waiting';
+ return {status,connected,audioBlocked:peers.some(p=>p.audioBlocked),conversationId:voice.id};
+}
+function voiceChanged(){refreshVoiceUI();window.LoliteChatCalls?.refreshDock?.()}
 function showVoiceUI(){
- const r=root(),s=state(),c=conversation();if(!r||!s)return;
- const head=r.querySelector('.lc-head');if(!head)return;
- if(c){
-  const btn=document.createElement('button');btn.type='button';btn.className='lc-voice-join '+(voice?.id===c.id?'active':'');btn.dataset.lcVoice=voice?.id===c.id?'leave':'join';btn.textContent=voice?.id===c.id?'Leave room':'Join room';btn.title='Join an audio room without ringing anyone. Use Call to invite people.';head.appendChild(btn);
- }
- if(!voice)return;
- const toolbar=document.createElement('section');toolbar.className='lc-voice-bar';
- const people=voiceUsers().map(id=>name(id)).slice(0,20);
- toolbar.innerHTML='<span class="lc-voice-status">Voice connected · '+esc(String(people.length+1))+' in room'+(c?.id===voice.id?'':' · another chat')+'</span><span class="lc-voice-people">'+esc(people.length?people.join(', '):'Waiting for someone to join')+'</span>'+
- '<button type="button" data-lc-voice="mute">'+(voice.muted?'Unmute mic':'Mute mic')+'</button><button type="button" data-lc-voice="deafen">'+(voice.deafened?'Undeafen':'Deafen')+'</button><button type="button" data-lc-mic="open">Microphone</button><button type="button" data-lc-voice="screen">'+(voice.screenStream?'Stop sharing':'Share screen')+'</button>'+(voice.screens.size?'<button type="button" data-lc-voice="viewScreen">View screen</button>':'')+'<button type="button" data-lc-voice="leave">Leave</button>';
- const main=r.querySelector('.lc-main');if(main)main.insertBefore(toolbar,main.querySelector('.lc-message-scroll')||main.firstChild);
+ const r=root(),c=conversation();if(!r)return;
+ // Call controls live in one panel. A plain room still gets its own toolbar.
+ const managed=window.LoliteChatCalls?.hasCall?.();
+ const old=r.querySelector('.lc-voice-bar');
+ r.querySelector('.lc-voice-join')?.remove();
+ if(!voice||managed){old?.remove();return}
+ const summary=connectionState(),labels={waiting:'Waiting for someone to join',connecting:'Connecting audio…',connected:'Audio connected',reconnecting:'Reconnecting audio…',failed:'Audio could not connect'};
+ const html='<span class="lc-voice-status">'+esc(labels[summary.status]||'Joining voice…')+(c?.id===voice.id?'':' · another chat')+'</span>'+
+ '<button type="button" data-lc-voice="mute">'+(voice.muted?'Unmute':'Mute')+'</button><button type="button" data-lc-voice="deafen">'+(voice.deafened?'Hear audio':'Deafen')+'</button><button type="button" data-lc-mic="open">Microphone</button><button type="button" data-lc-voice="screen">'+(voice.screenStream?'Stop sharing':'Share screen')+'</button>'+(voice.screens.size?'<button type="button" data-lc-voice="viewScreen">View screen</button>':'')+(summary.audioBlocked?'<button type="button" data-lc-voice="audio">Enable sound</button>':'')+(summary.status==='failed'?'<button type="button" data-lc-voice="retry">Retry audio</button>':'')+'<button type="button" data-lc-voice="leave">Leave</button>';
+ const toolbar=old||document.createElement('section');toolbar.className='lc-voice-bar';
+ if(toolbar._voiceHtml!==html){toolbar.innerHTML=html;toolbar._voiceHtml=html}
+ if(!old){const main=r.querySelector('.lc-main');if(main)main.insertBefore(toolbar,main.querySelector('.lc-message-scroll')||main.firstChild)}
 }
-function refreshVoiceUI(){if(!root())return;root().querySelector('.lc-voice-join')?.remove();root().querySelector('.lc-voice-bar')?.remove();showVoiceUI()}
-async function sendSignal(target,kind,data){
- if(!voice)return;
- const channel=voice.channel;
- try{await channel.send({type:'broadcast',event:'rtc',payload:{from:myId(),to:target,kind,data}})}
- catch(e){console.debug('Voice signal could not send',e)}
+function refreshVoiceUI(){showVoiceUI()}
+async function enableAudio(){
+ const v=voice;if(!v)return;
+ await Promise.all([...v.peers.values()].map(async p=>{try{await p.audio.play();p.audioBlocked=false}catch{p.audioBlocked=true}}));
+ if(voice===v)voiceChanged();
 }
-function closePeer(id){
- const peer=voice?.peers.get(id);if(!peer)return;
+async function sendSignal(target,kind,data,v=voice){
+ if(!v||voice!==v)return;
+ const result=await v.channel.send({type:'broadcast',event:'rtc',payload:{from:v.userId,to:target,kind,data}});
+ if(voice!==v)return;
+ if(result!=='ok'){v.signalError=true;voiceChanged();throw Error('Voice signalling did not reach the server')}
+}
+function closePeer(id,v=voice){
+ const peer=v?.peers.get(id);if(!peer)return;
+ v.peers.delete(id);clearTimeout(peer.recoveryTimer);clearTimeout(peer.connectionTimer);
+ peer.pc.onconnectionstatechange=null;peer.pc.onicecandidate=null;peer.pc.onnegotiationneeded=null;
  try{peer.pc.close()}catch{}
- peer.audio.remove();voice.peers.delete(id);removeRemoteScreen(id);
+ peer.audio.srcObject=null;peer.audio.remove();
+ if(voice===v)removeRemoteScreen(id);
 }
-function getPeer(id){
- if(!voice||!id||id===myId())return null;
- if(voice.peers.has(id))return voice.peers.get(id);
+function retryPeer(peer,v){
+ if(voice!==v||v.peers.get(peer.id)!==peer||peer.pc.connectionState==='closed')return;
+ clearTimeout(peer.recoveryTimer);clearTimeout(peer.connectionTimer);
+ if(peer.retries>=2){peer.failed=true;voiceChanged();return}
+ peer.retries++;peer.failed=false;v.signalError=false;
+ peer.pc.restartIce();offer(peer.id,v);
+ peer.connectionTimer=setTimeout(()=>{if(peer.pc.connectionState!=='connected')retryPeer(peer,v)},15000);
+ voiceChanged();
+}
+function retryConnections(){const v=voice;if(!v)return;for(const p of v.peers.values()){p.retries=0;retryPeer(p,v)}}
+function getPeer(id,v=voice){
+ if(!v||voice!==v||!id||id===v.userId)return null;
+ if(v.peers.has(id))return v.peers.get(id);
  const pc=new RTCPeerConnection(rtcConfig),audio=document.createElement('audio');audio.autoplay=true;audio.playsInline=true;audio.dataset.loliteVoice=id;audio.style.display='none';document.body.appendChild(audio);
- const peer={id,pc,audio,candidates:[],makingOffer:false,renegotiate:false,ignoreOffer:false};voice.peers.set(id,peer);
- for(const track of voice.stream.getTracks())pc.addTrack(track,voice.stream);
- peer.videoTransceiver=pc.addTransceiver('video',{direction:voice.screenStream?'sendrecv':'recvonly'});
- peer.videoSender=peer.videoTransceiver.sender;
- if(voice.screenStream)peer.videoSender.replaceTrack(voice.screenStream.getVideoTracks()[0]).catch(console.debug);
- pc.onsignalingstatechange=()=>{if(pc.signalingState==='stable'&&peer.renegotiate){peer.renegotiate=false;offer(id)}};
+ const peer={id,pc,audio,candidates:[],makingOffer:false,renegotiate:false,ignoreOffer:false,settingAnswer:false,retries:0,failed:false,audioBlocked:false,signals:Promise.resolve()};v.peers.set(id,peer);
+ const live=()=>voice===v&&v.peers.get(id)===peer;
+ for(const track of v.stream.getTracks())pc.addTrack(track,v.stream);
+ peer.videoTransceiver=pc.addTransceiver('video',{direction:v.screenStream?'sendrecv':'recvonly'});peer.videoSender=peer.videoTransceiver.sender;
+ if(v.screenStream)peer.videoSender.replaceTrack(v.screenStream.getVideoTracks()[0]).catch(console.debug);
+ pc.onnegotiationneeded=()=>{if(live()&&(v.userId<id||pc.remoteDescription))offer(id,v)};
+ pc.onsignalingstatechange=()=>{if(live()&&pc.signalingState==='stable'&&peer.renegotiate){peer.renegotiate=false;queueMicrotask(()=>offer(id,v))}};
  pc.ontrack=e=>{
-  if(e.track.kind==='audio'){audio.srcObject=e.streams[0]||new MediaStream([e.track]);audio.muted=voice?.deafened||false;audio.play().catch(()=>{});return}
+  if(!live())return;
+  if(e.track.kind==='audio'){
+   audio.srcObject=e.streams[0]||new MediaStream([e.track]);audio.muted=v.deafened;
+   audio.play().then(()=>{if(live()){peer.audioBlocked=false;voiceChanged()}}).catch(()=>{if(live()){peer.audioBlocked=true;voiceChanged()}});return;
+  }
   if(e.track.kind==='video'){
-   const show=()=>{if(voice?.peers.get(id)===peer)remoteScreen(id,e.track)};
-   e.track.onunmute=show;e.track.onmute=()=>removeRemoteScreen(id);e.track.onended=()=>removeRemoteScreen(id);
-   if(!e.track.muted)show();
+   const show=()=>{if(live())remoteScreen(id,e.track)},hide=()=>{if(live())removeRemoteScreen(id)};
+   e.track.onunmute=show;e.track.onmute=hide;e.track.onended=hide;if(!e.track.muted)show();
   }
  };
- pc.onicecandidate=e=>{if(e.candidate)sendSignal(id,'candidate',e.candidate.toJSON())};
- pc.onconnectionstatechange=()=>{if(pc.connectionState==='failed'){notice('Voice connection failed. A TURN relay may be needed on this network.')}};
+ pc.onicecandidate=e=>{if(live()&&e.candidate)sendSignal(id,'candidate',e.candidate.toJSON(),v).catch(console.debug)};
+ pc.onconnectionstatechange=()=>{
+  if(!live())return;
+  if(pc.connectionState==='connected'){clearTimeout(peer.recoveryTimer);peer.recoveryTimer=null;clearTimeout(peer.connectionTimer);peer.retries=0;peer.failed=false;v.signalError=false}
+  else if(pc.connectionState==='disconnected'||pc.connectionState==='failed'){
+   if(!peer.recoveryTimer)peer.recoveryTimer=setTimeout(()=>{peer.recoveryTimer=null;retryPeer(peer,v)},pc.connectionState==='failed'?0:4000);
+  }
+  voiceChanged();
+ };
+ peer.connectionTimer=setTimeout(()=>{if(live()&&pc.connectionState!=='connected')retryPeer(peer,v)},15000);
  return peer;
 }
-async function offer(id){
- const peer=getPeer(id);if(!peer)return;
+async function offer(id,v=voice){
+ const peer=getPeer(id,v);if(!peer)return;
  if(peer.makingOffer||peer.pc.signalingState!=='stable'){peer.renegotiate=true;return}
  peer.makingOffer=true;
- try{await peer.pc.setLocalDescription(await peer.pc.createOffer());await sendSignal(id,'offer',peer.pc.localDescription)}
- catch(e){console.warn('Voice offer error',e)}
+ try{await peer.pc.setLocalDescription();if(voice===v){const description=peer.pc.localDescription;await sendSignal(id,description.type,description,v)}}
+ catch(e){if(voice===v)console.debug('Voice offer:',e)}
  finally{peer.makingOffer=false}
 }
-async function signal(payload){
- if(!voice||!payload||payload.to!==myId()||!payload.from||payload.from===myId())return;
- // Reject messages from users who are not currently in this members-only room.
- if(!voiceUsers().includes(payload.from))return;
- const peer=getPeer(payload.from);if(!peer)return;
- try{
-  if(payload.kind==='offer'){
-   const collision=peer.makingOffer||peer.pc.signalingState!=='stable';
-   peer.ignoreOffer=collision&&myId()<payload.from;
-   if(peer.ignoreOffer)return;
-   if(collision)await peer.pc.setLocalDescription({type:'rollback'});
-   await peer.pc.setRemoteDescription(payload.data);
-   await peer.pc.setLocalDescription(await peer.pc.createAnswer());
-   await sendSignal(payload.from,'answer',peer.pc.localDescription);
-  }else if(payload.kind==='answer'&&peer.pc.signalingState==='have-local-offer'){
-   await peer.pc.setRemoteDescription(payload.data);
-  }else if(payload.kind==='candidate'){
-   if(peer.ignoreOffer)return;
-   if(peer.pc.remoteDescription)await peer.pc.addIceCandidate(payload.data);
-   else peer.candidates.push(payload.data);
-  }
-  if(peer.pc.remoteDescription&&peer.candidates.length)for(const item of peer.candidates.splice(0))await peer.pc.addIceCandidate(item);
- }catch(e){console.debug('Voice signaling error',e)}
-}
-async function synchronizePeers(){
- if(!voice)return;
- const ids=voiceUsers();for(const id of [...voice.peers.keys()])if(!ids.includes(id))closePeer(id);
- for(const id of ids){if(myId()<id&&!voice.peers.has(id))await offer(id)}
- refreshVoiceUI();
-}
-async function joinVoice(){
- const sb=client(),s=state(),c=conversation();
- if(!sb||!s?.user||!c||!['dm','group'].includes(c.type))return notice('Open a direct message or group to join voice.');
- if(voice?.id===c.id)return true;
- if(!navigator.mediaDevices?.getUserMedia||!window.RTCPeerConnection){notice('Voice chat needs a secure browser with WebRTC and microphone support.');return false;}
- stopVoice();
- let stream;
- try{stream=await navigator.mediaDevices.getUserMedia({audio:micConstraints(selectedMic),video:false})}
- catch(e){
-  if(selectedMic&&['OverconstrainedError','NotFoundError'].includes(e.name)){
-   saveMic('');
-   try{stream=await navigator.mediaDevices.getUserMedia({audio:micConstraints(''),video:false});notice('Selected microphone unavailable; using system default.')}
-   catch{notice('Microphone access is required to join voice chat.');return false}
-  }else{notice('Microphone access is required to join voice chat.');return false}
+async function signal(payload,v=voice){
+ if(!v||voice!==v||!payload||payload.to!==v.userId||!payload.from||payload.from===v.userId||!['offer','answer','candidate'].includes(payload.kind))return;
+ // Presence sync can arrive after an offer. Hold early signals until membership is visible.
+ if(!voiceUsers(v).includes(payload.from)){
+  if(v.earlySignals.length<128)v.earlySignals.push({payload,at:Date.now()});return;
  }
- const id=c.id;
- const channel=sb.channel('lc-voice-'+id,{config:{private:true,presence:{key:myId()}}});
- const v={id,stream,channel,peers:new Map(),muted:false,deafened:false,screens:new Map(),screenStream:null,selectedScreen:null,hiddenScreen:false};
- voice=v;
- channel.on('broadcast',{event:'rtc'},({payload})=>signal(payload));
- channel.on('broadcast',{event:'screen'},({payload})=>{if(voice===v&&payload?.from!==myId()&&voiceUsers().includes(payload.from)&&payload.active===false)removeRemoteScreen(payload.from)});
- channel.on('presence',{event:'sync'},()=>synchronizePeers());
- const connected=await new Promise(resolve=>{
-  let resolved=false;
-  const done=value=>{if(resolved)return;resolved=true;clearTimeout(timer);resolve(value)};
-  const timer=setTimeout(()=>done(false),12000);
-  channel.subscribe(async(status,error)=>{
-   if(voice!==v)return done(false);
-   if(status==='SUBSCRIBED'){
-    try{await channel.track({user_id:myId(),joined_at:new Date().toISOString()});done(true)}
-    catch(e){console.warn('Voice presence unavailable',e);done(false)}
-   }else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED')done(false);
-  });
+ const peer=getPeer(payload.from,v);if(!peer)return;
+ peer.signals=peer.signals.then(async()=>{
+  if(voice!==v||v.peers.get(peer.id)!==peer)return;
+  try{
+   if(payload.kind==='offer'||payload.kind==='answer'){
+    const ready=!peer.makingOffer&&(peer.pc.signalingState==='stable'||peer.settingAnswer);
+    const collision=payload.kind==='offer'&&!ready;
+    peer.ignoreOffer=collision&&v.userId<payload.from;
+    if(peer.ignoreOffer)return;
+    peer.settingAnswer=payload.kind==='answer';
+    // setRemoteDescription performs the polite peer's rollback on a colliding offer.
+    await peer.pc.setRemoteDescription(payload.data);peer.settingAnswer=false;
+    if(voice!==v)return;
+    if(payload.kind==='offer'){await peer.pc.setLocalDescription();await sendSignal(payload.from,'answer',peer.pc.localDescription,v)}
+   }else{
+    if(peer.ignoreOffer)return;
+    if(peer.pc.remoteDescription)await peer.pc.addIceCandidate(payload.data);
+    else if(peer.candidates.length<128)peer.candidates.push(payload.data);
+   }
+   if(peer.pc.remoteDescription&&!peer.ignoreOffer)for(const item of peer.candidates.splice(0))await peer.pc.addIceCandidate(item);
+  }catch(e){peer.settingAnswer=false;if(voice===v)console.debug('Voice signalling:',e)}
  });
- if(!connected){notice('Private voice room could not connect. Please try again.');stopVoice();return false;}
- refreshVoiceUI();notice('Microphone is on. You joined the voice room.');return true;
+ return peer.signals;
+}
+async function synchronizePeers(v=voice){
+ if(!v||voice!==v||!v.ready)return;
+ const ids=voiceUsers(v);
+ for(const id of [...v.peers.keys()])if(!ids.includes(id))closePeer(id,v);
+ const pending=v.earlySignals.splice(0);
+ for(const item of pending){if(Date.now()-item.at<10000)await signal(item.payload,v)}
+ for(const id of ids){if(voice===v&&v.userId<id&&!v.peers.has(id))await offer(id,v)}
+ if(voice===v)voiceChanged();
+}
+function joinVoice(){
+ const sb=client(),s=state(),c=conversation();
+ if(!sb||!s?.user||!c||!['dm','group'].includes(c.type)){notice('Open a direct message or group to join voice.');return Promise.resolve(false)}
+ if(joinPending?.id===c.id)return joinPending.promise;
+ if(voice?.id===c.id&&voice.ready)return Promise.resolve(true);
+ if(!navigator.mediaDevices?.getUserMedia||!window.RTCPeerConnection){notice('Voice chat needs a secure browser with WebRTC and microphone support.');return Promise.resolve(false)}
+ stopVoice();const generation=voiceGeneration,userId=myId();
+ const pending={id:c.id,promise:null};joinPending=pending;
+ pending.promise=(async()=>{
+  let stream,v;
+  try{
+   // Removing the previous topic first avoids a late unsubscribe closing a new room.
+   await voiceCleanup;
+   if(generation!==voiceGeneration)return false;
+   try{stream=await navigator.mediaDevices.getUserMedia({audio:micConstraints(selectedMic),video:false})}
+   catch(e){
+    if(generation!==voiceGeneration)return false;
+    if(!selectedMic||!['OverconstrainedError','NotFoundError'].includes(e.name))throw e;
+    saveMic('');stream=await navigator.mediaDevices.getUserMedia({audio:micConstraints(''),video:false});
+   }
+   if(generation!==voiceGeneration||myId()!==userId){stream.getTracks().forEach(t=>t.stop());return false}
+   const channel=sb.channel('lc-voice-'+c.id,{config:{private:true,broadcast:{ack:true},presence:{key:userId}}});
+   v={id:c.id,userId,stream,channel,peers:new Map(),muted:false,deafened:false,screens:new Map(),screenStream:null,selectedScreen:null,hiddenScreen:false,ready:false,earlySignals:[],signalError:false};voice=v;
+   channel.on('broadcast',{event:'rtc'},({payload})=>signal(payload,v));
+   channel.on('broadcast',{event:'screen'},({payload})=>{if(voice===v&&payload?.from!==userId&&voiceUsers(v).includes(payload?.from)&&payload.active===false)removeRemoteScreen(payload.from)});
+   channel.on('presence',{event:'sync'},()=>synchronizePeers(v));
+   const connected=await new Promise(resolve=>{
+    let resolved=false;
+    const done=value=>{if(resolved)return;resolved=true;clearTimeout(v.joinTimer);resolve(value)};
+    v.cancelJoin=()=>done(false);v.joinTimer=setTimeout(()=>done(false),12000);
+    channel.subscribe(async status=>{
+     if(voice!==v)return done(false);
+     if(status==='SUBSCRIBED'){
+      try{
+       const result=await channel.track({user_id:userId,joined_at:new Date().toISOString()});
+       if(voice!==v)return done(false);
+       if(result!=='ok')throw Error('Could not join the private audio room');
+       clearTimeout(v.reconnectTimer);v.ready=true;v.signalError=false;done(true);synchronizePeers(v);
+      }catch(e){if(voice===v){notice('The voice room could not connect. Please retry.');stopVoice()}done(false)}
+     }else if(['CHANNEL_ERROR','TIMED_OUT','CLOSED'].includes(status)){
+      v.ready=false;voiceChanged();
+      if(!resolved)done(false);
+      else if(!v.reconnectTimer)v.reconnectTimer=setTimeout(()=>{if(voice===v){notice('The voice connection was lost. Please call again.');stopVoice()}},15000);
+     }
+    });
+   });
+   if(!connected||voice!==v){if(voice===v)stopVoice();return false}
+   voiceChanged();return true;
+  }catch(e){
+   stream?.getTracks().forEach(t=>t.stop());
+   if(generation===voiceGeneration){if(voice===v)stopVoice();notice(e.name==='NotAllowedError'?'Allow microphone access in your browser to call.':'Could not start audio: '+(e.message||'Microphone unavailable'))}
+   return false;
+  }finally{if(joinPending===pending)joinPending=null}
+ })();
+ return pending.promise;
 }
 function stopVoice(){
- if(!voice)return;
+ voiceGeneration++;joinPending=null;
  const v=voice;voice=null;closeMicSettings();
- for(const p of v.peers.values()){try{p.pc.close()}catch{}p.audio.remove()}
- for(const t of v.screenStream?.getTracks()||[]){t.onended=null;t.stop()}
- for(const t of v.stream.getTracks())t.stop();
- document.getElementById('lcScreenViewer')?.remove();window.LoliteChatCalls?.refreshDock?.();
- client()?.removeChannel(v.channel)?.catch?.(()=>{});
- refreshVoiceUI();window.LoliteChatCalls?.voiceStopped?.();
+ if(v){
+  v.cancelJoin?.();clearTimeout(v.joinTimer);clearTimeout(v.reconnectTimer);
+  for(const id of [...v.peers.keys()])closePeer(id,v);
+  for(const t of v.screenStream?.getTracks()||[]){t.onended=null;t.stop()}
+  for(const t of v.stream.getTracks())t.stop();
+  voiceCleanup=Promise.resolve(client()?.removeChannel(v.channel)).catch(()=>{});
+ }
+ document.getElementById('lcScreenViewer')?.remove();voiceChanged();window.LoliteChatCalls?.voiceStopped?.();
 }
 document.addEventListener('click',async e=>{
  const b=e.target.closest('[data-lc-voice]');if(!b||!root()?.contains(b))return;
@@ -463,8 +534,10 @@ document.addEventListener('click',async e=>{
  switch(b.dataset.lcVoice){
   case 'join':await joinVoice();break;
   case 'leave':stopVoice();break;
-  case 'mute':if(voice){voice.muted=!voice.muted;voice.stream.getAudioTracks().forEach(t=>t.enabled=!voice.muted);refreshVoiceUI()}break;
-  case 'deafen':if(voice){voice.deafened=!voice.deafened;for(const p of voice.peers.values())p.audio.muted=voice.deafened;refreshVoiceUI()}break;
+  case 'audio':await enableAudio();break;
+  case 'retry':retryConnections();break;
+  case 'mute':if(voice){voice.muted=!voice.muted;voice.stream.getAudioTracks().forEach(t=>t.enabled=!voice.muted);voiceChanged()}break;
+  case 'deafen':if(voice){voice.deafened=!voice.deafened;for(const p of voice.peers.values())p.audio.muted=voice.deafened;voiceChanged()}break;
   case 'screen':if(voice?.screenStream)await stopScreenShare();else await startScreenShare();break;
   case 'viewScreen':if(voice){voice.hiddenScreen=false;renderScreen()}break;
  }
@@ -481,5 +554,5 @@ function afterRender(){
  if(conversation()){showReadReceipts().catch(console.error)}
  poll().catch(console.error);
 }
-window.LoliteChatExtra={afterRender,stopVoice,joinVoice,openMicSettings,micName,startScreenShare,stopScreenShare,hasScreen:()=>!!voice?.screenStream,hasAnyScreen:()=>!!voice?.screens.size,viewScreen:()=>{if(voice){voice.hiddenScreen=false;renderScreen()}},isMuted:()=>!!voice?.muted,toggleMute:()=>{if(voice){voice.muted=!voice.muted;voice.stream.getAudioTracks().forEach(t=>t.enabled=!voice.muted);refreshVoiceUI()}},closeProfile:()=>{focusedProfile=null;root()?.querySelector('.lc-user-modal')?.remove()}};
+window.LoliteChatExtra={connectionState,retryConnections,enableAudio,afterRender,stopVoice,joinVoice,openMicSettings,micName,startScreenShare,stopScreenShare,hasScreen:()=>!!voice?.screenStream,hasAnyScreen:()=>!!voice?.screens.size,viewScreen:()=>{if(voice){voice.hiddenScreen=false;renderScreen()}},isMuted:()=>!!voice?.muted,toggleMute:()=>{if(voice){voice.muted=!voice.muted;voice.stream.getAudioTracks().forEach(t=>t.enabled=!voice.muted);voiceChanged()}},closeProfile:()=>{focusedProfile=null;root()?.querySelector('.lc-user-modal')?.remove()}};
 })();
