@@ -50,6 +50,7 @@ html body,html body :where(button,input,select,textarea,h1,h2,h3,h4,h5,h6,p,a,sp
  font-optical-sizing:auto;
 }
 html body{font-kerning:normal;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html body .cosmos-terminal-history,html body .cosmos-terminal-history *,html body .cosmos-terminal-form input,
 html body .terminal-app :is(pre,input),html body .terminal-app :is(pre,input) *,
 html body :is(code,pre,kbd,samp),html body :is(code,pre,kbd,samp) *,
 html body :is(.terminal,.terminal-output,.terminal-input,#terminal,#term-output,#term-input),
