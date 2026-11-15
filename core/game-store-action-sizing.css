@@ -16,6 +16,7 @@
  pointer-events:auto!important;
 }
 /* First row: make Play the dominant full-width action on every game card. */
+html .window .store.store-v41 .store-gallery-card .store-card-actions > .store-play,
 .store.store-v41 .store-gallery-card .store-card-actions > .store-play{
  grid-column:1 / -1!important;
  grid-row:1!important;
@@ -27,21 +28,43 @@
  min-width:0!important;
  min-height:76px!important;
  padding:16px 12px!important;
- border-radius:11px!important;
+ border-radius:14px!important;
  font-size:21px!important;
- font-weight:850!important;
+ font-weight:650!important;
  line-height:1.2!important;
- letter-spacing:.15px!important;
+ letter-spacing:-.025em!important;
  white-space:nowrap!important;
- background:#8157d1!important;
- border:1px solid #b19aef!important;
- color:#fff!important;
- box-shadow:0 3px 12px #4c2b8645!important;
+ gap:12px!important;
+ background:#b9b0ff!important;
+ border:1px solid #d5ceff!important;
+ color:#211b40!important;
+ box-shadow:inset 0 1px 0 #ffffff60,0 4px 12px #0c091b35!important;
+ transition:background-color .16s,box-shadow .16s,transform .16s!important;
 }
+html .window .store.store-v41 .store-gallery-card .store-card-actions > .store-play:hover,
 .store.store-v41 .store-gallery-card .store-card-actions > .store-play:hover{
- background:#9c70e4!important;
- border-color:#dfc8ff!important;
+ background:#cec6ff!important;
+ border-color:#eeeaff!important;
+ box-shadow:inset 0 1px 0 #ffffff80,0 6px 18px #0c091b55!important;
+ transform:translateY(-1px)!important;
 }
+html .window .store.store-v41 .store-gallery-card .store-card-actions > .store-play:active,
+.store.store-v41 .store-gallery-card .store-card-actions > .store-play:active{transform:translateY(0)!important;box-shadow:inset 0 2px 4px #211b4020!important}
+html .window .store.store-v41 .store-gallery-card .store-card-actions > .store-play:focus-visible,
+.store.store-v41 .store-gallery-card .store-card-actions > .store-play:focus-visible{outline:3px solid #ece8ff!important;outline-offset:3px}
+.store-play-icon{display:grid;place-items:center;width:35px;height:35px;flex:none;background:#211b4014;border:1px solid #211b4012;border-radius:50%}
+.store-play-icon svg{display:block;width:21px;height:21px;transform:translateX(-1px)}
+.store-play-label{line-height:1.2}
+.store.store-v41 .store-featured-hero .store-primary{
+ display:inline-flex!important;align-items:center;justify-content:center;gap:11px;
+ min-height:54px!important;padding:9px 24px 9px 13px!important;
+ border:1px solid #d5ceff!important;border-radius:12px!important;
+ background:#b9b0ff!important;color:#211b40!important;
+ font-size:16px!important;font-weight:650!important;letter-spacing:-.02em;
+ box-shadow:inset 0 1px 0 #ffffff60,0 4px 12px #0c091b35!important;
+}
+.store.store-v41 .store-featured-hero .store-primary:hover{background:#cec6ff!important}
+.store.store-v41 .store-featured-hero .store-primary:focus-visible{outline:3px solid #ece8ff!important;outline-offset:3px}
 /* Second row: the existing server selector remains accessible. */
 .store.store-v41 .store-gallery-card .store-card-actions > .store-server-picker{
  grid-column:1 / -1!important;
@@ -105,14 +128,16 @@
 }
 /* Even in a very narrow Lolite window, Play stays obvious and controls don't collide. */
 @media(max-width:600px){
- .store.store-v41 .store-gallery-card .store-card-actions > .store-play{
+ html .window .store.store-v41 .store-gallery-card .store-card-actions > .store-play,
+.store.store-v41 .store-gallery-card .store-card-actions > .store-play{
   min-height:68px!important;
   font-size:19px!important;
  }
 }
 @media(prefers-reduced-motion:reduce){
- .store.store-v41 .store-gallery-card .store-card-actions > .store-play{
-  transition:none!important;
+ html .window .store.store-v41 .store-gallery-card .store-card-actions > .store-play,
+.store.store-v41 .store-gallery-card .store-card-actions > .store-play{
+  transition:none!important;transform:none!important;
  }
 }
 .store.store-v41 .store-gallery-card .store-card-actions > .store-details:not(.l5-feedback-button){

@@ -338,16 +338,6 @@ html[data-lolite-design="cosmos"] .cr-edition i{background:#668ca8!important}
 html[data-lolite-design="cosmos"] :is(.cr-feature-copy,.win-home-banner>div){background:#09152482!important}
 html[data-lolite-design="cosmos"] :is(.cr-home h1,.cr-home-feature h2,.cr-settings h1){color:#f2f7fb!important}
 html[data-lolite-design="cosmos"] :is(.cr-home p,.cr-help,.cr-theme-header p,.cr-theme-note,.cr-app small){color:#a8bbca!important}
-html[data-lolite-design="cosmos"] .window[data-window-id="chatroom"] #lcRoot{
- --lc-base:#0e1825;--lc-rail-bg:#101a28;--lc-sidebar:#152234;--lc-page:#0d1725;
- --lc-surface:#1a2b40;--lc-surface-raised:#24364c;--lc-border:#536b8255;
- --lc-text:#e9f0f8;--lc-secondary:#aec0d2;--lc-muted:#91a7bc;
- --lc-accent:#7eb0cb;--lc-accent-soft:#253e53;--lc-focus:#a0ccde;
-}
-html[data-lolite-design="cosmos"] #lcRoot :is(.lc-brand-glyph,.lc-rail-btn.active,.lc-side-row.active){
- background:#2b455c!important;color:#e0eff9!important
-}
-html[data-lolite-design="cosmos"] #lcRoot .lc-rail-btn.active::before{background:#719eb7!important}
 html[data-lolite-design="cosmos"] :is(.la-logo,.lc-logo){background:#416881!important;box-shadow:none!important}
 html[data-lolite-design="cosmos"] .fe-sidebar button.active::before{background:#729cb2!important}
 html[data-lolite-design="cosmos"] .fe-row[aria-selected="true"]{background:#263e56!important}

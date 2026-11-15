@@ -116,21 +116,7 @@ html .fe-sidebar button.active:before{background:#d4979e}
 html .fe-row:hover{background:#ffffff0a}
 html .fe-row[aria-selected=true]{background:#4d4748}
 html .fe-status,html .fe-columns{border-color:var(--lolite-divider)}
-/* Chat and Academy: keep their working multi-panel layouts */
-html .window[data-window-id="chatroom"] #lcRoot{
- --lc-base:#1b1a1a;--lc-rail-bg:#1c1b1b;--lc-sidebar:#242222;--lc-page:#1b1a1a;
- --lc-surface:#2b2828;--lc-surface-raised:#393636;--lc-border:#ffffff1c;
- --lc-text:#f7ebed;--lc-secondary:#c1b8b9;--lc-muted:#afa2a4;
- --lc-accent:#d69aa1;--lc-accent-soft:#454141;--lc-focus:#e5c0c4;
- font-family:var(--lolite-font)!important;
-}
-html #lcRoot .lc-brand-glyph{background:#5b5555;box-shadow:none;border-radius:10px}
-html #lcRoot .lc-rail-btn{border-radius:9px}
-html #lcRoot .lc-rail-btn.active{background:#423d3e;color:#efd9db;border-color:#ffffff22}
-html #lcRoot .lc-rail-btn.active::before{background:#d69aa1}
-html #lcRoot .lc-side-row.active{background:#3f3b3b}
-html #lcRoot .lc-side-search{background:#1e1c1c;border-color:#ffffff23}
-html #lcRoot .lc-iconbtn{border-radius:7px}
+/* Academy layout; Chat owns its theme in chat-polish.css. */
 html .la-app{font-family:var(--lolite-font)!important;background:#1c1b1b}
 html .la-side{background:#242222;border-color:var(--lolite-divider)}
 html .la-main{background:#1c1b1b}
@@ -271,9 +257,6 @@ html[data-lolite-design=crimson] :is(.store-hero,.appstore-head,.la-hero){backgr
 html[data-lolite-design=crimson] :is(.store-tab.active,.store-nav button.active,.la-nav button[aria-current=page],.fe-sidebar button.active,.lq-nav.active){background:#3a2429!important;border-color:#a84d5733!important;color:#f8d5d8!important}
 html[data-lolite-design=crimson] .appstore-card button:not(.app-uninstall){background:#bd3541!important;color:#fff}
 html[data-lolite-design=crimson] :is(.store-card,.appstore-card,.la-course,.content .card){background:#222124;border-color:#ffffff13}
-html[data-lolite-design=crimson] .window[data-window-id=chatroom] #lcRoot{--lc-base:#171719;--lc-rail-bg:#171719;--lc-sidebar:#1e1d20;--lc-page:#171719;--lc-surface:#242226;--lc-surface-raised:#2c292e;--lc-border:#ffffff13;--lc-text:#f3eeee;--lc-secondary:#b7aeb6;--lc-muted:#a99ea9;--lc-accent:#ee8890;--lc-accent-soft:#3d272c;--lc-focus:#f2a2a9}
-html[data-lolite-design=crimson] #lcRoot :is(.lc-brand-glyph,.lc-rail-btn.active,.lc-side-row.active){background:#42262d;color:#f5bec4}
-html[data-lolite-design=crimson] #lcRoot .lc-rail-btn.active::before{background:#e85c64}
 html[data-lolite-design=crimson] :is(.store-brand,.la-logo,.lq-brand){color:#f0e7e9}
 html[data-lolite-design=crimson] :is(.la-logo,.lc-logo){background:#b63a45;box-shadow:none}
 html[data-lolite-design=crimson] .fe-sidebar button.active:before{background:#e85c64}

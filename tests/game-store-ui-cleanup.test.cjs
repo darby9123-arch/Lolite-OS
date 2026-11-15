@@ -179,7 +179,8 @@ test('Game Store Play takes the prominent full-width row while rating and report
  assert.match(css,/\.l5-modal \.l5-panel \[data-l5-game-copy\]/);
  assert.match(feedback,/button\.textContent='★ Rate \/ Bug'/);
  assert.match(feedback,/button\.setAttribute\('aria-label','Rate or report a bug for '/);
- const custom='core/game-store-action-sizing.css?v=play-hero-20261113-1';
+ const custom=html.match(/core\/game-store-action-sizing\.css\?v=[^"\s]+/)?.[0];
+ assert.ok(custom, 'versioned game actions stylesheet is loaded');
  assert.ok(html.includes(custom));
  assert.ok(html.indexOf(custom)>html.indexOf('core/lolite-5-panels.css'), 'game actions must override modal defaults');
  assert.ok(html.indexOf(custom)>html.indexOf('core/game-store-ui-cleanup.css'), 'game actions must override old card rules');

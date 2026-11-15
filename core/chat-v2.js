@@ -125,7 +125,7 @@ function sideContents(){
  return direct+groupList+channelList+nothing;
 }
 function sideHtml(){
- return '<aside class="lc-side" aria-label="Conversations"><div class="lc-side-head"><div><span class="lc-overline">YOUR WORKSPACE</span><h2>Messages</h2></div>'+
+ return '<aside class="lc-side" aria-label="Conversations"><div class="lc-side-head"><div><h2>Messages</h2></div>'+
  '<button type="button" class="lc-iconbtn lc-create-group" data-lc-action="group" title="Create a group" aria-label="Create a group">'+lcIcon('plus',20)+'</button></div>'+
  '<div class="lc-side-search">'+lcIcon('search',16)+'<input type="search" autocomplete="off" data-lc-sidebar-search aria-label="Search conversations" placeholder="Search conversations" value="'+esc(state.sidebarQuery)+'"></div>'+
  '<div class="lc-side-shortcuts"><button type="button" data-lc-action="friends">'+lcIcon('users',15)+' Find friends</button>'+
@@ -139,7 +139,7 @@ function railTab(action,label,iconKey,active,extra=''){
 }
 function railHtml(){
  return '<nav class="lc-rail" aria-label="Lolite Chat navigation">'+
- '<div class="lc-brand" title="Lolite Chat"><span class="lc-brand-glyph">L</span><span class="lc-brand-caption">CHAT</span></div>'+
+ '<div class="lc-brand" title="Lolite Chat"><span class="lc-brand-glyph" aria-hidden="true">'+lcIcon('chat',20)+'</span><span class="lc-brand-caption">Lolite <b>chat</b></span></div>'+
  railTab('browse','Chats','chat',['browse','channel','conversation'].includes(state.view))+
  railTab('friends','Friends','users',state.view==='friends',unreadCount()?'<small class="lc-rail-badge">'+unreadCount()+'</small>':'')+
  railTab('calls','Calls','phone',state.view==='calls')+
@@ -186,7 +186,7 @@ function chatHtml(){
  (reply?'<div class="lc-reply-bar"><span>Replying to '+esc(label(person(reply.sender_id)))+'</span><button type="button" class="lc-iconbtn" data-lc-action="cancelReply" aria-label="Cancel reply">×</button></div>':'')+
  '<div class="lc-compose-wrap"><textarea rows="1" maxlength="4000" name="message" data-lc-message-input data-lc-draft-conv="'+esc(c.id)+'" placeholder="Write a message…" aria-label="Message text" required></textarea>'+
  '<button class="lc-send" type="submit" title="Send message" aria-label="Send message" '+(pendingSends.has(c.id)?'disabled':'')+'>'+lcIcon('send',19)+'<span>Send</span></button></div>'+
- '<div class="lc-compose-help">Enter to send · Shift + Enter for a new line</div></form></main>';
+ '<div class="lc-compose-help"><span>Enter to send</span><span>Shift + Enter for a new line</span></div></form></main>';
 }
 
 function personCard(p,controls){
