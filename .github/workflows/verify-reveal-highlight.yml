@@ -1,0 +1,19 @@
+name: Verify cursor reveal highlight
+on:
+  push:
+    paths: ['index.html', 'core/reveal-highlight.*', 'tests/reveal-highlight.test.cjs', '.github/workflows/verify-reveal-highlight.yml']
+  pull_request:
+    paths: ['index.html', 'core/reveal-highlight.*', 'tests/reveal-highlight.test.cjs', '.github/workflows/verify-reveal-highlight.yml']
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --prefix tests/chat --ignore-scripts --no-audit --no-fund
+      - run: node --check core/reveal-highlight.js
+      - run: node --test tests/reveal-highlight.test.cjs
