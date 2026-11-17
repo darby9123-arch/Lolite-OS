@@ -167,3 +167,22 @@ test('UI Lab includes functional window controls, quick settings, preview-only c
  assert.match(JS,/localStorage\.setItem\('loliteUiLabV1'/);
  assert.doesNotMatch(JS,/getDisplayMedia|MediaRecorder|fetch\(|\.from\('lolite_/);
 });
+
+test('Minimized preview windows are restored from the taskbar',()=>{
+ const h=harness();
+ h.click({'[data-scene]':h.scenes.find(n=>n.dataset.scene==='window')});
+ assert.equal(h.get('#previewWindow').hidden,false);
+ assert.equal(h.get('#taskWindows').hidden,false);
+ const minimize=Object.assign(mockNode(),{dataset:{windowAction:'minimize'}});
+ h.click({'[data-window-action]':minimize});
+ assert.equal(h.get('#previewWindow').hidden,true);
+ assert.equal(h.get('#taskWindows').getAttribute('aria-pressed'),'false');
+ h.click({'#taskWindows':h.get('#taskWindows')});
+ assert.equal(h.get('#previewWindow').hidden,false);
+ assert.equal(h.get('#taskWindows').getAttribute('aria-pressed'),'true');
+ const close=Object.assign(mockNode(),{dataset:{windowAction:'close'}});
+ h.click({'[data-window-action]':close});
+ assert.equal(h.get('#previewWindow').hidden,true);
+ assert.equal(h.get('#taskWindows').hidden,true);
+ assert.equal(h.get('#sceneTitle').textContent,'Desktop UI');
+});
