@@ -24,3 +24,20 @@ jobs:
           node --check services/sandstone-wisp/security.mjs
       - name: Test destination and origin restrictions
         run: node --test services/sandstone-wisp/tests/*.test.mjs
+      - name: Install relay dependencies
+        working-directory: services/sandstone-wisp
+        run: npm install --no-audit --no-fund
+      - name: Smoke test restricted relay health and forbidden upgrade
+        working-directory: services/sandstone-wisp
+        run: |
+          PORT=38971 npm start > /tmp/lolite-wisp-smoke.log 2>&1 &
+          echo $! > /tmp/lolite-wisp-smoke.pid
+          trap 'kill $(cat /tmp/lolite-wisp-smoke.pid) || true' EXIT
+          for attempt in $(seq 1 25); do
+            if curl --fail --silent http://127.0.0.1:38971/healthz > /tmp/lolite-wisp-health.json; then break; fi
+            sleep 1
+          done
+          node -e "const x=require('/tmp/lolite-wisp-health.json'); if(!x.ok||x.mode!=='restricted'||x.destinationHosts.length!==1)process.exit(1)"
+          code=$(curl --silent --output /dev/null --write-out '%{http_code}' -H 'Origin: https://unknown.example' -H 'Upgrade: websocket' -H 'Connection: Upgrade' -H 'Sec-WebSocket-Key: aGVsbG9oZWxsb2hlbGxv' -H 'Sec-WebSocket-Version: 13' http://127.0.0.1:38971/wisp/)
+          test "$code" = 403
+
