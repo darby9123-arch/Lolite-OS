@@ -243,6 +243,10 @@
    if(!canDraw())return;
    try{
     resize();
+    // Make the canvas compositable before its first draw; otherwise a browser
+    // can discard an offscreen drawing buffer before the element is revealed.
+    const firstFrame=document.documentElement.dataset.liquidEngine!=='webgl';
+    if(firstFrame){canvas.hidden=false;document.documentElement.dataset.liquidEngine='webgl'}
     const desktopRect=desktop.getBoundingClientRect();
     const t=motion&&!reduce()&&!saveData()?now*.001:0;
     gl.disable(gl.SCISSOR_TEST);gl.disable(gl.BLEND);
@@ -266,9 +270,7 @@
     for(const item of SURFACES)lens(desktop.querySelector(item.selector),item.radius,desktopRect);
     gl.disable(gl.SCISSOR_TEST);gl.disable(gl.BLEND);
     drawCount++;
-    if(document.documentElement.dataset.liquidEngine!=='webgl'){
-     canvas.hidden=false;document.documentElement.dataset.liquidEngine='webgl';emit();
-    }
+    if(firstFrame)emit();
    }catch(error){
     console.warn('Lolite liquid refraction rendering stopped:',error?.message||error);
     setFallback('WebGL framebuffer unavailable — frosted fallback');
