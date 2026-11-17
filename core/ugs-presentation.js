@@ -459,6 +459,37 @@ geometryvibes:'Geometry Vibes',
    .replace(/\s+(?:The|Of|And|In|On|For|To|A)\s+/g,m=>m.toLowerCase())||'Untitled Game';
  }
 
+
+ // Genre matching uses BOTH the cleaned name and compressed original filename:
+ // old UGS source titles often omit every space, punctuation mark and word boundary.
+ const GENRES=Object.freeze([
+  ['Baldi’s Basics',/baldi|raldi|caseohs?basics|basic9retake/],
+  ['Music & Rhythm',/geometrydash|gdbreeze|gdlite|gdwave|fnf|fridaynightfunkin|rhythm|music|melody|piano|osu|sprunki|sprunked|incredibox|dubstep|danceoffire|trombone|magictiles/],
+  ['Horror & Survival',/fivenightsat|fnaf|fnaw|granny|slender|backrooms|horror|nightmare|poppyplaytime|creep|haunted|haunt|deadplate|deadseat|hungrylamu|badparenting|doki.?doki|lethalcompany|scp|fearassessment|fearstofathom|bendy|slendytubbies|zombie|skinwalker|slideinthewoods|themaninthewindow|yanderesimulator/],
+  ['Sandbox & Building',/minecraft|eagler|terraria|sandbox|sandtris|sandboxels|melonplayground|powdertoy|worldbox|buildnow|infinitecraft|grindcraft|russiansandbox|spaceflightsim|peopleplayground|littlealchemy|creeperworld|towerscraper|townscraper|physicsplayground|solarsandbox/],
+  ['Strategy',/bloons|towerdefense|towerdef|pvz|plantsvszombies|chess|checkers|kingdomrush|stickdefenders|cellmachine|clashof|warfare19|warfare194|warof|battleship|redalert|rebuild|civilization|precivilization|decisionmedieval|crusader|defendyournuts|defendyourcastle|strategy|tiberiandawn|miraginewar|monstertracks/],
+  ['Puzzle & Brain',/2048|hextris|wordle|sudoku|tetris|blockblast|bloxorz|riddleschool|riddletransfer|riddleuniversity|sokoban|cuttherope|fireboyandwatergirl|civiballs|impossiblequiz|jigsaw|waterworks|puzzles?|brain|escape|theimpossiblequiz|factoryballs|fourcolors|solitaire|mahjong|portalflash|baba.?is.?you|logic|minesweeper|numberfactory|triviacrack|shapetransform/],
+  ['Sports',/football|basketball|baseball|soccer|tennis|golf|boxing|wrestle|wrestling|volley|hockey|penaltykick|unicyclehero|pingpong|pickleball|billiard|retrobowl|sport|karatebros/],
+  ['Racing & Driving',/drift|drivemad|driving|drive|racing|racer|moto|carcrash|carkingarena|carramp|crazycattle|demolitionderby|madalin|hillclimb|highway|retro|kart|wheely|wheelie|traffic|trucks?|tunnelrush|slowroads|offroad|needforspeed|nitro|retrohighway|deathchase|roadfury|roadsoffury|rollerballer|tanukisunset|hoverracer|jetskiracing|goalsouthafrica/],
+  ['Multiplayer & .io',/agar\.?io|slither\.?io|bonk\.?io|state\.?io|paper\.?io|hole\.?io|survivor\.?io|rocketgoalio|yohoho\.?io|ducklings\.?io|ducklingsio|pixelbattlegroundsio|smashkarts|1v1|multiplayer|amongus|krunker|bloxd|brawlstars|basketbros|footballbros|gorillatag|fallguys|stumbleguys|rooftopsnipers/],
+  ['Simulation & Life',/papas|papalouie|tycoon|simulator|sim\b|bitlife|chicken|animalcrossing|monkeymart|store|shop|restaurant|pizza|sushi|cooking|idlefootballmanager|hardwaretycoon|microlife|farming|farmlife|kindergarten|sortthecourt|realsim|citybuilder|russiancardriver|edyscarsimulator/],
+  ['Casual & Idle',/cookieclicker|clicker|idle|flappy|fish|fishing|bubbleshooter|stack|suika|taproad|rolling|ballblast|drawing|doodle|learntofly|learntofly|drag|helixjump|slide|ballz|eggycar|mrg|mrmine|revolutionidle/],
+  ['Adventure & RPG',/undertale|deltarune|zelda|pokemon|stardew|hollowknight|spelunky|cavestory|cavecrawler|dungeon|rpg|adventure|epicbattlefantasy|earthbound|omori|oneshot|yumenikki|finalfantasy|mariorpg|jacksmith|bindingofisaac|bindingofisacc|tboi|vault|quest|madnessnexus|landsof/],
+  ['Platformers',/mario|sonic|vex\d|redball|redball|ovo|celeste|bouncy|jump|platform|parkour|angrybirds|ninja|dadish|supermeatboy|ice dodo|icedodo|run3|dinorun|dinorun|worldshardestgame|worlds hardest game|cluster rush|clusterrush|tiny square|stickmanhook|pandas|burritobison|jetpackjoyride|rungame|geometryvibes|slope|kittycannon|kitten cannon/],
+  ['Retro & Classics',/pacman|pac.?man|tetris|pong|asteroids|spaceinvaders|breakout|frogger|galaga|pinball|retro|atari|oldschool|donkeykong|snake|hextris|doom|wolfenstein|dukenukem|supersmashflash|minesweeper/]
+ ]);
+ function category(game){
+  const titleText=String(typeof game==='string'?game:game?.title||'');
+  const filename=String(typeof game==='string'?'':game?.filename||game?.file||'');
+  const text=(titleText+' '+filename).toLowerCase().normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g,'').replace(/[’']/g,'');
+  const compact=text.replace(/[^a-z0-9]/g,'');
+  for(const [genre,pattern] of GENRES){
+   if(pattern.test(text)||pattern.test(compact))return genre;
+  }
+  return 'Arcade & Action';
+ }
+
  // Original category illustrations for games that supply no usable cover.
  // These are intentionally not presented as official screenshots or logos.
  const posterCache=new Map();
@@ -543,5 +574,5 @@ geometryvibes:'Geometry Vibes',
   if(!discovered.has(key))discovered.set(key,new Promise(resolve=>{queue.push({game,resolve});pump()}));
   return discovered.get(key);
  };
- window.LoliteUGSPresentation=Object.freeze({title,discover,poster});
+ window.LoliteUGSPresentation=Object.freeze({title,category,discover,poster});
 })();
