@@ -91,7 +91,7 @@ test('Original game HTML remains untouched; the only new network requests look u
  const store=read('core/game-store.js');
  assert.match(store,/if\(ugsGame&&!el\.dataset\.ugsArtChecked/);
  assert.match(source,/running<3&&queue\.length/);
- assert.match(source,/while\(text\.length<65536\)/);
+ assert.match(source,/while\(html\.length<65536\)/);
  assert.doesNotMatch(source,/eval\(|innerHTML\s*=|<iframe|window\.open/);
 });
 
