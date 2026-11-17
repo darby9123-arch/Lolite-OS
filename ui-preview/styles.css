@@ -399,6 +399,16 @@ html[data-glow-taskbar="off"] [data-glow-type="taskbar"]:hover{box-shadow:none}
  .showcase-card{min-height:77px;gap:3px;padding:10px 13px 10px 52px;justify-content:center}
  .showcase-icon{position:absolute;left:13px;top:20px}
  .showcase-card small{line-height:1.35}
- ..inspector{grid-template-columns:1fr}
+ .inspector{grid-template-columns:1fr}
  .inspector-heading{grid-column:auto}
 }
+
+/* Working preview toggles: flat taskbar and paused wallpaper animation. */
+.desktop.taskbar-flat .taskbar{left:0;right:0;bottom:0;border-radius:0;border-left:0;border-right:0;border-bottom:0;background:#142439ee}
+.wallpaper-haze{animation:lab-wallpaper-drift 19s ease-in-out infinite alternate}
+.desktop.wallpaper-still .wallpaper-haze{animation:none}
+@keyframes lab-wallpaper-drift{from{transform:rotate(-18deg) translateX(-2%)}to{transform:rotate(-12deg) translateX(4%)}}
+.preview-border:fullscreen{display:grid;place-items:center;background:#091321;border-radius:0;padding:12px}
+.preview-border:fullscreen .desktop{height:100%;width:100%;max-height:none;aspect-ratio:auto}
+.preview-border:fullscreen .desktop .preview-window{max-height:calc(100% - 77px)}
+@media (prefers-reduced-motion:reduce){.wallpaper-haze{animation:none!important}}
