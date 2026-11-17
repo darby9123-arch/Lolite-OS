@@ -22,6 +22,7 @@ on:
       - 'core/chat-v2.js'
       - 'core/clips.js'
       - 'core/clips.css'
+      - 'core/liquid-glass.js'
       - 'core/ultraviolet.js'
       - 'core/scramjet-browser.js'
       - 'html games/Grand Theft Auto Vice City.html'
@@ -81,10 +82,12 @@ jobs:
           node --check core/performance-mode.js
           node --check core/wallpapers.js
           node --check ui-preview/app.js
+          node --check ui-preview/liquid-glass.js
+          node --check core/liquid-glass.js
           node --check core/crimson.js
           node --check core/wallpaper-colors.js
           node --check core/desktop-icon-customization.js
           node --check server.mjs
       - name: Test game library, host version, taskbar, Spotlight and snapping
         run: |
-          node --test tests/accounts-activity.test.cjs tests/lolite-4.test.cjs tests/window-manager.test.cjs tests/game-launches.test.cjs tests/game-popularity.test.cjs tests/tab-cloaking.test.cjs tests/generated-icons.test.cjs tests/lolite-4-1.test.cjs tests/game-health.test.cjs tests/game-store-gallery.test.cjs tests/game-store-ui-cleanup.test.cjs tests/feature-requests.test.cjs tests/lolite-clips.test.cjs tests/ui-preview.test.cjs tests/wallpaper-colors.test.cjs tests/wallpaper-favourites.test.cjs tests/icon-material-polish.test.cjs tests/ui-shell-bugfixes.test.cjs tests/game-account-browser-bugfixes.test.cjs tests/free-apps-no-money.test.cjs
+          node --test tests/accounts-activity.test.cjs tests/lolite-4.test.cjs tests/window-manager.test.cjs tests/game-launches.test.cjs tests/game-popularity.test.cjs tests/tab-cloaking.test.cjs tests/generated-icons.test.cjs tests/lolite-4-1.test.cjs tests/game-health.test.cjs tests/game-store-gallery.test.cjs tests/game-store-ui-cleanup.test.cjs tests/feature-requests.test.cjs tests/lolite-clips.test.cjs tests/ui-preview.test.cjs tests/liquid-glass.test.cjs tests/wallpaper-colors.test.cjs tests/wallpaper-favourites.test.cjs tests/icon-material-polish.test.cjs tests/ui-shell-bugfixes.test.cjs tests/game-account-browser-bugfixes.test.cjs tests/free-apps-no-money.test.cjs
