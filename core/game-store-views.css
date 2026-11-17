@@ -176,3 +176,42 @@ html .window .store.store-v41 .store-grid[data-layout="list"] .store-gallery-car
 @media(prefers-reduced-motion:reduce){
  .store.store-v41 .store-grid[data-layout] .store-card{transition:none!important}
 }
+
+
+.store.store-v41 .store-ugs-reset{
+ flex:0 0 auto;align-self:end;min-height:34px;
+ padding:7px 11px;border-radius:8px;border:1px solid #68617b;
+ color:#eee5ff;background:#382f45;font:650 11px system-ui;cursor:pointer;
+}
+.store.store-v41 .store-ugs-reset[hidden]{display:none!important}
+.store.store-v41 .store-ugs-reset:hover{background:#514368}
+.store.store-v41 .store-ugs-reset:focus-visible{outline:2px solid #c6b5fa;outline-offset:2px}
+/* Lolite app windows can be resized independently of viewport width. */
+.store.store-v41[data-size="compact"] .store-grid[data-layout="list"]>.store-card,
+.store.store-v41[data-size="small"] .store-grid[data-layout="list"]>.store-card{
+ grid-template-columns:112px minmax(0,1fr)!important;
+}
+.store.store-v41[data-size="compact"] .store-grid[data-layout="list"] .store-card>.store-cover,
+.store.store-v41[data-size="small"] .store-grid[data-layout="list"] .store-card>.store-cover{
+ width:112px!important;
+}
+.store.store-v41[data-size="compact"] .store-grid[data-layout="list"] .store-card .store-card-body,
+.store.store-v41[data-size="small"] .store-grid[data-layout="list"] .store-card .store-card-body{
+ display:flex!important;flex-direction:column!important;justify-content:center!important;
+ align-items:stretch!important;gap:6px!important;
+}
+.store.store-v41[data-size="compact"] .store-grid[data-layout="list"] .store-gallery-card .store-card-actions,
+.store.store-v41[data-size="small"] .store-grid[data-layout="list"] .store-gallery-card .store-card-actions{
+ width:100%!important;
+}
+.store.store-v41[data-size="small"] .store-grid[data-layout="list"]>.store-card{
+ grid-template-columns:92px minmax(0,1fr)!important;
+}
+.store.store-v41[data-size="small"] .store-grid[data-layout="list"] .store-card>.store-cover{
+ width:92px!important;
+}
+@media(max-width:390px){
+ .store.store-v41 .store-layout-picker{order:2}
+ .store.store-v41 .store-grid[data-layout="list"]>.store-card{grid-template-columns:82px minmax(0,1fr)!important}
+ .store.store-v41 .store-grid[data-layout="list"] .store-card>.store-cover{width:82px!important}
+}
