@@ -412,3 +412,81 @@ html[data-glow-taskbar="off"] [data-glow-type="taskbar"]:hover{box-shadow:none}
 .preview-border:fullscreen .desktop{height:100%;width:100%;max-height:none;aspect-ratio:auto}
 .preview-border:fullscreen .desktop .preview-window{max-height:calc(100% - 77px)}
 @media (prefers-reduced-motion:reduce){.wallpaper-haze{animation:none!important}}
+
+/* Liquid Glass 1.0 — WebGL wallpaper framebuffer + genuine refractive lenses.
+ * WebGL is one shared canvas, never one context per individual window/panel.
+ */
+.liquid-glass-canvas{
+ position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;
+ display:none;border-radius:inherit;
+}
+html[data-liquid-engine="webgl"] .liquid-glass-canvas:not([hidden]){display:block}
+html[data-liquid-engine="webgl"] .wallpaper-visual{visibility:hidden}
+.liquid-lens{
+ position:absolute;z-index:4;top:78px;left:calc(51% - 103px);
+ width:206px;max-width:50%;height:92px;
+ display:flex;align-items:center;justify-content:center;gap:11px;
+ padding:13px;border:1px solid #e1f4ff84;border-radius:23px;
+ background:linear-gradient(145deg,#b2d3f12c,#1e395d45);
+ box-shadow:inset 0 1px 1px #ffffff7d,inset 0 -1px 0 #8ac2ff30,0 10px 26px #0006;
+ color:#f4f9ff;text-shadow:0 1px 9px #08192fe6;
+ backdrop-filter:blur(10px) saturate(135%);
+ -webkit-backdrop-filter:blur(10px) saturate(135%);
+ user-select:none;touch-action:none;cursor:grab;
+}
+.liquid-lens:active{cursor:grabbing}
+.liquid-lens>span:nth-child(2){display:flex;flex-direction:column;gap:4px;min-width:0}
+.liquid-lens strong{font-size:12px;line-height:1.3}
+.liquid-lens small{font-size:9px;line-height:1.45;color:#d6e8ff}
+.lens-symbol{
+ width:35px;height:35px;border:1px solid #d4efffa1;border-radius:11px;
+ display:grid;place-items:center;flex-shrink:0;background:#bbeaff2b;
+}
+.lens-symbol svg{width:20px;height:20px}
+.lens-handle{font-size:15px;color:#c3daeea9;font-weight:800;letter-spacing:1px}
+html[data-liquid-engine="webgl"] .liquid-lens,
+html[data-liquid-engine="webgl"] .taskbar,
+html[data-liquid-engine="webgl"] .preview-window,
+html[data-liquid-engine="webgl"] .start-menu,
+html[data-liquid-engine="webgl"] .quick-panel{
+ background:linear-gradient(135deg,#0a1e2e2b,#1334534a)!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ border-color:#b6d7f178;
+ box-shadow:inset 0 1px 0 #f1fbff67,inset 0 -1px 0 #80bcf52d,0 15px 35px #0008;
+}
+html[data-liquid-engine="webgl"] .preview-window .window-inner{background:#0a1724ad}
+html[data-liquid-engine="webgl"][data-theme="minimal"] .preview-window .window-inner{background:#131e2bc4}
+html[data-liquid-engine="webgl"] .window-titlebar{background:#e5f7ff0b;border-bottom-color:#d6edff38}
+html[data-liquid-engine="webgl"] .start-foot{background:#09152a32}
+html[data-liquid-engine="webgl"] .liquid-lens{background:#80c9f714!important}
+/* If WebGL is unavailable or Off, use readable, lightweight CSS frosted glass. */
+html[data-liquid-engine="off"] .liquid-lens,
+html[data-liquid-engine="fallback"] .liquid-lens{
+ background:#2e426482;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)
+}
+.liquid-section .liquid-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:9px}
+.liquid-title-row>div{min-width:0;flex:1}
+.liquid-status-badge{
+ font:750 9px/1.3 "Segoe UI",system-ui,sans-serif;
+ color:#aed2f8;background:#1c3450;border:1px solid #496482;
+ border-radius:6px;padding:5px 7px;white-space:nowrap;
+}
+html[data-liquid-engine="webgl"] .liquid-status-badge{color:#a1f3d8;background:#1a413d;border-color:#427c6a}
+.liquid-modes{margin-bottom:16px}
+.liquid-section input[type="range"]{display:block;width:100%;height:14px;accent-color:#89baff;cursor:pointer}
+.liquid-motion-row{margin-top:16px;white-space:normal}
+.liquid-engine-note{
+ padding:10px 11px;border-radius:8px;background:#172b40;border:1px solid #2d4b63;
+ color:#9ebad2;font-size:10px!important;line-height:1.6;margin:13px 0 0!important;
+}
+@container (max-width:590px){
+ .liquid-lens{left:calc(55% - 85px);top:67px;width:170px;height:78px;padding:9px;gap:7px}
+ .liquid-lens strong{font-size:10px}
+ .liquid-lens small{font-size:8px}
+ .lens-symbol{width:28px;height:28px}
+ .lens-symbol svg{width:16px;height:16px}
+ .lens-handle{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+ .liquid-lens{transition:none!important}
+}
