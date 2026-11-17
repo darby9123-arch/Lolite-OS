@@ -295,7 +295,7 @@
  setInterval(updateClock,30000);
  document.addEventListener('pointermove',event=>{
   const target=event.target.closest?.('[data-glow]');
-  if(!target||!state.glow||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+  if(!target||!state.glow||window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches)return;
   const kind=target.dataset.glowType;
   if(kind&&state.surfaces[kind]===false)return;
   const rect=target.getBoundingClientRect();
@@ -351,7 +351,7 @@
    });return;
   }
   const gameSelect=target.closest('[data-game-select]');
-  if(gameSelect){const text=$('#demoGameStatus');if(text)text.textContent=safe(gameSelect.dataset.gameSelect)+' selected — demo only, no game launched.';return}
+  if(gameSelect){const text=$('#demoGameStatus');if(text)text.textContent=gameSelect.dataset.gameSelect+' selected — demo only, no game launched.';return}
   const chatContact=target.closest('[data-chat-contact]');
   if(chatContact){selectChat(chatContact.dataset.chatContact);return}
   const demoSetting=target.closest('[data-demo-setting]');
@@ -381,7 +381,6 @@
   if(input){state.surfaces[input.dataset.glowSurface]=input.checked;syncInspector();save()}
  });
  $('#previewVolume').addEventListener('input',event=>{$('#volumeValue').textContent=event.target.value+'%'});
- $('#demoChatForm')?.addEventListener('submit',event=>event.preventDefault());
  document.addEventListener('submit',event=>{
   if(event.target.id!=='demoChatForm')return;
   event.preventDefault();
