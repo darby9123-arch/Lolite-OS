@@ -9,6 +9,7 @@
 - **[Download Lolite OS for Windows](https://github.com/darby9123-arch/Lolite-OS/releases)** — install `LoliteOS-Setup.exe` from a desktop release; includes the app and dedicated launcher
 - **[Windows build, update and distribution guide](docs/DESKTOP.md)**
 - **[Launch Lolite OS on GitHub Pages](https://darby9123-arch.github.io/Lolite-OS/)** — play and use Lolite OS in your browser
+- **[Lolite UI Lab — Interactive UI Preview](https://darby9123-arch.github.io/Lolite-OS/ui-preview/)** — experiment with cursor glow, new windows, Start menu, Game Store, Chat, Settings, wallpapers and component designs (separate from the real OS).
 - **[Open Lolite OS on Vercel](https://lolite-os.vercel.app/)** — alternate hosted version
 
 - **[Lolite Play](https://lolite-play.vercel.app/)** — alternate Vercel address
@@ -28,6 +29,13 @@ The Vercel version includes Ultraviolet runtime files and the Bare HTTP endpoint
 A Lolite-branded browser desktop with the original Cosmos space interface, apps, games, files, 840 live video wallpapers, and a responsive desktop or browser workspace. Earlier desktop themes remain available.
 
 ## Update Log
+
+### Lolite UI Lab — interactive design preview (2026-11-18)
+- Created a standalone interactive [Lolite UI Lab](https://darby9123-arch.github.io/Lolite-OS/ui-preview/) in `ui-preview/`, hosted alongside Lolite OS on GitHub Pages.
+- Preview eight UI scenes: desktop, Start menu, windows, Game Store, Lolite Chat, Settings, wallpapers and UI components. Taskbar, Start search, window controls, quick settings, demo Chat and wallpaper selection are interactive.
+- Cursor glow follows the pointer **only on selected UI surfaces**, with adjustable intensity, radius, colour and button/card/taskbar targets. Includes Cosmos, Aero and Minimal preview themes.
+- The lab stores only its own settings (`loliteUiLabV1`) and does not change the existing OS. Added `tests/ui-preview.test.cjs` and CI checks. [Design lab details](ui-preview/README.md).
+
 
 ### Lolite Clips 3.0 — UI and stability fixes (2026-11-13)
 - Rebuilt the Clips interface with its own responsive styling. Fixed broken layouts caused by accidental reuse of Lolite Chat CSS classes, DOM IDs and event selectors.
