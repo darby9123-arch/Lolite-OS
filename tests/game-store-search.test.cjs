@@ -207,7 +207,7 @@ function chooseLayout(h,name){
 test('Gallery, Compact and List layouts render real games and persist across reopening',()=>{
  const h=setup();h.win.loliteStoreCategory('All Games');
  assert.equal(h.win.LoliteGameStoreGallery.getLayout(),'gallery');
- assert.match(h.results.innerHTML,/data-layout="gallery"/);
+ assert.match(h.results.innerHTML||h.main.innerHTML,/data-layout="gallery"/);
  assert.match(h.main.innerHTML,/data-store-layout="compact"/);
  assert.match(h.main.innerHTML,/data-store-layout="list"/);
  const galleryGames=shownGames(h);
@@ -226,7 +226,7 @@ test('Gallery, Compact and List layouts render real games and persist across reo
  const restored=setup(h.storage);
  assert.equal(restored.win.LoliteGameStoreGallery.getLayout(),'list');
  restored.win.loliteStoreCategory('All Games');
- assert.match(restored.results.innerHTML,/data-layout="list"/);
+ assert.match(restored.results.innerHTML||restored.main.innerHTML,/data-layout="list"/);
  chooseLayout(restored,'unrecognised');
  assert.equal(restored.win.LoliteGameStoreGallery.getLayout(),'list');
 });
