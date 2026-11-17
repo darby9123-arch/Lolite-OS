@@ -41,10 +41,12 @@ The existing Vercel site may still serve Ultraviolet HTTP endpoints, but Vercel 
 
 A public web proxy can be abused. Before advertising the Node host publicly, put appropriate access controls, usage limits, and monitoring in front of proxy routes. Wisp can relay network traffic and should not be exposed as an unrestricted general-purpose relay.
 
-## Sandstone Browser in the static Lolite OS desktop (November 18, 2026)
+## Original Sandstone Browser integration (November 18, 2026)
 
-The original uploaded `apps/sandstone-browser.html` is retained. Its embedded Sandstone proxy requires a working Wisp WebSocket server, which GitHub Pages cannot supply. The deployed Node server also intentionally disables browser proxy transports, so simply changing the WebSocket host would not make the original HTML work.
+The user-provided original Sandstone proxy HTML remains in `apps/sandstone-browser.html`, and the Lolite desktop launches **that original file**, not the separate experimental direct browser. The original Sandstone controls, options menu, sandboxed frame and engine are retained.
 
-The desktop's **Sandstone Browser** now opens `apps/sandstone-desktop.html`, a separate direct-browsing shell with address/search, back/forward/reload, local bookmarks and tabs. It uses ordinary HTTPS page embedding, **not** a Wisp/Scramjet/Ultraviolet proxy, so it cannot bypass a site's iframe policy or network access restrictions. When a website blocks embedding, choose **Open in normal tab**. The browser warns users about this limitation instead of showing an unexplained blank page. The browser's preview iframe is sandboxed and doesn't use `allow-same-origin`.
+`core/sandstone-original-compat.js` fixes the original app's layout inside Lolite's resizable desktop window, removes the generic app padding only for Sandstone, improves mobile/narrow-window layout, and displays clear renderer and transport limitations with a reload control. It does **not** modify the bundled proxy engine or add a proxy server.
 
-Run `node --test tests/sandstone-browser.test.cjs` to check the static browser functionality and its integration into `app.js`. The full runtime integration should still be spot-checked in a real browser after a deployment.
+Sandstone needs a compatible authorised Wisp WebSocket transport to load remote websites. GitHub Pages cannot provide that transport, and the current Lolite Node server intentionally disables proxy transports. The original UI can load without making remote pages available. Do not treat a visible Sandstone UI or successful static deployment as proof that a remote website can load.
+
+Run `node --test tests/sandstone-browser.test.cjs` to verify the original launch path, window integration and regression guards. Remote website loading requires separate infrastructure/authorised connectivity and has **not** been verified on GitHub Pages.
