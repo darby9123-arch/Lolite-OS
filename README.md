@@ -1,3 +1,5 @@
+> **App Store & Game Store (18 November 2026):** Every Lolite app and game is free to install or launch. Removed the OS currency, paid filters, storefront wallet, paid unlocks and Quests money rewards. Existing installs, user data and Life RP saves are preserved. Life RP is a separate game and still has its own in-game job/progression economy.
+
 > **Lolite accounts & game activity (11 November 2026):** One existing username/password account now signs in to the desktop, games and chat. Startup login, automatic login, separate desktop data, friends activity, gaming profiles, playtime and copyable game cards are included. Native Discord RPC is implemented; a Discord application ID must be configured before it can connect. [Details](docs/ACCOUNTS-AND-ACTIVITY.md).
 
 > **Wallpaper update (11 November 2026):** Replaced the previous wallpaper selection with all **840 LivelyWallpaper.app live wallpapers**, including **750 labelled 4K**. Search, category filters, real image previews, original/HD/preview quality, smooth loops and wallpaper colour adaptation are included. Videos stream directly from the source CDN and require internet. Existing wallpaper selections migrate to the new collection; uploads made after this replacement remain supported. [Details and validation](docs/LIVELY-WALLPAPERS.md).
@@ -29,6 +31,14 @@ The Vercel version includes Ultraviolet runtime files and the Bare HTTP endpoint
 A Lolite-branded browser desktop with the original Cosmos space interface, apps, games, files, 840 live video wallpapers, and a responsive desktop or browser workspace. Earlier desktop themes remain available.
 
 ## Update Log
+
+### Free Apps, Free Games & No Lolite Wallet — 2026-11-18
+- Removed OS-wide virtual currency, app prices, paid store tabs, wallet banners and purchase gates. All App Store listings now have a **FREE** label and install/open without buying anything.
+- The Game Store launches its available game versions directly; existing search, artwork, player and server features are unchanged.
+- Lolite Quests now tracks completed activities and Academy achievements without awarding currency. The former Market is now **Free Extras**, where shortcuts, mini apps, cosmetics and in-game perks are available without money.
+- Legacy purchases and installed-app records are not deleted or reset. Existing Life RP game saves remain intact; its separate roleplaying cash economy still functions within that game.
+- Earlier storefront-money release notes below describe historical features **retired by this update**.
+
 
 ### Lolite UI Lab — interactive design preview (2026-11-18)
 - Created a standalone interactive [Lolite UI Lab](https://darby9123-arch.github.io/Lolite-OS/ui-preview/) in `ui-preview/`, hosted alongside Lolite OS on GitHub Pages.

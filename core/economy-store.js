@@ -1,103 +1,34 @@
-/* Lolite Dollars checkout: one virtual wallet for the actual Game Store and App Store.
-   Browser-local game progression, not a real-money checkout or server-side DRM. */
+/* Lolite OS storefront compatibility.
+ * All Lolite apps and games are free: no wallet, prices, purchases or
+ * entitlement checks. Existing Life RP and saved app data are left untouched.
+ */
 (function(){
 "use strict";
-var SAVE="lolite-life-rp-v1",INSTALLED="loliteInstalledApps";
-// A substantial free-to-play catalogue. Full playable HTML titles, not trial versions.
-var FREE_GAMES=new Set(["lolite-pong.html","lolite-2048.html","lolite-sokoban.html","clbitlife.html","clblockblast.html","clcookieclicker.html","clcrazycars.html","clcuttherope.html","clfireboyandwatergirl2.html","clfireboyandwatergirl3.html","clholeio.html","clinfinitecraft.html","clmotox3m2.html","clmotox3m3.html","clmotox3mm.html","clovo2.html","clovodimensions.html","clovofixed.html","clpaperio.html","clpaperio3d.html","clpaperiomania.html","clparkingfury.html","clparkingfury2.html","clRedBall4.html","slope.html","clslopeplus.html","clsnowrider.html","clstickmanhook.html","cltinyfishing.html","clvex3.html","wheely.html","cltemplerun2.html","clsurvivorio.html","clmelonplayground.html","wrestle-bros.html","zombie-rush.html","clmotox3mpoolparty.html","clmotox3mspookyland.html","clmotox3mwinter.html"]);
-var FREE_APPS=new Set(["sandstone","life-rp","lolite-quests","academy","chatroom","notes","calculator","paint","music"]);
-var APP_PRICES=Object.freeze({"wallpaper-editor":1450,"lowlight-ai":1800,focus:1200,arcade:2100});
-var PRIOR_GAME=Object.freeze({"lolite-pong.html":"game-pong","lolite-2048.html":"game-2048","lolite-sokoban.html":"game-sokoban","clminecraftpocketedition.html":"game-minecraft"});
-function read(){
- try{var v=JSON.parse(localStorage.getItem(SAVE)||"null");if(v&&typeof v==="object"&&!Array.isArray(v)){
-  v.cash=Number.isFinite(v.cash)?Math.max(0,Math.floor(v.cash)):250;
-  v.extras=v.extras&&typeof v.extras==="object"&&!Array.isArray(v.extras)?v.extras:{};
-  v.history=Array.isArray(v.history)?v.history:[];return v
- }}catch(e){}
- return {name:"New Resident",cash:250,history:[],extras:{}};
-}
-function storeState(s){
- var e=s.extras;
- if(!e.storePurchases||typeof e.storePurchases!=="object"||Array.isArray(e.storePurchases))e.storePurchases={};
- var p=e.storePurchases;
- p.games=Array.isArray(p.games)?p.games.filter(x=>typeof x==="string"):[];
- p.apps=Array.isArray(p.apps)?p.apps.filter(x=>typeof x==="string"):[];
- if(p.installedMigrated!==true){
-  try{var old=JSON.parse(localStorage.getItem(INSTALLED)||"[]");if(Array.isArray(old)){
-   old.forEach(id=>{if(typeof id==="string"&&!p.apps.includes(id))p.apps.push(id)})
-  }}catch(e){}
-  p.installedMigrated=true;
- }
- return p
-}
-function write(s){
+const INSTALLED="loliteInstalledApps",RP_SAVE="lolite-life-rp-v1";
+const APP_IDS=["sandstone","music","feature-requests","clips","focus","arcade",
+ "lolite-quests","life-rp","academy","lowlight-ai","chatroom","notes","calculator",
+ "paint","wallpaper-editor"];
+const idFor=app=>typeof app==="string"?app:app?.id;
+const hasApp=app=>typeof idFor(app)==="string"&&idFor(app).length>0;
+const hasGame=game=>!!game&&typeof game.file==="string"&&game.file.length>0;
+const grant=(valid)=>valid
+ ? {ok:true,alreadyOwned:true,spent:0}
+ : {ok:false,reason:"Unknown app or game."};
+const legacyPurchased=(type)=>{
  try{
-  localStorage.setItem(SAVE,JSON.stringify(s));
-  window.dispatchEvent(new CustomEvent("lolite-wallet-updated",{detail:{balance:s.cash}}));
-  window.dispatchEvent(new CustomEvent("lolite-store-purchase",{detail:{balance:s.cash}}));
-  return true
- }catch(e){return false}
-}
-function initialize(){var s=read(),p=storeState(s);if(p.installedMigrated)write(s)}
-function balance(){return read().cash}
-function money(n){return "$"+Math.max(0,Math.floor(n||0)).toLocaleString("en-AU")}
-// All games in Lolite OS are free. The app/subscription economy is unchanged.
-function gamePrice(g){return 0;}
-function appPrice(app){
- var id=typeof app==="string"?app:app?.id;
- if(!id||FREE_APPS.has(id))return 0;
- return Object.prototype.hasOwnProperty.call(APP_PRICES,id)?APP_PRICES[id]:500;
-}
-function hasGame(g){
- if(!g||typeof g.file!=="string")return false;
- if(gamePrice(g)===0)return true;
- var s=read(),p=storeState(s);
- if(p.games.includes(g.file))return true;
- var prior=PRIOR_GAME[g.file];
- return !!prior&&Array.isArray(s.extras.owned)&&s.extras.owned.includes(prior);
-}
-function hasApp(app){
- var id=typeof app==="string"?app:app?.id;
- if(!id)return false;
- if(appPrice(id)===0)return true;
- var s=read(),p=storeState(s);return p.apps.includes(id)||(["focus","arcade"].includes(id)&&Array.isArray(s.extras.osApps)&&s.extras.osApps.includes(id));
-}
-function buy(type,thing){
- var key=type==="game"?thing?.file:(typeof thing==="string"?thing:thing?.id);
- if(!key||typeof key!=="string"||key.length>180)return {ok:false,reason:"Unknown item."};
- var cost=type==="game"?gamePrice(thing):appPrice(key);
- if(type==="game"&&!thing?.title)return {ok:false,reason:"Unknown game."};
- if(type==="app"&&!Object.prototype.hasOwnProperty.call(APP_PRICES,key)&&!FREE_APPS.has(key))return {ok:false,reason:"Unknown app."};
- if((type==="game"?hasGame(thing):hasApp(key)))return {ok:true,alreadyOwned:true,spent:0,balance:balance()};
- var s=read(),p=storeState(s),list=type==="game"?p.games:p.apps;
- if(list.includes(key))return {ok:true,alreadyOwned:true,spent:0,balance:s.cash};
- if(s.cash<cost)return {ok:false,reason:"Not enough Lolite Dollars. You need "+money(cost-s.cash)+" more.",shortfall:cost-s.cash};
- s.cash-=cost;list.push(key);
- if(type==="app"&&["focus","arcade"].includes(key)){s.extras.osApps=Array.isArray(s.extras.osApps)?s.extras.osApps:[];if(!s.extras.osApps.includes(key))s.extras.osApps.push(key)}
- var label=type==="game"?"Game Store: "+thing.title:"App Store: "+key;
- s.history.unshift({label:label,delta:-cost,date:new Date().toLocaleDateString("en-AU")});s.history=s.history.slice(0,15);
- if(!write(s))return {ok:false,reason:"Could not save the purchase. Nothing was charged."};
- return {ok:true,alreadyOwned:false,spent:cost,balance:s.cash}
-}
-function ownedGameCount(){var s=read();return storeState(s).games.length}
-function purchasedGames(){var s=read();return storeState(s).games.slice()}
-function purchasedApps(){var s=read();return storeState(s).apps.slice()}
-var economy=Object.freeze({balance:balance,money:money,gamePrice:gamePrice,appPrice:appPrice,hasGame:hasGame,hasApp:hasApp,buyGame:g=>buy("game",g),buyApp:id=>buy("app",id),purchasedGames:purchasedGames,purchasedApps:purchasedApps,ownedGameCount:ownedGameCount,freeApps:Array.from(FREE_APPS)});
-window.LoliteEconomy=economy;
-initialize();
-/* Paid optional apps also check their entitlement when launched from the desktop,
-   Start menu, search, Academy, or other app links. Essential apps remain free. */
-var previousOpen=window.openApp;
-if(typeof previousOpen==="function"){
- window.openApp=function(id,title,w,h){
-  if(typeof id==="string"&&Object.prototype.hasOwnProperty.call(APP_PRICES,id)&&!hasApp(id)){
-   previousOpen("appstore","App Store",980,720);
-   try{window.toast?.("Unlock "+(title||id)+" for "+money(appPrice(id))+" Lolite Dollars in the App Store.");}catch(e){}
-   window.loliteAppStoreFocus?.(id);
-   return;
-  }
-  return previousOpen(id,title,w,h);
- };
-}
-
+  const data=JSON.parse(localStorage.getItem(RP_SAVE)||"null");
+  const purchases=data?.extras?.storePurchases?.[type];
+  return Array.isArray(purchases)?purchases.filter(x=>typeof x==="string"):[];
+ }catch{return []}
+};
+window.LoliteEconomy=Object.freeze({
+ gamePrice:()=>0,appPrice:()=>0,hasApp,hasGame,
+ buyGame:game=>grant(hasGame(game)),buyApp:app=>grant(hasApp(app)),
+ purchasedGames:()=>legacyPurchased("games"),
+ purchasedApps:()=>legacyPurchased("apps"),
+ ownedGameCount:()=>legacyPurchased("games").length,
+ freeApps:APP_IDS.slice()
+});
+// Do not migrate, reset, or charge users' legacy wallet/RP saves.
+// The separate Life RP game retains its own in-game progression.
 })();

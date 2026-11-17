@@ -1,15 +1,15 @@
 /* Lolite OS App Store — consistent Windows-inspired storefront. */
 (()=>{
- const css=`.appstore-price{font-size:12px;color:#80e4be;margin:10px 0;font-weight:800}.appstore-owned{color:#9be5c5}.appstore-free{color:#84c8f8}.appstore-wallet{border:1px solid #297982;background:#173b42;color:#a6f0df;padding:10px 13px;font-weight:850;border-radius:9px;font-size:11px;cursor:pointer}.appstore-wallet:hover{background:#24535b}@keyframes loliteStoreCardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes loliteAppGlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}.appstore{height:100%;margin:-18px;background:#0e1117;color:#eef2f7;overflow:auto;padding:24px}.appstore-toolbar{display:flex;flex-direction:column;gap:12px;margin-bottom:18px}.appstore-toolbar input{width:100%;box-sizing:border-box;padding:11px 13px;border-radius:8px;border:1px solid #303949;background:#111722;color:#eef2f7}.appstore-tabs{display:flex;gap:7px;overflow:auto;padding-bottom:3px}.store-tab{white-space:nowrap;padding:8px 11px;border:1px solid #303949!important;background:#151b24!important;color:#aeb8c8!important;border-radius:5px!important;width:auto!important}.store-tab.active{background:#7065db!important;border-color:#8176ed!important;color:#fff!important}.appstore-card-meta{display:flex;justify-content:space-between;color:#8994a6;font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px}.app-uninstall{margin-top:7px;background:#251a20!important;border:1px solid #5a303c!important;color:#ffb8c5!important}.store-empty{padding:30px;text-align:center;color:#8f9aab}.appstore-head{display:flex;justify-content:space-between;gap:14px;align-items:end;margin-bottom:22px}.appstore-head h1{margin:4px 0;font-size:30px}.appstore-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}.appstore-card{background:#171c25;border:1px solid #29313d;border-radius:8px;padding:17px;transition:.15s}.appstore-card:hover{transform:translateY(-3px);border-color:#414d61;box-shadow:0 10px 24px #0004}.appstore-icon{width:48px;height:48px;border-radius:8px;display:grid;place-items:center;background:#202631;border:1px solid #39414d;box-shadow:0 5px 12px #0006;margin-bottom:13px;overflow:hidden}.appstore-icon .app-symbol{margin:0}.appstore-card h3{margin:0 0 5px}.appstore-card p{color:#919baa;font-size:13px;min-height:38px;line-height:1.45}.appstore-card button{width:100%;padding:9px;border-radius:8px;background:linear-gradient(110deg,#7065db,#8277ef,#7065db);background-size:200% 100%;color:#fff;font-weight:750;transition:transform .16s,background-position .25s,filter .2s}.appstore-card button:hover{transform:translateY(-1px);background-position:100% 0;filter:brightness(1.08)}@media(prefers-reduced-motion:reduce){.appstore-card,.appstore-card button{animation:none!important;transition:none!important}}.appstore-card button.installed{background:#202833;border:1px solid #303a48}.appstore-note{margin-top:18px;color:#858f9e;font-size:12px}`;const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+ const css=`.appstore-price{font-size:12px;color:#80e4be;margin:10px 0;font-weight:800}.appstore-free{color:#84c8f8}@keyframes loliteStoreCardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes loliteAppGlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}.appstore{height:100%;margin:-18px;background:#0e1117;color:#eef2f7;overflow:auto;padding:24px}.appstore-toolbar{display:flex;flex-direction:column;gap:12px;margin-bottom:18px}.appstore-toolbar input{width:100%;box-sizing:border-box;padding:11px 13px;border-radius:8px;border:1px solid #303949;background:#111722;color:#eef2f7}.appstore-tabs{display:flex;gap:7px;overflow:auto;padding-bottom:3px}.store-tab{white-space:nowrap;padding:8px 11px;border:1px solid #303949!important;background:#151b24!important;color:#aeb8c8!important;border-radius:5px!important;width:auto!important}.store-tab.active{background:#7065db!important;border-color:#8176ed!important;color:#fff!important}.appstore-card-meta{display:flex;justify-content:space-between;color:#8994a6;font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px}.app-uninstall{margin-top:7px;background:#251a20!important;border:1px solid #5a303c!important;color:#ffb8c5!important}.store-empty{padding:30px;text-align:center;color:#8f9aab}.appstore-head{display:flex;justify-content:space-between;gap:14px;align-items:end;margin-bottom:22px}.appstore-head h1{margin:4px 0;font-size:30px}.appstore-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}.appstore-card{background:#171c25;border:1px solid #29313d;border-radius:8px;padding:17px;transition:.15s}.appstore-card:hover{transform:translateY(-3px);border-color:#414d61;box-shadow:0 10px 24px #0004}.appstore-icon{width:48px;height:48px;border-radius:8px;display:grid;place-items:center;background:#202631;border:1px solid #39414d;box-shadow:0 5px 12px #0006;margin-bottom:13px;overflow:hidden}.appstore-icon .app-symbol{margin:0}.appstore-card h3{margin:0 0 5px}.appstore-card p{color:#919baa;font-size:13px;min-height:38px;line-height:1.45}.appstore-card button{width:100%;padding:9px;border-radius:8px;background:linear-gradient(110deg,#7065db,#8277ef,#7065db);background-size:200% 100%;color:#fff;font-weight:750;transition:transform .16s,background-position .25s,filter .2s}.appstore-card button:hover{transform:translateY(-1px);background-position:100% 0;filter:brightness(1.08)}@media(prefers-reduced-motion:reduce){.appstore-card,.appstore-card button{animation:none!important;transition:none!important}}.appstore-card button.installed{background:#202833;border:1px solid #303a48}.appstore-note{margin-top:18px;color:#858f9e;font-size:12px}`;const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
  const apps=[
   {id:'sandstone',name:'Sandstone Browser',icon:'sandstone',category:'Network',version:'1.0.0',featured:true,desc:'The original Sandstone browser with its built-in interface. Remote sites need a working authorised Wisp transport; this static host does not provide one.',open:()=>openApp('sandstone','Sandstone Browser',1200,780)},
   {id:'music',name:'Lolite Music',icon:'music',category:'Media',version:'1.0.0',featured:true,desc:'Ad-free community music. Upload original tracks for approval, make playlists and request songs.',open:()=>openApp('music','Lolite Music',1100,760)},
   {id:'feature-requests',name:'Feature Requests',icon:'feature-requests',category:'Social',version:'1.0.0',featured:true,desc:'Suggest Lolite OS updates, vote for approved ideas, and see the development status. Reviewed by admins.',open:()=>openApp('feature-requests','Feature Requests',1060,740)},
   {id:'clips',name:'Lolite Clips',icon:'clips',category:'Media',version:'1.0.0',featured:true,desc:'Record gameplay with a shortcut, watch local clips, and share approved videos with Lolite members.',open:()=>openApp('clips','Lolite Clips',1020,720)},
   {id:'focus',name:'Lolite Focus Board',icon:'app-notepad',category:'Productivity',version:'1.0.0',featured:true,desc:'A working checklist and mini project planner. Save, complete, and delete tasks.',open:()=>window.LoliteQuests?.openView?.('focus')},
-  {id:'arcade',name:'Arcade Shelf',icon:'app-games',category:'Games',version:'1.0.0',featured:true,desc:'Launch your purchased game shortcuts together from one collection.',open:()=>window.LoliteQuests?.openView?.('arcade')},
-  {id:'lolite-quests',name:'Lolite Quests',icon:'app-academy',category:'Utilities',version:'1.0.0',featured:true,desc:'Earn virtual Lolite money by completing courses and actively using apps. Spend it on upgrades, game shortcuts, memberships and mini apps.',open:()=>openApp('lolite-quests','Lolite Quests',1040,710)},
-  {id:'life-rp',name:'Lolite Life RP',icon:'app-life-rp',category:'Games',version:'2.1.0',featured:true,desc:'Play interactive work shifts and minigames, manage businesses, earn ranks, finish quests, buy themes and games, and unlock Plus or Pro perks with virtual cash.',open:()=>openApp('life-rp','Lolite Life RP',1120,745)},
+  {id:'arcade',name:'Arcade Shelf',icon:'app-games',category:'Games',version:'1.0.0',featured:true,desc:'Keep your favourite game shortcuts together and launch them in one place.',open:()=>window.LoliteQuests?.openView?.('arcade')},
+  {id:'lolite-quests',name:'Lolite Quests',icon:'app-academy',category:'Utilities',version:'1.0.0',featured:true,desc:'Complete app-use quests, track Academy achievements, and access free extras and shortcuts.',open:()=>openApp('lolite-quests','Lolite Quests',1040,710)},
+  {id:'life-rp',name:'Lolite Life RP',icon:'app-life-rp',category:'Games',version:'2.1.0',featured:true,desc:'Play interactive work shifts and minigames, manage businesses, earn ranks, finish quests, and customise your RP world.',open:()=>openApp('life-rp','Lolite Life RP',1120,745)},
   {id:'academy',name:'Lolite Academy',icon:'app-academy',category:'Education',version:'1.0.0',featured:true,desc:'Learn Lolite with interactive courses, quizzes, tutorials, saved progress and achievements.',open:()=>openApp('academy','Lolite Academy',1050,710)},
   {id:'lowlight-ai',name:'Lolite AI',icon:'app-ai',category:'AI & Tools',version:'1.0.0',featured:true,desc:'Your built-in AI assistant for questions, ideas and Lolite OS help.',open:()=>openApp('lowlight-ai','Lolite AI',720,600)},
   {id:'chatroom',name:'Lolite Chat',icon:'app-chat',category:'Social',version:'1.0.0',featured:true,desc:'A community-style chatroom with channels, members and local message history.',open:()=>openApp('chatroom','Lolite Chat',1000,680)},
@@ -19,31 +19,74 @@
   {id:'wallpaper-editor',name:'Wallpaper Editor',icon:'app-wallpaper',category:'Creative',version:'1.0.0',featured:true,desc:'Create custom Lolite wallpapers with gradients, glow, text and drawing tools.',open:()=>openApp('wallpaper-editor','Wallpaper Editor',900,650)}
 ];
  const key='loliteInstalledApps';
- const economy=()=>window.LoliteEconomy;
- const price=a=>(a.id==='feature-requests'||a.id==='clips')?0:(economy()?.appPrice?.(a)??0);
- const owned=a=>a.id==='feature-requests'||a.id==='clips'||!!economy()?.hasApp?.(a);
- const formatted=n=>economy()?.money?.(n)||('$'+n);
- const basics=new Set(['academy','life-rp','lolite-quests','music','feature-requests','clips']);const get=()=>{try{const saved=JSON.parse(localStorage.getItem(key)||'[]');const valid=new Set(apps.map(a=>a.id));const clean=saved.filter(id=>valid.has(id));if(clean.length!==saved.length)localStorage.setItem(key,JSON.stringify(clean));return clean}catch{return[]}};const save=x=>localStorage.setItem(key,JSON.stringify(x));
- window.loliteInstallApp=id=>{const a=apps.find(x=>x.id===id);if(!a)return;if(!owned(a)){toast('Buy '+a.name+' for '+formatted(price(a))+' Lolite Dollars first.');render();return}const list=get();if(!list.includes(id))list.push(id);save(list);render();if(window.renderIcons)window.renderIcons();toast(a.name+' installed')};
- window.loliteUninstallApp=id=>{save(get().filter(x=>x!==id));render();if(window.renderIcons)window.renderIcons();toast('App uninstalled')}; window.loliteUninstallAll=()=>{if(!get().length){toast('No optional apps are installed');return}if(!confirm('Uninstall all optional Lolite apps?'))return;save([]);render();if(window.renderIcons)window.renderIcons();toast('All optional apps uninstalled')};
- window.loliteOpenApp=id=>{const a=apps.find(x=>x.id===id);if(!a)return;if(!owned(a)){toast('Purchase '+a.name+' with Lolite Dollars before opening it.');render();return}a.open()};
- window.loliteBuyApp=id=>{const a=apps.find(x=>x.id===id);if(!a)return;const result=economy()?.buyApp?.(id);if(!result?.ok){toast(result?.reason||'Lolite Dollars wallet unavailable.');return}toast(a.name+' purchased. Install it to add a desktop shortcut!');render()};
- function render(){const root=document.querySelector('.appstore');if(!root)return;const installed=get();root.innerHTML='<div class="appstore-head"><div><div class="muted">LOLITE SOFTWARE</div><h1>App Store</h1><div class="muted">Browse free apps or buy premium ones with earned Lolite Dollars. Everything installs normally.</div></div><span class="appstore-note">'+installed.length+' installed · '+apps.filter(a=>price(a)===0).length+' free · '+apps.filter(a=>price(a)>0).length+' paid</span><button type="button" class="appstore-wallet" onclick="window.LoliteQuests?.open?.()" title="Earn more Lolite Dollars">◈ '+formatted(economy()?.balance?.()||0)+' LOLITE DOLLARS</button></div><div class="appstore-toolbar"><input id="appStoreSearch" placeholder="Search apps…" aria-label="Search apps"><div class="appstore-tabs" role="tablist">'+['All','Free','Paid','Featured','Installed','Media','AI & Tools','Productivity','Education','Games','Creative','Utilities','Social','System Tools','Performance','Maintenance','Files','Diagnostics','Storage','Personalisation','Automation','Network','Installers'].map((f,i)=>'<button type="button" class="store-tab'+(i===0?' active':'')+'" data-filter="'+f+'" aria-pressed="'+(i===0?'true':'false')+'">'+f+'</button>').join('')+'</div></div><div id="appStoreGrid" class="appstore-grid"></div><div class="appstore-note">Free apps install instantly with Get. Paid apps unlock with a one-time virtual purchase. No real payments.</div>';const input=document.getElementById('appStoreSearch');const grid=document.getElementById('appStoreGrid');const tabs=root.querySelector('.appstore-tabs');let filter='All';const draw=()=>{
- const q=input.value.trim().toLowerCase();
- const list=apps.filter(a=>(filter==='All'||(filter==='Featured'&&a.featured)||(filter==='Installed'&&installed.includes(a.id))||(filter==='Free'&&price(a)===0)||(filter==='Paid'&&price(a)>0)||a.category===filter)&&(!q||a.name.toLowerCase().includes(q)||a.desc.toLowerCase().includes(q)));
- grid.innerHTML=list.length?list.map(a=>{
-  const isInstalled=basics.has(a.id)||installed.includes(a.id),isOwned=owned(a),cost=price(a);
-  const label=isInstalled?'Open':cost===0?'Get':!isOwned?'Buy '+formatted(cost):'Install';
-  const action=isInstalled?'OpenApp':cost===0?'InstallApp':!isOwned?'BuyApp':'InstallApp';
-  return '<article class="appstore-card"><div class="appstore-icon">'+window.LoliteIcons.tile(a.id)+'</div><div class="appstore-card-meta"><span>'+a.category+'</span><span>v'+a.version+'</span></div><h3>'+a.name+'</h3><p>'+a.desc+'</p>'+
-   '<div class="appstore-price">'+(cost===0?'<span class="appstore-free">FREE</span>':isOwned?'<span class="appstore-owned">OWNED · '+formatted(cost)+'</span>':'<b>'+formatted(cost)+' LOLITE DOLLARS</b>')+'</div>'+
-   '<button type="button" class="'+(isInstalled?'installed':'')+'" onclick="window.lolite'+action+'(\''+a.id+'\')">'+label+'</button>'+
-   (isInstalled&&!basics.has(a.id)?'<button type="button" class="app-uninstall" onclick="window.loliteUninstallApp(\''+a.id+'\')">Uninstall</button>':'')+
-   '</article>'
- }).join(''):'<div class="store-empty">No apps match your search.</div>'
-};input.addEventListener('input',draw);tabs.addEventListener('click',e=>{const b=e.target.closest('.store-tab');if(!b)return;filter=b.dataset.filter;tabs.querySelectorAll('.store-tab').forEach(x=>{const active=x===b;x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active))});draw()});draw()}
- window.addEventListener('lolite-store-purchase',()=>render());
- window.addEventListener('lolite-wallet-updated',()=>render());
+ const basics=new Set(['academy','life-rp','lolite-quests','music','feature-requests','clips']);
+ const get=()=>{
+  try{
+   const saved=JSON.parse(localStorage.getItem(key)||'[]');
+   const valid=new Set(apps.map(a=>a.id));
+   const clean=Array.isArray(saved)?[...new Set(saved.filter(id=>valid.has(id)))]:[];
+   if(!Array.isArray(saved)||clean.length!==saved.length)localStorage.setItem(key,JSON.stringify(clean));
+   return clean;
+  }catch{return []}
+ };
+ const save=items=>localStorage.setItem(key,JSON.stringify(items));
+ window.loliteInstallApp=id=>{
+  const app=apps.find(a=>a.id===id);if(!app)return;
+  const list=get();if(!list.includes(id))list.push(id);
+  save(list);render();window.renderIcons?.();toast(app.name+' installed for free');
+ };
+ window.loliteUninstallApp=id=>{
+  save(get().filter(x=>x!==id));render();window.renderIcons?.();toast('App uninstalled');
+ };
+ window.loliteUninstallAll=()=>{
+  if(!get().length){toast('No optional apps are installed');return}
+  if(!confirm('Uninstall all optional Lolite apps?'))return;
+  save([]);render();window.renderIcons?.();toast('All optional apps uninstalled');
+ };
+ window.loliteOpenApp=id=>{
+  const app=apps.find(a=>a.id===id);if(app)app.open();
+ };
+ // Compatibility for older shortcuts: "Buy" now simply installs for free.
+ window.loliteBuyApp=id=>window.loliteInstallApp(id);
+ function render(){
+  const root=document.querySelector('.appstore');if(!root)return;
+  const installed=get();
+  root.innerHTML='<div class="appstore-head"><div><div class="muted">LOLITE SOFTWARE</div><h1>App Store</h1><div class="muted">All Lolite apps are free. Install and open anything instantly.</div></div><span class="appstore-note">'+installed.length+' installed · '+apps.length+' free apps</span></div>'+
+   '<div class="appstore-toolbar"><input id="appStoreSearch" placeholder="Search apps…" aria-label="Search apps"><div class="appstore-tabs" role="tablist">'+
+   ['All','Featured','Installed','Media','AI & Tools','Productivity','Education','Games','Creative','Utilities','Social','System Tools','Performance','Maintenance','Files','Diagnostics','Storage','Personalisation','Automation','Network','Installers']
+    .map((f,i)=>'<button type="button" class="store-tab'+(i===0?' active':'')+'" data-filter="'+f+'" aria-pressed="'+(i===0?'true':'false')+'">'+f+'</button>').join('')+
+   '</div></div><div id="appStoreGrid" class="appstore-grid"></div><div class="appstore-note">Every listed app is free to install and use.</div>';
+  const input=document.getElementById('appStoreSearch');
+  const grid=document.getElementById('appStoreGrid'),tabs=root.querySelector('.appstore-tabs');
+  let filter='All';
+  const draw=()=>{
+   const q=input.value.trim().toLowerCase();
+   const list=apps.filter(a=>(filter==='All'||(filter==='Featured'&&a.featured)||
+    (filter==='Installed'&&(basics.has(a.id)||installed.includes(a.id)))||a.category===filter)&&
+    (!q||a.name.toLowerCase().includes(q)||a.desc.toLowerCase().includes(q)));
+   grid.innerHTML=list.length?list.map(a=>{
+    const isInstalled=basics.has(a.id)||installed.includes(a.id);
+    const label=isInstalled?'Open':'Get';
+    const action=isInstalled?'OpenApp':'InstallApp';
+    return '<article class="appstore-card"><div class="appstore-icon">'+window.LoliteIcons.tile(a.id)+'</div><div class="appstore-card-meta"><span>'+a.category+'</span><span>v'+a.version+'</span></div><h3>'+a.name+'</h3><p>'+a.desc+'</p>'+
+     '<div class="appstore-price"><span class="appstore-free">FREE</span></div>'+
+     '<button type="button" class="'+(isInstalled?'installed':'')+'" onclick="window.lolite'+action+'(\''+a.id+'\')">'+label+'</button>'+
+     (isInstalled&&!basics.has(a.id)?'<button type="button" class="app-uninstall" onclick="window.loliteUninstallApp(\''+a.id+'\')">Uninstall</button>':'')+
+     '</article>';
+   }).join(''):'<div class="store-empty">No apps match your search.</div>';
+  };
+  input.addEventListener('input',draw);
+  tabs.addEventListener('click',e=>{
+   const b=e.target.closest('.store-tab');if(!b)return;
+   filter=b.dataset.filter;
+   tabs.querySelectorAll('.store-tab').forEach(x=>{
+    const active=x===b;x.classList.toggle('active',active);
+    x.setAttribute('aria-pressed',String(active));
+   });
+   draw();
+  });
+  draw();
+ }
  window.loliteAppStoreFocus=id=>{const app=apps.find(x=>x.id===id);if(!app)return;setTimeout(()=>{const input=document.getElementById('appStoreSearch');if(input){input.value=app.name;input.dispatchEvent(new Event('input',{bubbles:true}));input.focus()}},65)};
  const oldPage=window.page;window.page=function(id){if(id==='appstore'){setTimeout(render,0);return '<div class="appstore"><div class="store-empty">Loading App Store…</div></div>'}return oldPage(id)};
  const oldIcons=window.renderIcons;window.renderIcons=function(){oldIcons();const installed=get();const box=document.getElementById('icons');if(!box)return;apps.filter(a=>installed.includes(a.id)&&a.id!=='academy'&&a.id!=='life-rp').forEach(a=>{const b=document.createElement('button');b.className='desktop-icon';b.ondblclick=()=>window.loliteOpenApp(a.id);b.setAttribute('aria-label',a.name);b.innerHTML=window.LoliteIcons.tile(a.id)+'<span>'+a.name+'</span>';box.appendChild(b)})};
