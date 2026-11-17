@@ -862,6 +862,20 @@
  };
  // Local, title-specific artwork is always present; remote images only enhance it.
  const artCache=new Map();
+ function retryUGSArt(el,file,badUrl,title){
+  const game=games.find(item=>item.file===file&&item.ugsEntry);
+  if(!game||!window.LoliteUGSPresentation?.next||!el?.isConnected)return;
+  const count=Number(el.dataset.ugsArtAttempts||0);
+  if(count>=6)return;
+  el.dataset.ugsArtAttempts=String(count+1);
+  void window.LoliteUGSPresentation.next(game,badUrl).then(src=>{
+   if(!src||!el.isConnected)return;
+   ugsDiscoveredArt.set(file,src);
+   delete el.dataset.artLoaded;
+   delete el.dataset.artLoading;
+   window.loliteStorePreview(el,file,title);
+  }).catch(()=>{});
+ }
  window.loliteStorePreview=(el,file,title)=>{
    if(!el || el.dataset.artLoading==='1' || el.dataset.artLoaded==='1')return;
    const target=el.querySelector('.store-cover-art');
@@ -883,7 +897,9 @@
     el.dataset.artLoaded='fallback';return;
    }
    const old=artCache.get(remote);
-   if(old?.failed && Date.now()-old.time<60000){el.dataset.artLoaded='fallback';return}
+   if(old?.failed && Date.now()-old.time<60000){
+    el.dataset.artLoaded='fallback';retryUGSArt(el,file,remote,title);return;
+   }
    el.dataset.artLoading='1';
    const loader=new Image();
    loader.decoding='async';
@@ -898,6 +914,7 @@
      if(!ok || !loader.naturalWidth || !loader.naturalHeight){
        artCache.set(remote,{failed:true,time:Date.now()});
        el.dataset.artLoaded='fallback';
+       retryUGSArt(el,file,remote,title);
        return;
      }
      artCache.delete(remote);
@@ -910,6 +927,7 @@
        picture.classList.remove('is-square');
        el.dataset.artLoaded='fallback';
        artCache.set(remote,{failed:true,time:Date.now()});
+       retryUGSArt(el,file,remote,title);
      };
      picture.classList.toggle('is-square',square);
      picture.src=remote;
