@@ -8,7 +8,8 @@
  const windowEl=$('#previewWindow'), windowContent=$('#windowContent');
  const startEl=$('#startMenu'), quickEl=$('#quickPanel');
  const defaults=()=>({theme:'cosmos',wallpaper:'aurora',glow:true,intensity:46,size:170,color:'blue',
-  surfaces:{button:true,card:true,taskbar:true}});
+  surfaces:{button:true,card:true,taskbar:true},
+  liquid:{mode:'balanced',bend:60,thickness:48,shine:65,motion:false}});
  const COLORS={blue:'108 174 255',purple:'165 139 255',cyan:'120 230 231',white:'239 246 255'};
  const SCENES={
   desktop:{title:'Desktop UI',description:'Try hovering over app icons, windows and the taskbar.',number:'01'},
@@ -31,7 +32,7 @@
  const icon=name=>'<svg aria-hidden="true"><use href="#ic-'+name+'"></use></svg>';
  const safe=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
  let state=defaults(),scene='desktop',lastWindowScene='window';
- let drag=null,toastTimeout=null;
+ let drag=null,lensDrag=null,toastTimeout=null,glassEngine=null;
  function readSaved(){
   try{
    const d=JSON.parse(localStorage.getItem('loliteUiLabV1')||'null');
@@ -44,6 +45,13 @@
    if(COLORS[d.color])state.color=d.color;
    for(const key of Object.keys(state.surfaces))
     if(typeof d.surfaces?.[key]==='boolean')state.surfaces[key]=d.surfaces[key];
+   const liquid=d.liquid;
+   if(liquid&&typeof liquid==='object'){
+    if(['off','balanced','high'].includes(liquid.mode))state.liquid.mode=liquid.mode;
+    for(const key of ['bend','thickness','shine'])if(Number.isFinite(liquid[key]))
+     state.liquid[key]=Math.max(0,Math.min(100,Math.round(liquid[key])));
+    if(typeof liquid.motion==='boolean')state.liquid.motion=liquid.motion;
+   }
   }catch(_){/* Preview must still work if storage is blocked. */}
  }
  function save(){
@@ -54,6 +62,35 @@
   clearTimeout(toastTimeout);
   toast.textContent=message;toast.hidden=false;
   toastTimeout=setTimeout(()=>{toast.hidden=true},2700);
+ }
+ function syncLiquidStatus(status){
+  const label=$('#liquidEngineStatus'),badge=$('#liquidEngineBadge');
+  if(!label||!badge)return;
+  if(state.liquid.mode==='off'){
+   label.textContent='Disabled. Original preview wallpaper is shown.';
+   badge.textContent='OFF';return;
+  }
+  const on=!!status?.active;
+  badge.textContent=on?'WEBGL LIVE':'CSS FALLBACK';
+  label.textContent=on?
+   'Real refracted wallpaper pixels · one GPU context · '+status.resolution.join(' × ')+
+    (status.maxFps?' · 20 FPS animation cap':' · no idle animation'):
+   (status?.reason||'Checking GPU support; frosted-glass fallback is available.');
+ }
+ function syncLiquidControls(){
+  const liquid=state.liquid;
+  $('[data-liquid-mode]').forEach(button=>{
+   const selected=button.dataset.liquidMode===liquid.mode;
+   button.classList.toggle('selected',selected);
+   button.setAttribute('aria-pressed',String(selected));
+  });
+  for(const [key,element] of [['bend','liquidBend'],['thickness','liquidThickness'],['shine','liquidShine']]){
+   $('#'+element).value=String(liquid[key]);
+   $('#'+element+'Value').textContent=liquid[key]+'%';
+  }
+  $('#liquidMotion').checked=liquid.motion;
+  glassEngine?.update({...liquid,wallpaper:state.wallpaper});
+  syncLiquidStatus(glassEngine?.status());
  }
  function syncInspector(){
   root.dataset.theme=state.theme;
@@ -86,6 +123,7 @@
   $$('[data-glow-surface]').forEach(input=>{input.checked=!!state.surfaces[input.dataset.glowSurface]});
   const quickGlow=quickEl.querySelector('[data-quick="glow"]');
   if(quickGlow)quickGlow.setAttribute('aria-pressed',String(state.glow));
+  syncLiquidControls();
  }
  function setScene(next){
   if(!SCENES[next])return;
@@ -103,14 +141,16 @@
    }
   });
   closeMenus();
-  if(next==='desktop'){windowEl.hidden=true;$('#taskWindows').hidden=true;return}
-  if(next==='start'){windowEl.hidden=true;$('#taskWindows').hidden=true;openStart();return}
+  if(next==='desktop'){windowEl.hidden=true;$('#taskWindows').hidden=true;glassEngine?.requestDraw();return}
+  if(next==='start'){windowEl.hidden=true;$('#taskWindows').hidden=true;openStart();glassEngine?.requestDraw();return}
   openWindow(next);
+  glassEngine?.requestDraw();
  }
  function closeMenus(){
   startEl.hidden=true;quickEl.hidden=true;
   $('#taskStart').setAttribute('aria-expanded','false');
   $('#taskQuick').setAttribute('aria-expanded','false');
+  glassEngine?.requestDraw();
  }
  function openStart(){
   const opening=startEl.hidden;
@@ -120,11 +160,13 @@
    $('#taskStart').setAttribute('aria-expanded','true');
    renderStartApps($('#startSearch').value);
   }
+  glassEngine?.requestDraw();
  }
  function openQuick(){
   const opening=quickEl.hidden;
   closeMenus();
   if(opening){quickEl.hidden=false;$('#taskQuick').setAttribute('aria-expanded','true')}
+  glassEngine?.requestDraw();
  }
  function renderStartApps(query=''){
   const matches=APPS.filter(app=>app.label.toLowerCase().includes(query.trim().toLowerCase())||
@@ -149,6 +191,7 @@
   if(id==='wallpapers')syncInspector();
   if(id==='chat')selectChat('Alex');
   closeMenus();
+  glassEngine?.requestDraw();
  }
  function windowMarkup(){
   return '<div class="content-pane"><span class="pane-label">WINDOWS / CONCEPT</span>'+
@@ -237,13 +280,14 @@
  function toggleMaximize(){
   if(windowEl.hidden)return;
   windowEl.classList.toggle('maximized');
+  glassEngine?.requestDraw();
   if(!windowEl.classList.contains('maximized'))return;
   closeMenus();
  }
  function closeWindow(){
   windowEl.hidden=true;
   $('#taskWindows').hidden=true;
-  scene='desktop';updateSceneNav();
+  scene='desktop';updateSceneNav();glassEngine?.requestDraw();
  }
  function updateSceneNav(){
   const info=SCENES[scene];
@@ -284,6 +328,7 @@
   const x=Math.min(drag.maxX,Math.max(0,drag.left+event.clientX-drag.x));
   const y=Math.min(drag.maxY,Math.max(0,drag.top+event.clientY-drag.y));
   windowEl.style.left=x+'px';windowEl.style.top=y+'px';
+  glassEngine?.requestDraw();
  }
  function stopDrag(event){
   if(drag&&event.pointerId===drag.id)drag=null;
@@ -295,6 +340,12 @@
   setScene(scene);
  }
  readSaved();syncInspector();renderStartApps();updateClock();setScene('desktop');
+ glassEngine=window.LoliteLiquidGlassRenderer?.create?.({
+  desktop,canvas:$('#liquidGlassCanvas'),
+  onStatus:syncLiquidStatus
+ })||null;
+ glassEngine?.update({...state.liquid,wallpaper:state.wallpaper});
+ syncLiquidStatus(glassEngine?.status());
  setInterval(updateClock,30000);
  document.addEventListener('pointermove',event=>{
   const target=event.target.closest?.('[data-glow]');
@@ -318,11 +369,13 @@
   if(wallpaper){state.wallpaper=wallpaper.dataset.wallpaperChoice;syncInspector();save();return}
   const color=target.closest('[data-glow-color]');
   if(color){state.color=color.dataset.glowColor;syncInspector();save();return}
+  const liquidMode=target.closest('[data-liquid-mode]');
+  if(liquidMode){state.liquid.mode=liquidMode.dataset.liquidMode;syncInspector();save();return}
   const windowButton=target.closest('[data-window-action]');
   if(windowButton){
    if(windowButton.dataset.windowAction==='maximize')toggleMaximize();
    if(windowButton.dataset.windowAction==='close')closeWindow();
-   if(windowButton.dataset.windowAction==='minimize'){windowEl.hidden=true;$('#taskWindows').setAttribute('aria-pressed','false')}
+   if(windowButton.dataset.windowAction==='minimize'){windowEl.hidden=true;$('#taskWindows').setAttribute('aria-pressed','false');glassEngine?.requestDraw()}
    return;
   }
   if(target.closest('#taskWindows')){setScene(lastWindowScene);return}
@@ -377,6 +430,13 @@
   if(target.closest('#previewDesktop')&&!target.closest('#startMenu')&&!target.closest('#quickPanel')&&!target.closest('.taskbar'))closeMenus();
  });
  $('#startSearch').addEventListener('input',event=>renderStartApps(event.target.value));
+ for(const [element,key] of [['liquidBend','bend'],['liquidThickness','thickness'],['liquidShine','shine']])
+  $('#'+element).addEventListener('input',event=>{
+   state.liquid[key]=Number(event.target.value);syncLiquidControls();save();
+  });
+ $('#liquidMotion').addEventListener('change',event=>{
+  state.liquid.motion=event.target.checked;syncLiquidControls();save();
+ });
  $('#glowEnabled').addEventListener('change',event=>{state.glow=event.target.checked;syncInspector();save()});
  $('#glowIntensity').addEventListener('input',event=>{state.intensity=Number(event.target.value);syncInspector();save()});
  $('#glowSize').addEventListener('input',event=>{state.size=Number(event.target.value);syncInspector();save()});
@@ -395,6 +455,27 @@
   bubble.className='bubble sent';bubble.textContent=message;
   holder.appendChild(bubble);input.value='';holder.scrollTop=holder.scrollHeight;
  });
+ // Drag the transparent demo lens over the wallpaper to verify actual pixel bending.
+ const lens=$('#liquidLens');
+ if(lens?.addEventListener){
+  lens.addEventListener('pointerdown',event=>{
+   if(event.button!==0)return;
+   lensDrag={id:event.pointerId,x:event.clientX,y:event.clientY,
+    left:lens.offsetLeft,top:lens.offsetTop,
+    maxX:Math.max(0,desktop.clientWidth-lens.offsetWidth),
+    maxY:Math.max(0,desktop.clientHeight-lens.offsetHeight-58)};
+   lens.setPointerCapture?.(event.pointerId);
+  });
+  lens.addEventListener('pointermove',event=>{
+   if(!lensDrag||event.pointerId!==lensDrag.id)return;
+   lens.style.left=Math.min(lensDrag.maxX,Math.max(0,lensDrag.left+event.clientX-lensDrag.x))+'px';
+   lens.style.top=Math.min(lensDrag.maxY,Math.max(0,lensDrag.top+event.clientY-lensDrag.y))+'px';
+   glassEngine?.requestDraw();
+  });
+  const endLens=event=>{if(lensDrag&&lensDrag.id===event.pointerId)lensDrag=null};
+  lens.addEventListener('pointerup',endLens);
+  lens.addEventListener('pointercancel',endLens);
+ }
  $('#windowDragHandle').addEventListener('pointerdown',startDrag);
  $('#windowDragHandle').addEventListener('pointermove',moveDrag);
  $('#windowDragHandle').addEventListener('pointerup',stopDrag);
