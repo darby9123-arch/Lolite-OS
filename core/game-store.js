@@ -700,7 +700,7 @@
  const UGS_GENRES=['Arcade & Action','Platformers','Puzzle & Brain','Racing & Driving',
   'Sports','Strategy','Simulation & Life','Casual & Idle','Adventure & RPG',
   'Sandbox & Building','Multiplayer & .io','Music & Rhythm','Retro & Classics',
-  'Horror & Survival','Baldi’s Basics','Geometry Dash'];
+  'Horror & Survival','Baldi’s Basics'];
  const sortOptions={default:'Default',az:'A–Z',za:'Z–A',random:'Random',servers:'Most servers',popular:'Most launched'};
  let sortOrder='default',lastSortedGames=[];
  try{const saved=localStorage.getItem('loliteGameSortV1');if(Object.hasOwn(sortOptions,saved))sortOrder=saved}catch{}
@@ -1010,15 +1010,25 @@
     '<button type="button" class="store-layout-choice" data-store-layout="'+id+'" aria-label="'+label+' layout" title="'+label+' layout" aria-pressed="'+(gameLayout===id)+'">'+
     (id==='gallery'?'▦':id==='compact'?'▥':'☷')+'<span>'+label+'</span></button>').join('')+'</div>';
   const filterVisible=active==='UGS'&&!query.trim();
+  const ugsEntries=totalGames.filter(game=>!!game.ugsEntry);
+  const ugsGenreCounts=new Map();
+  const ugsFormatCounts=new Map();
+  for(const game of ugsEntries){
+   ugsGenreCounts.set(game.category,(ugsGenreCounts.get(game.category)||0)+1);
+   const kind=game.ugsEntry?.kind;
+   if(kind)ugsFormatCounts.set(kind,(ugsFormatCounts.get(kind)||0)+1);
+  }
   const ugsFilters='<div class="store-ugs-filters" data-ugs-filters '+(filterVisible?'':'hidden')+'>'+
    '<label>Genre <select data-store-ugs-genre aria-label="Filter UGS by genre">'+
-   [['all','All genres'],...UGS_GENRES.map(g=>[g,g])].map(([id,label])=>
+   [['all','All genres ('+ugsEntries.length+')'],...UGS_GENRES.map(g=>[g,g+' ('+(ugsGenreCounts.get(g)||0)+')'])].map(([id,label])=>
     '<option value="'+encodeLabel(id)+'"'+(ugsGenre===id?' selected':'')+'>'+encodeLabel(label)+'</option>').join('')+
    '</select></label>'+
    '<label>Game type <select data-store-ugs-format aria-label="Filter UGS by game type">'+
-   [['all','All types'],['html5','HTML5'],['flash','Flash']].map(([id,label])=>
+   [['all','All types'],['html5','HTML5 ('+(ugsFormatCounts.get('html5')||0)+')'],
+    ['flash','Flash ('+(ugsFormatCounts.get('flash')||0)+')']].map(([id,label])=>
     '<option value="'+id+'"'+(ugsFormat===id?' selected':'')+'>'+label+'</option>').join('')+
-   '</select></label></div>';
+   '</select></label><button type="button" class="store-ugs-reset" data-store-ugs-reset '+
+   (ugsGenre==='all'&&ugsFormat==='all'?'hidden':'')+'>Clear filters</button></div>';
   const categoryJump='<label class="store-category-jump">Collection <select data-store-category-jump aria-label="Choose game collection">'+
     categoryNames.map(name=>'<option value="'+encodeLabel(name)+'"'+(active===name?' selected':'')+'>'+encodeLabel(name)+'</option>').join('')+
     '</select></label>';
@@ -1038,7 +1048,8 @@
   const popularityStatus=popularity()?.getStatus()?.status||'loading';
   const summary=livePopularity
     ?'Most launched in Lolite · Last 30 days · Anonymous totals'
-    :active==='UGS'?list.length.toLocaleString()+' UGS HTML games included in Lolite · Choose Play to launch'
+    :active==='UGS'?list.length.toLocaleString()+' UGS games · '+(ugsGenre==='all'?'All genres':ugsGenre)+
+     ' · '+(ugsFormat==='all'?'HTML5 + Flash':ugsFormat.toUpperCase())
     :playableVersionCount(list).toLocaleString()+' playable versions · '+list.length+' unique titles';
   const empty=livePopularity
     ?(popularityStatus==='loading'||popularityStatus==='refreshing'
@@ -1046,7 +1057,8 @@
       :popularityStatus==='unavailable'
         ?'Live popularity counts are unavailable. Try reopening this category.'
         :'No game launches counted yet. Popular Games will fill in as people play.')
-      :'No games found. Try another search or category.';
+      :active==='UGS'?'No UGS games match these filters. Try All genres or All types.':
+       'No games found. Try another search or category.';
   const content=(showFeatured?heroMarkup():'')+
     '<section class="store-section"><div class="store-section-head"><div><h2>'+
     (query.trim()?'Search results for “'+encodeLabel(query.trim())+'”':encodeLabel(active))+'</h2><p>'+summary+'</p></div></div>'+
@@ -1077,6 +1089,8 @@
    if(genre)genre.value=ugsGenre;
    const kind=toolbar.querySelector?.('[data-store-ugs-format]');
    if(kind)kind.value=ugsFormat;
+   const reset=toolbar.querySelector?.('[data-store-ugs-reset]');
+   if(reset)reset.hidden=ugsGenre==='all'&&ugsFormat==='all';
    const count=toolbar.querySelector?.('.store-count-pill');
    if(count)count.textContent=totalPlayable.toLocaleString()+' games incl. servers ('+totalGames.length+' titles)';
    const check=toolbar.querySelector?.('.store-health-check');
@@ -1250,6 +1264,11 @@
  window.lolitePlayMinecraft=()=>window.loliteStorePlay('clminecraftpocketedition.html');
  window.loliteStoreCheckFiles=()=>window.LoliteGameHealth?.scan?.(games,{force:true});
  document.addEventListener('click',event=>{
+  const clearUGS=event.target.closest?.('.store-v41 [data-store-ugs-reset]');
+  if(clearUGS){
+   event.preventDefault?.();ugsGenre='all';ugsFormat='all';visibleCount=60;
+   render({keepToolbar:true,resetScroll:true});return;
+  }
   const layout=event.target.closest?.('.store-v41 [data-store-layout]');
   if(layout&&Object.hasOwn(LAYOUTS,layout.dataset.storeLayout)){
    event.preventDefault?.();
