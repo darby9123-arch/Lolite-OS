@@ -196,3 +196,68 @@ test('Game descriptions use provided metadata and escape it before rendering',()
  assert.match(h.modal.innerHTML,/A custom puzzle\. &lt;img/);
  assert.doesNotMatch(h.modal.innerHTML,/<img src=x/);
 });
+
+
+function chooseLayout(h,name){
+ const button={dataset:{storeLayout:name}};
+ for(const listener of h.events.click||[])listener({target:{
+  closest:selector=>selector==='.store-v41 [data-store-layout]'?button:null
+ },preventDefault(){}});
+}
+test('Gallery, Compact and List layouts render real games and persist across reopening',()=>{
+ const h=setup();h.win.loliteStoreCategory('All Games');
+ assert.equal(h.win.LoliteGameStoreGallery.getLayout(),'gallery');
+ assert.match(h.results.innerHTML,/data-layout="gallery"/);
+ assert.match(h.main.innerHTML,/data-store-layout="compact"/);
+ assert.match(h.main.innerHTML,/data-store-layout="list"/);
+ const galleryGames=shownGames(h);
+ chooseLayout(h,'compact');
+ assert.equal(h.win.LoliteGameStoreGallery.getLayout(),'compact');
+ assert.match(h.results.innerHTML,/data-layout="compact"/);
+ assert.deepEqual(shownGames(h),galleryGames,'Switching layout must not change the catalogue order');
+ chooseLayout(h,'list');
+ assert.equal(h.win.LoliteGameStoreGallery.getLayout(),'list');
+ assert.match(h.results.innerHTML,/data-layout="list"/);
+ assert.deepEqual(shownGames(h),galleryGames);
+ assert.equal(h.storage.get('loliteGameLayoutV2'),'list');
+ h.win.loliteStoreSearch('geometrydash');
+ assert.match(h.results.innerHTML,/data-layout="list"/);
+ assert.match(h.results.innerHTML,/Geometry Dash/);
+ const restored=setup(h.storage);
+ assert.equal(restored.win.LoliteGameStoreGallery.getLayout(),'list');
+ restored.win.loliteStoreCategory('All Games');
+ assert.match(restored.results.innerHTML,/data-layout="list"/);
+ chooseLayout(restored,'unrecognised');
+ assert.equal(restored.win.LoliteGameStoreGallery.getLayout(),'list');
+});
+test('UGS genre and game type filters are available but hidden outside UGS',()=>{
+ const h=setup();h.win.loliteStoreCategory('All Games');
+ assert.match(h.main.innerHTML,/data-store-ugs-genre/);
+ assert.match(h.main.innerHTML,/data-store-ugs-format/);
+ assert.match(h.main.innerHTML,/data-ugs-filters hidden/);
+ h.win.loliteStoreCategory('UGS');
+ assert.match(h.main.innerHTML,/data-store-ugs-genre/);
+ const store=fs.readFileSync('core/game-store.js','utf8');
+ assert.match(store,/active!=='UGS'/);
+ assert.match(store,/ugsGenre==='all'\|\|g\.category===ugsGenre/);
+ assert.match(store,/ugsFormat==='all'\|\|g\.ugsEntry\?\.kind===ugsFormat/);
+ assert.match(store,/data-store-ugs-format/);
+ assert.match(store,/LoliteUGSPresentation\?\.category/);
+ assert.match(store,/game\.ugsEntry\?\.sourceTitle/);
+});
+test('Game Store view styles override old grid rules without hiding playable controls',()=>{
+ const css=fs.readFileSync('core/game-store-views.css','utf8');
+ const html=fs.readFileSync('index.html','utf8');
+ const js=fs.readFileSync('core/game-store.js','utf8');
+ assert.match(css,/data-layout="gallery"|store-layout-choice/);
+ assert.match(css,/data-layout="compact"/);
+ assert.match(css,/data-layout="list"/);
+ assert.match(css,/grid-template-columns:minmax\(0,1fr\)!important/);
+ assert.match(css,/store-card-actions/);
+ assert.match(css,/store-server-picker/);
+ assert.match(css,/store-card-meta/);
+ assert.ok(html.indexOf('core/game-store-action-sizing.css')<html.indexOf('core/game-store-views.css'));
+ assert.match(js,/aria-pressed/);
+ assert.match(js,/data-store-layout/);
+ assert.match(js,/data-store-ugs-genre/);
+});
