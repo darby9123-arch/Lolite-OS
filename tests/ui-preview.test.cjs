@@ -186,3 +186,29 @@ test('Minimized preview windows are restored from the taskbar',()=>{
  assert.equal(h.get('#taskWindows').hidden,true);
  assert.equal(h.get('#sceneTitle').textContent,'Desktop UI');
 });
+
+test('Live liquid glass modes are independently editable and survive saving',()=>{
+ const h=harness();
+ assert.equal(h.get('#liquidBend').value,'60');
+ const off=Object.assign(mockNode(),{dataset:{liquidMode:'off'}});
+ h.click({'[data-liquid-mode]':off});
+ assert.equal(h.doc.documentElement.dataset.theme,'cosmos');
+ assert.equal(JSON.parse(h.storage.get('loliteUiLabV1')).liquid.mode,'off');
+ assert.equal(h.get('#liquidEngineBadge').textContent,'OFF');
+ const high=Object.assign(mockNode(),{dataset:{liquidMode:'high'}});
+ h.click({'[data-liquid-mode]':high});
+ assert.equal(JSON.parse(h.storage.get('loliteUiLabV1')).liquid.mode,'high');
+ assert.equal(h.get('#liquidEngineBadge').textContent,'CSS FALLBACK');
+ assert.match(read('ui-preview/app.js'),/LoliteLiquidGlassRenderer\?\.create/);
+ assert.match(read('ui-preview/app.js'),/glassEngine\?\.update/);
+});
+test('Untrusted saved liquid glass settings are clamped and invalid modes rejected',()=>{
+ const h=harness({saved:JSON.stringify({liquid:{mode:'unsafe',bend:999,thickness:-44,shine:65,motion:true}})});
+ assert.equal(h.get('#liquidBend').value,'100');
+ assert.equal(h.get('#liquidThickness').value,'0');
+ assert.equal(h.get('#liquidShine').value,'65');
+ assert.equal(h.get('#liquidMotion').checked,true);
+ assert.equal(h.get('#liquidEngineBadge').textContent,'CSS FALLBACK');
+ const settings=JSON.parse(h.storage.get('loliteUiLabV1'));
+ assert.equal(settings.liquid.mode,'unsafe'); // unchanged input is never executed
+});
