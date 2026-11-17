@@ -674,11 +674,8 @@
    '<button type="button" class="store-social-button" data-store-open-chat>Open Lolite Chat ↗</button></div>'+
    '<div class="store-social-footer">Your library follows your Lolite account. Guest data stays on this device.</div>';
  }
- const economy=()=>window.LoliteEconomy;
- const gamePrice=g=>economy()?.gamePrice?.(g)??0;
- const hasGame=g=>!!economy()?.hasGame?.(g);
- const priceLabel=g=>gamePrice(g)===0?'FREE':economy()?.money?.(gamePrice(g))||'$'+gamePrice(g);
- const storeWallet=()=>economy()?.money?.(economy().balance())||'—';
+ const gamePrice=()=>0;
+ const hasGame=g=>!!g&&typeof g.file==='string';
  // Popular titles come from real anonymous launch counts, not a keyword list.
  const popularity=()=>window.LoliteGamePopularity;
  const playCount=g=>popularity()?.countFor(g.file)||0;
@@ -951,7 +948,7 @@
   const featuredGames=[{"file":"Geometry Dash webport.html","title":"Geometry Dash Full","description":"Play the browser-based Geometry Dash webport in Lolite OS.","background":"assets/games/geometry-dash-full-background.svg"},{"file":"clminecraftpocketedition.html","title":"Minecraft: Pocket Edition","description":"Explore the included Minecraft HTML game."},{"file":"clangrybirds2.html","title":"Angry Birds 2","description":"Launch birds and topple structures in this included HTML game."},{"file":"clbaldisbasics.html","title":"Baldi’s Basics","description":"Explore the classic schoolhouse game from Lolite's HTML collection."},{"file":"slope.html","title":"Slope","description":"Stay on the track and test your reflexes."},{"file":"clcookieclicker.html","title":"Cookie Clicker","description":"Keep clicking and build your cookie collection."}];
  let heroIndex=0;
  function playButtonMarkup(label='Play'){return '<span class="store-play-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M8 4.8c0-.8.9-1.3 1.6-.9l11 7.2c.7.4.7 1.4 0 1.8l-11 7.2c-.7.4-1.6-.1-1.6-.9V4.8Z"/></svg></span><span class="store-play-label">'+label+'</span>'}
- function heroMarkup(){const g=featuredGames[heroIndex%featuredGames.length];return '<section class="store-hero store-featured-hero" id="store-featured-hero" data-feature-file="'+g.file+'"><div class="store-hero-art" aria-hidden="true"></div><div class="store-hero-copy"><span class="store-eyebrow">'+'FEATURED GAME'+'</span>'+(g.file==='Geometry Dash webport.html'?'<img class="store-hero-game-logo" alt="" src="assets/games/geometry-dash-full-logo.svg" loading="lazy">':'')+'<h1>'+g.title+'</h1><p>'+g.description+'</p><button class="store-primary" type="button" onclick=\'window.loliteStoreAction("'+g.file+'")\'>'+(gamePrice(g)===0?playButtonMarkup():hasGame(g)?playButtonMarkup('Play now'):'◆ &nbsp; Buy for '+priceLabel(g))+'</button><div class="store-hero-dots" role="tablist" aria-label="Featured games">'+featuredGames.map((item,i)=>'<button type="button" class="'+(i===heroIndex?'active':'')+'" aria-label="Show '+item.title.replace(/"/g,'&quot;')+'" aria-selected="'+(i===heroIndex)+'" onclick="window.loliteStoreHeroSelect('+i+')" title="'+item.title.replace(/"/g,'&quot;')+'"></button>').join('')+'</div></div><div class="store-hero-side"><strong>'+String(heroIndex+1).padStart(2,'0')+'</strong><span>FEATURED</span></div></section>'}
+ function heroMarkup(){const g=featuredGames[heroIndex%featuredGames.length];return '<section class="store-hero store-featured-hero" id="store-featured-hero" data-feature-file="'+g.file+'"><div class="store-hero-art" aria-hidden="true"></div><div class="store-hero-copy"><span class="store-eyebrow">'+'FEATURED GAME'+'</span>'+(g.file==='Geometry Dash webport.html'?'<img class="store-hero-game-logo" alt="" src="assets/games/geometry-dash-full-logo.svg" loading="lazy">':'')+'<h1>'+g.title+'</h1><p>'+g.description+'</p><button class="store-primary" type="button" onclick=\'window.loliteStoreAction("'+g.file+'")\'>'+playButtonMarkup()+'</button><div class="store-hero-dots" role="tablist" aria-label="Featured games">'+featuredGames.map((item,i)=>'<button type="button" class="'+(i===heroIndex?'active':'')+'" aria-label="Show '+item.title.replace(/"/g,'&quot;')+'" aria-selected="'+(i===heroIndex)+'" onclick="window.loliteStoreHeroSelect('+i+')" title="'+item.title.replace(/"/g,'&quot;')+'"></button>').join('')+'</div></div><div class="store-hero-side"><strong>'+String(heroIndex+1).padStart(2,'0')+'</strong><span>FEATURED</span></div></section>'}
  async function loadHeroArt(){const hero=document.getElementById('store-featured-hero');if(!hero)return;const g=featuredGames[heroIndex%featuredGames.length];const poster=lolitePosterArt(g.title,g.file);hero.style.setProperty('--hero-art','url(\"'+poster+'\")');hero.classList.add('has-feature-art');try{const art=g.background||coverFor(g.file);if(!art||!hero.isConnected||hero.dataset.featureFile!==g.file)return;const img=new Image();img.onload=()=>{if(hero.isConnected&&hero.dataset.featureFile===g.file){hero.style.setProperty('--hero-art','url("'+art.replace(/"/g,'%22')+'")');hero.classList.add('has-feature-art');hero.classList.toggle('store-featured-square',img.naturalWidth/img.naturalHeight<1.25)}};img.src=art}catch(_){}}
  window.loliteStoreHeroSelect=index=>{heroIndex=(Number(index)+featuredGames.length)%featuredGames.length;const hero=document.getElementById('store-featured-hero');if(!hero)return;hero.outerHTML=heroMarkup();loadHeroArt()};
  setInterval(()=>{if(document.getElementById('store-featured-hero'))window.loliteStoreHeroSelect(heroIndex+1)},20000);
@@ -1068,7 +1065,7 @@
     '</section>';
   const toolbar=root.querySelector('.store-top'),results=root.querySelector('.store-results');
   const searchFocused=!!document.activeElement?.matches?.('.store-v41 .store-search');
-  // Async health, popularity, wallet and catalogue updates must not replace the
+  // Async health, popularity and catalogue updates must not replace the
   // input while the user is typing. Keep its selection and focus intact.
   if(toolbar&&results&&(keepToolbar||query.trim()||searchFocused)){
    results.innerHTML=content;
@@ -1202,11 +1199,8 @@
  };
  window.loliteStoreMore=()=>{visibleCount+=60;render({keepToolbar:true})};
  window.loliteStoreAction=file=>{
-  const g=games.find(g=>g.file===file);if(!g)return;
-  if(hasGame(g)){window.loliteStorePlay(file);return}
-  const result=economy()?.buyGame?.(g);
-  if(!result?.ok){toast(result?.reason||'Lolite Dollars wallet is unavailable.');return}
-  toast('Purchased '+g.title+'. Play it from My Library.');render();
+  // All available games are free; go directly to their existing player.
+  if(games.some(g=>g.file===file))window.loliteStorePlay(file);
  };
  window.loliteStorePlay=file=>{
   const game=games.find(g=>g.file===file);if(!game)return;
@@ -1226,7 +1220,6 @@
    }).catch(error=>window.toast?.(error?.message||'Could not open installed HTML game'));
    return;
   }
-  if(!hasGame(game)){window.toast?.('This game is not unlocked.');return}
   const source=selectedSource(game);if(!source)return;
   if(!window.LoliteGamePlayer?.open({title:game.title,file:game.file,url:source.url,source:source.name,fallbackSources:fallbackSourcesFor(game,source)})){
    window.toast?.('Could not start this game inside Lolite.');
@@ -1358,7 +1351,6 @@
  window.addEventListener('lolite:gamehealthchange',()=>{if(document.querySelector('.store-main'))render({keepToolbar:true})});
  window.addEventListener('lolite:popular-games',()=>{if((active==='Popular Games'||active==='Featured')&&document.querySelector('.store-main'))render({keepToolbar:true})});
  window.addEventListener('lolite-store-purchase',()=>render());
- window.addEventListener('lolite-wallet-updated',()=>render());
  const oldPage=window.page;window.page=function(id){if(id==='games'){setTimeout(render,0);return shell()}return oldPage(id)};
  // Keep the remaining provider's alternative HTML servers.
   loadAdditionalServers();
