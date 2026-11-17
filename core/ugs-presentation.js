@@ -517,7 +517,7 @@ geometryvibes:'Geometry Vibes',
   'Music & Rhythm':'<circle cx="730" cy="246" r="160" fill="#a8bafd" opacity=".32"/><path d="M720 132v222m0-222l145-36v210" stroke="#e8f5ff" stroke-width="22" fill="none" stroke-linecap="round"/><ellipse cx="676" cy="360" rx="65" ry="30" fill="#e8f5ff" transform="rotate(-23 676 360)"/><ellipse cx="821" cy="315" rx="65" ry="30" fill="#e8f5ff" transform="rotate(-23 821 315)"/>'
  };
  function poster(game){
-  const key=String(game?.file||game?.title||'game');
+  const key=String(game?.file||'game')+'|'+String(game?.title||'')+'|'+String(game?.category||'');
   if(posterCache.has(key))return posterCache.get(key);
   let hash=0;for(const ch of key)hash=(Math.imul(hash,33)+ch.charCodeAt(0))>>>0;
   const hue=hash%360,other=(hue+70)%360;
