@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const script=fs.readFileSync('core/game-store.js','utf8');
 
-function setup(storage=new Map()){
+function setup(storage=new Map(),extraWindow={}){
  const events={},windowEvents={},results={innerHTML:''};
  const input={value:'',matches:s=>s==='.store-v41 .store-search',focus(){}};
  const clear={hidden:true};
@@ -51,6 +51,7 @@ function setup(storage=new Map()){
   LoliteEconomy:{gamePrice:()=>0,hasGame:()=>true},
   LoliteGameHealth:{isUnavailable:()=>false,summary:()=>({}),scan:()=>Promise.resolve({})}
  };
+ Object.assign(win,extraWindow);
  const ctx={
   window:win,document,localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)},
   location:{origin:'https://lolite.example'},console:{warn(){},error(){},info(){}},
@@ -260,4 +261,56 @@ test('Game Store view styles override old grid rules without hiding playable con
  assert.match(js,/aria-pressed/);
  assert.match(js,/data-store-layout/);
  assert.match(js,/data-store-ugs-genre/);
+});
+
+
+test('UGS genre and HTML5/Flash filters select actual records without changing launch URLs',async()=>{
+ const sportId='AAAAAAAAAAAAAAAABBBBBBBBBBBB';
+ const puzzleId='CCCCCCCCCCCCCCCCDDDDDDDDDDDD';
+ const hosted={
+  [sportId]:'html%20games/ugs/clbasketballstars.html',
+  [puzzleId]:'html%20games/ugs/clhextris.html'
+ };
+ const extraWindow={
+  LoliteUGSHosted:hosted,
+  LoliteUGSCatalog:[
+   [sportId,'clbasketballstars.html','html5',4000,'Basketballstars'],
+   [puzzleId,'clhextris.html','flash',4000,'Hextris']
+  ],
+  LoliteUGSPresentation:{
+   title:(value)=>value==='Basketballstars'?'Basketball Stars':value,
+   category:({title})=>title==='Basketball Stars'?'Sports':'Puzzle & Brain',
+   poster:game=>'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg"></svg>')
+  }
+ };
+ const h=setup(new Map(),extraWindow);
+ await new Promise(resolve=>setImmediate(resolve));
+ h.win.loliteStoreCategory('UGS');
+ let found=shownGames(h);
+ assert.equal(found.length,2,'Both hosted source types are listed');
+ assert.deepEqual(new Set(found).size,2);
+ const choose=(name,value)=>{
+  const field={value};
+  for(const handler of h.events.change||[])handler({target:{
+   closest:selector=>selector==='.store-v41 [data-store-ugs-'+name+']'?field:null
+  }});
+ };
+ choose('genre','Sports');
+ found=shownGames(h);assert.equal(found.length,1);
+ assert.match(h.results.innerHTML,/Basketball Stars/);
+ choose('genre','all');
+ choose('format','flash');
+ found=shownGames(h);assert.equal(found.length,1);
+ assert.match(h.results.innerHTML,/Hextris/);
+ choose('format','html5');
+ found=shownGames(h);assert.equal(found.length,1);
+ assert.match(h.results.innerHTML,/Basketball Stars/);
+ choose('genre','Puzzle & Brain');
+ assert.match(h.results.innerHTML,/No UGS games match these filters/);
+ const reset={dataset:{},closest:selector=>selector==='.store-v41 [data-store-ugs-reset]'?reset:null};
+ for(const handler of h.events.click||[])handler({target:reset,preventDefault(){}});
+ assert.equal(shownGames(h).length,2);
+ const sport=h.win.LoliteGameStoreGallery.getGame('ugs-'+sportId+'.html');
+ assert.equal(sport.category,'Sports');
+ assert.equal(sport.kind,'html5');
 });
