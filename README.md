@@ -32,6 +32,13 @@ A Lolite-branded browser desktop with the original Cosmos space interface, apps,
 
 ## Update Log
 
+### Liquid Glass WebGL preview and OS performance (2026-11-18)
+- Built a **real refractive Liquid Glass shader** in [Lolite UI Lab](https://darby9123-arch.github.io/Lolite-OS/ui-preview/). It renders the lab's wallpaper into a WebGL texture, then bends that texture inside draggable glass lenses, windows, Start menu, taskbar and quick settings.
+- Added **Off / Balanced / High**, refraction strength, edge thickness/reflections and an optional wallpaper animation capped at 20 FPS.
+- One shared UI Lab WebGL context; Balanced caps at 750k pixels, low-memory/Data Saver at 450k, and no continuous animation by default. Falls back to frosted CSS if WebGL is unavailable.
+- Optimised the **existing Lolite OS legacy glass effect** to use no more than two active GPU contexts, fewer pixels and approximately 15 FPS when active; pauses on hidden tabs/Lite Mode. Full refraction of arbitrary live OS content is **not** claimed. [Implementation details](ui-preview/README.md).
+
+
 ### Free Apps, Free Games & No Lolite Wallet — 2026-11-18
 - Removed OS-wide virtual currency, app prices, paid store tabs, wallet banners and purchase gates. All App Store listings now have a **FREE** label and install/open without buying anything.
 - The Game Store launches its available game versions directly; existing search, artwork, player and server features are unchanged.
