@@ -4,6 +4,11 @@ on:
     paths:
       - 'browser/uv-static/**'
       - 'core/uv-static-client.js'
+      - 'apps/sandstone-browser.html'
+      - 'core/sandstone-original-compat.js'
+      - 'app.js'
+      - 'core/app-store.js'
+      - 'tests/sandstone-browser.test.cjs'
       - 'core/ultraviolet.js'
       - 'core/vice-city*'
       - 'html games/Grand Theft Auto Vice City.html'
@@ -26,4 +31,4 @@ jobs:
         with:
           node-version: '22'
       - run: python3 scripts/build-vice-city.py --check
-      - run: node --test tests/vice-city-loader.test.cjs tests/uv-static.test.cjs tests/game-account-browser-bugfixes.test.cjs tests/crimson.test.cjs tests/local-live-wallpapers.test.cjs tests/wallpaper-favourites.test.cjs tests/motionbgs-embeds.test.cjs tests/performance-hotfix.test.cjs
+      - run: node --test tests/vice-city-loader.test.cjs tests/uv-static.test.cjs tests/sandstone-browser.test.cjs tests/game-account-browser-bugfixes.test.cjs tests/crimson.test.cjs tests/local-live-wallpapers.test.cjs tests/wallpaper-favourites.test.cjs tests/motionbgs-embeds.test.cjs tests/performance-hotfix.test.cjs
