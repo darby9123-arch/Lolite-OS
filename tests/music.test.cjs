@@ -23,5 +23,6 @@ test('Music moderation and playlists are protected by Postgres RLS',()=>{
 test('Music is on the Start menu and App Store',()=>{
  assert.match(read('core/interface.js'),/\['music','Lolite Music'/);
  assert.match(read('core/app-store.js'),/id:'music',name:'Lolite Music'/);
- assert.match(read('core/economy-store.js'),/FREE_APPS=.*"music"/);
+ assert.match(read('core/economy-store.js'),/APP_IDS=\["sandstone","music"/);
+ assert.match(read('core/economy-store.js'),/appPrice:\(\)=>0/);
 });
