@@ -8,11 +8,13 @@
  <meta name="description" content="Lolite UI Lab — interactive previews of the next Lolite OS desktop, cursor glow, apps, Start menu, taskbar and windows.">
  <title>Lolite UI Lab — Design Preview</title>
  <link rel="icon" href="../assets/lolite-cosmos-logo.svg" type="image/svg+xml">
- <link rel="stylesheet" href="./styles.css?v=ui-lab-2">
- <script src="./app.js?v=ui-lab-2" defer></script>
+ <link rel="stylesheet" href="./styles.css?v=liquid-glass-1">
+ <script src="./liquid-glass.js?v=liquid-glass-1" defer></script>
+ <script src="./app.js?v=liquid-glass-1" defer></script>
 </head>
 <body>
  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <symbol id="ic-droplets" viewBox="0 0 24 24"><path d="M12 3c3 5 6 8 6 12a6 6 0 0 1-12 0c0-4 3-7 6-12Z"/><path d="M8.7 14.9c0 2 1.2 3.2 3 3.7"/><path d="m19 3 1 2.6L22.6 7 20 8l-1 2.5L18 8l-2.6-1 2.6-1.4z"/></symbol>
   <symbol id="ic-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.6"/><rect x="13" y="3" width="8" height="8" rx="1.6"/><rect x="3" y="13" width="8" height="8" rx="1.6"/><rect x="13" y="13" width="8" height="8" rx="1.6"/></symbol>
   <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></symbol>
   <symbol id="ic-settings" viewBox="0 0 24 24"><path d="m10 2-.5 2.4-2 .8-2.1-1.4-2.3 2.4 1.4 2.1-.8 2L1.3 11v3l2.4.5.8 2-1.4 2.1 2.3 2.3 2.1-1.3 2 .8L10 23h3l.5-2.6 2-.8 2.1 1.3 2.3-2.3-1.4-2.1.8-2L22 14v-3l-2.7-.7-.8-2 1.4-2.1-2.3-2.4-2.1 1.4-2-.8L13 2z"/><circle cx="11.5" cy="12.5" r="3.2"/></symbol>
@@ -74,12 +76,18 @@
    <div class="preview-border" id="previewBorder">
     <div class="desktop" id="previewDesktop" aria-label="Lolite OS design preview" data-wallpaper-preview="aurora">
      <div class="wallpaper-visual" aria-hidden="true"><div class="wallpaper-haze"></div><div class="wallpaper-orb"></div><div class="wallpaper-orbit"></div><div class="wallpaper-dots"></div></div>
+     <canvas id="liquidGlassCanvas" class="liquid-glass-canvas" aria-hidden="true" hidden></canvas>
      <div class="desktop-top-note" aria-hidden="true"><span>LOLITE OS</span><small>DESIGN PREVIEW / 6.0</small></div>
      <div class="desktop-icons" aria-label="Preview desktop apps">
       <button type="button" data-open-app="games" data-glow data-glow-type="card"><span class="desktop-icon purple"><svg><use href="#ic-game"></use></svg></span><span>Game Store</span></button>
       <button type="button" data-open-app="chat" data-glow data-glow-type="card"><span class="desktop-icon blue"><svg><use href="#ic-chat"></use></svg></span><span>Lolite Chat</span></button>
       <button type="button" data-open-app="wallpapers" data-glow data-glow-type="card"><span class="desktop-icon cyan"><svg><use href="#ic-image"></use></svg></span><span>Wallpapers</span></button>
       <button type="button" data-open-app="settings" data-glow data-glow-type="card"><span class="desktop-icon slate"><svg><use href="#ic-settings"></use></svg></span><span>Settings</span></button>
+     </div>
+     <div class="liquid-lens" id="liquidLens" aria-label="Draggable liquid glass lens demonstration" title="Drag this glass lens over the wallpaper">
+      <span class="lens-symbol"><svg><use href="#ic-droplets"></use></svg></span>
+      <span><strong>Real Liquid Glass</strong><small>Drag to see the background bend</small></span>
+      <span class="lens-handle" aria-hidden="true">⋮⋮</span>
      </div>
      <div class="floating-layer" id="floatingLayer">
       <div class="preview-window" id="previewWindow" hidden>
@@ -114,6 +122,22 @@
   <aside class="inspector" aria-label="Design controls">
    <div class="inspector-heading"><span><svg><use href="#ic-sliders"></use></svg> DESIGN CONTROLS</span><small>Changes are preview-only</small></div>
    <div class="setting-block"><h2>Theme</h2><p>Choose the look of the preview.</p><div class="segmented" role="group" aria-label="Preview colour theme"><button data-theme-choice="cosmos" type="button" class="selected" aria-pressed="true">Cosmos</button><button data-theme-choice="aero" type="button" aria-pressed="false">Aero</button><button data-theme-choice="minimal" type="button" aria-pressed="false">Minimal</button></div></div>
+   <div class="setting-block liquid-section">
+    <div class="liquid-title-row"><div><h2>Real Liquid Glass</h2><p>WebGL bends actual wallpaper pixels inside glass surfaces.</p></div><span id="liquidEngineBadge" class="liquid-status-badge">STARTING</span></div>
+    <div class="segmented liquid-modes" role="group" aria-label="Glass rendering mode">
+     <button type="button" data-liquid-mode="off" aria-pressed="false">Off</button>
+     <button type="button" data-liquid-mode="balanced" aria-pressed="true" class="selected">Balanced</button>
+     <button type="button" data-liquid-mode="high" aria-pressed="false">High</button>
+    </div>
+    <label class="range-label" for="liquidBend"><span>Refraction</span><output id="liquidBendValue">60%</output></label>
+    <input type="range" id="liquidBend" min="0" max="100" value="60">
+    <label class="range-label" for="liquidThickness"><span>Glass thickness</span><output id="liquidThicknessValue">48%</output></label>
+    <input type="range" id="liquidThickness" min="0" max="100" value="48">
+    <label class="range-label" for="liquidShine"><span>Edge reflections</span><output id="liquidShineValue">65%</output></label>
+    <input type="range" id="liquidShine" min="0" max="100" value="65">
+    <label class="check-row liquid-motion-row"><span>Animated wallpaper (20 FPS cap)</span><input type="checkbox" id="liquidMotion"></label>
+    <p id="liquidEngineStatus" class="liquid-engine-note" role="status" aria-live="polite">Checking WebGL support…</p>
+   </div>
    <div class="setting-block glow-section"><div class="setting-title"><div><h2>Cursor glow</h2><p>Windows-style light that follows your pointer over interactive UI.</p></div><label class="switch"><input type="checkbox" id="glowEnabled" checked aria-label="Enable cursor glow"><span></span></label></div><div class="glow-demo" data-glow data-glow-type="card"><svg><use href="#ic-mouse"></use></svg><span>Hover here to test the glow</span><small>LIVE EFFECT</small></div>
     <label class="range-label" for="glowIntensity"><span>Intensity</span><output id="glowIntensityValue">46%</output></label><input type="range" id="glowIntensity" min="5" max="100" value="46">
     <label class="range-label" for="glowSize"><span>Spread</span><output id="glowSizeValue">170px</output></label><input type="range" id="glowSize" min="70" max="310" step="10" value="170">
