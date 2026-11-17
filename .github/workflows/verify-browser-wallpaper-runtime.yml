@@ -4,7 +4,8 @@ on:
     paths:
       - 'browser/uv-static/**'
       - 'core/uv-static-client.js'
-      - 'apps/sandstone-desktop.html'
+      - 'apps/sandstone-browser.html'
+      - 'core/sandstone-original-compat.js'
       - 'app.js'
       - 'core/app-store.js'
       - 'tests/sandstone-browser.test.cjs'
