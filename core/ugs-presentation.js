@@ -530,49 +530,80 @@ geometryvibes:'Geometry Vibes',
  const discovered=new Map();
  function imageURL(raw,base){
   if(!raw||/^(?:data|blob|javascript):/i.test(raw))return '';
-  try{const url=new URL(raw,base);return url.protocol==='https:'&&url.href.length<=1600?url.href:''}catch{return ''}
+  try{
+   const url=new URL(raw,base);
+   // Icons must be ordinary HTTPS images. Never insert markup/JS/data URLs from a game.
+   return url.protocol==='https:'&&url.href.length<=1600?url.href:'';
+  }catch{return ''}
  }
  async function scan(game){
-  if(!game?.ugsEntry||!/^html%20games\/ugs\/[-\w.]+\.html?$/i.test(game.url||''))return '';
+  if(!game?.ugsEntry||!/^html%20games\/ugs\/[-\w.]+\.html?$/i.test(game.url||''))return [];
   try{
    const response=await fetch(game.url,{cache:'force-cache',credentials:'same-origin'});
-   if(!response.ok)return '';
-   let text='';
+   if(!response.ok)return [];
+   let html='';
    if(response.body?.getReader){
     const reader=response.body.getReader(),decoder=new TextDecoder();
     try{
-     while(text.length<65536){
+     while(html.length<65536){
       const next=await reader.read();if(next.done)break;
-      text+=decoder.decode(next.value,{stream:true});
+      html+=decoder.decode(next.value,{stream:true});
      }
     }finally{await reader.cancel().catch(()=>{})}
-   }else text=(await response.text()).slice(0,65536);
-   const doc=new DOMParser().parseFromString(text,'text/html');
+   }else{
+    // Some older browsers cannot stream; avoid deliberately reading enormous files.
+    if(Number(response.headers?.get?.('content-length')||0)>262144)return [];
+    html=(await response.text()).slice(0,65536);
+   }
+   const doc=new DOMParser().parseFromString(html,'text/html');
    const absolute=new URL(game.url,document.baseURI).href;
    const base=imageURL(doc.querySelector('base[href]')?.getAttribute('href'),absolute)||absolute;
-   for(const query of ['meta[property="og:image"]','meta[name="twitter:image"]',
+   const candidates=[];
+   const selectors=[
+    'meta[property="og:image"]','meta[name="twitter:image"]',
+    'meta[property="twitter:image"]','meta[name="twitter:image:src"]',
     'link[rel="apple-touch-icon"]','link[rel~="icon"]',
-    'img[src*="cover"]','img[src*="logo"]','img[src*="thumb"]','img[src*="splash"]']){
-    const tag=doc.querySelector(query);if(!tag)continue;
-    const url=imageURL(tag.getAttribute('content')||tag.getAttribute('href')||tag.getAttribute('src'),base);
-    if(url&&/\.(?:png|jpe?g|webp|gif|svg|ico|avif)(?:[?#]|$)/i.test(url))return url;
+    'video[poster]','img[src*="cover"]','img[src*="logo"]',
+    'img[src*="thumb"]','img[src*="splash"]'
+   ];
+   for(const selector of selectors){
+    const nodes=doc.querySelectorAll?Array.from(doc.querySelectorAll(selector)):
+     [doc.querySelector(selector)].filter(Boolean);
+    for(const tag of nodes.slice(0,6)){
+     const src=imageURL(tag.getAttribute('content')||tag.getAttribute('href')||
+      tag.getAttribute('poster')||tag.getAttribute('src'),base);
+     if(src&&/\.(?:png|jpe?g|webp|gif|svg|ico|avif)(?:[?#]|$)/i.test(src)
+      &&!candidates.includes(src))candidates.push(src);
+     if(candidates.length>=8)return candidates;
+    }
    }
-  }catch(error){/* No image is a normal fallback, not a game launch failure. */}
-  return '';
+   return candidates;
+  }catch(error){/* Broken metadata or a missing image should not break the Game Store. */}
+  return [];
  }
- // Keep art scans throttled while browsing a large catalogue.
+ // Limit simultaneous HTML metadata reads while scrolling through many games.
+ // All image candidates are cached per entrypoint; broken images can be skipped.
  const queue=[];let running=0;
  function pump(){
   while(running<3&&queue.length){
    const {game,resolve}=queue.shift();running++;
-   Promise.resolve().then(()=>scan(game)).then(resolve,()=>resolve('')).finally(()=>{running--;pump()});
+   Promise.resolve().then(()=>scan(game)).then(resolve,()=>resolve([]))
+    .finally(()=>{running--;pump()});
   }
  }
- const discover=game=>{
+ function candidates(game){
   const key=game?.url||'';
-  if(!key)return Promise.resolve('');
-  if(!discovered.has(key))discovered.set(key,new Promise(resolve=>{queue.push({game,resolve});pump()}));
+  if(!key)return Promise.resolve([]);
+  if(!discovered.has(key))discovered.set(key,new Promise(resolve=>{
+   queue.push({game,resolve});pump();
+  }));
   return discovered.get(key);
+ }
+ const discover=async game=>(await candidates(game))[0]||'';
+ const next=async(game,badUrl)=>{
+  const urls=await candidates(game);
+  const index=urls.indexOf(badUrl);
+  return urls[index+1]||'';
  };
- window.LoliteUGSPresentation=Object.freeze({title,category,discover,poster});
+ window.LoliteUGSPresentation=Object.freeze({title,category,discover,next,poster});
 })();
