@@ -503,6 +503,12 @@ geometryvibes:'Geometry Vibes',
   'Casual & Idle':'<circle cx="648" cy="230" r="120" fill="#f3bfda"/><circle cx="805" cy="166" r="75" fill="#b9d6ff"/><circle cx="825" cy="336" r="89" fill="#f7dc9e"/><path d="M649 352l-19 88m180-199l-22 200m45-18l-18 32" stroke="#e8f5ff" stroke-width="6" opacity=".8"/>',
   'Strategy':'<path d="M635 135h162v60h-162zM666 195h100l24 176H641zM606 371h220v40H606zM577 413h280v44H577z" fill="#cfe0fd"/><path d="M674 83h85l28 52H645z" fill="#f6dca0"/><rect x="681" y="234" width="62" height="88" rx="27" fill="#617ca8"/><path d="M613 470h230" stroke="#cfe0fd" stroke-width="13"/>',
   'Retro & Classics':'<g fill="#c8d6ff"><rect x="570" y="118" width="54" height="54"/><rect x="678" y="118" width="54" height="54"/><rect x="786" y="118" width="54" height="54"/><rect x="516" y="172" width="54" height="54"/><rect x="570" y="226" width="54" height="54"/><rect x="624" y="226" width="54" height="54"/><rect x="678" y="226" width="54" height="54"/><rect x="732" y="226" width="54" height="54"/><rect x="786" y="172" width="54" height="54"/><rect x="840" y="172" width="54" height="54"/></g><rect x="624" y="172" width="54" height="54" fill="#27395a"/>',
+  'Arcade & Action':'<g fill="none" stroke="#d6eaff" stroke-width="15"><circle cx="727" cy="233" r="127"/><path d="M727 72v42m0 238v50M566 233h-50m372 0h50"/></g><path d="M726 96l34 99 99 35-99 34-34 101-35-101-100-34 100-35z" fill="#f5d495"/>',
+  'Adventure & RPG':'<path d="M498 440L655 130l123 168 87-122 116 264Z" fill="#92c9db"/><path d="M655 130l-51 101h102zM865 176l-34 65h65z" fill="#e8f6ff"/><path d="M586 389l52-36 47 31 80-40" stroke="#f9d99b" stroke-width="13" stroke-dasharray="8 19" fill="none"/><circle cx="648" cy="348" r="17" fill="#fff"/>',
+  'Multiplayer & .io':'<g fill="#d6ecff"><circle cx="635" cy="166" r="47"/><circle cx="812" cy="166" r="47"/><circle cx="728" cy="320" r="50"/></g><g fill="none" stroke="#b6c9f5" stroke-width="25" stroke-linecap="round"><path d="M520 329c22-103 208-116 230-7m-10 0c26-98 203-91 230 7M611 425c23-100 216-97 237 0"/></g>',
+  'Horror & Survival':'<circle cx="795" cy="143" r="105" fill="#e2e6ff" opacity=".78"/><path d="M795 44a90 90 0 1 0 95 137 94 94 0 0 1-95-137" fill="#57608a"/><path d="M506 415q50-260 144-205 75-116 139 0 101-46 165 205Z" fill="#1c2945"/><path d="M650 280h22m126 0h22" stroke="#c1e2ff" stroke-width="15" stroke-linecap="round"/>',
+  'Baldi’s Basics':'<rect x="554" y="110" width="325" height="296" rx="12" fill="#d8e9f4"/><rect x="591" y="145" width="250" height="220" fill="#c0e2d7"/><path d="M620 203h191m-191 40h165m-165 40h135" stroke="#5a91ac" stroke-width="14" stroke-linecap="round"/><path d="M879 165l63 68-63 84" stroke="#f4ca88" stroke-width="21" stroke-linejoin="round" fill="none"/>',
+  'Geometry Dash':'<rect x="611" y="154" width="226" height="226" rx="19" fill="#96dff0" transform="rotate(-12 724 267)"/><rect x="672" y="204" width="40" height="40" fill="#2f647a" transform="rotate(-12 724 267)"/><rect x="756" y="204" width="40" height="40" fill="#2f647a" transform="rotate(-12 724 267)"/><path d="M674 313l56 27 59-27" stroke="#2f647a" stroke-width="18" fill="none" stroke-linecap="round"/>',
   'Music & Rhythm':'<circle cx="730" cy="246" r="160" fill="#a8bafd" opacity=".32"/><path d="M720 132v222m0-222l145-36v210" stroke="#e8f5ff" stroke-width="22" fill="none" stroke-linecap="round"/><ellipse cx="676" cy="360" rx="65" ry="30" fill="#e8f5ff" transform="rotate(-23 676 360)"/><ellipse cx="821" cy="315" rx="65" ry="30" fill="#e8f5ff" transform="rotate(-23 821 315)"/>'
  };
  function poster(game){
@@ -512,7 +518,19 @@ geometryvibes:'Geometry Vibes',
   const hue=hash%360,other=(hue+70)%360;
   const kind=String(game?.category||'');
   const illustration=SCENES[kind]||'<circle cx="727" cy="220" r="180" fill="#b5d5fa" opacity=".22"/><circle cx="727" cy="220" r="110" fill="none" stroke="#eaf6ff" stroke-width="21" opacity=".8"/><path d="M726 62l26 83 85 26-85 26-26 84-27-84-85-26 85-26z" fill="#f8d88b"/>';
-  const title=String(game?.title||'Game').slice(0,44).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+  const safeText=value=>String(value).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+  const words=String(game?.title||'Game').trim().split(/\s+/);
+  const lines=[''];
+  for(const word of words){
+   const last=lines.length-1;
+   if(lines[last]&&(lines[last].length+word.length+1>24)&&lines.length<2)lines.push(word);
+   else lines[last]+=(lines[last]?' ':'')+word;
+  }
+  lines[0]=(lines[0]||'Game').slice(0,32);
+  if(lines.length>1)lines[1]=lines[1].length>32?lines[1].slice(0,29)+'…':lines[1];
+  const fontSize=lines.some(x=>x.length>25)?40:lines.some(x=>x.length>19)?45:54;
+  const titleSvg=lines.map((line,index)=>'<text x="50" y="'+(lines.length===1?465:427+index*47)+'" fill="#f8fbff" font-size="'+fontSize+
+   '" font-weight="800" font-family="system-ui, sans-serif">'+safeText(line)+'</text>').join('');
   const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540">'+
    '<defs><linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="hsl('+hue+' 65% 29%)"/><stop offset="1" stop-color="hsl('+other+' 59% 15%)"/></linearGradient>'+
    '<linearGradient id="shade" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#081120" stop-opacity="0"/><stop offset="1" stop-color="#081120" stop-opacity=".94"/></linearGradient></defs>'+
@@ -520,7 +538,7 @@ geometryvibes:'Geometry Vibes',
    '<circle cx="810" cy="130" r="260" fill="#ffffff" opacity=".07"/>'+
    illustration+
    '<rect x="0" y="345" width="960" height="195" fill="url(#shade)"/>'+
-   '<text x="52" y="462" fill="#f8fbff" font-size="57" font-weight="800" font-family="system-ui, sans-serif">'+title+'</text>'+
+   titleSvg+
    '<text x="55" y="503" fill="#d0e2fa" font-size="16" font-family="system-ui, sans-serif" letter-spacing="3">LOLITE GAME LIBRARY</text></svg>';
   const url='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
   posterCache.set(key,url);
