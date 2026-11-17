@@ -113,7 +113,9 @@
  `;
  if(!document.getElementById('lolite-game-store-style')){const s=document.createElement('style');s.id='lolite-game-store-style';document.head.appendChild(s)}document.getElementById('lolite-game-store-style').textContent=CSS;
  function posterForGame(game){
-  return game?.ugsEntry&&window.LoliteUGSPresentation?.poster
+  // Every game has a visual fallback even when no official artwork exists.
+  // Original, game-provided covers still take priority once validated.
+  return window.LoliteUGSPresentation?.poster
    ?window.LoliteUGSPresentation.poster(game)
    :lolitePosterArt(game?.title||'Game',game?.file||'Lolite');
  }
