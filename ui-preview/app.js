@@ -103,8 +103,8 @@
    }
   });
   closeMenus();
-  if(next==='desktop'){windowEl.hidden=true;return}
-  if(next==='start'){windowEl.hidden=true;openStart();return}
+  if(next==='desktop'){windowEl.hidden=true;$('#taskWindows').hidden=true;return}
+  if(next==='start'){windowEl.hidden=true;$('#taskWindows').hidden=true;openStart();return}
   openWindow(next);
  }
  function closeMenus(){
@@ -139,6 +139,8 @@
   const app=APPS.find(a=>a.id===id);
   lastWindowScene=id;
   windowEl.hidden=false;
+  $('#taskWindows').hidden=false;
+  $('#taskWindows').setAttribute('aria-pressed','true');
   $('#windowTitle').textContent=app?.label||'Lolite UI Preview';
   $('#windowIcon').innerHTML=icon(app?.icon||'window');
   const views={window:windowMarkup,games:gameMarkup,chat:chatMarkup,
@@ -240,6 +242,7 @@
  }
  function closeWindow(){
   windowEl.hidden=true;
+  $('#taskWindows').hidden=true;
   scene='desktop';updateSceneNav();
  }
  function updateSceneNav(){
@@ -319,9 +322,10 @@
   if(windowButton){
    if(windowButton.dataset.windowAction==='maximize')toggleMaximize();
    if(windowButton.dataset.windowAction==='close')closeWindow();
-   if(windowButton.dataset.windowAction==='minimize')windowEl.hidden=true;
+   if(windowButton.dataset.windowAction==='minimize'){windowEl.hidden=true;$('#taskWindows').setAttribute('aria-pressed','false')}
    return;
   }
+  if(target.closest('#taskWindows')){setScene(lastWindowScene);return}
   if(target.closest('#taskStart')){openStart();return}
   if(target.closest('#taskSearch')){openStart();if(!startEl.hidden)$('#startSearch').focus();return}
   if(target.closest('#taskQuick')||target.closest('#taskClock')){openQuick();return}
