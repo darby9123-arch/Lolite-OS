@@ -133,7 +133,7 @@ function head(title,desc){
 }
 function questsPage(){
  const l=ledger(read());
- return head("Quest Board","Complete activities and collect achievements. Nothing costs money.")+
+ return head("Quest Board","Complete activities and collect achievements.")+
  '<section class="lq-hero"><h2>Play, learn and achieve.</h2><p>App-use quests require genuine foreground interaction: time does not run if Lolite loses focus, the app is minimised, or you leave the window unattended. Each quest can be completed once.</p><div class="lq-actions">'+button("Open Academy","open","academy","primary")+button("Play Life RP","open","life-rp")+'</div></section>'+
  '<div class="lq-section"><h2>Use Lolite Apps</h2><span class="lq-muted">Active time + real interactions</span></div><div class="lq-grid">'+tasks.map(q=>{const p=progress(q.app),claimed=l.claimed.includes("app:"+q.id),ready=canClaim(q);return '<article class="lq-card"><span class="lq-tag">'+esc(q.app.toUpperCase())+'</span><h3>'+esc(q.name)+'</h3><p>'+esc(q.desc)+'</p><div class="lq-bar"><span style="width:'+Math.min(100,p.time/q.seconds*100)+'%"></span></div><div class="lq-muted">'+Math.floor(p.time)+' / '+q.seconds+' seconds · '+Math.min(p.actions,q.clicks)+' / '+q.clicks+' interactions</div><div class="lq-actions"><span class="lq-free">ACHIEVEMENT</span>'+button(claimed?"Completed":ready?"Claim":"Not ready","claim",q.id,ready?"primary":"",claimed||!ready)+button("Open app","open",q.app)+'</div></article>'}).join("")+'</div>'+
  '<div class="lq-section"><h2>Academy Milestones</h2></div><div class="lq-grid">'+milestones.map(m=>{const count=m.metric==="lessons"?l.lessons.length:l.courses.length,claimed=l.claimed.includes("academy:"+m.id),ready=count>=m.need;return '<article class="lq-card"><span class="lq-tag">ACADEMY</span><h3>'+esc(m.name)+'</h3><p>Complete '+m.need+' '+m.metric+' to unlock this achievement.</p><div class="lq-bar"><span style="width:'+Math.min(100,count/m.need*100)+'%"></span></div><span class="lq-muted">'+count+' / '+m.need+'</span><div class="lq-actions"><span class="lq-free">ACHIEVEMENT</span>'+button(claimed?"Completed":ready?"Claim":"Locked","claim",m.id,ready?"primary":"",claimed||!ready)+'</div></article>'}).join("")+'</div>';
@@ -146,8 +146,8 @@ function coursesPage(){
 }
 function marketPage(){
  const s=read();
- return head("Free Extras","Game shortcuts, desktop cosmetics and mini apps are available without a wallet.")+
- '<section class="lq-hero"><h2>Everything here is free.</h2><p>Open game shortcuts and mini apps instantly. Choose any theme, cursor or in-game perk without earning or spending currency.</p><div class="lq-actions">'+button("Browse Game Store","open","games","primary")+button("Browse App Store","open","appstore","primary")+'</div></section>'+
+ return head("Free Extras","Game shortcuts, desktop cosmetics and mini apps are available for free.")+
+ '<section class="lq-hero"><h2>Everything here is free.</h2><p>Open game shortcuts and mini apps instantly. Choose any theme, cursor or in-game perk whenever you like.</p><div class="lq-actions">'+button("Browse Game Store","open","games","primary")+button("Browse App Store","open","appstore","primary")+'</div></section>'+
  '<div class="lq-grid">'+goods.map(g=>{const have=owned(g,s);return '<article class="lq-card"><span class="lq-tag">'+esc(g.type.toUpperCase())+'</span><h3>'+esc(g.name)+'</h3><p>'+esc(g.desc)+'</p><div class="lq-actions"><span class="lq-free">FREE</span>'+
  (g.type==="app"||g.type==="game"?button("Open →","launch",g.id,"primary"):
  g.type==="member"?button(have?"Active":"Activate for free","buy",g.id,have?"":"primary",have):
