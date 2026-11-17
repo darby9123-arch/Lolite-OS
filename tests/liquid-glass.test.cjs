@@ -153,3 +153,16 @@ test('UI preview exposes visible quality and strength controls plus a draggable 
  assert.match(css,/\.liquid-glass-canvas/);
  assert.match(css,/\.liquid-lens/);
 });
+
+test('Main Lolite OS legacy glass renderer is bounded and gives Lite Mode a CSS fallback',()=>{
+ const original=fs.readFileSync(path.join(__dirname,'..','core/liquid-glass.js'),'utf8');
+ assert.match(original,/const MAX_CONTEXTS=2,MAX_SURFACE_PIXELS=280000,FRAME_DELAY=65/);
+ assert.match(original,/function wantWebgl\(\)\{return enabled\(\)&&!reduce\(\)&&!lite\(\)\}/);
+ assert.match(original,/\.window\.is-active:not\(\.hidden\)/);
+ assert.match(original,/\.panel:not\(\.hidden\):not\(\[hidden\]\)/);
+ assert.match(original,/document\.hidden/);
+ assert.match(original,/attributeFilter:\['class'\]/);
+ assert.doesNotMatch(original,/subtree:true|active\.size>=12|lastDraw<32/);
+ assert.match(original,/function schedule\(\)/);
+ assert.match(original,/addEventListener\('lolite:performancechange'/);
+});
