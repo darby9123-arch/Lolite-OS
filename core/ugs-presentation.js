@@ -72,6 +72,103 @@
   'winter witch word wordle wrestle wrestling world xmas you your yellow zelda zen '+
   '2d 3d 4k 8k td rpg fps btd bfdi bfdia frvr x3m hd vr io').split(/\s+/);
  const dictionary=new Set(wordBank);
+
+ // Expanded gaming-language dictionary for filenames that contain no word separators.
+ // Only split a word when EVERY segment is recognised; made-up proper nouns are kept.
+ const extraWords=('about blank launcher apes helium arch ess apelago chess archess '+
+  'duty demands assessment examination question aviators aviation masters buggy '+
+  'baby sniper vietnam bad time balls bricks bas bash ballistic beararians bears '+
+  'battle karts bite boomslingers bowmaster blow blastronaut blaze blazed drifter '+
+  'burrito bison launch libre revenge buildnowgg build now board brawlstars '+
+  'call battle captain capuchin capuchins capybara canyon ramp police chase police '+
+  'car king arena modern castle wars caves cave crawler cast away cell cellar door '+
+  'champion island checkers cheese reason rolling chat room cheshire classic class '+
+  'chibi knight chicken scream coffee maker cold front pines combo pool copper '+
+  'code name gordon count masters stickman orange cover journey gangsters knights '+
+  'pirates player pack splash splashy creatures creature card idle customer support '+
+  'cookie clicker mod menu crazy cattle motorcycle penguin catapult plane landing '+
+  'crossy road candy cannon daddy dad dadish dash arena io date dinosaur dodo '+
+  'demon bluff diamond hollow dig china dimensional incident dino run dire decks '+
+  'doblox dodeca dragons doge miner doki literature club dont do not escape '+
+  'doodle jump goober doom emscripten doors castle douche bag draw climber line '+
+  'dread head drift boss hunters merge russia drive dr dta gta duck life ducklings '+
+  'dumb ways die dune buggy dash dungeon deck raid dusk child dying dreams '+
+  'earn earth taken edy scar simulator effing hail machines worms eggy car '+
+  'elastic face elytra flight endless war escalating duel eugene life eurovision '+
+  'evil glitch exit path exo observation extreme factory balls fairy tale one piece '+
+  'fancy pants adventure snowboarding fashion battle fatty genius fear assessment '+
+  'fears fathom home alone feed void find alien fisheat fish eat getting big '+
+  'fish aquarium fisquarium five nights freddy shrek yoshi flappy bird flood runner '+
+  'folder dungeon football bros legends fork sausage fort zone free rider gemas '+
+  'from rust ash funny battle racing fused gangsta bean gangster garden banban '+
+  'geometry vibes george printer get top getting over it get yoked gimmie airpod '+
+  'gladi gladi hoppers glory hunters goal south africa going gold digger grand '+
+  'grand shift auto escape prison greener grass awaits grind craft grow denmi '+
+  'guess their answer gym stack hands of war hardware harold bad day harvest '+
+  'haunted school haunt house helix jump hell take taker help no brakes '+
+  'high stakes highway hill climb racing lite hipster kickball hit stun fly '+
+  'home sheep hooked hot dog bush hot wax hover racer huggy wuggy pixel '+
+  'human expenditure program hungry knight lamu pumpkin hyper sandbox '+
+  'ice dodo icy purple head idle dice football manager game dev miner '+
+  'indestructo tank infinite craft interactive buddy into ruins deep web '+
+  'iron snout ironsnout islander is that a it gets so lonely here '+
+  'jack smith encrypted jail break jazz rabbit jet pack joy ride jet rush '+
+  'jet ski johnny trigger upgrade journey downhill jumping shell jungle deer hunting '+
+  'just a platformer hit button one boss kanye zone karate bros kirby '+
+  'kitten cannon knock knock koopas koopa last horizon leader strike leaf blower '+
+  'learn fly learning level devil lever warriors line rider little runmo lock door '+
+  'lone wolf los angeles shark low knight lucky blocks lumber obby '+
+  'madalin stunt cars multiplayer madness accelerant combat defense nexus gemini '+
+  'hydraulic interactive off color premeditation stand mage tower idle make sure its closed '+
+  'mana god marble racer masked forces unlimited master mind world conqueror '+
+  'matrix rampage meat boy medal honor medieval shark mega chess miner '+
+  'melon playground meow merge round racers miami micro mighty mimic mind scape '+
+  'mind wave mine caves minesweeper plus min hero flips tooth miragine '+
+  'mom sleeping momos crushers money rush monkey mart monster derby tracks truck '+
+  'curfew port stunt mother load motor road rash mountain biker mr racer '+
+  'multi task off road master my friend pedro arena tear drop natural selection '+
+  'neon rider net attack never ending legacy new grounds rumble super bowser '+
+  'new york shark next door ng idle night club showdown ninja obby parkor '+
+  'nitro must die not your pawn nubby number factory odd bot out off line '+
+  'paradise oh flip omega layers one night as only up opposite day orb creation '+
+  'paper mania parking fury rush peace keeper penalty kicks penguin diner pass '+
+  'perfect hotel pet world pico driller hot life night punkin school versus beard '+
+  'pieces cake ping pong chaos pixel battlegrounds lost idols pixel warfare pizza '+
+  'please touch anything plinko plonky poke academy poly track pom gets internet '+
+  'poor bunny pork like portal defenders flash porter possess quest potato man '+
+  'seeks roof potty racers prank call practice praxis fighter prehistoric '+
+  'civilization bronze age processor tycoon prodigy entrapta pull frog pumpkin '+
+  'punch push luck raft wars ragdoll achievement archers drop hit recoil '+
+  'reach core reacti core red alert hand handed blue reign centipede renegades '+
+  'resize resizer resort empire retro bowl college highway ping pong return to '+
+  'riddle school middle transfer university revolution idle rise higher road fury '+
+  'rocket goal io rocket pult roller baller rolling sky rolly vortex poly monster '+
+  'roof top rooftop run rubble trouble moscow new york tokyo russian car driver '+
+  'santa run scale depths seven days shadow courier shape transform shred mill '+
+  'sauce side effects silk melody six cats under six ways die slice it all '+
+  'slide woods slip ways slow roads smash karts snake like sniper shot '+
+  'soccer bros random soda solar smash sort court space bar click company '+
+  'speed per click spiral roll squid playground steal brain rot stealth master '+
+  'steel surge steep descent stick archers defenders fighter jet challenge '+
+  'stickman gta stealing diamond stickmin airship breaking bank escaping prison '+
+  'flee complex sub way subway surfers barcelona beijing berlin havana houston '+
+  'iceland london mexico miami monaco new orleans st petersburg winter holiday zurich '+
+  'sugary spire suika summer rider super cold dark deception falling fred '+
+  'kid liquid soccer oliver pickle ball adventure santa kicker supreme duelist '+
+  'survivor io sushi unroll swing brainrots tablet tanks taco stand '+
+  'tail dragon tall tanuki sunset tap road telephone trouble tempo overdose '+
+  'terra thanks reminding had fix this dead seat dude man window there is no file '+
+  'they are coming three goblets throw potato tiberian dawn time warriors toast '+
+  'arling toaster ball tomorrow yesterday tower wizard town scraper trap cat '+
+  'trapped jester treacherous trials trees hate you trivia crack truck sim '+
+  'tung tung sahur basics tunnel rush ultimate car driving simulator ufo swamp '+
+  'un canny uncanny cat golf under tale undertale yellow unfair undyne unicycle '+
+  'unit res dreams upgrade complete vampires survivors vapor trails '+
+  'vincent mansion dead volley challenge vortex wacky flip water works web '+
+  'fishing whack thief boss computer wheelie bike winter falling wolfen stein '+
+  'wood worm wrestle bros zombie zombotron reboot zuma').split(/\s+/);
+ for(const word of extraWords)if(word)dictionary.add(word);
+
  function splitWord(str){
   const s=str.toLowerCase(),n=s.length;
   if(n<8||dictionary.has(s))return [str];
@@ -85,6 +182,112 @@
   }
   return dp[0]&&dp[0].length>1?dp[0]:[str];
  }
+
+ // Curated names where generic segmentation can be misleading (proper nouns,
+ // punctuation, official spellings, or historically malformed source filenames).
+ Object.assign(names,{
+  aboutblankhtmllauncher:'About:blank HTML Launcher',
+  achillies:'Achilles', achillies2:'Achilles 2',
+  apesvshelium:'Apes vs. Helium', asdutydemands:'As Duty Demands',
+  asssesmentexaminationque:'Assessment Examination',
+  aviamastersbuggy:'Avia Masters (Buggy)', babysniperinvietnam:'Baby Sniper in Vietnam',
+  badtimesim:'Bad Time Simulator', ballsandbricksgood:'Balls and Bricks',
+  bindingofisaccsheeptime:'The Binding of Isaac: Sheep Time',
+  bitburner:'Bitburner', blightborne:'Blightborne',
+  buildnowgg:'BuildNow GG', capybaraclicker:'Capybara Clicker',
+  careatscar2deluxe:'Car Eats Car 2 Deluxe',
+  carrampvspolicechase:'Car Ramp vs Police Chase',
+  championisland:'Champion Island', chessclassic:'Chess Classic',
+  codenamegordon:'Codename: Gordon', coffeemaker:'Coffee Maker',
+  cookieclickermodmenu:'Cookie Clicker: Mod Menu', 
+  coverorange:'Cover Orange', coverorange2:'Cover Orange 2',
+  crazycattle3d:'Crazy Cattle 3D', csgoclicker:'CS:GO Clicker',
+  cuttherope:'Cut the Rope', dbzdevolution:'DBZ Devolution',
+  deadfrontieroutbreak:'Dead Frontier: Outbreak',
+  deadfrontieroutbreak2:'Dead Frontier: Outbreak 2',
+  deltatraveler:'Deltatraveler', demolitionderbycrashracing:'Demolition Derby Crash Racing',
+  dokidokiliteratureclub:'Doki Doki Literature Club',
+  dontescape:'Don’t Escape', dontescape2:'Don’t Escape 2',dontescape3:'Don’t Escape 3',
+  doomemscripten:'DOOM (Emscripten)', ducklife:'Duck Life',
+  ducklingsio:'Ducklings.io', dumbwaystodie:'Dumb Ways to Die',
+  earthtaken:'Earth Taken', 
+  edyscarsimulator:'Edy’s Car Simulator',
+  epicbattlefantasy5:'Epic Battle Fantasy 5',
+  eurovisionsim:'Eurovision Simulator', factoryballs:'Factory Balls',
+  fancypantsadventure:'Fancy Pants Adventure',
+  fireboyandwatergirl:'Fireboy and Watergirl',
+  fnaf:'Five Nights at Freddy’s',
+  flappybird:'Flappy Bird', footballbros:'Football Bros',
+  gdbreeze:'Geometry Dash Breeze', gdlite:'Geometry Dash Lite',
+geometryvibes:'Geometry Vibes',
+  gettingoverit:'Getting Over It', 
+  grandshiftauto:'Grand Shift Auto',
+  growdenio:'Growden.io', hitstunfly:'Hitstun Fly',
+  hotdogbush:'Hot Dog Bush', hungrylamu:'Hungry Lamu',
+  hyppersandbox:'Hypper Sandbox', indestructotank:'Indestructo Tank',
+  jacksmithencryptedorsmthn:'Jacksmith (Encrypted)',
+  jetpackjoyride:'Jetpack Joyride',
+  kirbysoftandwet:'Kirby: Soft and Wet',
+  leveldevil:'Level Devil',
+  linerider:'Line Rider', mario64webgl:'Super Mario 64',
+  madnessaccelerant:'Madness Accelerant',
+  madnesscombatnexus:'Madness Combat: Nexus',
+  madalinstuntcarsmultiplayerfixed:'Madalin Stunt Cars Multiplayer',
+  maskedforcesunlimited:'Masked Forces Unlimited',
+  melonplayground:'Melon Playground',
+  meowio:'Meow.io', minesweeperplus:'Minesweeper Plus',
+  mrmine:'Mr. Mine',
+  monkeymart:'Monkey Mart',
+  myfriendpedro:'My Friend Pedro', myfriendpedroarena:'My Friend Pedro: Arena',
+  newgroundsrumble:'Newgrounds Rumble',
+  ninjaobbyparkor:'Ninja Obby Parkour',
+  nubbysnumberfactory:'Nubby’s Number Factory',
+  oddbotout:'Odd Bot Out', onenightasfreddy:'One Night as Freddy',
+  onlyup:'Only Up', oppositeday:'Opposite Day',
+  papabakeria:'Papa’s Bakeria', papadonut:'Papa’s Donuteria',
+  papashotdoggeria:'Papa’s Hot Doggeria',
+  papaspastaria:'Papa’s Pastaria',papasscooperia:'Papa’s Scooperia',
+  papastacomia:'Papa’s Taco Mia',
+  papalouiewhenburgersattack:'Papa Louie: When Burgers Attack',
+  papalouiewhenpizzasattack:'Papa Louie: When Pizzas Attack',
+  papalouiewhensundaesattack:'Papa Louie: When Sundaes Attack',
+  paperiomania:'Paper.io Mania',
+  parkingfury:'Parking Fury',
+  pixelbattlegroundsio:'Pixel Battlegrounds.io',
+  plazmaburst:'Plazma Burst',
+  pleasedonttouchanything:'Please, Don’t Touch Anything',
+  polytrackworksnow:'PolyTrack',
+  potatomanseeksthetroof:'Potatoman Seeks the Troof',
+  pvz:'Plants vs. Zombies',
+  qwop:'QWOP',
+  ragollhit:'Ragdoll Hit', raldiscrackhouse:'Raldi’s Crackhouse',
+  retrobowl:'Retro Bowl', retrobowlcollege:'Retro Bowl College',
+  riddleschool:'Riddle School', riddletransfer:'Riddle Transfer',
+  roadoffury:'Road of Fury',
+  sandboxels:'Sandboxels',
+  shiftatmidnight:'Shift at Midnight', slowroads:'Slow Roads',
+  smashkartsworking:'Smash Karts',
+  spacecompany:'Space Company',
+  stickmanhook:'Stickman Hook',
+  stickminbreakingbank:'The Henry Stickmin Collection: Breaking the Bank',
+  stickminescapingprison:'The Henry Stickmin Collection: Escaping the Prison',
+  stickminairship:'The Henry Stickmin Collection: Infiltrating the Airship',
+  stickminfleecomplex:'The Henry Stickmin Collection: Fleeing the Complex',
+  tanukisunset:'Tanuki Sunset',
+  thedeadseat:'The Dead Seat',
+  thereisnofile:'There Is No File',
+  towerwizard:'Tower Wizard',
+  townscraper:'Townscaper',
+  trechoroustrials:'Treacherous Trials',
+  tunnelrush:'Tunnel Rush',
+  undertaleyellow:'Undertale Yellow',
+  vampiresurvivors:'Vampire Survivors',
+  webfishing:'Webfishing', whackthetheif:'Whack the Thief',
+  worldshardestgame:'World’s Hardest Game',
+  yumenikki:'Yume Nikki',
+  zombotronreboot:'Zombotron: Reboot'
+ });
+
  function title(value,filename=''){
   // Only bundled file paths use the "cl" prefix. Legitimate names such as
   // "Clash" and "Climb" must never lose their first two letters.
@@ -94,6 +297,22 @@
    .replace(/\s*\(\d+\)$/,'').trim();
   const key=s.toLowerCase().replace(/[^a-z0-9]/g,'');
   if(names[key])return names[key];
+  // Frequent multi-game families, whose concatenated download names are predictable.
+  const subway=key.match(/^subwaysurfers(.+)$/);
+  if(subway){
+   const places={neworeleans:'New Orleans',stpetersburg:'St. Petersburg',winterholiday:'Winter Holiday'};
+   return 'Subway Surfers'+(subway[1]?': '+(places[subway[1]]||subway[1].replace(/([a-z])([0-9])/g,'$1 $2').replace(/^./,ch=>ch.toUpperCase())):'');
+  }
+  const cover=key.match(/^coverorangejourney(.+)$/);
+  if(cover)return 'Cover Orange: Journey '+cover[1].charAt(0).toUpperCase()+cover[1].slice(1);
+  const gameNumber=key.match(/^(ducklife|badicecream|factoryballs|feedus|floodrunner|zombotron|wheely|amigopancho|bobtherobber|bloons)([2-9])$/);
+  if(gameNumber){
+   const base={ducklife:'Duck Life',badicecream:'Bad Ice-Cream',factoryballs:'Factory Balls',
+    feedus:'Feed Us',floodrunner:'Flood Runner',zombotron:'Zombotron',wheely:'Wheely',
+    amigopancho:'Amigo Pancho',bobtherobber:'Bob the Robber',bloons:'Bloons'}[gameNumber[1]];
+   return base+' '+gameNumber[2];
+  }
+
   s=s.replace(/([a-z])([A-Z])/g,'$1 $2').replace(/([A-Z])([A-Z][a-z])/g,'$1 $2')
    .replace(/[_-]+/g,' ').replace(/(\d)([A-Za-z])/g,'$1 $2')
    .replace(/([A-Za-z])(\d)/g,'$1 $2').replace(/\s+/g,' ').trim();
