@@ -856,9 +856,9 @@
   if(file.startsWith('native-'))return null;
   const game=games.find(item=>item.file===file);
   return adminGameArtwork.get(file)?.background||adminGameArtwork.get(file)?.icon||
-   externalCovers.get(file)||window.loliteGameArt?.[file]?.src||
-   (game?.ugsEntry?.filename?window.loliteGameArt?.[game.ugsEntry.filename]?.src:null)||
-   ugsDiscoveredArt.get(file)||null;
+   // A confirmed alternative must outrank an image URL that already failed.
+   ugsDiscoveredArt.get(file)||externalCovers.get(file)||window.loliteGameArt?.[file]?.src||
+   (game?.ugsEntry?.filename?window.loliteGameArt?.[game.ugsEntry.filename]?.src:null)||null;
  };
  // Local, title-specific artwork is always present; remote images only enhance it.
  const artCache=new Map();
