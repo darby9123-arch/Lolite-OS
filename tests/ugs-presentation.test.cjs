@@ -117,3 +117,66 @@ test('Every hosted UGS game gets a real image or a readable illustrated fallback
  assert.match(store,/const colors=coverPalette\(g\),poster=posterForGame\(g\)/);
  assert.match(store,/game\.backgroundUrl\|\|game\.iconUrl\|\|coverFor\(game\.file\)\|\|posterForGame\(game\)/);
 });
+
+
+test('Common compressed UGS names are repaired without mangling genuine single-word brands',()=>{
+ const {api}=harness();
+ const cases=[
+  ['Brawlstars','Brawl Stars'],['Happywheels','Happy Wheels'],
+  ['Subwaysurfersberlin','Subway Surfers: Berlin'],
+  ['Subwaysurfersneworeleans','Subway Surfers: New Orleans'],
+  ['Coverorangejourneyspace','Cover Orange: Journey Space'],
+  ['Papashotdoggeria','Papa’s Hot Doggeria'],
+  ['Stickminbreakingbank','The Henry Stickmin Collection: Breaking the Bank'],
+  ['Clusterrush','Cluster Rush'],['Wrestlebros','Wrestle Bros'],
+  ['Cookieclickermodmenu','Cookie Clicker: Mod Menu'],
+  ['Clashofvikings','Clash of Vikings'],['Webfishing','Webfishing'],
+  ['Bloxorz','Bloxorz'],['Hextris','Hextris']
+ ];
+ for(const [raw,expected] of cases)assert.equal(api.title(raw),expected,raw);
+});
+test('UGS categorisation uses source filenames, preserving useful genre filters',()=>{
+ const {api}=harness();
+ const cases=[
+  ['Bacon May Die','clbaconmaydie.html','Arcade & Action'],
+  ['Bloons TD 4','clbloonsTD4.html','Strategy'],
+  ['Minecraft Pocket Edition','clminecraftpocketedition.html','Sandbox & Building'],
+  ['Basketball Stars','clbasketballstars.html','Sports'],
+  ['Drift Boss','cldriftboss.html','Racing & Driving'],
+  ['Wordle','clwordle.html','Puzzle & Brain'],
+  ['Cookie Clicker','clcookieclicker.html','Casual & Idle'],
+  ['Papa’s Bakeria','clpapasbakeria.html','Simulation & Life'],
+  ['Undertale Yellow','clundertaleyellow.html','Adventure & RPG'],
+  ['Geometry Dash Breeze','clgdbreeze.html','Music & Rhythm'],
+  ['Granny 2','clgranny2.html','Horror & Survival'],
+  ['Slither.io','clslitherio.html','Multiplayer & .io'],
+  ['Pac-Man','clpacman.html','Retro & Classics']
+ ];
+ for(const [title,filename,genre] of cases)
+  assert.equal(api.category({title,filename}),genre,title+' should be in '+genre);
+ assert.equal(api.category({title:'UnknownMadeUpGame',filename:'clunknowngame.html'}),'Arcade & Action');
+});
+test('Broken first UGS artwork has a second genuine game-owned image candidate',async()=>{
+ const h=harness({html:'<html><head><base href="https://cdn.jsdelivr.net/gh/example/game@main/">'+
+  '<meta property="og:image" content="bad-cover.png"><link rel="icon" href="working-icon.png"></head></html>'});
+ const game=hosted(),first=await h.api.discover(game);
+ assert.match(first,/bad-cover\.png$/);
+ const second=await h.api.next(game,first);
+ assert.match(second,/working-icon\.png$/);
+ assert.equal(await h.api.next(game,second),'');
+ assert.equal(h.calls.length,1,'Image candidates are cached without refetching the HTML');
+ const store=read('core/game-store.js');
+ assert.match(store,/retryUGSArt\(el,file,remote,title\)/);
+ assert.match(store,/ugsArtAttempts/);
+});
+test('All UGS fallback genres have illustrated image content with wrapped titles',()=>{
+ const {api}=harness();
+ const categories=['Arcade & Action','Adventure & RPG','Multiplayer & .io','Horror & Survival',
+  'Strategy','Puzzle & Brain','Sports','Racing & Driving','Simulation & Life',
+  'Casual & Idle','Sandbox & Building','Platformers','Retro & Classics','Music & Rhythm'];
+ for(const genre of categories){
+  const poster=api.poster({file:'test-'+genre,title:'A Very Long Sample Game Title With Spaces And A Sequel',category:genre});
+  assert.match(poster,/^data:image\/svg\+xml;charset=UTF-8,/);
+  assert.match(decodeURIComponent(poster.split(',')[1]),/<svg /);
+ }
+});
