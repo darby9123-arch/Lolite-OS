@@ -40,3 +40,11 @@ The existing Vercel site may still serve Ultraviolet HTTP endpoints, but Vercel 
 ## Security note
 
 A public web proxy can be abused. Before advertising the Node host publicly, put appropriate access controls, usage limits, and monitoring in front of proxy routes. Wisp can relay network traffic and should not be exposed as an unrestricted general-purpose relay.
+
+## Sandstone Browser in the static Lolite OS desktop (November 18, 2026)
+
+The original uploaded `apps/sandstone-browser.html` is retained. Its embedded Sandstone proxy requires a working Wisp WebSocket server, which GitHub Pages cannot supply. The deployed Node server also intentionally disables browser proxy transports, so simply changing the WebSocket host would not make the original HTML work.
+
+The desktop's **Sandstone Browser** now opens `apps/sandstone-desktop.html`, a separate direct-browsing shell with address/search, back/forward/reload, local bookmarks and tabs. It uses ordinary HTTPS page embedding, **not** a Wisp/Scramjet/Ultraviolet proxy, so it cannot bypass a site's iframe policy or network access restrictions. When a website blocks embedding, choose **Open in normal tab**. The browser warns users about this limitation instead of showing an unexplained blank page. The browser's preview iframe is sandboxed and doesn't use `allow-same-origin`.
+
+Run `node --test tests/sandstone-browser.test.cjs` to check the static browser functionality and its integration into `app.js`. The full runtime integration should still be spot-checked in a real browser after a deployment.
