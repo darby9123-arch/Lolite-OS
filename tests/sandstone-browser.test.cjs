@@ -2,121 +2,98 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
-const html=fs.readFileSync('apps/sandstone-desktop.html','utf8');
-const match=html.match(/<script>([\s\S]*?)<\/script>/);
-assert.ok(match,'Sandstone direct shell must contain executable browser code');
-const source=match[1];
 
-function harness(existing=new Map()){
- const nodes=new Map(),opens=[];
- class Element{
-  constructor(id){this.id=id;this.children=[];this.listeners={};this.dataset={};this.style={};this.attributes={};this.value='';this.textContent='';this.hidden=false;this.disabled=false;this.className='';this.src='';
-   this.classList={toggle(name,on){this.classes??=new Set();if(on)this.classes.add(name);else this.classes.delete(name)}};
+const read=path=>fs.readFileSync(path,'utf8');
+const app=read('app.js');
+const index=read('index.html');
+const compat=read('core/sandstone-original-compat.js');
+
+function harness({ready=true,windowPresent=true}={}){
+ const listeners=new Map(),innerNodes=new Map(),styles=[],links=[],frames=[],changes=[];
+ class Node {
+  constructor(name){
+   this.name=name;this.listeners=new Map();this.children=[];
+   this.dataset={};this.textContent='';this.style={setProperty:(key,value,priority)=>changes.push([name,key,value,priority])};
   }
-  addEventListener(type,fn){(this.listeners[type]??=[]).push(fn)}
-  click(){for(const fn of this.listeners.click||[])fn({target:this,preventDefault(){}})}
-  submit(){for(const fn of this.listeners.submit||[])fn({target:this,preventDefault(){}})}
-  append(...els){this.children.push(...els)}
-  replaceChildren(...els){this.children=els}
-  setAttribute(key,value){this.attributes[key]=String(value);if(key==='src')this.src=String(value)}
-  getAttribute(key){if(key==='src')return this.src||null;return this.attributes[key]??null}
-  removeAttribute(key){delete this.attributes[key];if(key==='src')this.src=''}
-  focus(){this.focused=true}
-  select(){this.selected=true}
+  addEventListener(type,fn){this.listeners.set(type,fn)}
+  trigger(type){this.listeners.get(type)?.()}
+  append(...nodes){this.children.push(...nodes)}
+  appendChild(node){this.children.push(node);if(node.name==='style')styles.push(node)}
+  setAttribute(name,value){this[name]=value}
+  querySelector(query){return this.children.find(x=>x.id===query.slice(1))||null}
+  insertAdjacentElement(where,node){assert.equal(where,'afterend');innerNodes.set(node.id,node)}
  }
- for(const id of ['tabs','new-tab','go-form','address','go','back','forward','reload','home-button','bookmark','external','home','viewport','frame','status-left','bookmarks','notice','open-tab'])nodes.set(id,new Element(id));
- const docListeners={};
- const document={
-  getElementById:id=>nodes.get(id)||null,
-  createElement:tag=>new Element(tag),
-  querySelectorAll:()=>[],
-  addEventListener:(type,fn)=>{(docListeners[type]??=[]).push(fn)}
+ const innerDoc={
+  body:new Node('body'),head:new Node('head'),
+  getElementById:id=>innerNodes.get(id)||null,
+  querySelector:query=>query==='#frame_container iframe'&&ready?{}:null,
+  createElement:name=>new Node(name)
  };
- const win={open:(...args)=>{opens.push(args);return null}};
- const storage={getItem:key=>existing.has(key)?existing.get(key):null,setItem:(key,val)=>existing.set(key,String(val))};
- vm.runInNewContext(source,{window:win,document,URL,location:{origin:'https://lolite.example'},localStorage:storage,encodeURIComponent,Math,Date,console},{timeout:3000});
- return {api:win.SandstoneDesktop,nodes,opens,storage,document,docListeners};
+ const address=new Node('address_bar');innerNodes.set('address_bar',address);
+ const win={main_frame:ready?{iframe:{}}:null,location:{reload(){links.push('reload')}},setTimeout:fn=>fn()};
+ const content=new Node('content');
+ const frame=new Node('frame');frame.contentDocument=windowPresent?innerDoc:null;frame.contentWindow=windowPresent?win:null;
+ frame.closest=sel=>sel==='.content'?content:null;
+ const document={
+  readyState:'complete',
+  body:new Node('outerbody'),
+  getElementById:()=>null,
+  querySelectorAll:query=>query==='iframe[data-sandstone-original="true"]'?[frame]:[]
+ };
+ const window={};
+ class MutationObserver{constructor(callback){this.callback=callback}observe(){}}
+ vm.runInNewContext(compat,{document,window,MutationObserver,console,Promise,WeakSet},{timeout:2000});
+ return {frame,win,innerNodes,styles,changes,links,api:window.LoliteSandstoneCompat};
 }
-
-test('Sandstone launches the direct browser shell while retaining the uploaded original',()=>{
- const app=fs.readFileSync('app.js','utf8');
- const index=fs.readFileSync('index.html','utf8');
- assert.match(app,/if\(id==='sandstone'\).*?apps\/sandstone-desktop\.html/);
- assert.match(app,/title="Sandstone Browser"/);
- assert.ok(fs.statSync('apps/sandstone-browser.html').size>1000000,'Original uploaded Sandstone HTML must remain intact');
- assert.match(index,/app\.js\?v=/);
- assert.match(html,/Sandstone Browser/);
- assert.match(html,/Original.*proxy requires a separate server|original proxy requires a separate server/i);
+test('The Lolite app launches the original user-provided Sandstone HTML, not a replacement',()=>{
+ assert.match(app,/if\(id==='sandstone'\).*?apps\/sandstone-browser\.html\?v=original-runtime/);
+ assert.match(app,/data-sandstone-original="true"/);
+ assert.doesNotMatch(app,/sandstone-desktop\.html/);
+ assert.match(index,/core\/sandstone-original-compat\.js/);
+ assert.ok(index.indexOf('app.js?v=')<index.indexOf('core/sandstone-original-compat.js'));
+ const original=read('apps/sandstone-browser.html');
+ assert.ok(original.length>1000000,'Keep the actual original bundled Sandstone engine');
+ for(const part of ['id="url_box"','id="options_div"','id="wisp_url_input"',
+  'id="frame_container"','id="navigate_button"','new U.ProxyFrame']){
+  assert.ok(original.includes(part),'Missing original Sandstone component: '+part);
+ }
 });
-test('Address input accepts HTTPS sites and turns plain search text into web searches',()=>{
+test('Compatibility layer fills Sandstone window and removes only its generic app padding',()=>{
+ const h=harness();h.frame.trigger('load');
+ assert.ok(h.changes.some(([n,k,value])=>n==='content'&&k==='padding'&&value==='0'));
+ assert.ok(h.changes.some(([n,k,value])=>n==='frame'&&k==='height'&&value==='100%'));
+ assert.ok(h.styles[0].textContent.includes('#frame_container'));
+ assert.ok(h.styles[0].textContent.includes('#options_div'));
+ assert.ok(h.styles[0].textContent.includes('min-height:0'));
+});
+test('Renderer status is honest about the actual missing proxy transport',()=>{
+ const h=harness();h.frame.trigger('load');
+ const status=h.innerNodes.get('loliteSandstoneStatus');
+ assert.ok(status);
+ assert.equal(status.dataset.error,'false');
+ assert.match(status.children[0].textContent,/Original Sandstone renderer loaded/);
+ assert.match(status.children[0].textContent,/this Lolite host does not supply one/);
+ assert.doesNotMatch(status.children[0].textContent,/website successfully loaded|proxy connected/i);
+ const button=status.children[1];button.trigger('click');
+ assert.deepEqual(h.links,['reload']);
+});
+test('Broken renderer displays an understandable error instead of staying silent',()=>{
+ const h=harness({ready:false});h.frame.trigger('load');
+ const status=h.innerNodes.get('loliteSandstoneStatus');
+ assert.equal(status.dataset.error,'true');
+ assert.match(status.children[0].textContent,/failed to initialise/);
+});
+test('Frames are only mounted once, including after a window rescan',()=>{
  const h=harness();
- assert.equal(h.api.getURL(),'sandstone:home');
- assert.equal(h.api.normalize('example.org'),'https://example.org/');
- assert.equal(h.api.normalize('https://www.wikipedia.org/'),'https://www.wikipedia.org/');
- assert.equal(h.api.normalize('game physics tips'),'https://duckduckgo.com/?q=game%20physics%20tips');
- assert.equal(h.api.normalize('http://example.org/'),'https://example.org/');
- assert.throws(()=>h.api.normalize('javascript:alert(1)'),/Only HTTPS websites/);
- assert.throws(()=>h.api.normalize('https://user:pass@example.org/'),/ordinary websites/);
- assert.throws(()=>h.api.normalize('https://lolite.example/'),/main desktop/);
+ h.api.scan();h.api.scan();
+ h.frame.trigger('load');
+ assert.equal(h.styles.length,1);
+ assert.equal(h.innerNodes.get('loliteSandstoneStatus').children.length,2);
 });
-test('Go, Back, Forward and Home update tab history and the actual preview URL',()=>{
- const h=harness(),a='https://example.org/',b='https://www.wikipedia.org/';
- h.api.go('example.org');
- assert.equal(h.api.getURL(),a);
- assert.equal(h.nodes.get('frame').src,a);
- assert.equal(h.nodes.get('viewport').style.display,'flex');
- h.api.go(b);
- assert.equal(h.api.getURL(),b);
- h.nodes.get('back').click();
- assert.equal(h.api.getURL(),a);
- h.nodes.get('forward').click();
- assert.equal(h.api.getURL(),b);
- h.nodes.get('home-button').click();
- assert.equal(h.api.getURL(),'sandstone:home');
- assert.equal(h.nodes.get('frame').src,'');
- assert.equal(h.nodes.get('viewport').style.display,'none');
-});
-test('Separate tabs can be opened and closed without losing another tab',()=>{
- const h=harness();
- h.api.go('example.org');
- h.nodes.get('new-tab').click();
- assert.equal(h.api.getTabs().length,2);
- assert.equal(h.api.getURL(),'sandstone:home');
- const first=h.api.getTabs()[0].id;
- const tabElements=h.nodes.get('tabs').children;
- assert.equal(tabElements.length,2);
- tabElements[0].children[0].click();
- assert.equal(h.api.getURL(),'https://example.org/');
- const second=h.api.getTabs()[1].id;
- h.nodes.get('tabs').children[1].children[1].click();
- assert.equal(h.api.getTabs().length,1);
- assert.equal(h.api.getTabs()[0].id,first);
- assert.notEqual(first,second);
-});
-test('External-tab fallback always opens the original URL without a proxy rewrite',()=>{
- const h=harness();
- h.api.go('https://example.org/path?q=1');
- h.nodes.get('external').click();
- assert.deepEqual(h.opens[0],['https://example.org/path?q=1','_blank','noopener,noreferrer']);
-});
-test('Bookmarks persist locally and never become remote account data',()=>{
- const storage=new Map(),h=harness(storage);
- h.api.go('https://example.org/');
- h.nodes.get('bookmark').click();
- assert.deepEqual(JSON.parse(storage.get('lolite-sandstone-bookmarks-v2')),[{url:'https://example.org/',name:'example.org'}]);
- assert.equal(h.nodes.get('bookmark').textContent,'★');
- const h2=harness(storage);
- assert.equal(h2.nodes.get('bookmarks').children.length,1);
- h2.nodes.get('bookmarks').children[0].click();
- assert.equal(h2.api.getURL(),'https://example.org/');
- h2.nodes.get('bookmark').click();
- assert.deepEqual(JSON.parse(storage.get('lolite-sandstone-bookmarks-v2')),[]);
-});
-test('The website preview has an explicit honest no-proxy fallback, not unsafe injected script',()=>{
- assert.match(html,/sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"/);
- assert.doesNotMatch(html,/sandbox="[^"]*allow-same-origin/);
- assert.match(html,/id="open-tab"/);
- assert.match(html,/site may block embedded browsers/);
- assert.doesNotMatch(source,/\beval\s*\(|document\.write\s*\(|\.innerHTML\s*=/);
- assert.doesNotMatch(source,/wisp\.mercurywork\.shop|scramjet\.wasm|bareMux|serviceWorker\.register/);
+test('Compatibility layer does not touch Sandstone proxy engine, networks, or other apps',()=>{
+ assert.doesNotMatch(compat,/set_websocket|\.navigate_to|WebSocket\s*\(|new WebSocket|serviceWorker|wss:\/\//);
+ assert.doesNotMatch(compat,/\beval\s*\(|document\.write|innerHTML\s*=/);
+ assert.match(compat,/iframe\[data-sandstone-original="true"\]/);
+ assert.match(compat,/frame\.contentDocument/);
+ assert.match(compat,/\.content/);
 });
