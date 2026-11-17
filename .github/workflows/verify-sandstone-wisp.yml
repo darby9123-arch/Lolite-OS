@@ -1,0 +1,26 @@
+name: Verify Sandstone Wisp compatibility relay
+on:
+  push:
+    paths:
+      - 'services/sandstone-wisp/**'
+      - '.github/workflows/verify-sandstone-wisp.yml'
+  pull_request:
+    paths:
+      - 'services/sandstone-wisp/**'
+      - '.github/workflows/verify-sandstone-wisp.yml'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Wisp relay source
+        run: |
+          node --check services/sandstone-wisp/server.mjs
+          node --check services/sandstone-wisp/security.mjs
+      - name: Test destination and origin restrictions
+        run: node --test services/sandstone-wisp/tests/*.test.mjs
