@@ -5,6 +5,10 @@ on:
       - 'core/game-health.js'
       - 'core/game-player.js'
       - 'core/game-store.js'
+      - 'core/app-store.js'
+      - 'core/economy-store.js'
+      - 'core/quests.js'
+      - 'core/whats-new.js'
       - 'core/spotlight.js'
       - 'core/taskbar-enhancements.js'
       - 'core/host-status.js'
@@ -57,6 +61,10 @@ jobs:
           node --check core/account-storage.js
           node --check core/game-health.js
           node --check core/game-store.js
+          node --check core/app-store.js
+          node --check core/economy-store.js
+          node --check core/quests.js
+          node --check core/whats-new.js
           node --check core/game-player.js
           node --check core/spotlight.js
           node --check core/taskbar-enhancements.js
@@ -79,4 +87,4 @@ jobs:
           node --check server.mjs
       - name: Test game library, host version, taskbar, Spotlight and snapping
         run: |
-          node --test tests/accounts-activity.test.cjs tests/lolite-4.test.cjs tests/window-manager.test.cjs tests/game-launches.test.cjs tests/game-popularity.test.cjs tests/tab-cloaking.test.cjs tests/generated-icons.test.cjs tests/lolite-4-1.test.cjs tests/game-health.test.cjs tests/game-store-gallery.test.cjs tests/game-store-ui-cleanup.test.cjs tests/feature-requests.test.cjs tests/lolite-clips.test.cjs tests/ui-preview.test.cjs tests/wallpaper-colors.test.cjs tests/wallpaper-favourites.test.cjs tests/icon-material-polish.test.cjs tests/ui-shell-bugfixes.test.cjs tests/game-account-browser-bugfixes.test.cjs
+          node --test tests/accounts-activity.test.cjs tests/lolite-4.test.cjs tests/window-manager.test.cjs tests/game-launches.test.cjs tests/game-popularity.test.cjs tests/tab-cloaking.test.cjs tests/generated-icons.test.cjs tests/lolite-4-1.test.cjs tests/game-health.test.cjs tests/game-store-gallery.test.cjs tests/game-store-ui-cleanup.test.cjs tests/feature-requests.test.cjs tests/lolite-clips.test.cjs tests/ui-preview.test.cjs tests/wallpaper-colors.test.cjs tests/wallpaper-favourites.test.cjs tests/icon-material-polish.test.cjs tests/ui-shell-bugfixes.test.cjs tests/game-account-browser-bugfixes.test.cjs tests/free-apps-no-money.test.cjs
