@@ -94,13 +94,14 @@
   color+=vec3(.73,.86,1.0)*light;
   gl_FragColor=vec4(clamp(color,0.0,1.0),mask);
  }`;
+ // Paint lenses in DOM stacking order so glass does not appear through
+ // panels that would normally be above it.
  const SURFACES=[
-  {selector:'#taskStart',radius:9,enabled:false}, // Taskbar surface handles its own children
-  {selector:'.taskbar',radius:12},
   {selector:'#liquidLens',radius:23},
   {selector:'#previewWindow',radius:12},
   {selector:'#startMenu',radius:13},
-  {selector:'#quickPanel',radius:12}
+  {selector:'#quickPanel',radius:12},
+  {selector:'.taskbar',radius:12}
  ];
  function create({desktop,canvas,onStatus}={}){
   if(!desktop||!canvas)return null;
@@ -262,7 +263,7 @@
     gl.uniform2f(lensLocations.mouse,pointer[0]*resolution,pointer[1]*resolution);
     gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.SCISSOR_TEST);
-    for(const item of SURFACES)if(item.enabled!==false)lens(desktop.querySelector(item.selector),item.radius,desktopRect);
+    for(const item of SURFACES)lens(desktop.querySelector(item.selector),item.radius,desktopRect);
     gl.disable(gl.SCISSOR_TEST);gl.disable(gl.BLEND);
     drawCount++;
     if(document.documentElement.dataset.liquidEngine!=='webgl'){
