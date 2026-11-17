@@ -505,12 +505,13 @@
      taken.add(key);listed++;
      const preferredURL=hasLocalInstall?ugsFileURL(record):hostedURL;
      const entry={id,filename,kind,title,sourceTitle,bytes:Number(bytes)||0};
+     const ugsCategory=window.LoliteUGSPresentation?.category({title,filename,kind})||categorize({file:filename,title});
      const index=existing.get(key);
      if(index!==undefined){
        const previous=games[index];
        {
          const old={...previous},fallback={name:previous.source||'Lolite OS',url:previous.url};
-         games[index]={...previous,ugsBackup:old,ugsEntry:entry,ugsInstalled:true,ugsRecord:record,
+         games[index]={...previous,category:ugsCategory,ugsBackup:old,ugsEntry:entry,ugsInstalled:true,ugsRecord:record,
            url:preferredURL,source:'UGS',local:true,external:false,ugsHosted:!hasLocalInstall,
            servers:[...(fallback.url?[fallback]:[]),...(previous.servers||[])]};
          serverSelections.set(games[index].file,0);installed++;alternatives++;
@@ -520,7 +521,7 @@
        const game={file,title,url:preferredURL||'',source:'UGS',
          local:!!hasInstall,external:false,ugsEntry:entry,ugsCreated:true,
          ugsInstalled:true,ugsHosted:!!hasHosted&&!hasLocalInstall,ugsRecord:hasLocalInstall?record:null,
-         category:categorize({file:filename,title})};
+         category:ugsCategory};
        games.push(game);existing.set(key,games.length-1);
        if(hasInstall)installed++;
      }
@@ -812,6 +813,7 @@
   const title=String(game.title||''),file=String(game.file||'');
   const aliases=/grand theft auto/i.test(title)?' gta ': /five nights at freddy/i.test(title)?' fnaf ': '';
   const haystack=normalizeGameSearch([title,file,game.category,game.franchise,game.source,aliases,
+   game.ugsEntry?.sourceTitle,game.ugsEntry?.filename,
    ...(Array.isArray(game.servers)?game.servers.map(server=>server.name):[])].filter(Boolean).join(' '));
   const compact=haystack.replace(/ /g,'');
   const tokens=normalizeGameSearch(text).split(' ').filter(Boolean);
