@@ -70,8 +70,8 @@
     const action=isInstalled?'OpenApp':'InstallApp';
     return '<article class="appstore-card"><div class="appstore-icon">'+window.LoliteIcons.tile(a.id)+'</div><div class="appstore-card-meta"><span>'+a.category+'</span><span>v'+a.version+'</span></div><h3>'+a.name+'</h3><p>'+a.desc+'</p>'+
      '<div class="appstore-price"><span class="appstore-free">FREE</span></div>'+
-     '<button type="button" class="'+(isInstalled?'installed':'')+'" onclick="window.lolite'+action+'(\\''+a.id+'\\')">'+label+'</button>'+
-     (isInstalled&&!basics.has(a.id)?'<button type="button" class="app-uninstall" onclick="window.loliteUninstallApp(\\''+a.id+'\\')">Uninstall</button>':'')+
+     '<button type="button" class="'+(isInstalled?'installed':'')+'" onclick="window.lolite'+action+'(\''+a.id+'\')">'+label+'</button>'+
+     (isInstalled&&!basics.has(a.id)?'<button type="button" class="app-uninstall" onclick="window.loliteUninstallApp(\''+a.id+'\')">Uninstall</button>':'')+
      '</article>';
    }).join(''):'<div class="store-empty">No apps match your search.</div>';
   };
