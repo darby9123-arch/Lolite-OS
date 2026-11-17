@@ -79,7 +79,7 @@
  }
  function syncLiquidControls(){
   const liquid=state.liquid;
-  $('[data-liquid-mode]').forEach(button=>{
+  $$('[data-liquid-mode]').forEach(button=>{
    const selected=button.dataset.liquidMode===liquid.mode;
    button.classList.toggle('selected',selected);
    button.setAttribute('aria-pressed',String(selected));
