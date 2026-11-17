@@ -8,17 +8,17 @@ Choose a view in the Game Store toolbar:
 - **Compact** — denser tiles to browse more games at once.
 - **List** — one game per row with a thumbnail, its readable title, category and launch controls.
 
-The layout persists per browser through \`loliteGameLayoutV2\`. App-window responsive rules adapt list rows and buttons to Lolite's resizable desktop windows; they do not rely only on the outer browser viewport. The saved selection changes appearance, never game IDs, availability or launch URLs.
+The layout persists per browser through `loliteGameLayoutV2`. App-window responsive rules adapt list rows and buttons to Lolite's resizable desktop windows; they do not rely only on the outer browser viewport. The saved selection changes appearance, never game IDs, availability or launch URLs.
 
 ## UGS titles
-The hosted UGS catalogue comes from \`core/ugs-catalog.js\` and \`core/ugs-hosted-catalog.js\`.
-\`core/ugs-presentation.js\` repairs compressed names with:
+The hosted UGS catalogue comes from `core/ugs-catalog.js` and `core/ugs-hosted-catalog.js`.
+`core/ugs-presentation.js` repairs compressed names with:
 - Explicit corrections for known series and special spellings.
 - A deliberately constrained gaming-word splitter (it never splits an unknown proper noun unless it can produce a complete, recognised sequence).
 - Capitalisation, word separators, preserved numeric sequels and common acronyms.
 - Unmodified original filenames and titles available in search.
 
-Legitimate one-word brand names remain one word. Ambiguous or incomplete original filenames may still need manual title overrides in \`names\` within \`core/ugs-presentation.js\`.
+Legitimate one-word brand names remain one word. Ambiguous or incomplete original filenames may still need manual title overrides in `names` within `core/ugs-presentation.js`.
 
 ## Genre and game-type filters
 In the **UGS** collection, choose **Genre** (including Sports, Strategy, Puzzle, Platformers, Racing and others) and **Game Type** (HTML5 or Flash). The filter menus display catalogue counts and support **Clear filters**.
@@ -33,8 +33,8 @@ Image candidates are cached; a failed URL can be followed by the next candidate 
 No game HTML or server URL was changed, and no silent game-launch capture or image scraping from unrelated games was added.
 
 ## Testing
-- \`tests/ugs-presentation.test.cjs\` checks game names, genre classification, fallback poster generation and multiple artwork candidates.
-- \`tests/game-store-search.test.cjs\` checks persistent Gallery/Compact/List modes, real UGS category/type filtering, sorting, search and reset behaviour.
-- \`.github/workflows/verify-game-launches.yml\` runs these as part of the game-launcher suite.
+- `tests/ugs-presentation.test.cjs` checks game names, genre classification, fallback poster generation and multiple artwork candidates.
+- `tests/game-store-search.test.cjs` checks persistent Gallery/Compact/List modes, real UGS category/type filtering, sorting, search and reset behaviour.
+- `.github/workflows/verify-game-launches.yml` runs these as part of the game-launcher suite.
 
 Manual browser spot-checks remain valuable for very unusual game names and external image hosts, since the original game asset links can change.
