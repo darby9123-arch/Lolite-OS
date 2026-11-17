@@ -66,7 +66,7 @@ test('Academy Quests never award RP money; Focus Board and Arcade Shelf are free
   querySelector:s=>s.includes('#lq-root')?root:null,addEventListener(){},getElementById:()=>null};
  const opened=[];
  const win={LoliteAcademyCourses:[{id:'course-a',title:'Course A',lessons:[{id:'intro'}]}],
-  page:id=>id,renderIcons(){},openApp(...args){opened.push(args);return args[0]}};
+  page:id=>id,renderIcons(){},addEventListener(){},openApp(...args){opened.push(args);return args[0]}};
  vm.runInNewContext(read('core/quests.js'),{window:win,document:doc,localStorage:storage,
   setTimeout:(fn,ms)=>{if(ms===65||ms===0)fn();return 1},clearTimeout(){},setInterval(){},console});
  assert.equal(win.LoliteQuests.academyCompleted('course-a','intro'),true);
