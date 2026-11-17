@@ -3,17 +3,13 @@
 'use strict';
 const URL='README.md',GH='https://github.com/darby9123-arch/Lolite-OS#update-log';
 const fallback=[
- ['Free & Paid Stores — 2026-10-21','39 complete free-to-play games, free Paint and Calculator, Free/Paid store filters, and one-click Get for free apps. Paid extras remain optional.'],
- ['Lolite Dollars — Paid Game Store & App Store — 2026-10-21','Buy real in-OS game and app unlocks with earned Lolite Dollars. Owned games appear in My Library, optional paid apps install after purchase, and wallet balances are shared with Lolite Quests and Life RP.'],
- ['Lolite Quests & Life RP Skill Arcade — 2026-10-21','Six skill-based minigames, reward cooldowns, a harder Premium Season Pass, shared virtual wallet and Quests app for course and active-app rewards.'],
- ['Lolite Life RP City Update — Hands-on Jobs, Shops, Ranks, Businesses & Minigames — 2026-10-20','Playable job shifts, 16 minigame activities, quests, actual customer work, in-game Plus and Pro memberships, and customisation shop.'],
+ ['All Lolite Apps Are Free — 2026-11-18','Removed the Lolite wallet, paid App Store categories, app unlock prices and Quests money rewards. Every app is free to install and open. Existing progress remains saved.'],
+ ['Lolite Life RP City Update — Hands-on Jobs, Shops, Ranks, Businesses & Minigames — 2026-10-20','Playable job shifts, minigame activities, quests, businesses and customisation in the separate Life RP game.'],
  ['Lolite Life RP Online Mode — Private Rooms & Cloud Saves — 2026-10-20','Private live multiplayer rooms, co-op community challenges and optional cloud saves using Lolite Chat accounts.'],
- ['Lolite Life RP — Jobs, Properties & Season Pass — 2026-10-20','Twenty careers, twelve activities, ten properties and a virtual-money season pass are now playable.'],
- ['Lolite Academy — Interactive Guide & Courses — 2026-10-20','New Lolite Academy app with 7 courses, 21 guided lessons, quizzes and saved progress.'],
- ['Game cover image fix — 2026-10-20','Game Store covers now show a per-game fallback poster when outside images fail.'],
- ['3.15.3 — Cloud Gaming launcher — 2026-10-19','Cloud Gaming app adds links to official gaming providers, search, and favourites.'],
+ ['Lolite Academy — Interactive Guide & Courses — 2026-10-20','Lolite Academy includes guided lessons, quizzes and saved course progress.'],
+ ['Game cover image fix — 2026-10-20','Game Store covers show a per-game fallback poster when outside images fail.'],
  ['3.15.1 — Reliable desktop updates and fresh reinstall — 2026-10-19','Windows launcher can refresh files and reinstall even when on the latest version.'],
- ['3.14.0 — File viewers and Explorer workspace — 2026-10-16','File Explorer has new built-in file viewers and organisation tools.']
+ ['3.14.0 — File viewers and Explorer workspace — 2026-10-16','File Explorer includes built-in file viewers and organisation tools.']
 ].map(x=>({title:x[0],bullets:[x[1]]}));
 const esc=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
 const plain=s=>String(s??'').replace(/!?\[([^\]]+)\]\([^)]+\)/g,'$1').replace(/[*_]/g,'').trim();
@@ -50,7 +46,9 @@ function parseMarkdown(markdown){
  }
  save();return entries;
 }
-const prepare=list=>list.map((x,i)=>({
+// Retired checkout notes are kept in Git history, not shown as live features.
+const RETIRED_STORE_NOTES=/Free & Paid Stores|Lolite Dollars|Lolite Quests & Life RP Skill Arcade/i;
+const prepare=list=>list.filter(x=>!RETIRED_STORE_NOTES.test(x.title)).map((x,i)=>({
  title:plain(x.title),bullets:x.bullets.map(plain).filter(Boolean),
  date:dateOf(x.title),type:typeOf(x.title),order:i
 })).filter(x=>x.title&&x.bullets.length)
