@@ -51,7 +51,7 @@
  function render(){
   const root=document.querySelector('.appstore');if(!root)return;
   const installed=get();
-  root.innerHTML='<div class="appstore-head"><div><div class="muted">LOLITE SOFTWARE</div><h1>App Store</h1><div class="muted">All Lolite apps are free. Install and open anything without a wallet or purchase.</div></div><span class="appstore-note">'+installed.length+' installed · '+apps.length+' free apps</span></div>'+
+  root.innerHTML='<div class="appstore-head"><div><div class="muted">LOLITE SOFTWARE</div><h1>App Store</h1><div class="muted">All Lolite apps are free. Install and open anything instantly.</div></div><span class="appstore-note">'+installed.length+' installed · '+apps.length+' free apps</span></div>'+
    '<div class="appstore-toolbar"><input id="appStoreSearch" placeholder="Search apps…" aria-label="Search apps"><div class="appstore-tabs" role="tablist">'+
    ['All','Featured','Installed','Media','AI & Tools','Productivity','Education','Games','Creative','Utilities','Social','System Tools','Performance','Maintenance','Files','Diagnostics','Storage','Personalisation','Automation','Network','Installers']
     .map((f,i)=>'<button type="button" class="store-tab'+(i===0?' active':'')+'" data-filter="'+f+'" aria-pressed="'+(i===0?'true':'false')+'">'+f+'</button>').join('')+
