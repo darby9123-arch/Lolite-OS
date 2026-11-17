@@ -1,8 +1,7 @@
 /* Lolite OS 3.7.0 — reliable local cover art plus optional remote artwork */
 (()=>{
  const CSS=`
- .store-wallet{border:1px solid #358489;border-radius:8px;background:#123943;color:#abf5e8;font-size:11px!important;font-weight:850;padding:10px 12px;white-space:nowrap;cursor:pointer}.store-wallet:hover{background:#205361}
- @media(max-width:760px){.store-wallet{white-space:normal;width:100%}.store-top{flex-wrap:wrap}}
+ @media(max-width:760px){.store-top{flex-wrap:wrap}}
 
  .store{display:grid;grid-template-columns:226px minmax(0,1fr);height:calc(100% + 40px);min-height:0;margin:-20px;background:#0b0e13;color:#eef2f8;overflow:hidden;font-family:'DM Sans','Segoe UI',sans-serif;letter-spacing:0}
  .store *{box-sizing:border-box}.store button,.store input{font:inherit}.store-side{display:flex;flex-direction:column;gap:22px;background:#0d1118;border-right:1px solid #202834;padding:23px 14px;min-width:0;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-color:#39465b transparent}
@@ -774,7 +773,7 @@
    '<div class="lolite-game-detail-stat">Your playtime: '+(window.LoliteActivity?.duration(window.LoliteActivity?.statsFor(game.file)?.total_seconds||0)||'0 sec')+'</div>'+
    '<button type="button" data-copy-game="'+encodeLabel(game.file)+'">Copy game</button>'+
    '<strong>Available servers</strong><ul>'+desc+'</ul>'+
-   '<div class="lolite-game-detail-actions"><button type="button" data-game-detail-play="'+encodeLabel(game.file)+'">'+(hasGame(game)?'Play game':'Unlock game')+'</button></div></section>';
+   '<div class="lolite-game-detail-actions"><button type="button" data-game-detail-play="'+encodeLabel(game.file)+'">'+'Play game'+'</button></div></section>';
   document.body.append(panel);
   panel.querySelector('[data-game-detail-close]')?.focus();
  }
@@ -1350,7 +1349,6 @@
  window.addEventListener('lolite:activitychange',refreshActivity);
  window.addEventListener('lolite:gamehealthchange',()=>{if(document.querySelector('.store-main'))render({keepToolbar:true})});
  window.addEventListener('lolite:popular-games',()=>{if((active==='Popular Games'||active==='Featured')&&document.querySelector('.store-main'))render({keepToolbar:true})});
- window.addEventListener('lolite-store-purchase',()=>render());
  const oldPage=window.page;window.page=function(id){if(id==='games'){setTimeout(render,0);return shell()}return oldPage(id)};
  // Keep the remaining provider's alternative HTML servers.
   loadAdditionalServers();
