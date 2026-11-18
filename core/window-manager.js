@@ -45,7 +45,10 @@
   // sign-out or failed authentication, not just mouse access behind the dialog.
   const locked=document.documentElement?.classList?.contains?.('lolite-account-locked')===true;
   if(locked||(window.LoliteAccounts&&!window.LoliteAccounts.isReady())){
-   window.LoliteAccounts?.showLogin?.();return null;
+   // Keep an open Create Account form intact if an app tries to launch.
+   if(document.querySelector?.('#loliteLogin')?.open!==true)
+    window.LoliteAccounts?.showLogin?.();
+   return null;
   }
   if(workspace.windows[id]?.closing)workspace.windows[id].finishClose();
   if(workspace.windows[id]){window.restoreWin(id);return workspace.windows[id].el}
