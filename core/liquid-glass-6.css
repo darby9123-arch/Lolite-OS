@@ -8,6 +8,8 @@
  border:0!important;border-radius:0!important;
 }
 #loliteLiquidRefractionCanvas[hidden]{display:none!important}
+/* Keep all live wallpaper/video descendants beneath the refractive layer. */
+html.glass.lolite-refractive #desktop > #wallpaper{z-index:0!important;isolation:isolate}
 /* GPU refracted pixels are visible only inside CSS-matched, translucent chrome.
  * Keep app contents substantially opaque, preserving readability and performance. */
 html.glass.lolite-refractive #desktop :is(#start,#searchPanel,#winQuickSettings,#winCalendar,.win-flyout){
