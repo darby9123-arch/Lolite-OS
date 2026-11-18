@@ -330,7 +330,7 @@
   window.addEventListener('lolite:wallpaperchange',()=>{source='';loadWallpaper(true)});
   window.addEventListener('lolite:panelchange',requestDraw);
   window.addEventListener('lolite:desktopthemechange',requestDraw);
-  window.addEventListener('lolite:performancechange',refresh);
+  window.addEventListener('lolite:performancechange',()=>refresh());
   document.addEventListener('visibilitychange',()=>document.hidden?(stop(),setState('fallback','Paused in background')):refresh());
   document.addEventListener('input',e=>{
    const el=e.target.closest?.('[data-lg-range]');
