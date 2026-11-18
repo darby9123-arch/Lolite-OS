@@ -13,5 +13,20 @@
  const api={getItem(k){k=String(k);return reserved(k)&&!authKey(k)?null:raw.getItem(actual(k))},setItem(k,v){k=String(k);if(reserved(k)&&!authKey(k))return;raw.setItem(actual(k),String(v));if(!authKey(k))changed(k)},removeItem(k){k=String(k);if(reserved(k)&&!authKey(k))return;raw.removeItem(actual(k));if(!authKey(k))changed(k)},clear(){keys().forEach(k=>api.removeItem(k))},key(i){return keys()[i]??null}};
  const scoped=new Proxy(api,{get(t,k){if(k==='length')return keys().length;if(k===Symbol.toStringTag)return 'Storage';if(k in t)return t[k];return typeof k==='string'?api.getItem(k)??undefined:undefined},set(t,k,v){api.setItem(k,v);return true},deleteProperty(t,k){api.removeItem(k);return true},ownKeys:keys,getOwnPropertyDescriptor(t,k){if(keys().includes(k))return {enumerable:true,configurable:true,value:api.getItem(k),writable:true}}});
  Object.defineProperty(window,'localStorage',{configurable:true,value:scoped});
+ // One account may be created per browser profile. The random installation ID is
+ // not derived from IP, hardware or fingerprinting data.
+ const signupLimit=Object.freeze({
+  deviceId(){
+   let value=device.get('signup-device-id');
+   if(!uuid.test(value||'')){
+    if(!window.crypto?.randomUUID)throw Error('A secure browser is required to create a Lolite account.');
+    value=window.crypto.randomUUID();device.set('signup-device-id',value);
+   }
+   return value;
+  },
+  hasAccount(){return uuid.test(device.get('first-account-id')||'')},
+  markAccount(value){if(uuid.test(value||'')&&!uuid.test(device.get('first-account-id')||''))device.set('first-account-id',value)}
+ });
+ window.LoliteSignupLimit=signupLimit;
  window.LoliteAccountStorage=Object.freeze({id,device,db:name=>prefix?name+'-'+id:name,scope:prefix? id:'guest',validId:value=>uuid.test(value)});
 })();
