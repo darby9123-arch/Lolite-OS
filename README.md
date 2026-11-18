@@ -32,6 +32,13 @@ A Lolite-branded browser desktop with the original Cosmos space interface, apps,
 
 ## Update Log
 
+### Lolite OS 6.0 — Real Liquid Glass desktop integration (2026-11-18)
+- Added **actual GPU wallpaper refraction to the real Lolite desktop** via a single shared WebGL1 canvas and displaced texture sampling. It covers the taskbar, Start/search panels, quick settings, calendar, and active window titlebar.
+- Open **Settings → Appearance → Liquid Glass 6.0** to enable it and adjust quality, refraction, edge thickness and reflections. Existing Glass preference remains respected; no forced default change.
+- Optimized for low overhead: **no continuous shader animation**, Balanced GPU canvas capped around 600k pixels, one context, at most 30 FPS during interactions, and no additional video decoder. Removed the legacy always-running desktop glass highlight animation.
+- Static live-wallpaper **posters** can refract, but protected remote images/videos may require the ordinary CSS glass fallback; arbitrary games/browser contents are never captured. [Technical details and limitations](docs/LIQUID-GLASS-6.md).
+
+
 ### Liquid Glass WebGL preview and OS performance (2026-11-18)
 - Built a **real refractive Liquid Glass shader** in [Lolite UI Lab](https://darby9123-arch.github.io/Lolite-OS/ui-preview/). It renders the lab's wallpaper into a WebGL texture, then bends that texture inside draggable glass lenses, windows, Start menu, taskbar and quick settings.
 - Added **Off / Balanced / High**, refraction strength, edge thickness/reflections and an optional wallpaper animation capped at 20 FPS.
