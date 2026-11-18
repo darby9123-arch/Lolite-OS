@@ -30,12 +30,13 @@
  const snapshot=()=>Object.fromEntries([...syncKeys].map(k=>[k,localStorage.getItem(k)]).filter(([,v])=>v!==null&&v.length<20000));
  function setMessage(message){const el=document.querySelector('[data-account-message]');if(el)el.textContent=message;}
  function gate(mode='login'){
+  ready=false;
   let d=document.querySelector('#loliteLogin');if(!d){d=document.createElement('dialog');d.id='loliteLogin';document.body.append(d);d.addEventListener('cancel',e=>e.preventDefault());}
-  d.innerHTML='<div class="la-lock"><div class="la-time">'+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</div><div class="la-date">'+new Date().toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'})+'</div><form data-account-form="'+mode+'"><div class="la-avatar">L</div><h1>'+ (mode==='register'?'Create your Lolite account':'Welcome to Lolite')+'</h1><p>One account. Your desktop, games and friends.</p><label>Username<input name="username" autocomplete="username" pattern="[A-Za-z0-9_]{3,24}" minlength="3" maxlength="24" required></label>'+(mode==='register'?'<label>Display name<input name="display" maxlength="32" required></label>':'')+'<label>Password<input name="password" type="password" autocomplete="'+(mode==='register'?'new-password':'current-password')+'" minlength="8" maxlength="128" required></label><label class="la-check"><input name="auto" type="checkbox" '+(device.get('auto')==='true'?'checked':'')+'> Automatically log in on this device</label><p data-account-message role="status"></p><button class="la-primary" type="submit">'+(mode==='register'?'Create account':'Sign in')+'</button><button type="button" data-account-mode="'+(mode==='register'?'login':'register')+'">'+(mode==='register'?'Already have an account? Sign in':'Create an account')+'</button><button type="button" data-account-guest>Continue as guest</button><small>Your existing Lolite Chat username and password work here.</small></form></div>';
+  d.innerHTML='<div class="la-lock"><div class="la-time">'+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</div><div class="la-date">'+new Date().toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'})+'</div><form data-account-form="'+mode+'"><div class="la-avatar">L</div><h1>'+ (mode==='register'?'Create your Lolite account':'Welcome to Lolite')+'</h1><p>One account. Your desktop, games and friends.</p><label>Username<input name="username" autocomplete="username" pattern="[A-Za-z0-9_]{3,24}" minlength="3" maxlength="24" required></label>'+(mode==='register'?'<label>Display name<input name="display" maxlength="32" required></label>':'')+'<label>Password<input name="password" type="password" autocomplete="'+(mode==='register'?'new-password':'current-password')+'" minlength="8" maxlength="128" required></label><label class="la-check"><input name="auto" type="checkbox" '+(device.get('auto')==='true'?'checked':'')+'> Automatically log in on this device</label><p data-account-message role="status"></p><button class="la-primary" type="submit">'+(mode==='register'?'Create account':'Sign in')+'</button><button type="button" data-account-mode="'+(mode==='register'?'login':'register')+'">'+(mode==='register'?'Already have an account? Sign in':'Create an account')+'</button><small>A Lolite account is required. Existing Lolite Chat usernames and passwords still work; no new account needed if you already have one.</small></form></div>';
   if(!d.open)d.showModal();document.documentElement.classList.add('lolite-account-locked');
   document.querySelector('#desktop')?.setAttribute('inert','');
  }
- function unlock(){ready=true;document.querySelector('#loliteLogin')?.close();document.querySelector('#loliteLogin')?.remove();document.documentElement.classList.remove('lolite-account-locked');document.querySelector('#desktop')?.removeAttribute('inert');window.dispatchEvent(new CustomEvent('lolite:account-ready',{detail:{user,profile}}));}
+ function unlock(){if(!user||!profile)return;ready=true;document.querySelector('#loliteLogin')?.close();document.querySelector('#loliteLogin')?.remove();document.documentElement.classList.remove('lolite-account-locked');document.querySelector('#desktop')?.removeAttribute('inert');window.dispatchEvent(new CustomEvent('lolite:account-ready',{detail:{user,profile}}));}
  async function save(){
   if(!ready||!user||!hydrated||saveBusy)return false;
   saveBusy=true;setSyncState('syncing');const data=snapshot();
@@ -68,11 +69,12 @@
  }
  async function login(username,password,auto){
   if(!client)throw Error('Sign-in could not load. Check your internet connection and reload.');
-  device.set('auto',!!auto);
   const r=await client.auth.signInWithPassword({email:username.trim().toLowerCase()+'@accounts.lolite.chat',password});
-  if(r.error)throw r.error;await enter(r.data.session);
+  if(r.error)throw r.error;
+  device.set('auto',!!auto);
+  await enter(r.data.session);
  }
- async function signOut(guest=false){
+ async function signOut(){
   if(leaving)return;leaving=true;
   try{
    await window.LoliteActivity?.stop?.();await save();
@@ -84,7 +86,7 @@
   }catch(error){console.warn('Lolite sign-out cleanup was interrupted:',error);}
   finally{
    device.set('account','guest');device.set('auto',false);sessionStorage.removeItem('lolite-data-hydrated');
-   if(guest)sessionStorage.setItem('lolite-guest-handoff','1');
+   sessionStorage.removeItem('lolite-guest-handoff');
    location.reload();
   }
  }
@@ -97,7 +99,7 @@
    await login(username,password,form.elements.auto.checked);
   }catch(error){setMessage(error.message||'Could not sign in. Please retry.');}finally{button.disabled=false;}
  });
- document.addEventListener('click',e=>{if(e.target.closest('[data-account-mode]'))gate(e.target.closest('[data-account-mode]').dataset.accountMode);if(e.target.closest('[data-account-guest]'))void signOut(true);if(e.target.closest('[data-account-signout]'))void signOut();if(e.target.closest('[data-account-signin]'))gate();if(e.target.closest('[data-account-sync-now]'))void save();if(e.target.closest('[data-account-edit-profile]')){e.target.closest('dialog')?.close();void window.LoliteChat?.editProfile?.();}});
+ document.addEventListener('click',e=>{if(e.target.closest('[data-account-mode]'))gate(e.target.closest('[data-account-mode]').dataset.accountMode); if(e.target.closest('[data-account-signout]'))void signOut();if(e.target.closest('[data-account-signin]'))gate();if(e.target.closest('[data-account-sync-now]'))void save();if(e.target.closest('[data-account-edit-profile]')){e.target.closest('dialog')?.close();void window.LoliteChat?.editProfile?.();}});
  document.addEventListener('change',async e=>{
   if(e.target.matches('[data-account-anonymous-counts]')){
    const wanted=e.target.checked;
@@ -115,10 +117,11 @@
  client?.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'&&ready&&user&&!leaving){leaving=true;device.set('account','guest');location.reload();}if(event==='SIGNED_IN'&&ready&&session?.user.id!==user?.id)setTimeout(()=>enter(session).catch(()=>gate()),0);});
  async function boot(){
   gate();
-  if(sessionStorage.getItem('lolite-guest-handoff')==='1'&&storage.id==='guest'){sessionStorage.removeItem('lolite-guest-handoff');unlock();return;}
+  // Ignore old guest-handoff flags from previous releases: sign-in is now required.
+  sessionStorage.removeItem('lolite-guest-handoff');
   const handoff=sessionStorage.getItem('lolite-login-handoff');sessionStorage.removeItem('lolite-login-handoff');
-  if((device.get('auto')==='true'||handoff===storage.id)&&client){try{const r=await client.auth.getUser();if(r.error)throw r.error;const s=await client.auth.getSession();if(r.data.user&&s.data.session){await enter(s.data.session);return;}}catch{setMessage('Could not restore your login. Sign in again, or continue as guest.');}}
-  // No automatic login means credentials are required on each desktop start.
+  if((device.get('auto')==='true'||handoff===storage.id)&&client){try{const r=await client.auth.getUser();if(r.error)throw r.error;const s=await client.auth.getSession();if(r.data.user&&s.data.session){await enter(s.data.session);return;}}catch{setMessage('Could not restore your login. Sign in again to access Lolite.');}}
+  // No guest/offline bypass: credentials are required on each desktop start.
   if(client)try{await client.auth.signOut({scope:'local'});}catch(error){console.warn('Lolite startup sign-out was interrupted:',error);}
  }
  const startObserver=new MutationObserver(()=>{const start=document.querySelector('#start');if(!start?.children.length||start.querySelector('.la-start-account'))return;const row=document.createElement('div');row.className='la-start-account';row.innerHTML='<button type="button" '+(user?'data-account-signout':'data-account-signin')+'>'+esc(user?'Switch account · '+(profile?.display_name||profile?.username):'Sign in to Lolite')+'</button>';start.append(row);});
