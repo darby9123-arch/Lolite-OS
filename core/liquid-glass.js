@@ -73,8 +73,10 @@
  function setState(s,message){
   state=s;why=message;
   root.dataset.loliteRefraction=s;
-  root.classList.toggle('lolite-refractive',s==='webgl');
-  root.classList.toggle('webgl-glass',s==='webgl');
+  if(root.classList.contains('lolite-refractive')!==(s==='webgl'))
+   root.classList.toggle('lolite-refractive',s==='webgl');
+  if(root.classList.contains('webgl-glass')!==(s==='webgl'))
+   root.classList.toggle('webgl-glass',s==='webgl');
   if(canvas)canvas.hidden=s!=='webgl';
   document.querySelectorAll('[data-lg-status]').forEach(el=>el.textContent=status().message);
  }
@@ -111,7 +113,8 @@
    canvas.hidden=true;
    desktop.insertBefore(canvas,desktop.querySelector('#icons')||desktop.firstChild);
    canvas.addEventListener('webglcontextlost',event=>{
-    event.preventDefault();stop();gl=null;program=null;ready=false;
+    event.preventDefault();if(!desired)return;
+    stop();gl=null;program=null;ready=false;
     setState('fallback','Graphics context lost — normal glass active');
    });
    gl=canvas.getContext('webgl',{alpha:true,antialias:false,depth:false,stencil:false,
@@ -216,6 +219,8 @@
   if(!active())return;
   try{
    const desktopRect=resize();
+   // Make the canvas visible before its first GPU paint to avoid an empty compositor frame.
+   canvas.hidden=false;
    gl.disable(gl.SCISSOR_TEST);gl.disable(gl.BLEND);
    gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
    gl.useProgram(program);gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
@@ -266,8 +271,8 @@
  function setEnabled(on){
   desired=!!on;
   try{localStorage.setItem('glass',desired?'true':'false')}catch(_){}
-  root.classList.toggle('glass',desired);
-  root.classList.toggle('liquid-glass',desired);
+  if(root.classList.contains('glass')!==desired)root.classList.toggle('glass',desired);
+  if(root.classList.contains('liquid-glass')!==desired)root.classList.toggle('liquid-glass',desired);
   if(!desired){cleanup();setState('off','Disabled')}else refresh();
   return desired;
  }
@@ -310,7 +315,7 @@
   if(typeof MutationObserver!=='undefined'){
    const mo=new MutationObserver(()=>{
     if(root.classList.contains('glass')!==desired)setEnabled(root.classList.contains('glass'));
-    else refresh();
+    else requestDraw();
    });
    mo.observe(root,{attributes:true,attributeFilter:['class']});watchers.push(mo);
   }
