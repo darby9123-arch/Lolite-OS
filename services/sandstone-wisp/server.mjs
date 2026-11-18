@@ -1,12 +1,14 @@
 import http from 'node:http';
 import { server as wisp } from '@mercuryworkshop/wisp-js/server';
-import { isAllowedUpgrade, limitWispServer, ALLOWED_DESTINATION_HOSTS } from './security.mjs';
+import { isAllowedUpgrade, isAllowedOrigin, limitWispServer, ALLOWED_DESTINATION_HOSTS } from './security.mjs';
+import { verifyLoliteUser, TicketStore } from './tickets.mjs';
 
 limitWispServer(wisp);
 const port = Number(process.env.PORT || 3000);
 const maxActive = 32;
 let active = 0;
 const rates = new Map();
+const tickets = new TicketStore();
 
 function reject(socket, code, reason) {
   if (socket.destroyed) return;
@@ -26,9 +28,34 @@ function rateAllowed(address) {
   return value.count <= 24;
 }
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Content-Type-Options', 'nosniff');
+  const path=String(req.url||'').split('?')[0];
+  // Browser clients receive CORS permission only for a known Lolite frontend.
+  const origin=String(req.headers.origin||'');
+  if(path==='/api/ticket'){
+    if(!isAllowedOrigin(origin)){
+      res.writeHead(403).end();return;
+    }
+    res.setHeader('Access-Control-Allow-Origin',origin);
+    res.setHeader('Vary','Origin');
+    res.setHeader('Access-Control-Allow-Methods','POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers','Authorization');
+    res.setHeader('Access-Control-Max-Age','300');
+    if(req.method==='OPTIONS'){res.writeHead(204).end();return}
+    if(req.method!=='POST'){res.writeHead(405).end();return}
+    if(!rateAllowed(req.socket.remoteAddress||'unknown')){
+      res.writeHead(429).end();return;
+    }
+    const user=await verifyLoliteUser(req.headers.authorization);
+    if(!user){res.writeHead(401,{ 'Content-Type':'application/json' });
+      res.end(JSON.stringify({error:'Valid Lolite account required'}));return}
+    const grant=tickets.issue(user.id,origin);
+    if(!grant){res.writeHead(429).end();return}
+    res.writeHead(200,{ 'Content-Type':'application/json' });
+    res.end(JSON.stringify(grant));return;
+  }
   if (req.method === 'GET' && req.url?.split('?')[0] === '/healthz') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
@@ -47,6 +74,17 @@ server.on('upgrade', (req, socket, head) => {
   if (active >= maxActive || !rateAllowed(req.socket.remoteAddress || 'unknown')) {
     reject(socket, 429, 'Too Many Requests');
     return;
+  }
+  let grant='';
+  try{
+    const address=new URL(req.url,'http://localhost');
+    if(address.searchParams.size!==1)throw new Error('Invalid query');
+    grant=address.searchParams.get('ticket')||'';
+  }catch{reject(socket,401,'Unauthorized');return}
+  // Origin checks alone are NOT account authentication. Each websocket upgrade
+  // needs its own verified, single-use account ticket with a 30-second lifetime.
+  if(!tickets.consume(grant,req.headers.origin)){
+    reject(socket,401,'Unauthorized');return;
   }
   active++;
   let released = false;
