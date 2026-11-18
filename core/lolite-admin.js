@@ -216,6 +216,7 @@
  function panel(){
   if(!state.admin)return '<section class="la-shell"><h1>Admin Center</h1><p>Sign in to the authorized admin account in Lolite Chat to manage the shared library.</p><button type="button" data-la-action="signin">Open Lolite Chat</button></section>';
   return '<section class="la-shell"><div class="la-head"><div><small>LOLITE OS · STAFF</small><h1>Admin Center</h1><p>Your changes are saved to the shared Lolite library. Public chat moderation is available in Lolite Chat.</p></div><button type="button" data-la-action="reload">Refresh library</button></div>'+
+   (window.LoliteAdminAccounts?.markup?.()||'')+
    '<form data-la-form class="la-form"><h2>Publish new content</h2>'+
    '<label>Content type<select name="kind" required data-la-kind><option value="game">HTML game</option><option value="wallpaper">Wallpaper</option><option value="website">Website shortcut</option></select></label>'+
    '<label>Title<input name="title" required maxlength="90" minlength="2" placeholder="Name to display (optional ZIP prefix)"></label>'+
@@ -237,7 +238,7 @@
  }
  function draw(){
   const root=adminRoot();
-  if(root&&!state.zipBusy&&!state.zip&&!root.querySelector('[data-la-form]:focus-within'))root.innerHTML=panel();
+  if(root&&!state.zipBusy&&!state.zip&&!root.querySelector('form:focus-within'))root.innerHTML=panel();
   const web=document.querySelector('.window[data-window-id="websites"] .content');
   if(web)web.innerHTML=websites();
  }
@@ -245,7 +246,7 @@
   if(!state.admin){notify('Admin access requires the authorized Lolite Chat account.');window.LoliteChat?.open?.();return false}
   window.openApp?.('admin','Admin Center',960,720);
   window.LoliteDeviceMode?.activateWindow?.('admin');
-  draw();return true;
+  draw();void window.LoliteAdminAccounts?.refresh?.();return true;
  }
  function openWebsites(){
   window.openApp?.('websites','Website Library',920,670);
