@@ -26,9 +26,7 @@ html.glass.lolite-refractive #desktop .window>.titlebar{
  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
  border-bottom-color:rgba(208,236,255,.28)!important;
 }
-html.glass.lolite-refractive #desktop .window>.content{
- background:rgba(12,21,33,.82)!important;
-}
+/* Keep each app's own .content background and internal UI unchanged. */
 html.glass.lolite-refractive #desktop #taskbar{
  background:rgba(15,28,49,.42)!important;
  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
