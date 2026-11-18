@@ -29,6 +29,7 @@ on:
       - 'core/scramjet-browser.js'
       - 'html games/Grand Theft Auto Vice City.html'
       - 'index.html'
+      - 'app.js'
       - 'ui-preview/**'
       - 'server.mjs'
       - 'tests/*.test.cjs'
@@ -40,6 +41,7 @@ on:
       - 'core/**'
       - 'html games/Grand Theft Auto Vice City.html'
       - 'index.html'
+      - 'app.js'
       - 'ui-preview/**'
       - 'server.mjs'
       - 'tests/*.test.cjs'
@@ -56,6 +58,7 @@ jobs:
           node-version: '24'
       - name: Validate Lolite 4.0 JavaScript
         run: |
+          node --check app.js
           node --check core/accounts.js
           node --check core/ultraviolet.js
           node --check core/scramjet-browser.js
