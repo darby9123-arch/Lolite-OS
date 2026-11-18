@@ -154,15 +154,14 @@ test('UI preview exposes visible quality and strength controls plus a draggable 
  assert.match(css,/\.liquid-lens/);
 });
 
-test('Main Lolite OS legacy glass renderer is bounded and gives Lite Mode a CSS fallback',()=>{
- const original=fs.readFileSync(path.join(__dirname,'..','core/liquid-glass.js'),'utf8');
- assert.match(original,/const MAX_CONTEXTS=2,MAX_SURFACE_PIXELS=280000,FRAME_DELAY=65/);
- assert.match(original,/function wantWebgl\(\)\{return enabled\(\)&&!reduce\(\)&&!lite\(\)\}/);
- assert.match(original,/\.window\.is-active:not\(\.hidden\)/);
- assert.match(original,/\.panel:not\(\.hidden\):not\(\[hidden\]\)/);
- assert.match(original,/document\.hidden/);
- assert.match(original,/attributeFilter:\['class'\]/);
- assert.doesNotMatch(original,/subtree:true|active\.size>=12|lastDraw<32/);
- assert.match(original,/function schedule\(\)/);
- assert.match(original,/addEventListener\('lolite:performancechange'/);
+test('Production Lolite OS renderer replaces multi-context decorative glass with one GPU canvas',()=>{
+ const source=fs.readFileSync(path.join(__dirname,'..','core/liquid-glass.js'),'utf8');
+ assert.match(source,/Lolite OS 6\.0 — shared WebGL liquid glass/);
+ assert.match(source,/texImage2D/);
+ assert.match(source,/texture2D\(u_image,clamp\(uv/);
+ assert.match(source,/document\.hidden/);
+ assert.match(source,/attributeFilter:\['class'\]/);
+ assert.match(source,/budget=prefs\.quality==='high'\?1100000:600000/);
+ assert.match(source,/getContext\('webgl'/);
+ assert.doesNotMatch(source,/active\.size>=12|lastDraw<32|setInterval\(|subtree:true/);
 });
