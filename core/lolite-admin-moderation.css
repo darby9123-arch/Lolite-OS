@@ -105,3 +105,16 @@
 @keyframes lsuTurn{0%,100%{transform:rotate(-7deg) scale(.95)}50%{transform:rotate(12deg) scale(1.10)}}
 @media(prefers-reduced-motion:reduce){.lsu-symbol{animation:none}}
 @media(max-width:480px){.lam-surprise{flex-direction:column;align-items:stretch}.lam-surprise button{align-self:start}}
+
+/* Ban-screen picture controls and a direct unban action. */
+.lam-ban-art{display:grid;gap:10px;background:#172639;border:1px solid #4c6882;border-radius:11px;padding:14px;margin:14px 0;color:#edf5ff}
+.lam-ban-art h4{font-size:13px;margin:0}
+.lam-ban-art p{font-size:11px;line-height:1.5;margin:0;color:#b3cfe2}
+.lam-ban-art label{display:grid;gap:7px;font-size:11px;color:#d5e5f3;font-weight:600}
+.lam-ban-art input[type="file"]{display:block;width:100%;font:inherit;font-weight:400;border:1px dashed #6987a2;border-radius:8px;padding:9px;background:#101c2c}
+.lam-ban-art-preview{display:block;max-width:min(100%,250px);max-height:230px;object-fit:contain;border-radius:10px;border:1px solid #6c8197}
+.lam-ban-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lam-ban-actions button{padding:10px 14px}
+.lam-ban-art small{font-size:10px;color:#adc7e0;line-height:1.4}
+.la-moderation-lock .la-ban-art{display:block;max-width:min(85%,320px);max-height:33vh;object-fit:contain;margin:10px auto 18px;border-radius:12px;border:1px solid #849ebc68;box-shadow:0 12px 30px #0003}
+@media(max-width:540px){.lam-ban-art{padding:10px}.la-moderation-lock .la-ban-art{max-width:90%;max-height:24vh}}
