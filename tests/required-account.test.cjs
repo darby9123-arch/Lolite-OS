@@ -77,7 +77,9 @@ test('Window manager blocks opening apps before account is ready',()=>{
  const script=read('core/window-manager.js');
  assert.match(script,/classList\?\.contains\?\.\('lolite-account-locked'\)/);
  assert.match(script,/window\.LoliteAccounts&&!window\.LoliteAccounts\.isReady\(\)/);
- assert.match(script,/window\.LoliteAccounts\?\.showLogin\?\.\(\);return null/);
+ assert.match(script,/window\.LoliteAccounts\?\.showLogin\?\.\(\)/);
+ assert.match(script,/return null/);
+ assert.match(script,/document\.querySelector\?\.\('#loliteLogin'\)\?\.open!==true/);
 });
 test('Public splash starts locked; old guest storage is preserved, not silently deleted',()=>{
  const html=read('index.html'),scoped=read('core/account-storage.js');
