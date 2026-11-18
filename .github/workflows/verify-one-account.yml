@@ -1,0 +1,37 @@
+name: Verify one-account registration limit
+on:
+  push:
+    paths:
+      - 'core/account-storage.js'
+      - 'core/accounts.js'
+      - 'core/chat-v2.js'
+      - 'supabase/functions/lolite-account/**'
+      - 'supabase/migrations/*one_account_per_browser.sql'
+      - 'tests/one-account-limit.test.cjs'
+      - '.github/workflows/verify-one-account.yml'
+  pull_request:
+    paths:
+      - 'core/account-storage.js'
+      - 'core/accounts.js'
+      - 'core/chat-v2.js'
+      - 'supabase/functions/lolite-account/**'
+      - 'supabase/migrations/*one_account_per_browser.sql'
+      - 'tests/one-account-limit.test.cjs'
+      - '.github/workflows/verify-one-account.yml'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Check account JavaScript syntax
+        run: |
+          node --check core/account-storage.js
+          node --check core/accounts.js
+          node --check core/chat-v2.js
+      - name: Test one-account registration protections
+        run: node --test tests/one-account-limit.test.cjs
