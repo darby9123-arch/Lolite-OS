@@ -54,7 +54,7 @@
  }
  async function readModeration(id){
   const r=await client.from('lolite_account_moderation')
-   .select('action,reason,ends_at').eq('user_id',id).maybeSingle();
+   .select('action,reason,ends_at,ban_image_path,ban_image_enabled').eq('user_id',id).maybeSingle();
   // Do not silently bypass an unavailable moderation service at initial sign-in.
   if(r.error)throw Error('Could not verify account access. Check your connection and retry.');
   const m=r.data;
@@ -73,12 +73,19 @@
   if(!d){d=document.createElement('dialog');d.id='loliteLogin';document.body.append(d);
    d.addEventListener('cancel',event=>event.preventDefault());}
   const reason=esc(record.reason||'Please contact a Lolite administrator.');
+  const safeArt=banned&&record.ban_image_enabled&&
+   /^ban-images\/[0-9a-f-]{36}\.(png|jpg|jpeg|webp)$/i.test(String(record.ban_image_path||''))
+   ?record.ban_image_path:null;
+  const artUrl=safeArt?client?.storage.from('lolite-admin-media').getPublicUrl(safeArt)?.data?.publicUrl:'';
+  const banImage=artUrl&&artUrl.startsWith('https://rztxhwfdbrzuhdqpegar.supabase.co/storage/v1/object/public/lolite-admin-media/')
+   ?'<img class="la-ban-art" src="'+esc(artUrl)+'" alt="Ban screen picture" loading="eager">':'';
+
   const until=record.ends_at?new Date(record.ends_at):null;
   const time=until&&Number.isFinite(until.getTime())?
    durationText(until.getTime()-Date.now()):'';
   d.innerHTML='<div class="la-lock la-moderation-lock">'+
    '<div class="la-avatar">!</div><h1>'+(banned?'Account banned':'You are timed out for '+esc(time))+'</h1>'+
-   '<p>Your access to Lolite OS has been restricted.</p>'+
+   '<p>Your access to Lolite OS has been restricted.</p>'+banImage+
    '<p class="la-moderation-reason"><strong>Reason:</strong> '+reason+'</p>'+
    (until?'<p>Timeout ends: '+esc(until.toLocaleString([],{dateStyle:'medium',timeStyle:'short'}))+'</p>':
     '<p>This ban stays in place until an administrator removes it.</p>')+
@@ -97,7 +104,9 @@
    const restriction=await readModeration(user.id);
    if(restriction){
     if(!blocked||blocked.action!==restriction.action||blocked.reason!==restriction.reason||
-       blocked.ends_at!==restriction.ends_at)lockForModeration(restriction);
+       blocked.ends_at!==restriction.ends_at||
+       blocked.ban_image_path!==restriction.ban_image_path||
+       blocked.ban_image_enabled!==restriction.ban_image_enabled)lockForModeration(restriction);
    }else if(blocked){
     blocked=null;location.reload(); // Rebuild a clean, newly authorised desktop.
    }
