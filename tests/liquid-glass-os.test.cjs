@@ -202,7 +202,7 @@ test('Quality and refraction controls save their settings; bad values are bounde
 test('Appearance settings expose Liquid Glass and source URLs are cache-busted',()=>{
  assert.match(settings,/LoliteLiquidGlass\?\.markup/);
  assert.match(page,/core\/liquid-glass-6\.css\?v=/);
- assert.match(page,/core\/liquid-glass\.js\?v=6-0-real-refraction/);
+ assert.match(page,/core\/liquid-glass\.js\?v=6-0-/);
  assert.match(css,/\.lolite-liquid-refraction-canvas/);
  assert.match(css,/\.lolite-liquid-settings/);
  assert.match(css,/html\.glass\.lolite-refractive/);
@@ -212,4 +212,11 @@ test('No continuous per-frame animation or broad DOM subtree observer',()=>{
  assert.match(code,/if\(!active\(\)\|\|raf\|\|timer\)return/);
  assert.match(code,/budget=prefs\.quality==='high'\?1100000:600000/);
  assert.doesNotMatch(code,/subtree:true|setInterval\(|active\.size>=12/);
+});
+
+test('The retired decorative glass loop cannot continuously consume animation frames',()=>{
+ const app=fs.readFileSync(path.join(__dirname,'..','app.js'),'utf8');
+ assert.doesNotMatch(app,/let last=0;const frame=t=>\{if\(t-last<33\)/);
+ assert.match(app,/Liquid Glass 6\.0 uses event-driven GPU rendering/);
+ assert.match(css,/#desktop > #wallpaper\{z-index:0!important;isolation:isolate/);
 });
