@@ -4,6 +4,7 @@
  const storage=window.LoliteAccountStorage,device=storage.device;
  const client=window.supabase?.createClient('https://rztxhwfdbrzuhdqpegar.supabase.co','sb_publishable_I3eswNK0zu8qQvDp1Kcfbw_zZzzi18u',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
  let user=null,profile=null,ready=false,leaving=false,syncTimer,hydrated=false,saveBusy=false;
+ let blocked=null,moderationChecking=false;
  let syncState='idle',lastSync=null;
  function syncText(){
   if(syncState==='syncing')return 'Saving account preferences…';
@@ -51,11 +52,66 @@
    device.set('dirty:'+user.id,'true');setSyncState('offline');return false;
   }finally{saveBusy=false;}
  }
+ async function readModeration(id){
+  const r=await client.from('lolite_account_moderation')
+   .select('action,reason,ends_at').eq('user_id',id).maybeSingle();
+  // Do not silently bypass an unavailable moderation service at initial sign-in.
+  if(r.error)throw Error('Could not verify account access. Check your connection and retry.');
+  const m=r.data;
+  return m&&(m.action==='ban'||m.action==='timeout'&&new Date(m.ends_at).getTime()>Date.now())?m:null;
+ }
+ function durationText(ms){
+  const mins=Math.max(1,Math.ceil(ms/60000));
+  if(mins>=1440)return Math.ceil(mins/1440)+' day'+(Math.ceil(mins/1440)===1?'':'s');
+  if(mins>=60)return Math.ceil(mins/60)+' hour'+(Math.ceil(mins/60)===1?'':'s');
+  return mins+' minute'+(mins===1?'':'s');
+ }
+ function lockForModeration(record){
+  blocked=record;ready=false;
+  const banned=record.action==='ban';
+  let d=document.querySelector('#loliteLogin');
+  if(!d){d=document.createElement('dialog');d.id='loliteLogin';document.body.append(d);
+   d.addEventListener('cancel',event=>event.preventDefault());}
+  const reason=esc(record.reason||'Please contact a Lolite administrator.');
+  const until=record.ends_at?new Date(record.ends_at):null;
+  const time=until&&Number.isFinite(until.getTime())?
+   durationText(until.getTime()-Date.now()):'';
+  d.innerHTML='<div class="la-lock la-moderation-lock">'+
+   '<div class="la-avatar">!</div><h1>'+(banned?'Account banned':'You are timed out for '+esc(time))+'</h1>'+
+   '<p>Your access to Lolite OS has been restricted.</p>'+
+   '<p class="la-moderation-reason"><strong>Reason:</strong> '+reason+'</p>'+
+   (until?'<p>Timeout ends: '+esc(until.toLocaleString([],{dateStyle:'medium',timeStyle:'short'}))+'</p>':
+    '<p>This ban stays in place until an administrator removes it.</p>')+
+   '<p class="la-muted">You can switch accounts or contact a Lolite administrator if you believe this is a mistake.</p>'+
+   '<button type="button" class="la-primary" data-account-signout>Sign out / switch account</button>'+
+   '</div>';
+  if(!d.open)d.showModal();
+  document.documentElement.classList.add('lolite-account-locked');
+  document.querySelector('#desktop')?.setAttribute('inert','');
+  window.dispatchEvent(new CustomEvent('lolite:account-restricted',{detail:{action:record.action}}));
+ }
+ async function refreshModeration(){
+  if(!client||!user||moderationChecking||leaving)return;
+  moderationChecking=true;
+  try{
+   const restriction=await readModeration(user.id);
+   if(restriction){
+    if(!blocked||blocked.action!==restriction.action||blocked.reason!==restriction.reason||
+       blocked.ends_at!==restriction.ends_at)lockForModeration(restriction);
+   }else if(blocked){
+    blocked=null;location.reload(); // Rebuild a clean, newly authorised desktop.
+   }
+  }catch(error){console.warn('Lolite account moderation check:',error?.message||error)}
+  finally{moderationChecking=false}
+ }
  async function enter(session){
   if(!session?.user)throw Error('Sign in to continue.');
   const id=session.user.id;
   if(storage.id!==id){device.set('account',id);sessionStorage.setItem('lolite-login-handoff',id);location.reload();return;}
+  const restriction=await readModeration(id);
   user=session.user;
+  if(restriction){lockForModeration(restriction);return}
+  blocked=null;
   const result=await client.from('profiles').select('*').eq('id',id).single();if(result.error)throw result.error;profile=result.data;
   if(sessionStorage.getItem('lolite-data-hydrated')!==id){
    const r=await client.from('lolite_account_data').select('data').eq('user_id',id).maybeSingle();
@@ -112,7 +168,17 @@
  });
  window.addEventListener('lolite:account-data',e=>{if(user&&syncKeys.has(e.detail.key)){device.set('dirty:'+user.id,'true');clearTimeout(syncTimer);syncTimer=setTimeout(save,2000);}});
  window.addEventListener('storage',e=>{if(e.key==='lolite-device:account'&&e.newValue!==storage.id){document.documentElement.classList.add('lolite-account-locked');location.reload();}});
- window.addEventListener('online',()=>{if(user&&hydrated&&device.get('dirty:'+user.id)==='true')void save()});
+ window.addEventListener('online',()=>{
+  if(user&&hydrated&&device.get('dirty:'+user.id)==='true')void save();
+  if(user)void refreshModeration();
+ });
+ // Active bans/timeouts are checked while users are online, not just at login.
+ // Avoid a permanent polling loop while the tab is hidden or signed out.
+ setInterval(()=>{if(user&&!document.hidden)void refreshModeration()},30000);
+ document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&user)void refreshModeration();
+ });
+ window.addEventListener('focus',()=>{if(user)void refreshModeration()});
  window.LoliteAccounts=Object.freeze({getClient:()=>client,getUser:()=>user,getProfile:()=>profile,isReady:()=>ready,signIn:login,signOut,showLogin:gate,settingsMarkup:settings,save,syncStatus:()=>({state:syncState,lastSync}),refreshProfile:value=>{if(value?.id===user?.id)profile={...profile,...value};}});
  client?.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'&&ready&&user&&!leaving){leaving=true;device.set('account','guest');location.reload();}if(event==='SIGNED_IN'&&ready&&session?.user.id!==user?.id)setTimeout(()=>enter(session).catch(()=>gate()),0);});
  async function boot(){
