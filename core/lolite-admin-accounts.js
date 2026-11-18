@@ -9,7 +9,10 @@
  const isAdmin=()=>window.LoliteAdmin?.isAdmin?.()===true;
  const S={rows:[],moderation:new Map(),admins:new Set(),audit:[],search:'',filter:'all',selected:'',
   limit:100,total:0,loading:false,busy:false,loaded:false,error:'',note:''};
- const root=()=>document.querySelector('.window[data-window-id="admin"] [data-lam-root]');
+ const root=()=>document.querySelector('.window[data-window-id="admin"] [data-lam-root]')||
+  document.querySelector('[data-lam-root]');
+ const validArtPath=p=>/^ban-images\/[0-9a-f-]{36}\.(png|jpg|jpeg|webp)$/i.test(String(p||''))?p:'';
+ const artUrl=p=>validArtPath(p)?sb()?.storage?.from?.('lolite-admin-media')?.getPublicUrl?.(p)?.data?.publicUrl||'':'';
  const fmtDate=value=>{const d=new Date(value);return Number.isFinite(d.getTime())?
   d.toLocaleString([],{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'Unknown'};
  const isRestricted=row=>row&&(row.action==='ban'||(row.action==='timeout'&&new Date(row.ends_at).getTime()>Date.now()));
@@ -45,6 +48,20 @@
   const p=selectedUser();
   if(!p)return '<p class="lam-empty">Choose an account to view details and moderation options.</p>';
   const admin=S.admins.has(p.id),mod=S.moderation.get(p.id),active=isRestricted(mod);
+  const image=mod?.action==='ban'&&validArtPath(mod.ban_image_path)?artUrl(mod.ban_image_path):'';
+  const banImagePanel=!admin&&mod?.action==='ban'?
+   '<div class="lam-ban-art"><h4>Ban screen picture</h4>'+
+    '<p>Optional picture displayed beside the ban reason. You can hide or change it without unbanning.</p>'+
+    (image?'<img src="'+esc(image)+'" alt="Selected ban-screen picture" class="lam-ban-art-preview">':'')+
+    '<label>Choose image from your files (PNG, JPG, WebP · up to 2 MB)'+
+    '<input type="file" data-lam-ban-file accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"></label>'+
+    '<div class="lam-ban-actions">'+
+    (image?'<button type="button" data-lam-ban-image-toggle data-enable="'+(mod.ban_image_enabled?'false':'true')+'">'+
+      (mod.ban_image_enabled?'Hide ban picture':'Show ban picture')+'</button>':'<small>Choose an image to enable the picture.</small>')+
+    '<button type="button" class="lam-danger" data-lam-unban>Unban account</button></div>'+
+    '<small>Picture: '+(mod.ban_image_enabled?'On':'Off')+'. The account can always sign out or close Lolite.</small>'+
+   '</div>':'';
+
   return '<div class="lam-detail-head"><div><span class="lam-eyebrow">SELECTED ACCOUNT</span>'+
    '<h3>'+userText(p)+'</h3><p>@'+esc(p.username)+' · Joined '+esc(fmtDate(p.created_at))+'</p></div>'+
    (admin?'<span class="lam-status lam-admin">Admin account</span>':statusHtml(p.id))+'</div>'+
@@ -65,10 +82,7 @@
     '<label>Reason<textarea name="reason" rows="2" maxlength="240" placeholder="Explain why this account is being moderated" required></textarea></label>'+
     '<button type="submit" class="lam-danger"'+(S.busy?' disabled':'')+'>Apply moderation</button>'+
     '<small>Moderation is logged, reversible, and cannot target administrators. The user sees the reason.</small></form>')+
-   (admin?'':'<div class="lam-surprise"><div><strong>One-time Lolite surprise</strong>'+
-    '<p>A harmless fullscreen animation. It plays once, automatically ends after 8 seconds and the recipient can skip it. No sound or browser pop-ups.</p></div>'+
-    '<div class="lam-surprise-actions"><button type="button" data-lam-preview-surprise>Preview</button>'+ 
-    '<button type="button" data-lam-surprise'+(S.busy?' disabled':'')+'>Send surprise</button></div></div>')+
+   banImagePanel+
    '<form data-lam-notice class="lam-form">'+
     '<h4>Send a one-time Lolite notice</h4>'+
     '<label>Message<textarea name="message" rows="2" maxlength="240" minlength="3" placeholder="Write a short announcement…" required></textarea></label>'+
@@ -108,10 +122,10 @@
   const el=root()?.querySelector('[data-lam-message]');
   if(el)el.textContent=S.error||S.note;
  }
- function render(){
+ function render({force=false}={}){
   const el=root();if(!el)return;
-  // Avoid resetting a typed reason or announcement when the shared library refreshes.
-  if(el.querySelector('form:focus-within'))return;
+  // Keep an actively edited form, but refresh fully when moderation succeeds.
+  if(!force&&el.querySelector('form:focus-within'))return;
   const wrapper=document.createElement('div');wrapper.innerHTML=markup();
   const fresh=wrapper.firstElementChild;
   if(fresh)el.replaceWith(fresh);
@@ -134,7 +148,7 @@
    const results=await Promise.all([
     client.from('profiles').select('id,username,display_name,created_at',{count:'exact'})
      .order('created_at',{ascending:false}).range(0,S.limit-1),
-    client.from('lolite_account_moderation').select('user_id,action,reason,ends_at,updated_at').limit(2000),
+    client.from('lolite_account_moderation').select('user_id,action,reason,ends_at,updated_at,ban_image_path,ban_image_enabled').limit(2000),
     client.from('lolite_admins').select('user_id').limit(100),
     client.from('lolite_moderation_audit').select('id,actor_id,target_id,action,reason,ends_at,created_at')
      .order('created_at',{ascending:false}).limit(30)
@@ -147,10 +161,10 @@
    S.loaded=true;
    if(S.selected&&!S.rows.some(r=>r.id===S.selected))S.selected='';
    setNote(S.rows.length+' account'+(S.rows.length===1?'':'s')+' loaded.');
-   render();return true;
+   render({force:S.busy});return true;
   }catch(error){
    setNote(error?.message||'Account directory unavailable',true);
-   render();return false;
+   render({force:S.busy});return false;
   }finally{S.loading=false}
  }
  async function moderate(form){
@@ -188,16 +202,64 @@
    await load();
   }finally{S.busy=false}
  }
- async function sendSurprise(){
+ async function unban(){
   const p=selectedUser(),client=sb();
   if(!p||!validId(p.id)||!client||!isAdmin()||S.busy||S.admins.has(p.id))
-   throw Error('Select a non-admin account first.');
-  if(!window.confirm('Send one skippable Lolite surprise to @'+p.username+'? Only one per account every 24 hours.'))return;
+   throw Error('Select a banned non-admin account.');
+  if(S.moderation.get(p.id)?.action!=='ban')throw Error('This account is not banned.');
+  if(!window.confirm('Unban @'+p.username+' and restore Lolite access?'))return;
   S.busy=true;
   try{
-   const response=await client.rpc('lolite_admin_send_surprise',{p_target:p.id});
+   const result=await client.rpc('lolite_admin_moderate_account',{
+    p_target:p.id,p_action:'clear',p_reason:'Unbanned by an administrator',p_minutes:null
+   });
+   if(result.error)throw result.error;
+   setNote('@'+p.username+' has been unbanned.');
+   await load();
+  }finally{S.busy=false}
+ }
+ async function setBanArt(path,enabled){
+  const p=selectedUser(),client=sb();
+  if(!p||!validId(p.id)||!client||!isAdmin()||S.busy||S.admins.has(p.id))
+   throw Error('Select a banned non-admin account.');
+  S.busy=true;
+  try{
+   const response=await client.rpc('lolite_admin_set_ban_image',{
+    p_target:p.id,p_image_path:path||null,p_enabled:!!enabled
+   });
    if(response.error)throw response.error;
-   setNote('Skippable Lolite surprise sent to @'+p.username+'.');
+   setNote(enabled?'Ban-screen picture enabled.':'Ban-screen picture hidden.');
+   await load();
+  }finally{S.busy=false}
+ }
+ async function uploadBanArt(input){
+  const file=input?.files?.[0],p=selectedUser(),client=sb();
+  if(!file)return;
+  if(!p||!client||!isAdmin()||S.busy||S.admins.has(p.id)||S.moderation.get(p.id)?.action!=='ban')
+   throw Error('Select a banned non-admin account first.');
+  const ext=(file.name.split('.').pop()||'').toLowerCase();
+  const mime={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp'}[ext];
+  if(!mime||!file.size||file.size>2*1024*1024)
+   throw Error('Choose a PNG, JPG or WebP picture smaller than 2 MB.');
+  if(file.type&&file.type!==mime)throw Error('Picture file extension and type do not match.');
+  // Reject non-images before storage upload.
+  const bytes=new Uint8Array(await file.slice(0,12).arrayBuffer());
+  const ascii=(start,len)=>String.fromCharCode(...bytes.slice(start,start+len));
+  const correct=mime==='image/png'?bytes[0]===137&&ascii(1,3)==='PNG':
+   mime==='image/jpeg'?bytes[0]===255&&bytes[1]===216&&bytes[2]===255:
+   ascii(0,4)==='RIFF'&&ascii(8,4)==='WEBP';
+  if(!correct)throw Error('This file does not contain a supported image.');
+  S.busy=true;
+  const path='ban-images/'+crypto.randomUUID()+'.'+(ext==='jpeg'?'jpg':ext);
+  try{
+   const upload=await client.storage.from('lolite-admin-media')
+    .upload(path,file,{contentType:mime,upsert:false});
+   if(upload.error)throw upload.error;
+   const response=await client.rpc('lolite_admin_set_ban_image',{
+    p_target:p.id,p_image_path:path,p_enabled:true
+   });
+   if(response.error)throw response.error;
+   setNote('Ban picture saved and enabled for @'+p.username+'.');
    await load();
   }finally{S.busy=false}
  }
@@ -215,7 +277,7 @@
   }finally{S.busy=false}
  }
  document.addEventListener('click',event=>{
-  const el=event.target.closest?.('[data-lam-user],[data-lam-refresh],[data-lam-more],[data-lam-classroom-pause],[data-lam-surprise],[data-lam-preview-surprise]');
+  const el=event.target.closest?.('[data-lam-user],[data-lam-refresh],[data-lam-more],[data-lam-classroom-pause],[data-lam-unban],[data-lam-ban-image-toggle]');
   if(!el||!el.closest('[data-lam-root]')||!isAdmin())return;
   if(el.matches('[data-lam-user]')){
    S.selected=validId(el.dataset.lamUser);
@@ -224,11 +286,14 @@
    el.disabled=true;
    void classroomPause().catch(error=>setNote(error?.message||'Classroom Pause failed',true))
     .finally(()=>{if(el.isConnected)el.disabled=false});
-  }else if(el.matches('[data-lam-preview-surprise]')){
-   window.LoliteAccountNotices?.preview?.();
-  }else if(el.matches('[data-lam-surprise]')){
+  }else if(el.matches('[data-lam-unban]')){
    el.disabled=true;
-   void sendSurprise().catch(error=>setNote(error?.message||'Could not send surprise',true))
+   void unban().catch(error=>setNote(error?.message||'Unban failed',true))
+    .finally(()=>{if(el.isConnected)el.disabled=false});
+  }else if(el.matches('[data-lam-ban-image-toggle]')){
+   el.disabled=true;
+   void setBanArt(null,el.dataset.enable==='true')
+    .catch(error=>setNote(error?.message||'Could not update ban picture',true))
     .finally(()=>{if(el.isConnected)el.disabled=false});
   }else if(el.matches('[data-lam-refresh]'))void load();
   else if(el.matches('[data-lam-more]'))void load({more:true});
@@ -238,8 +303,12 @@
   if(el&&el.closest('[data-lam-root]')){S.search=el.value.slice(0,80);updateList()}
  });
  document.addEventListener('change',event=>{
-  const el=event.target.closest?.('[data-lam-filter],[data-lam-action-select]');
+  const el=event.target.closest?.('[data-lam-filter],[data-lam-action-select],[data-lam-ban-file]');
   if(!el||!el.closest('[data-lam-root]'))return;
+  if(el.matches('[data-lam-ban-file]')){
+   void uploadBanArt(el).catch(error=>setNote(error?.message||'Could not upload picture',true));
+   return;
+  }
   if(el.matches('[data-lam-filter]')){S.filter=el.value;updateList()}
   if(el.matches('[data-lam-action-select]')){
    const label=el.closest('form')?.querySelector('[data-lam-duration]');
