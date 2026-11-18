@@ -1,39 +1,49 @@
-# Lolite Admin Center — Accounts, Moderation and Surprises
+# Lolite OS — Account moderation and ban-screen pictures
 
 Updated 18 November 2026.
 
 ## Admin Center → Accounts & moderation
 
-The Admin Center includes a searchable account directory. Account names and creation dates are read from the existing Supabase `profiles` table; **passwords, emails, private data and game records are not displayed**.
+The account directory lists signed-in user profiles and account creation dates. It does not reveal passwords, email addresses, or personal game files. Server-authorised administrators can manage accounts, and each moderation action is recorded in Supabase.
 
-Only accounts listed in the trusted `public.lolite_admins` table are authorised to take moderation actions. The browser cannot grant itself permissions by editing interface code: the Supabase RPC functions verify the caller's `auth.uid()` against that server-side list. Admins cannot ban, time out or send surprises to other admins (or themselves).
+### Ban and unban
 
-Available actions:
+1. Open **Admin Center → Accounts & moderation** and select a non-admin account.
+2. To ban, choose **Ban**, enter a clear reason, and select **Apply moderation**.
+3. While the account is banned, a dedicated **Unban account** button appears.
+4. Click **Unban account** and confirm. The restriction is removed from Supabase, and the account will regain access at its next moderation check or sign-in.
 
-- **Classroom Pause:** apply a 45-minute timeout with the reason “Using Lolite during class.” The target's Lolite account displays the expiry and reason and cannot dismiss the in-app timeout. The person can still close the browser or sign out; the control never locks their computer, browser or other tabs.
-- **Timeout / ban / remove:** admins can set a reason and a timeout from 10 minutes to 30 days, issue a ban, or remove a restriction. Every action is recorded to an admin-readable audit trail.
-- **One-time notice:** a normal dismissible message with an optional, recipient-clicked link to open Lolite in a new tab. Notices have an anti-spam cooldown.
-- **One-time surprise:** a harmless, original full-screen **Lolite animation**, separate from the user's uploaded MP4. It stays on screen for a maximum of eight seconds, has a clearly labelled **Skip surprise** button and can be dismissed with Escape. It never autoplays sound, opens extra browser tabs or repeats automatically. Supabase limits surprises to one per recipient per 24 hours, across all admin senders.
-- **Preview:** lets an admin play the same surprise locally, without creating a database record or targeting another account.
+**Classroom Pause** is separate. It applies a 45-minute timeout with the reason “Using Lolite during class”. The moderation form also supports general timeouts and removal of those restrictions.
 
-Notifications wait until the recipient is logged into Lolite and not already capturing clips or running a fullscreen game. If their browser is closed, the unread notice remains queued for the next time they visit.
+### Ban-screen picture
 
-### Limitations
+When an account is actively banned, the selected account panel also displays **Ban screen picture**.
 
-The timeout is an **in-app Lolite account lock** checked at sign-in and while the account is open (about every 30 seconds). It does not revoke all existing Supabase tokens or control websites outside Lolite. Moderation should be used for legitimate platform administration, not to repeatedly target or embarrass other users.
+- Choose a PNG, JPG, or WebP image from your computer, maximum 2 MB. The file is uploaded to the existing admin media bucket in a protected `ban-images/` path. Admin role is verified before upload.
+- The selected image is attached to that ban and **enabled** automatically.
+- Click **Hide ban picture** to turn it off without unbanning. Click **Show ban picture** to turn it back on; you can also choose another file.
+- The banned user sees the chosen image beside the ban message, together with the reason and sign-out/switch-account option.
+- A timeout does **not** show a ban picture. The ban picture is removed with the ban record on unban.
 
-The uploaded `moderation.mp4` contained a personal insult; it was deliberately **not deployed or distributed** to classmates. The surprise is instead a neutral visual.
+Images sent in a ChatGPT conversation are **not automatically transferred** into the Lolite storage bucket; use the chooser in Admin Center to select the desired saved image file. Do not upload personal or humiliating photos of other people.
 
-## Main files
+### Announcements
 
-- `core/lolite-admin-accounts.js` — account directory, admin actions and local preview.
-- `core/lolite-account-notices.js` — recipient notices, skippable surprise and auto-dismiss.
-- `core/accounts.js` — signed-in moderation checks and reason/expiry lock.
-- `core/lolite-admin-moderation.css` — separate moderation and surprise interfaces.
-- `supabase/migrations/20261118090000_lolite_account_moderation_and_notices.sql` — moderation tables, RLS, audit log and RPCs.
-- `supabase/migrations/20261118120900_lolite_safe_one_time_surprises.sql` — rate-limited surprise kind and server-authorised sender RPC.
-- `tests/admin-surprise-classroom.test.cjs` — interaction, permission and fallback regression checks.
+One-time staff notices are separate from bans. Notices can be dismissed. The “surprise” action is not part of the Admin Center interface.
 
-## Verification
+### Safety and limitations
 
-Focused mocked integration checks cover staff permissions, recipient dismissal, timeout, automatic ending, rate limits, original notices, and live page wiring. This is not proof of real user-browser rendering or completed hosting deployment. Supabase schema and RPC permissions were also checked using the connected project.
+Account bans and timeouts are **Lolite account restrictions**, not computer or browser locks. The restricted account can still sign out or close Lolite. The active tab checks Supabase roughly every 30 seconds and when the tab becomes active. Removing a ban is server-logged and requires an authorised admin account; it does not forcibly close other websites or revoke every existing Supabase access token.
+
+The Admin Center file-upload and role checks run against Supabase. A web client alone is not a complete enforcement boundary for every possible API endpoint. Keep appropriate server-side checks on sensitive actions.
+
+### Implementation
+
+- `core/lolite-admin-accounts.js` — account list, direct Unban button, ban image upload and toggle, moderation and notices
+- `core/accounts.js` — account restriction modal, ban image display and refresh checks
+- `core/lolite-admin-moderation.css` — Admin Center and ban image styles
+- `supabase/migrations/20261118090000_lolite_account_moderation_and_notices.sql` — moderated account status and audit
+- `supabase/migrations/20261118143000_lolite_ban_screen_art_controls.sql` — selected picture storage rules and admin RPC
+- `tests/admin-surprise-classroom.test.cjs` — permission, button actions, artwork rendering and asset checks (legacy test filename)
+
+Seven focused mocked integration tests passed. Supabase schema grants and upload policy were independently verified; actual deployment/browser rendering was not verified in this change.
