@@ -86,5 +86,12 @@
  window.addEventListener('focus',()=>void check());
  // Infrequent, nonblocking check. Never open a tab or interrupt fullscreen games.
  setInterval(()=>{if(enabled())void check()},60000);
- window.LoliteAccountNotices=Object.freeze({check});
+ window.LoliteAccountNotices=Object.freeze({
+  check,
+  preview:()=>{
+   if(!enabled()||notice)return false;
+   renderSurprise({id:null,kind:'surprise',message:'A little surprise from Lolite'});
+   return !!notice;
+  }
+ });
 })();
