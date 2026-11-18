@@ -114,7 +114,11 @@ function harness({initialGlass=true,webgl=true,source='https://example.com/wall.
  vm.runInNewContext(code,ctx,{timeout:2500});
  let api=window.LoliteLiquidGlass;
  function flush(){
-  now+=100;for(let i=0;i<7&&queue.length;i++)queue.shift()(now);
+  // The production renderer intentionally throttles redraws to 34ms; drive
+  // pending test timers as well as requestAnimationFrame callbacks.
+  now+=100;
+  for(let i=0;i<10&&timers.length;i++)timers.shift().fn();
+  for(let i=0;i<10&&queue.length;i++)queue.shift()(now);
  }
  function emit(type,event={}){
   for(const fn of events[type]||[])fn(event);
