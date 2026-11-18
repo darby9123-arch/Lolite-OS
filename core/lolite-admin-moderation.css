@@ -81,6 +81,7 @@
  padding:12px;margin:3px 0 13px;border-radius:10px;border:1px solid #54758f;background:#1c334a}
 .lam-surprise strong{display:block;font-size:13px;margin-bottom:4px}
 .lam-surprise p{margin:0;color:#bbd1e5;font-size:11px;line-height:1.45}
+.lam-surprise-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 .lam-surprise button{flex:none;white-space:nowrap;background:#305979;border:1px solid #79a7c8;color:#fff}
 .lam-surprise button:hover{background:#3a698f}
 .lolite-surprise-overlay{position:fixed;inset:0;z-index:2147483601;display:grid;place-items:center;
