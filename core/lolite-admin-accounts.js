@@ -52,6 +52,8 @@
     '<p>Reason: '+esc(mod.reason)+'</p>'+
     (mod.ends_at?'<small>Ends '+esc(fmtDate(mod.ends_at))+'</small>':'<small>Permanent until an admin removes it</small>')+'</div>':'')+
    (admin?'<p class="lam-empty">Other administrator accounts are protected from bans and timeouts.</p>':
+    '<div class="lam-classroom"><div><strong>Classroom Pause</strong><p>Temporarily locks this Lolite account for the remainder of a class. The user sees the duration and reason, with no dismiss button to return to Lolite.</p></div>'+ 
+    '<button type="button" data-lam-classroom-pause class="lam-danger"'+(S.busy?' disabled':'')+'>Pause for 45 minutes</button></div>'+
     '<form data-lam-moderate class="lam-form">'+
     '<h4>Moderation action</h4><label>Action<select name="action" data-lam-action-select>'+
      '<option value="timeout">Timeout</option><option value="ban">Ban</option><option value="clear">Remove ban / timeout</option>'+
@@ -165,6 +167,23 @@
    await load();
   }finally{S.busy=false}
  }
+ async function classroomPause(){
+  const p=selectedUser(),client=sb();
+  if(!p||!validId(p.id)||!client||!isAdmin()||S.busy||S.admins.has(p.id))
+   throw Error('Select a non-admin account first.');
+  if(!window.confirm('Pause Lolite for @'+p.username+' for 45 minutes? They will see the reason and cannot dismiss the Lolite timeout.'))return;
+  S.busy=true;
+  try{
+   const result=await client.rpc('lolite_admin_moderate_account',{
+    p_target:p.id,p_action:'timeout',p_reason:'Using Lolite during class',
+    p_minutes:45
+   });
+   if(result.error)throw result.error;
+   setNote('Classroom Pause applied to @'+p.username+' for 45 minutes.');
+   S.loading=false;
+   await load();
+  }finally{S.busy=false}
+ }
  async function sendNotice(form){
   const p=selectedUser();
   if(!p||!isAdmin()||S.busy)throw Error('Select an account first.');
@@ -179,11 +198,15 @@
   }finally{S.busy=false}
  }
  document.addEventListener('click',event=>{
-  const el=event.target.closest?.('[data-lam-user],[data-lam-refresh],[data-lam-more]');
+  const el=event.target.closest?.('[data-lam-user],[data-lam-refresh],[data-lam-more],[data-lam-classroom-pause]');
   if(!el||!el.closest('[data-lam-root]')||!isAdmin())return;
   if(el.matches('[data-lam-user]')){
    S.selected=validId(el.dataset.lamUser);
    updateList();
+  }else if(el.matches('[data-lam-classroom-pause]')){
+   el.disabled=true;
+   void classroomPause().catch(error=>setNote(error?.message||'Classroom Pause failed',true))
+    .finally(()=>{if(el.isConnected)el.disabled=false});
   }else if(el.matches('[data-lam-refresh]'))void load();
   else if(el.matches('[data-lam-more]'))void load({more:true});
  });
