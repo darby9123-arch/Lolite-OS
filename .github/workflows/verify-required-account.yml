@@ -1,0 +1,32 @@
+name: Verify required Lolite accounts
+on:
+  push:
+    paths:
+      - 'core/accounts.js'
+      - 'core/window-manager.js'
+      - 'core/account-storage.js'
+      - 'tests/required-account.test.cjs'
+      - 'tests/game-account-browser-bugfixes.test.cjs'
+      - '.github/workflows/verify-required-account.yml'
+  pull_request:
+    paths:
+      - 'core/accounts.js'
+      - 'core/window-manager.js'
+      - 'core/account-storage.js'
+      - 'tests/required-account.test.cjs'
+      - 'tests/game-account-browser-bugfixes.test.cjs'
+      - '.github/workflows/verify-required-account.yml'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse account and window modules
+        run: |
+          node --check core/accounts.js
+          node --check core/window-manager.js
+      - name: Required-login and account isolation regression suite
+        run: node --test tests/required-account.test.cjs tests/game-account-browser-bugfixes.test.cjs tests/accounts-activity.test.cjs
