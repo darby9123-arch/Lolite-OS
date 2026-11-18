@@ -65,6 +65,9 @@
     '<label>Reason<textarea name="reason" rows="2" maxlength="240" placeholder="Explain why this account is being moderated" required></textarea></label>'+
     '<button type="submit" class="lam-danger"'+(S.busy?' disabled':'')+'>Apply moderation</button>'+
     '<small>Moderation is logged, reversible, and cannot target administrators. The user sees the reason.</small></form>')+
+   (admin?'':'<div class="lam-surprise"><div><strong>One-time Lolite surprise</strong>'+
+    '<p>A harmless fullscreen animation. It plays once, automatically ends after 8 seconds and the recipient can skip it. No sound or browser pop-ups.</p></div>'+
+    '<button type="button" data-lam-surprise'+(S.busy?' disabled':'')+'>Send surprise</button></div>')+
    '<form data-lam-notice class="lam-form">'+
     '<h4>Send a one-time Lolite notice</h4>'+
     '<label>Message<textarea name="message" rows="2" maxlength="240" minlength="3" placeholder="Write a short announcement…" required></textarea></label>'+
@@ -184,6 +187,19 @@
    await load();
   }finally{S.busy=false}
  }
+ async function sendSurprise(){
+  const p=selectedUser(),client=sb();
+  if(!p||!validId(p.id)||!client||!isAdmin()||S.busy||S.admins.has(p.id))
+   throw Error('Select a non-admin account first.');
+  if(!window.confirm('Send one skippable Lolite surprise to @'+p.username+'? Only one per account every 24 hours.'))return;
+  S.busy=true;
+  try{
+   const response=await client.rpc('lolite_admin_send_surprise',{p_target:p.id});
+   if(response.error)throw response.error;
+   setNote('Skippable Lolite surprise sent to @'+p.username+'.');
+   await load();
+  }finally{S.busy=false}
+ }
  async function sendNotice(form){
   const p=selectedUser();
   if(!p||!isAdmin()||S.busy)throw Error('Select an account first.');
@@ -198,7 +214,7 @@
   }finally{S.busy=false}
  }
  document.addEventListener('click',event=>{
-  const el=event.target.closest?.('[data-lam-user],[data-lam-refresh],[data-lam-more],[data-lam-classroom-pause]');
+  const el=event.target.closest?.('[data-lam-user],[data-lam-refresh],[data-lam-more],[data-lam-classroom-pause],[data-lam-surprise]');
   if(!el||!el.closest('[data-lam-root]')||!isAdmin())return;
   if(el.matches('[data-lam-user]')){
    S.selected=validId(el.dataset.lamUser);
@@ -206,6 +222,10 @@
   }else if(el.matches('[data-lam-classroom-pause]')){
    el.disabled=true;
    void classroomPause().catch(error=>setNote(error?.message||'Classroom Pause failed',true))
+    .finally(()=>{if(el.isConnected)el.disabled=false});
+  }else if(el.matches('[data-lam-surprise]')){
+   el.disabled=true;
+   void sendSurprise().catch(error=>setNote(error?.message||'Could not send surprise',true))
     .finally(()=>{if(el.isConnected)el.disabled=false});
   }else if(el.matches('[data-lam-refresh]'))void load();
   else if(el.matches('[data-lam-more]'))void load({more:true});
