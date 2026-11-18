@@ -136,9 +136,9 @@ test('Supabase function checks admin identity, blocks admin targets and rate-lim
  assert.match(sql,/insert into public\.lolite_moderation_audit/);
 });
 test('Production OS loads the controls, receiver, original account lock and CSS',()=>{
- assert.match(index,/core\/lolite-admin-accounts\.js\?v=one-time-surprise/);
- assert.match(index,/core\/lolite-account-notices\.js\?v=skippable-surprise/);
- assert.match(index,/core\/lolite-admin-moderation\.css\?v=skippable-surprise/);
+ assert.match(index,/core\/lolite-admin-accounts\.js\?v=preview-surprise/);
+ assert.match(index,/core\/lolite-account-notices\.js\?v=preview-surprise/);
+ assert.match(index,/core\/lolite-admin-moderation\.css\?v=preview-surprise/);
  assert.match(accounts,/async function readModeration\(/);
  assert.match(accounts,/function lockForModeration\(/);
  assert.match(accounts,/data-account-signout/);
