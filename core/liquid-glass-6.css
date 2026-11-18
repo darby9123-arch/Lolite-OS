@@ -1,0 +1,84 @@
+/* Lolite OS 6.0 — production refractive wallpaper glass.
+ * Loaded AFTER all existing themes; never changes app content or pointer routing.
+ */
+#loliteLiquidRefractionCanvas.lolite-liquid-refraction-canvas{
+ position:absolute!important;inset:0!important;z-index:1!important;
+ width:100%!important;height:100%!important;pointer-events:none!important;
+ display:block!important;opacity:1!important;
+ border:0!important;border-radius:0!important;
+}
+#loliteLiquidRefractionCanvas[hidden]{display:none!important}
+/* GPU refracted pixels are visible only inside CSS-matched, translucent chrome.
+ * Keep app contents substantially opaque, preserving readability and performance. */
+html.glass.lolite-refractive #desktop :is(#start,#searchPanel,#winQuickSettings,#winCalendar,.win-flyout){
+ background:rgba(12,25,45,.38)!important;
+ border-color:rgba(195,228,255,.36)!important;
+ box-shadow:inset 0 1px rgba(237,250,255,.3),0 18px 43px #0008!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+html.glass.lolite-refractive #desktop .window{
+ background:rgba(14,23,38,.78)!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ border-color:rgba(187,218,246,.30)!important;
+}
+html.glass.lolite-refractive #desktop .window>.titlebar{
+ background:linear-gradient(110deg,rgba(22,43,68,.36),rgba(13,22,41,.35))!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ border-bottom-color:rgba(208,236,255,.28)!important;
+}
+html.glass.lolite-refractive #desktop .window>.content{
+ background:rgba(12,21,33,.82)!important;
+}
+html.glass.lolite-refractive #desktop #taskbar{
+ background:rgba(15,28,49,.42)!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ border-color:rgba(193,228,255,.29)!important;
+}
+html.glass.lolite-refractive #desktop #taskbar .win-taskbar-center,
+html.glass.lolite-refractive #desktop #taskbar .tray{
+ background:rgba(13,26,49,.38)!important;
+ border-color:rgba(182,219,253,.4)!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ box-shadow:inset 0 1px rgba(255,255,255,.27),0 11px 26px #0007!important;
+}
+html.glass.lolite-refractive[data-lolite-design="cosmos"][data-desktop-experience="windows"] #desktop #taskbar{
+ background:transparent!important;border:0!important;box-shadow:none!important;
+ pointer-events:none!important;
+}
+html.glass.lolite-refractive[data-lolite-design="cosmos"][data-desktop-experience="windows"] #taskbar :is(.win-taskbar-center,.tray){
+ pointer-events:auto!important;
+}
+html.glass.lolite-refractive #desktop :is(.window,.panel,#taskbar)::before,
+html.glass.lolite-refractive #desktop :is(.window,.panel,#taskbar)::after{
+ /* Disable old decorative glass layers: the canvas is now the light source. */
+ display:none!important;
+}
+html.glass.lolite-refractive .liquid-glass-webgl{display:none!important}
+/* Settings live inside the existing native Appearance section. */
+.lolite-liquid-settings{
+ margin:20px 0 6px;padding:18px;
+ border:1px solid var(--wall-border,#57718a66);
+ border-radius:14px;background:rgba(17,29,44,.66);
+ color:var(--text,#ebf1fc);display:grid;gap:12px;max-width:760px;
+}
+.lolite-liquid-settings>h3{margin:0;font-size:17px;font-weight:720;letter-spacing:-.025em}
+.lolite-liquid-settings>p{font-size:12px;color:var(--muted,#aabace);line-height:1.55;margin:0}
+.lolite-liquid-settings>label{display:grid;gap:7px;font-size:12px;font-weight:630}
+.lolite-liquid-settings>label>output{justify-self:end;font-size:11px;color:#a7cfff;min-width:34px}
+.lolite-liquid-settings input[type=range]{width:100%;accent-color:#7eb6ed;cursor:pointer}
+.lolite-liquid-settings input[type=checkbox]{width:18px;height:18px;accent-color:#6ba8ed;cursor:pointer}
+.lolite-liquid-settings select{
+ width:100%;max-width:360px;
+ background:#1b3047;color:#eaf3ff;
+ border:1px solid #547293;border-radius:8px;padding:9px;
+}
+.lolite-liquid-settings .lg-switch{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.lolite-liquid-settings .lg-status{
+ padding:10px 12px;border-radius:9px;
+ border:1px solid #3e5b75;background:#102236;
+ font-size:11px;min-height:36px;line-height:1.5;color:#adc9e2
+}
+.lolite-liquid-settings a{font-size:12px;color:#91cbff;text-decoration:underline;text-underline-offset:3px;max-width:max-content}
+@media(prefers-reduced-motion:reduce){
+ #loliteLiquidRefractionCanvas{transition:none!important;animation:none!important}
+}
