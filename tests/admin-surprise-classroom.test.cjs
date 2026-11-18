@@ -32,6 +32,7 @@ function adminHarness({adminRole=true,targetAdmin=false}={}){
    closest(selector){return selector==='[data-lam-root]'||selector.includes('data-lam-user')?this:null},
    matches(selector){return kind==='select'?selector==='[data-lam-user]':
     kind==='surprise'?selector==='[data-lam-surprise]':
+    kind==='preview'?selector==='[data-lam-preview-surprise]':
     selector==='[data-lam-classroom-pause]'}
   };
   for(const fn of listeners.click||[])fn({target:el});
@@ -144,4 +145,21 @@ test('Production OS loads the controls, receiver, original account lock and CSS'
  const css=read('core/lolite-admin-moderation.css');
  assert.match(css,/\.lolite-surprise-overlay/);
  assert.match(css,/\.lsu-skip/);
+});
+
+test('Admin can preview the safe surprise without contacting another account',async()=>{
+ const h=adminHarness();
+ await h.api.refresh();
+ h.click('select');
+ assert.match(h.api.markup(),/data-lam-preview-surprise/);
+ h.click('preview');
+ assert.equal(h.calls.length,0);
+ const n=noticeHarness();
+ assert.equal(n.api.preview(),true);
+ assert.equal(n.nodes.length,1);
+ assert.match(n.nodes[0].innerHTML,/Skip surprise/);
+ n.timers[0].fn();
+ await Promise.resolve();
+ assert.equal(n.nodes[0].removed,true);
+ assert.equal(n.dbCalls.length,0);
 });
