@@ -67,7 +67,8 @@
     '<small>Moderation is logged, reversible, and cannot target administrators. The user sees the reason.</small></form>')+
    (admin?'':'<div class="lam-surprise"><div><strong>One-time Lolite surprise</strong>'+
     '<p>A harmless fullscreen animation. It plays once, automatically ends after 8 seconds and the recipient can skip it. No sound or browser pop-ups.</p></div>'+
-    '<button type="button" data-lam-surprise'+(S.busy?' disabled':'')+'>Send surprise</button></div>')+
+    '<div class="lam-surprise-actions"><button type="button" data-lam-preview-surprise>Preview</button>'+ 
+    '<button type="button" data-lam-surprise'+(S.busy?' disabled':'')+'>Send surprise</button></div></div>')+
    '<form data-lam-notice class="lam-form">'+
     '<h4>Send a one-time Lolite notice</h4>'+
     '<label>Message<textarea name="message" rows="2" maxlength="240" minlength="3" placeholder="Write a short announcement…" required></textarea></label>'+
@@ -214,7 +215,7 @@
   }finally{S.busy=false}
  }
  document.addEventListener('click',event=>{
-  const el=event.target.closest?.('[data-lam-user],[data-lam-refresh],[data-lam-more],[data-lam-classroom-pause],[data-lam-surprise]');
+  const el=event.target.closest?.('[data-lam-user],[data-lam-refresh],[data-lam-more],[data-lam-classroom-pause],[data-lam-surprise],[data-lam-preview-surprise]');
   if(!el||!el.closest('[data-lam-root]')||!isAdmin())return;
   if(el.matches('[data-lam-user]')){
    S.selected=validId(el.dataset.lamUser);
@@ -223,6 +224,8 @@
    el.disabled=true;
    void classroomPause().catch(error=>setNote(error?.message||'Classroom Pause failed',true))
     .finally(()=>{if(el.isConnected)el.disabled=false});
+  }else if(el.matches('[data-lam-preview-surprise]')){
+   window.LoliteAccountNotices?.preview?.();
   }else if(el.matches('[data-lam-surprise]')){
    el.disabled=true;
    void sendSurprise().catch(error=>setNote(error?.message||'Could not send surprise',true))
