@@ -74,3 +74,33 @@
 .lolite-admin-notice .lan-actions{display:flex;gap:8px;flex-wrap:wrap}
 .lolite-admin-notice button{background:#294663;border:1px solid #547da1;border-radius:8px;color:#fff;padding:9px 11px;cursor:pointer;font:600 11px system-ui}
 .lolite-admin-notice button:hover{background:#375f87}
+
+
+/* Harmless one-time surprise: only the Lolite page, always skippable. */
+.lam-surprise{display:flex;justify-content:space-between;align-items:center;gap:12px;
+ padding:12px;margin:3px 0 13px;border-radius:10px;border:1px solid #54758f;background:#1c334a}
+.lam-surprise strong{display:block;font-size:13px;margin-bottom:4px}
+.lam-surprise p{margin:0;color:#bbd1e5;font-size:11px;line-height:1.45}
+.lam-surprise button{flex:none;white-space:nowrap;background:#305979;border:1px solid #79a7c8;color:#fff}
+.lam-surprise button:hover{background:#3a698f}
+.lolite-surprise-overlay{position:fixed;inset:0;z-index:2147483601;display:grid;place-items:center;
+ background:radial-gradient(circle at 18% 26%,#25527f,#0a1728 43%,#050913 90%);
+ padding:20px;color:#edf7ff;font-family:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif;
+ text-align:center;overflow:auto}
+.lolite-surprise-overlay .lsu-stage{width:min(560px,96vw);display:grid;justify-items:center;gap:12px;
+ padding:clamp(28px,5vw,58px) 25px;border:1px solid #5b85b56b;border-radius:22px;
+ box-shadow:0 32px 85px #0008;background:#142e50bf}
+.lsu-kicker{font-size:12px;font-weight:790;letter-spacing:.3em;color:#aad6ff}
+.lsu-symbol{width:106px;height:106px;display:grid;place-items:center;border-radius:33px;
+ background:linear-gradient(140deg,#247dc7,#6f5dcc);font-size:67px;
+ border:1px solid #b9d8ff65;animation:lsuTurn 2.5s ease-in-out 2}
+.lsu-stage h2{font-size:clamp(32px,6vw,54px);letter-spacing:-.05em;margin:0}
+.lsu-stage p{font-size:14px;line-height:1.6;max-width:385px;margin:0;color:#d4e8fa}
+.lsu-stage small{font-size:11px;color:#a9cce6}
+.lolite-surprise-overlay .lsu-skip{padding:12px 26px;border-radius:10px;background:#84c9ff;color:#08223c;
+ font-size:14px;font-weight:750;cursor:pointer;border:1px solid #a7e0ff}
+.lolite-surprise-overlay .lsu-skip:hover{background:#c0e9ff}
+.lolite-surprise-overlay .lsu-skip:focus-visible{outline:3px solid #fff;outline-offset:3px}
+@keyframes lsuTurn{0%,100%{transform:rotate(-7deg) scale(.95)}50%{transform:rotate(12deg) scale(1.10)}}
+@media(prefers-reduced-motion:reduce){.lsu-symbol{animation:none}}
+@media(max-width:480px){.lam-surprise{flex-direction:column;align-items:stretch}.lam-surprise button{align-self:start}}
