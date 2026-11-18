@@ -1,0 +1,76 @@
+/* Lolite Account Moderation — isolated Admin Center directory and classroom pause */
+.lam-root{margin:0 0 27px;padding:19px;border:1px solid #38546d;border-radius:15px;background:#111e2d;color:#edf6ff;min-width:0}
+.lam-root *{box-sizing:border-box}
+.lam-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:0 0 17px}
+.lam-header h2{font-size:19px;margin:3px 0 5px;letter-spacing:-.3px}
+.lam-header p{color:#aabdd1;line-height:1.5;margin:0;font-size:12px}
+.lam-eyebrow{color:#88c6e9;font-weight:750;font-size:10px;letter-spacing:1.25px}
+.lam-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:9px}
+.lam-toolbar input{flex:1 1 230px;min-width:0}
+.lam-toolbar select{flex:0 1 180px}
+.lam-toolbar input,.lam-toolbar select,.lam-form :is(select,textarea){width:100%;min-width:0;background:#0c1a29;border:1px solid #45647f;color:#f5faff;border-radius:8px;padding:9px 11px;font:inherit}
+.lam-toolbar :is(input,select):focus-visible,.lam-form :is(select,textarea):focus-visible{outline:2px solid #8bc8f8;outline-offset:1px}
+.lam-message{font-size:11px;min-height:18px;max-width:none!important;color:#a8c9e7!important;margin:9px 0!important}
+.lam-columns{display:grid;grid-template-columns:minmax(245px,.85fr) minmax(0,1.15fr);gap:14px}
+.lam-directory{min-width:0}
+.lam-account-list{display:grid;gap:7px;max-height:495px;overflow:auto;padding:3px;align-content:start;scrollbar-color:#4e6e8c transparent}
+.lam-root .lam-account{width:100%;display:flex;align-items:center;gap:10px;border:1px solid #2e465e;border-radius:10px;background:#162638;color:#e8f2ff;text-align:left;min-width:0;padding:10px;min-height:59px}
+.lam-root .lam-account:hover{background:#1c344c;border-color:#6b9bc1}
+.lam-root .lam-account.selected{border-color:#a2c8ff;background:#254364}
+.lam-avatar{width:35px;height:35px;flex:0 0 35px;border-radius:10px;background:#355989;color:#fff;display:grid;place-items:center;font-weight:800}
+.lam-account-copy{display:grid;gap:4px;min-width:0;flex:1}
+.lam-account-copy strong{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lam-account-copy small{font-size:10px;color:#9db4c9;white-space:normal;line-height:1.3}
+.lam-status{display:inline-flex;align-items:center;border-radius:7px;padding:4px 6px;font-size:10px;font-weight:740;white-space:nowrap;background:#1c4137;color:#a2e4bf;border:1px solid #346953}
+.lam-status.lam-timeout{background:#493b26;color:#f9d5a1;border-color:#82663f}
+.lam-status.lam-ban{background:#4f2838;color:#fac4d4;border-color:#995066}
+.lam-status.lam-admin{background:#293a63;color:#d2dfff;border-color:#526caa}
+.lam-details{padding:16px;border:1px solid #35506b;background:#101c2a;border-radius:11px;min-width:0}
+.lam-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;border-bottom:1px solid #304961;padding-bottom:13px;margin-bottom:13px}
+.lam-detail-head h3{font-size:18px;margin:4px 0 3px;overflow-wrap:anywhere}
+.lam-detail-head p{font-size:11px;color:#9cb6cb;margin:0}
+.lam-current{background:#2d2630;border:1px solid #654658;border-radius:9px;padding:12px;margin-bottom:12px;color:#ffdce5}
+.lam-current strong{font-size:12px}
+.lam-current p{color:#ffdce5;font-size:11px;overflow-wrap:anywhere;margin:6px 0}
+.lam-current small{font-size:10px;color:#f8bac9}
+.lam-root .lam-classroom{display:flex;align-items:center;justify-content:space-between;gap:11px;border:1px solid #647447;background:#2a3025;border-radius:10px;padding:13px;margin:0 0 15px}
+.lam-classroom strong{display:block;font-size:13px;color:#f6edce;margin-bottom:3px}
+.lam-classroom p{font-size:11px;color:#d4d5bd;margin:0;line-height:1.5}
+.lam-root button.lam-danger{background:#653143;color:#fff2f5;border:1px solid #a35d70;white-space:normal}
+.lam-root button.lam-danger:hover{background:#824157}
+.lam-classroom button{min-width:105px;flex:0 0 auto}
+.lam-form{display:grid;gap:10px;border-top:1px solid #2d4258;margin:0;padding:15px 0}
+.lam-form h4{margin:0;font-size:13px}
+.lam-form label{display:grid;gap:6px;font-size:11px;color:#c4d9ee}
+.lam-form textarea{resize:vertical;min-height:63px;line-height:1.5}
+.lam-form>button{justify-self:start}
+.lam-form small{font-size:10px;color:#a1b8ce;line-height:1.5}
+.lam-empty{padding:17px;font-size:12px;color:#a6bacd;background:#142436;border-radius:9px}
+.lam-audit{margin-top:15px;border-top:1px solid #2c4560;padding:12px 0 0}
+.lam-audit summary{cursor:pointer;color:#d6e7fa;font-weight:740}
+.lam-audit-row{display:flex;gap:12px;align-items:center;border-bottom:1px solid #2c455b;padding:10px 5px;flex-wrap:wrap}
+.lam-audit-row strong{color:#abd2f5;font-size:10px;min-width:75px}
+.lam-audit-row span{font-size:11px;flex:1}
+.lam-audit-row small{font-size:10px}
+.lam-root [hidden]{display:none!important}
+@media(max-width:850px){.lam-columns{grid-template-columns:1fr}.lam-account-list{max-height:350px}}
+@media(max-width:480px){.lam-root{padding:12px}.lam-header{flex-direction:column}.lam-classroom{flex-direction:column;align-items:stretch}.lam-classroom button{align-self:start}.lam-detail-head{flex-wrap:wrap}}
+
+/* Classroom Pause lock is non-dismissible WITHIN Lolite, but the user can sign out,
+   close the browser, and appeal to staff. It never traps another browser tab. */
+#loliteLogin .la-moderation-lock{max-width:570px;margin-inline:auto}
+#loliteLogin .la-moderation-lock h1{font-size:clamp(24px,3.8vw,39px);line-height:1.16;margin:12px 0}
+#loliteLogin .la-moderation-lock .la-moderation-reason{background:#24293c;border:1px solid #566581;border-radius:12px;padding:14px;line-height:1.65;overflow-wrap:anywhere}
+#loliteLogin .la-moderation-lock .la-moderation-reason strong{color:#c6dafa}
+#loliteLogin .la-moderation-lock button{max-width:340px;margin:10px auto 0}
+
+/* Optional one-time staff messages are discreet and always dismissible. */
+.lolite-admin-notice{position:fixed;z-index:2147483646;bottom:22px;right:22px;width:min(420px,calc(100vw - 30px));border:1px solid #6c8fb5;border-radius:15px;background:#15263a;color:#edf5ff;box-shadow:0 15px 47px #000a;display:flex;gap:14px;padding:17px;font-family:'Segoe UI',system-ui,sans-serif}
+.lolite-admin-notice .lan-icon{width:34px;height:34px;flex:0 0 34px;border-radius:10px;background:#436a98;color:#fff;display:grid;place-items:center;font-weight:800}
+.lolite-admin-notice .lan-copy{min-width:0}
+.lolite-admin-notice small{font-size:9px;color:#a0c2e2;letter-spacing:1px;font-weight:750}
+.lolite-admin-notice h2{font-size:17px;margin:3px 0 5px}
+.lolite-admin-notice p{font-size:12px;color:#d3e2f0;line-height:1.6;margin:0 0 11px;overflow-wrap:anywhere}
+.lolite-admin-notice .lan-actions{display:flex;gap:8px;flex-wrap:wrap}
+.lolite-admin-notice button{background:#294663;border:1px solid #547da1;border-radius:8px;color:#fff;padding:9px 11px;cursor:pointer;font:600 11px system-ui}
+.lolite-admin-notice button:hover{background:#375f87}
