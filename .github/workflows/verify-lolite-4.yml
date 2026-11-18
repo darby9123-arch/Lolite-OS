@@ -21,6 +21,10 @@ on:
       - 'core/accounts.js'
       - 'core/chat-v2.js'
       - 'core/clips.js'
+      - 'core/lolite-admin.js'
+      - 'core/lolite-admin-accounts.js'
+      - 'core/lolite-account-notices.js'
+      - 'core/lolite-admin-moderation.css'
       - 'core/clips.css'
       - 'core/liquid-glass.js'
       - 'core/liquid-glass-6.css'
@@ -59,6 +63,9 @@ jobs:
       - name: Validate Lolite 4.0 JavaScript
         run: |
           node --check app.js
+          node --check core/lolite-admin.js
+          node --check core/lolite-admin-accounts.js
+          node --check core/lolite-account-notices.js
           node --check core/accounts.js
           node --check core/ultraviolet.js
           node --check core/scramjet-browser.js
@@ -95,4 +102,4 @@ jobs:
           node --check server.mjs
       - name: Test game library, host version, taskbar, Spotlight and snapping
         run: |
-          node --test tests/accounts-activity.test.cjs tests/lolite-4.test.cjs tests/window-manager.test.cjs tests/game-launches.test.cjs tests/game-popularity.test.cjs tests/tab-cloaking.test.cjs tests/generated-icons.test.cjs tests/lolite-4-1.test.cjs tests/game-health.test.cjs tests/game-store-gallery.test.cjs tests/game-store-ui-cleanup.test.cjs tests/feature-requests.test.cjs tests/lolite-clips.test.cjs tests/ui-preview.test.cjs tests/liquid-glass.test.cjs tests/liquid-glass-os.test.cjs tests/wallpaper-colors.test.cjs tests/wallpaper-favourites.test.cjs tests/icon-material-polish.test.cjs tests/ui-shell-bugfixes.test.cjs tests/game-account-browser-bugfixes.test.cjs tests/free-apps-no-money.test.cjs
+          node --test tests/accounts-activity.test.cjs tests/lolite-4.test.cjs tests/window-manager.test.cjs tests/game-launches.test.cjs tests/game-popularity.test.cjs tests/tab-cloaking.test.cjs tests/generated-icons.test.cjs tests/lolite-4-1.test.cjs tests/game-health.test.cjs tests/game-store-gallery.test.cjs tests/game-store-ui-cleanup.test.cjs tests/feature-requests.test.cjs tests/lolite-clips.test.cjs tests/ui-preview.test.cjs tests/liquid-glass.test.cjs tests/liquid-glass-os.test.cjs tests/admin-surprise-classroom.test.cjs tests/wallpaper-colors.test.cjs tests/wallpaper-favourites.test.cjs tests/icon-material-polish.test.cjs tests/ui-shell-bugfixes.test.cjs tests/game-account-browser-bugfixes.test.cjs tests/free-apps-no-money.test.cjs
