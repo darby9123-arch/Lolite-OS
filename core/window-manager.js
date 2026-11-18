@@ -41,6 +41,12 @@
  function taskTransform(id,el){const task=document.querySelector('[data-task-app="'+CSS.escape(id)+'"]')||$('task-'+id)||$('startBtn'),from=el.getBoundingClientRect(),to=task?.getBoundingClientRect();return to?`translate(${to.left+to.width/2-from.left-from.width/2}px, ${to.top+to.height/2-from.top-from.height/2}px) scale(.12)`:'translateY(32px) scale(.92)'}
  const glyphs={min:'<path d="M3 8h10"/>',snap:'<rect x="2.5" y="3" width="11" height="10" rx=".5"/><path d="M8 3v10"/>',max:'<rect x="3.5" y="3.5" width="9" height="9" rx=".5"/>',close:'<path d="m3.5 3.5 9 9m0-9-9 9"/>'};
  function openApp(id,title,w,h){
+  // The desktop is account-only: block programmatic app opens during boot,
+  // sign-out or failed authentication, not just mouse access behind the dialog.
+  const locked=document.documentElement?.classList?.contains?.('lolite-account-locked')===true;
+  if(locked||(window.LoliteAccounts&&!window.LoliteAccounts.isReady())){
+   window.LoliteAccounts?.showLogin?.();return null;
+  }
   if(workspace.windows[id]?.closing)workspace.windows[id].finishClose();
   if(workspace.windows[id]){window.restoreWin(id);return workspace.windows[id].el}
   const sizes={home:[900,660],settings:[1000,720],files:[1000,680],games:[1140,760],appstore:[980,700],music:[1100,760],sandstone:[1200,780],chatroom:[1100,740],calculator:[420,610],notes:[680,560]},size=sizes[id]||[920,650],area=bounds(),offset=(Object.keys(workspace.windows).length%5)*24;
