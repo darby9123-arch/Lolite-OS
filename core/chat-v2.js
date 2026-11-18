@@ -94,9 +94,10 @@ const check=r=>{if(r?.error){const err=r.error;throw Error((err.message||'Someth
 const flash=m=>{const r=root();if(!r)return;const d=document.createElement('div');d.className='lc-toast';d.textContent=m;r.appendChild(d);setTimeout(()=>d.remove(),3100)};
 function unreadCount(){return state.requests.filter(r=>r.to_id===meId()&&r.status==='pending').length}
 function authHtml(){
+ if(window.LoliteSignupLimit?.hasAccount()&&state.authTab==='register')state.authTab='login';
  if(window.LoliteAccounts)return '<div class="lc-placeholder"><div><h2>Sign in to Lolite</h2><p>Use one Lolite account for your desktop, games and chat.</p><button class="lc-primary" data-account-signin>Sign in / create account</button></div></div>';
  return '<div class="lc-auth-screen"><div class="lc-auth"><div class="lc-logo">L</div><h1>Lolite Chat</h1><p>Message friends, join channels and stay connected. Free forever.</p>'+
- '<div class="lc-auth-tabs"><button type="button" data-lc-action="tabLogin" class="'+(state.authTab==='login'?'active':'')+'">Log in</button><button type="button" data-lc-action="tabRegister" class="'+(state.authTab==='register'?'active':'')+'">Create account</button></div>'+
+ '<div class="lc-auth-tabs"><button type="button" data-lc-action="tabLogin" class="'+(state.authTab==='login'?'active':'')+'">Log in</button>'+(window.LoliteSignupLimit?.hasAccount()?'':'<button type="button" data-lc-action="tabRegister" class="'+(state.authTab==='register'?'active':'')+'">Create account</button>')+'</div>'+
  '<form data-lc-form="auth"><label>Username</label><input name="username" placeholder="your_username" pattern="[A-Za-z0-9_]{3,24}" minlength="3" maxlength="24" autocomplete="username" required>'+
  (state.authTab==='register'?'<label>Display name</label><input name="display" maxlength="32" placeholder="What friends will see" required>':'')+
  '<label>Password</label><input type="password" name="password" minlength="'+(state.authTab==='register'?'10':'1')+'" maxlength="72" autocomplete="'+(state.authTab==='login'?'current-password':'new-password')+'" required>'+
@@ -370,9 +371,13 @@ async function login(username,password){
  return check(await sb.auth.signInWithPassword({email:username.toLowerCase()+'@accounts.lolite.chat',password}));
 }
 async function register(username,display,password){
- const {data,error}=await sb.functions.invoke('lolite-account',{body:{action:'register',username,display_name:display,password}});
+ if(window.LoliteSignupLimit?.hasAccount())throw Error('You already have a Lolite account on this browser. Sign in instead.');
+ const device_id=window.LoliteSignupLimit?.deviceId();
+ if(!device_id)throw Error('Account registration is unavailable. Reload and retry.');
+ const {data,error}=await sb.functions.invoke('lolite-account',{body:{action:'register',username,display_name:display,password,device_id}});
  if(error)throw Error(data?.error||error.message||'Registration service failed');
  if(data?.error)throw Error(data.error);
+ if(data?.user_id)window.LoliteSignupLimit?.markAccount(data.user_id);
  return login(username,password);
 }
 async function createDM(otherId){
@@ -411,7 +416,7 @@ async function dispatch(action,id,button){
  switch(action){
  case 'retry':return refresh(!!root()?.querySelector('.lc-shell'));
  case 'tabLogin':state.authTab='login';state.authError='';return render();
- case 'tabRegister':state.authTab='register';state.authError='';return render();
+ case 'tabRegister':if(window.LoliteSignupLimit?.hasAccount()){state.authTab='login';state.authError='You already have a Lolite account on this browser. Sign in instead.';}else{state.authTab='register';state.authError='';}return render();
  case 'browse':state.view='browse';state.conversationId=null;state.replyTo=null;return navigate();
  case 'friends':state.view='friends';state.replyTo=null;return navigate();
   case 'calls':state.view='calls';state.conversationId=null;state.replyTo=null;return navigate();

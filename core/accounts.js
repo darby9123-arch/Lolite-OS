@@ -31,9 +31,10 @@
  const snapshot=()=>Object.fromEntries([...syncKeys].map(k=>[k,localStorage.getItem(k)]).filter(([,v])=>v!==null&&v.length<20000));
  function setMessage(message){const el=document.querySelector('[data-account-message]');if(el)el.textContent=message;}
  function gate(mode='login'){
+  if(mode==='register'&&window.LoliteSignupLimit?.hasAccount())mode='login';
   ready=false;
   let d=document.querySelector('#loliteLogin');if(!d){d=document.createElement('dialog');d.id='loliteLogin';document.body.append(d);d.addEventListener('cancel',e=>e.preventDefault());}
-  d.innerHTML='<div class="la-lock"><div class="la-time">'+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</div><div class="la-date">'+new Date().toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'})+'</div><form data-account-form="'+mode+'"><div class="la-avatar">L</div><h1>'+ (mode==='register'?'Create your Lolite account':'Welcome to Lolite')+'</h1><p>One account. Your desktop, games and friends.</p><label>Username<input name="username" autocomplete="username" pattern="[A-Za-z0-9_]{3,24}" minlength="3" maxlength="24" required></label>'+(mode==='register'?'<label>Display name<input name="display" maxlength="32" required></label>':'')+'<label>Password<input name="password" type="password" autocomplete="'+(mode==='register'?'new-password':'current-password')+'" minlength="8" maxlength="128" required></label><label class="la-check"><input name="auto" type="checkbox" '+(device.get('auto')==='true'?'checked':'')+'> Automatically log in on this device</label><p data-account-message role="status"></p><button class="la-primary" type="submit">'+(mode==='register'?'Create account':'Sign in')+'</button><button type="button" data-account-mode="'+(mode==='register'?'login':'register')+'">'+(mode==='register'?'Already have an account? Sign in':'Create an account')+'</button><small>A Lolite account is required. Existing Lolite Chat usernames and passwords still work; no new account needed if you already have one.</small></form></div>';
+  d.innerHTML='<div class="la-lock"><div class="la-time">'+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</div><div class="la-date">'+new Date().toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'})+'</div><form data-account-form="'+mode+'"><div class="la-avatar">L</div><h1>'+ (mode==='register'?'Create your Lolite account':'Welcome to Lolite')+'</h1><p>One account. Your desktop, games and friends.</p><label>Username<input name="username" autocomplete="username" pattern="[A-Za-z0-9_]{3,24}" minlength="3" maxlength="24" required></label>'+(mode==='register'?'<label>Display name<input name="display" maxlength="32" required></label>':'')+'<label>Password<input name="password" type="password" autocomplete="'+(mode==='register'?'new-password':'current-password')+'" minlength="8" maxlength="128" required></label><label class="la-check"><input name="auto" type="checkbox" '+(device.get('auto')==='true'?'checked':'')+'> Automatically log in on this device</label><p data-account-message role="status"></p><button class="la-primary" type="submit">'+(mode==='register'?'Create account':'Sign in')+'</button>'+(mode==='register'?'<button type="button" data-account-mode="login">Already have an account? Sign in</button>':window.LoliteSignupLimit?.hasAccount()?'<p class="la-muted">Only one account can be created on this browser. Sign in to your existing account.</p>':'<button type="button" data-account-mode="register">Create an account</button>')+'<small>A Lolite account is required. Existing Lolite Chat usernames and passwords still work; no new account needed if you already have one.</small></form></div>';
   if(!d.open)d.showModal();document.documentElement.classList.add('lolite-account-locked');
   document.querySelector('#desktop')?.setAttribute('inert','');
  }
@@ -116,6 +117,7 @@
  async function enter(session){
   if(!session?.user)throw Error('Sign in to continue.');
   const id=session.user.id;
+  window.LoliteSignupLimit?.markAccount(id);
   if(storage.id!==id){device.set('account',id);sessionStorage.setItem('lolite-login-handoff',id);location.reload();return;}
   const restriction=await readModeration(id);
   user=session.user;
@@ -160,7 +162,15 @@
   const form=e.target.closest('[data-account-form]');if(!form)return;e.preventDefault();const button=form.querySelector('[type="submit"]');button.disabled=true;setMessage('Signing in…');
   try{
    const username=form.elements.username.value,password=form.elements.password.value;
-   if(form.dataset.accountForm==='register'){if(!client)throw Error('Account service unavailable. Reload and retry.');const r=await client.functions.invoke('lolite-account',{body:{action:'register',username,display_name:form.elements.display.value,password}});if(r.error||r.data?.error)throw Error(r.data?.error||r.error.message);}
+   if(form.dataset.accountForm==='register'){
+    if(!client)throw Error('Account service unavailable. Reload and retry.');
+    if(window.LoliteSignupLimit?.hasAccount())throw Error('You already have a Lolite account on this browser. Sign in instead.');
+    const device_id=window.LoliteSignupLimit?.deviceId();
+    if(!device_id)throw Error('Account registration is unavailable. Reload and retry.');
+    const r=await client.functions.invoke('lolite-account',{body:{action:'register',username,display_name:form.elements.display.value,password,device_id}});
+    if(r.error||r.data?.error)throw Error(r.data?.error||r.error.message);
+    if(r.data?.user_id)window.LoliteSignupLimit?.markAccount(r.data.user_id);
+   }
    await login(username,password,form.elements.auto.checked);
   }catch(error){setMessage(error.message||'Could not sign in. Please retry.');}finally{button.disabled=false;}
  });
