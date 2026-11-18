@@ -8,9 +8,18 @@ mapping remains `username@accounts.lolite.chat` for compatibility.
 
 The desktop starts at a login screen. Choose **Automatically log in on this device**
 at login or under **Settings → Account & activity**. With it disabled, restarting
-or reloading the desktop requires credentials. **Continue as guest** preserves the
-old guest workspace. Use Settings or Start to switch accounts; this reloads the
-whole desktop so open windows, calls, drafts and private state cannot carry across.
+or reloading the desktop requires credentials. **Guest access is disabled**:
+a verified Lolite account is required before entering the desktop. New users can
+choose **Create an account**, and existing Lolite Chat credentials continue to work.
+Use Settings or Start to switch accounts; this reloads the whole desktop so open
+windows, calls, drafts and private state cannot carry across.
+
+The old guest workspace remains stored locally for preservation, but cannot be
+opened without an account. Existing signed-in users are not required to register
+again. Authentication requires the online Supabase Auth service. A client-side
+login gate on the public GitHub Pages site is **not** a server-side content
+firewall: public static files remain publicly reachable by direct URL. Sensitive
+private account records still use server-side identity verification and RLS.
 
 Desktop localStorage and the Files, saved HTML and imported-package IndexedDBs are
 namespaced per account. Small supported preferences sync privately to Supabase.
