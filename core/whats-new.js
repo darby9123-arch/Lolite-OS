@@ -3,6 +3,7 @@
 'use strict';
 const URL='README.md',GH='https://github.com/darby9123-arch/Lolite-OS#update-log';
 const fallback=[
+ ['Desktop theme redesign — 2026-11-25','Desktop themes now include distinct app launchers, window controls, and matching wallpapers.'],
  ['Workspace themes in Home — 2026-11-25','Preview desktop themes in Home and apply them in one click.'],
  ['Home app redesign — 2026-11-24','Play a random game, apply a wallpaper, and style your desktop icons from Home.'],
  ['All Lolite Apps Are Free — 2026-11-18','Removed the Lolite wallet, paid App Store categories, app unlock prices and Quests money rewards. Every app is free to install and open. Existing progress remains saved.'],

@@ -7,6 +7,11 @@
   --ws-menu: #192e59;
   --ws-ink: #f6f9ff;
   --ws-sheet: #f1f2dc;
+  --ws-home-surface: #faf8eb;
+  --ws-home-ink: #1b2d4b;
+  --ws-home-key: #2455ae;
+  --ws-home-on-key: #fff;
+  --ws-shell-font: Tahoma, "Segoe UI", system-ui, sans-serif;
   --ws-preview: radial-gradient(ellipse at 17% 118%, #497d2b 0 48%, transparent 49%),
     radial-gradient(ellipse at 79% 130%, #9ac65b 0 49%, transparent 50%), linear-gradient(165deg, #4683dc, #8dcef2);
   --ws-radius-adjustment: -7px;
@@ -19,6 +24,10 @@
   --ws-menu: #31334e;
   --ws-ink: #242b49;
   --ws-sheet: #f7f7ff;
+  --ws-home-surface: #f7f8fd;
+  --ws-home-key: #5b43a3;
+  --ws-home-on-key: #fff;
+  --ws-shell-font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --ws-preview: radial-gradient(ellipse at 82% 91%, #feb5a7, transparent 58%),
     linear-gradient(155deg, #4e6693, #9482c1 54%, #e589ae);
   --ws-radius-adjustment: 5px;
@@ -31,6 +40,8 @@
   --ws-menu: #22344f;
   --ws-ink: #f0f7ff;
   --ws-sheet: #e5f0fc;
+  --ws-home-surface: #1b2a43;
+  --ws-shell-font: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
   --ws-preview: radial-gradient(ellipse at 40% 108%, #546df2, transparent 60%),
     radial-gradient(ellipse at 76% -5%, #55bdff, transparent 60%), #203b93;
   --ws-radius-adjustment: 0px;
@@ -43,6 +54,8 @@
   --ws-menu: #263242;
   --ws-ink: #edf6ff;
   --ws-sheet: #dce7f1;
+  --ws-home-surface: #222c39;
+  --ws-shell-font: "Segoe UI", system-ui, sans-serif;
   --ws-preview: linear-gradient(145deg, #142b47, #154d74 55%, #2e82a2);
   --ws-radius-adjustment: -10px;
 }
@@ -54,6 +67,9 @@
   --ws-menu: #4b333e;
   --ws-ink: #39252e;
   --ws-sheet: #f7e9d3;
+  --ws-home-surface: #fff4e3;
+  --ws-home-key: #84425f;
+  --ws-home-on-key: #fff;
   --ws-preview: repeating-linear-gradient(90deg, transparent 0 14px, #663b4929 15px 16px),
     linear-gradient(135deg, #a77356, #c59b78 60%, #896359);
   --ws-radius-adjustment: -8px;
@@ -66,6 +82,7 @@
   --ws-menu: #3b234d;
   --ws-ink: #fff2ff;
   --ws-sheet: #3e284e;
+  --ws-home-surface: #37264b;
   --ws-preview: repeating-linear-gradient(0deg, transparent 0 8px, #d18dfb39 9px 10px),
     radial-gradient(ellipse at 76% 14%, #dd72b9, transparent 58%), #282154;
   --ws-radius-adjustment: 3px;
@@ -78,6 +95,7 @@
   --ws-menu: #302219;
   --ws-ink: #ffddaf;
   --ws-sheet: #30241b;
+  --ws-home-surface: #2c2118;
   --ws-preview: repeating-linear-gradient(0deg, #0002 0 1px, transparent 1px 4px),
     radial-gradient(ellipse at 55% 38%, #724828, #201711 72%);
   --ws-radius-adjustment: -11px;
@@ -173,7 +191,7 @@ html[data-desktop-experience="windows"]:not(.browsing-mode, .mobile-mode):is(
     width: var(--ws-bar-width, auto) !important;
     max-width: var(--ws-bar-max, none) !important;
     transform: var(--ws-bar-transform, none) !important;
-    height: 56px !important;
+    height: var(--ws-bar-height, 56px) !important;
     padding-inline: 8px !important;
     border-radius: var(--ws-bar-radius, 0) !important;
   }
@@ -190,13 +208,22 @@ html[data-desktop-experience="windows"]:not(.browsing-mode, .mobile-mode):is(
     justify-content: var(--ws-align, center) !important;
   }
   &:not(.ltc-applied) :is(#start, #searchPanel, #winQuickSettings, #winCalendar, #loliteWidgetPicker, #lcNotifPanel, #loliteCreditsPanel) {
-    top: auto !important;
-    bottom: calc(66px + var(--ws-bar-bottom, 0px)) !important;
+    top: var(--ws-panel-top, auto) !important;
+    bottom: var(--ws-panel-bottom, calc(var(--ws-bar-height, 56px) + 10px + var(--ws-bar-bottom, 0px))) !important;
   }
   &:not(.ltc-applied) #start {
     left: var(--ws-start-left, max(12px, calc(50% - 320px))) !important;
     transform: none !important;
   }
+}
+
+html[data-desktop-experience="windows"]:not(.browsing-mode, .mobile-mode):is(
+  [data-desktop-theme="windowsxp"], [data-desktop-theme="macos"],
+  [data-desktop-theme="windows11"], [data-desktop-theme="windows10"])
+  :is(#start, #taskbar, #loliteMenuBar, #winQuickSettings, #winCalendar, .titlebar, #icons, .lolite-home) {
+  --lolite-font: var(--ws-shell-font);
+  --lolite-display: var(--ws-shell-font);
+  font-family: var(--lolite-font) !important;
 }
 
 html[data-desktop-experience="windows"]:not(.browsing-mode, .mobile-mode):is(
@@ -225,25 +252,435 @@ html[data-desktop-experience="windows"][data-desktop-theme="windowsxp"]:not(.bro
   }
 }
 html[data-desktop-experience="windows"][data-desktop-theme="macos"]:not(.browsing-mode, .mobile-mode, .glass.lolite-refractive) {
+  & #desktop .window > .titlebar {
+    position: relative;
+    padding: 0 10px !important;
+  }
+  & #desktop .window > .titlebar .window-app-icon {
+    display: none !important;
+  }
+  & #desktop .window > .titlebar strong {
+    text-align: center;
+    margin-inline-end: min(115px, 16%);
+    font-weight: 620 !important;
+  }
   & #desktop .window > .titlebar .controls {
     align-items: center;
-    gap: 3px;
-    padding-inline: 4px;
+    gap: 1px;
   }
-  & #desktop .window > .titlebar .controls button {
-    width: 30px !important;
-    min-width: 30px !important;
-    height: 27px !important;
-    border-radius: 9px !important;
-    background: #cbd0e1 !important;
+  & #desktop .window > .titlebar .controls button:not(.snap) {
+    --ws-dot: #d5ae72;
+    width: 27px !important;
+    min-width: 27px !important;
+    height: 30px !important;
+    border-radius: 8px !important;
+    background: radial-gradient(circle, var(--ws-dot) 0 7px, transparent 7.8px) !important;
   }
-  & #desktop .window > .titlebar .controls .close {
-    background: #e2c2d2 !important;
+  & #desktop .window > .titlebar .controls button.close {
+    --ws-dot: #d887a3;
   }
-  & #desktop .window > .titlebar .controls .close:hover {
-    background: #9f3656 !important;
+  & #desktop .window > .titlebar .controls button.max {
+    --ws-dot: #79baab;
+  }
+  & #desktop .window > .titlebar .controls button:not(.snap) svg {
+    width: 10px;
+    height: 10px;
+    opacity: 0;
+  }
+  & #desktop .window > .titlebar .controls button:is(:hover, :focus-visible) svg {
+    opacity: 1;
+  }
+  & #desktop .window > .titlebar .controls .snap {
+    position: absolute;
+    inset-inline-end: 8px;
+    width: 26px !important;
+    min-width: 26px !important;
+    height: 26px !important;
+    border-radius: 6px !important;
   }
 }
 html[data-desktop-experience="windows"][data-desktop-theme="amber-terminal"]:not(.browsing-mode, .mobile-mode) .window > .titlebar strong {
   font-family: var(--lolite-mono, monospace) !important;
+}
+
+/* The native buttons and task rail keep their existing actions and identities. */
+.win-start-label, .win-search-label {
+  display: none;
+}
+html[data-desktop-experience="windows"]:not(.browsing-mode, .mobile-mode, .ltc-applied):is(
+  [data-desktop-theme="windowsxp"], [data-desktop-theme="windows10"], [data-desktop-theme="windows11"],
+  [data-desktop-theme="macos"], [data-desktop-theme="aero7"]) #desktop #taskbar {
+  & .win-taskbar-brand,
+  & #startBtn .win-start-logo {
+    display: none;
+  }
+  & #startBtn .win-start-brand {
+    display: block;
+    width: 24px;
+    height: 24px;
+  }
+}
+html[data-desktop-experience="windows"][data-desktop-theme="windowsxp"]:not(.browsing-mode, .mobile-mode) {
+  --ws-bar-height: 44px;
+  &:not(.ltc-applied) {
+    --dock-button: 36px;
+    --dock-icon: 23px;
+  }
+  & #desktop .window:not(.is-maximised) {
+    border-width: 3px !important;
+  }
+  &:not(.glass.lolite-refractive) #desktop .window > .titlebar {
+    background-image: linear-gradient(180deg, #c3e2ff43, transparent 46%, #162a7868) !important;
+  }
+  & #desktop .window > .titlebar strong {
+    font-weight: 680 !important;
+  }
+  &:not(.glass.lolite-refractive) #desktop .window .controls {
+    align-items: center;
+    gap: 3px;
+    padding-right: 5px;
+  }
+  &:not(.glass.lolite-refractive) #desktop .window .controls button {
+    width: 28px !important;
+    min-width: 28px !important;
+    height: 28px !important;
+    border: 1px solid #ddedffad !important;
+    border-radius: 6px !important;
+    background: linear-gradient(#678cdb, #3559ab) !important;
+  }
+  &:not(.glass.lolite-refractive) #desktop .window .controls .close {
+    background: linear-gradient(#db8075, #a93d40) !important;
+  }
+  &:not(.glass.lolite-refractive) #desktop .window .controls button:hover {
+    filter: brightness(1.17);
+  }
+}
+@media (min-width: 760px) {
+  html[data-desktop-experience="windows"][data-desktop-theme="windowsxp"]:not(.browsing-mode, .mobile-mode, .ltc-applied) #desktop #taskbar #startBtn {
+    display: inline-flex !important;
+    width: 76px !important;
+    min-width: 76px !important;
+    gap: 4px;
+    color: #f1fff4 !important;
+    font-size: .8125rem !important;
+    font-weight: 720;
+    & .win-start-label { display: inline; }
+  }
+  html[data-desktop-experience="windows"][data-desktop-theme="windowsxp"]:not(.browsing-mode, .mobile-mode, .ltc-applied) #desktop #taskbar #tasks .taskwin {
+    display: inline-flex !important;
+    justify-content: flex-start;
+    width: clamp(86px, 10vw, 132px) !important;
+    padding: 0 8px !important;
+    gap: 5px;
+    border-radius: 5px !important;
+    background: #d7e8ff20 !important;
+    & .task-title {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #f3f7ff;
+      font-size: .75rem;
+    }
+  }
+  html[data-desktop-experience="windows"][data-desktop-theme="windows10"]:not(.browsing-mode, .mobile-mode, .ltc-applied) #desktop #taskbar #searchBtn {
+    display: inline-flex !important;
+    justify-content: flex-start;
+    width: 132px !important;
+    min-width: 132px !important;
+    padding: 0 10px !important;
+    gap: 7px;
+    border-radius: 4px !important;
+    background: #354456 !important;
+    & .win-search-label { display: inline; font-size: .75rem; }
+  }
+}
+@media (min-width: 860px) {
+  html[data-desktop-experience="windows"][data-desktop-theme="windows11"]:not(.browsing-mode, .mobile-mode, .ltc-applied) #desktop #taskbar .win-taskbar-center {
+    position: absolute !important;
+    left: 50% !important;
+    width: max-content !important;
+    max-width: calc(100% - 360px) !important;
+    transform: translateX(-50%) !important;
+  }
+}
+
+/* Application launchers share search, shortcuts and keyboard navigation. */
+#start .win-launcher-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 14px;
+}
+#start .win-launcher-columns section {
+  min-width: 0;
+}
+#start .win-flat-launcher {
+  grid-template-columns: minmax(0, 1fr);
+}
+#start .win-flat-launcher button {
+  min-height: 40px;
+}
+#start .win-launcher-tiles {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+#start .win-launcher-tiles button {
+  min-height: 80px;
+  justify-content: center;
+  gap: 6px;
+  background: #334b65 !important;
+  border: 1px solid #b1cbf12e !important;
+  border-radius: 3px !important;
+}
+#start .win-launcher-tiles button:nth-child(3n + 2) {
+  background: #34586a !important;
+}
+#start .win-launcher-tiles button:nth-child(3n) {
+  background: #51486a !important;
+}
+#start .win-launcher-apps {
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  gap: 7px;
+}
+#start .win-launcher-apps button {
+  min-height: 77px;
+  background: #ffffff08 !important;
+  border: 1px solid #ffffff17 !important;
+  border-radius: 10px !important;
+}
+#start .win-launcher-apps button:hover,
+#start .win-launcher-tiles button:hover {
+  border-color: #cddeff9c !important;
+}
+html[data-desktop-experience="windows"]:not(.browsing-mode, .mobile-mode, .ltc-applied) #desktop #start:is([data-launcher="classic"], [data-launcher="tiles"], [data-launcher="list"]) {
+  left: 12px !important;
+  transform: none !important;
+  width: min(550px, calc(100vw - 24px)) !important;
+  border-radius: 8px !important;
+}
+html[data-desktop-experience="windows"]:not(.browsing-mode, .mobile-mode) #desktop #start[data-launcher="classic"] {
+  & .win-start-body {
+    padding: 16px !important;
+  }
+  & .win-launcher-places {
+    padding: 8px;
+    background: #ffffff0c;
+    border: 1px solid #ffffff1a;
+    border-radius: 8px;
+  }
+}
+html[data-desktop-experience="windows"][data-desktop-theme="windowsxp"]:not(.browsing-mode, .mobile-mode, .glass.lolite-refractive) #desktop #start[data-launcher="classic"] {
+  & .win-start-profile {
+    background: linear-gradient(#436cc3, #244a9a);
+    color: #fff;
+    font-size: .875rem;
+  }
+  & .win-start-body {
+    background: #f4f3e7 !important;
+    color: #192b4a !important;
+  }
+  & .win-start-body :is(h2, .win-all-apps button, .win-app-list button, .win-empty-recent, .win-start-heading > span) {
+    color: #192b4a !important;
+  }
+  & .win-start-body .win-app-list small {
+    color: #425a79 !important;
+  }
+  & .win-start-heading > button {
+    color: #234d96 !important;
+    background: #d7e2f4 !important;
+  }
+  & .win-launcher-places {
+    background: #e0e9f7;
+    border-color: #acc2e5;
+  }
+  & .win-start-footer {
+    justify-content: flex-end;
+    background: #234c9d !important;
+    padding: 6px 15px;
+  }
+}
+.win-start-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px;
+}
+html[data-desktop-experience="windows"][data-desktop-theme="windows10"]:not(.browsing-mode, .mobile-mode, .ltc-applied) #desktop #start[data-launcher="tiles"] {
+  width: min(635px, calc(100vw - 24px)) !important;
+  & .win-start-body { padding: 18px !important; }
+}
+html[data-desktop-experience="windows"][data-desktop-theme="windows11"]:not(.browsing-mode, .mobile-mode, .ltc-applied) #desktop #start[data-launcher="standard"] {
+  border-radius: 18px !important;
+  & .win-start-grid button {
+    border-radius: 9px !important;
+    background: #ffffff08;
+  }
+  & .win-start-search { border-radius: 18px; }
+}
+html[data-desktop-experience="windows"][data-desktop-theme="amber-terminal"]:not(.browsing-mode, .mobile-mode) #desktop #start[data-launcher="list"] {
+  max-width: min(380px, calc(100vw - 24px));
+  & :is(h2, .win-all-apps button, .win-app-list button, input) {
+    color: #ffd497 !important;
+    font-family: var(--lolite-mono, monospace) !important;
+  }
+}
+html[data-desktop-experience="windows"]:not(.browsing-mode, .mobile-mode, .ltc-applied):is(
+  [data-desktop-theme="macos"], [data-desktop-theme="gnome"], [data-desktop-theme="deepin"], [data-desktop-theme="vaporwave"]) #desktop #start[data-launcher="grid"] {
+  width: min(760px, calc(100vw - 24px)) !important;
+  left: max(12px, calc(50% - 380px)) !important;
+  transform: none !important;
+  border-radius: 18px !important;
+}
+@media (max-width: 510px) {
+  #start .win-launcher-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+  #start .win-launcher-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #start .win-launcher-apps {
+    grid-template-columns: repeat(auto-fit, minmax(68px, 1fr));
+  }
+  #start .win-flat-launcher button {
+    gap: 5px;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* macOS puts status controls in the menu bar and keeps app icons in the dock. */
+#loliteMenuBar[hidden], html:is(.browsing-mode, .mobile-mode) #loliteMenuBar {
+  display: none !important;
+}
+html[data-desktop-experience="windows"][data-desktop-theme="macos"]:not(.browsing-mode, .mobile-mode, .ltc-applied) {
+  --ws-menubar-height: 34px;
+  --ws-panel-top: calc(var(--ws-menubar-height) + 8px);
+  --ws-panel-bottom: auto;
+  & #loliteMenuBar {
+    --dock-text: #252946;
+    --dock-hover: #22254e1c;
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 10002;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: var(--ws-menubar-height);
+    padding: 0 12px;
+    background: #f3eefaeb;
+    border-bottom: 1px solid #ffffff80;
+    color: var(--dock-text);
+    box-shadow: 0 2px 12px #13183232;
+  }
+  & #loliteMenuBar nav {
+    display: flex;
+    gap: 2px;
+  }
+  & #loliteMenuBar :is(.win-menu-home, nav button) {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 28px;
+    padding: 0 7px !important;
+    color: inherit !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 6px !important;
+    font-size: .75rem !important;
+  }
+  & #loliteMenuBar .win-menu-home { font-weight: 720; }
+  & #loliteMenuBar :is(.win-menu-home, nav button):hover { background: var(--dock-hover) !important; }
+  & #loliteMenuBar .win-menu-home .lolite-icon { width: 19px !important; height: 19px !important; }
+  & #loliteMenuBar .win-menu-current {
+    max-width: 17ch;
+    min-width: 0;
+    padding-inline: 3px 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: .75rem;
+    font-weight: 650;
+  }
+  & #loliteMenuBar .tray { padding-left: 0 !important; }
+  & #loliteMenuBar .tray::before { display: none; }
+  & #loliteMenuBar #clock {
+    flex-direction: row;
+    gap: 7px;
+    align-items: center !important;
+    height: 28px !important;
+  }
+  & #loliteMenuBar .win-tray-tools-list {
+    top: calc(100% + 7px);
+    bottom: auto;
+  }
+  & #desktop #start[data-launcher="grid"] {
+    top: calc(var(--ws-menubar-height) + 13px) !important;
+    max-height: calc(100dvh - var(--ws-menubar-height) - 98px);
+  }
+  & :is(#winQuickSettings, #winCalendar, #lcNotifPanel, #loliteWidgetPicker, #loliteCreditsPanel) {
+    max-height: calc(100dvh - 110px);
+    overflow: auto;
+  }
+  & #desktop #icons {
+    top: calc(var(--ws-menubar-height) + 13px) !important;
+  }
+  &:not(.lic-applied) #desktop #icons {
+    right: 12px !important;
+    left: auto !important;
+  }
+  & #lolite-widget-layer {
+    top: var(--ws-menubar-height);
+    bottom: 76px;
+  }
+  & #desktop #taskbar {
+    --dock-gap: 5px;
+    & .win-taskbar-apps { padding-inline: 5px; }
+    & :is(.win-pinned, .taskwin) { border-radius: 12px !important; }
+    & :is(.win-pinned.running, .taskwin)::after {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+    }
+  }
+}
+@media (max-width: 640px) {
+  #loliteMenuBar .win-menu-current, #loliteMenuBar #clock small {
+    display: none;
+  }
+}
+@media (max-width: 420px) {
+  #loliteMenuBar [data-shell-action="show-desktop"] {
+    display: none;
+  }
+}
+
+/* Home picks up the active desktop palette while keeping the same features. */
+html[data-desktop-experience="windows"]:not(.browsing-mode, .mobile-mode):is(
+  [data-desktop-theme="windowsxp"], [data-desktop-theme="macos"], [data-desktop-theme="windows11"],
+  [data-desktop-theme="windows10"], [data-desktop-theme="paper-studio"], [data-desktop-theme="vaporwave"],
+  [data-desktop-theme="amber-terminal"]) {
+  & #desktop .window[data-window-id="home"] > .content {
+    background: color-mix(in srgb, var(--ws-home-surface) 92%, var(--ws-frame)) !important;
+  }
+  & .lolite-home {
+    --lh-text: var(--ws-home-ink, var(--ws-ink));
+    --lh-accent: var(--ws-home-key, var(--ws-accent));
+    --lh-on-accent: var(--ws-home-on-key, #181d2b);
+    --lh-surface: var(--ws-home-surface);
+    --lh-muted: color-mix(in srgb, var(--lh-text) 78%, var(--lh-surface));
+    --lh-line: color-mix(in srgb, var(--ws-frame) 54%, transparent);
+    --lh-control: color-mix(in srgb, var(--lh-surface) 86%, var(--lh-accent));
+    --lh-control-hover: color-mix(in srgb, var(--lh-surface) 74%, var(--lh-accent));
+    --lh-choice: color-mix(in srgb, var(--lh-surface) 95%, var(--lh-text));
+    --lh-selected: color-mix(in srgb, var(--lh-surface) 80%, var(--lh-accent));
+  }
+  & .lolite-home .lh-update {
+    background: linear-gradient(112deg, var(--lh-surface) 36%, var(--lh-selected)) !important;
+  }
+  & .lolite-home :is(h2, h3) {
+    color: var(--lh-text) !important;
+  }
+  & .lolite-home .lh-update p {
+    color: var(--lh-muted);
+  }
 }

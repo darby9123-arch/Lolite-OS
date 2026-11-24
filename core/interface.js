@@ -1,17 +1,97 @@
-/* Windows-style desktop shell: Start, pinned taskbar, quick settings and calendar. */
+/* Desktop shell: app launcher, taskbar, quick settings and calendar. */
 (()=>{'use strict';
+ const root=document.documentElement;
  const icon=id=>window.LoliteIcons?.tile(id)||'',esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const apps=[['home','Home','Your workspace'],['games','Game Store','Games'],['music','Lolite Music','Ad-free community music and playlists'],['feature-requests','Feature Requests','Suggest new Lolite OS features and vote on ideas'],['clips','Lolite Clips','Record, save and share gameplay'],['files','Files','Folders and documents'],['browser','Ultraviolet Browser','Web browser'],['sandstone','Sandstone Browser','Web browser'],['settings','Settings','Personalise Lolite'],['appstore','App Store','Apps and tools'],['academy','Lolite Academy','Learn something new'],['chatroom','Lolite Chat','Messages and calls'],['life-rp','Lolite Life RP','Your city, your story'],['lolite-quests','Lolite Quests','Activities and rewards'],['notes','Quick Notes','Write a note'],['calculator','Calculator','Everyday calculations'],['paint','Lolite Paint','Draw and create'],['cloud-gaming','Cloud Gaming','Streaming services'],['minecraft18','Minecraft 1.8','Play Minecraft'],['scramjet','Scramjet Browser','Web browser'],['world','World Sandbox','Create a world'],['wallpaper-editor','Wallpaper Editor','Create a wallpaper']];
  const optional=new Set(['academy','chatroom','life-rp','lolite-quests','notes','calculator','paint','wallpaper-editor']);
+ const launcherShortcuts=['home','games','music','files','browser','settings','appstore','academy','chatroom','life-rp','lolite-quests','notes','calculator','paint'];
+ const launcherList=[...apps].sort((a,b)=>a[1].localeCompare(b[1]));
  const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}},save=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value))}catch{}};
  let pins=read('loliteTaskbarPinsV2',['files','games','browser','settings']).filter(id=>apps.some(a=>a[0]===id)),recent=read('loliteRecentAppsV2',[]).filter(id=>apps.some(a=>a[0]===id)),allApps=false,calendarMonth=new Date();
  const app=id=>apps.find(a=>a[0]===id),button=(id,extra='')=>{const a=app(id);return a?`<button type="button" data-shell-open="${id}" ${extra}>${icon(id)}<span>${esc(a[1])}</span></button>`:''};
  function launch(id){const a=app(id);if(!a)return;closePanels();if(window.LoliteDeviceMode?.mode().mode==='browsing'){window.LoliteDeviceMode.openApp(id);return}if(id==='minecraft18')window.lolitePlayMinecraft?.();else if(optional.has(id)&&window.loliteOpenApp)window.loliteOpenApp(id);else window.openApp(id,a[1]);}
- function closePanels(except){for(const id of ['start','searchPanel','winQuickSettings','winCalendar','winDesktopMenu'])if(id!==except){const el=document.getElementById(id);if(el&&!el.classList.contains('hidden')){el.classList.add('hidden');window.dispatchEvent(new CustomEvent('lolite:panelchange',{detail:{open:false,id}}))}}document.getElementById('startBtn')?.setAttribute('aria-expanded',String(except==='start'));document.getElementById('winQuickButton')?.setAttribute('aria-expanded',String(except==='winQuickSettings'));document.getElementById('clock')?.setAttribute('aria-expanded',String(except==='winCalendar'))}
+ function closePanels(except){
+  for(const id of ['start','searchPanel','winQuickSettings','winCalendar','winDesktopMenu']){
+   const el=document.getElementById(id);
+   if(id!==except&&el&&!el.classList.contains('hidden')){
+    el.classList.add('hidden');
+    window.dispatchEvent(new CustomEvent('lolite:panelchange',{detail:{open:false,id}}));
+   }
+  }
+  for(const [id,panel] of [['startBtn','start'],['loliteMenuApps','start'],['winQuickButton','winQuickSettings'],['clock','winCalendar']]){
+   document.getElementById(id)?.setAttribute('aria-expanded',String(except===panel));
+  }
+ }
  function reveal(panel){panel.classList.remove('hidden');window.dispatchEvent(new CustomEvent('lolite:panelchange',{detail:{open:true,id:panel.id}}));window.LoliteMotion?.animate(panel,[{opacity:0,translate:'0 12px'},{opacity:1,translate:'0 0'}],{duration:190})}
  function recentMarkup(){const ids=recent.filter(id=>id!=='home').slice(0,4);return ids.length?ids.map(id=>{const a=app(id);return `<button type="button" data-shell-open="${id}">${icon(id)}<span><b>${esc(a[1])}</b><small>${esc(a[2])}</small></span></button>`}).join(''):'<p class="win-empty-recent">Apps you open will appear here.</p>'}
- function renderStartResults(){const input=document.getElementById('winStartSearch'),results=document.getElementById('winStartResults');if(!input||!results)return;const q=input.value.trim().toLowerCase();const matches=apps.filter(a=>!q||(a[1]+' '+a[2]).toLowerCase().includes(q));results.innerHTML=q?`<div class="win-start-heading"><h2>Search results</h2><span>${matches.length} apps</span></div><div class="win-app-list">${matches.map(a=>`<button type="button" data-shell-open="${a[0]}">${icon(a[0])}<span><b>${esc(a[1])}</b><small>${esc(a[2])}</small></span><i>Open ↗</i></button>`).join('')||'<p class="win-empty-recent">No apps match your search.</p>'}</div>`:allApps?`<div class="win-start-heading"><h2>All apps</h2><button type="button" data-shell-action="all-apps">← Pinned</button></div><div class="win-all-apps">${[...apps].sort((a,b)=>a[1].localeCompare(b[1])).map(a=>button(a[0])).join('')}</div>`:`<div class="win-start-heading"><h2>Pinned</h2><button type="button" data-shell-action="all-apps">All apps <span>›</span></button></div><div class="win-start-grid">${['games','music','files','browser','settings','appstore','academy','chatroom','life-rp','lolite-quests','notes','calculator','paint'].map(id=>button(id)).join('')}</div><div class="win-start-heading win-recent-heading"><h2>Recently opened</h2><span>On this device</span></div><div class="win-start-recent">${recentMarkup()}</div>`}
- function openStart(search=false){if(document.documentElement.classList.contains('browsing-mode'))return;const panel=document.getElementById('start');if(!search&&!panel.classList.contains('hidden')){closePanels();return}closePanels('start');allApps=false;panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Start menu');panel.innerHTML='<div class="win-start-body"><label class="win-start-search"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg><input id="winStartSearch" type="search" placeholder="Search apps and settings" aria-label="Search apps and settings" autocomplete="off"></label><div id="winStartResults"></div></div><footer class="win-start-footer"><span class="win-user-avatar">L</span><span><b>Lolite</b><small>Local workspace</small></span><button type="button" data-shell-action="layout" title="Change workspace">Change workspace</button><button type="button" data-shell-action="show-desktop" aria-label="Show desktop" title="Show desktop">⌄</button></footer>';renderStartResults();reveal(panel);const input=panel.querySelector('input');input.addEventListener('input',renderStartResults);input.addEventListener('keydown',e=>{if(e.key==='Enter'){const first=panel.querySelector('[data-shell-open]');if(first){e.preventDefault();launch(first.dataset.shellOpen)}}});input.focus({preventScroll:true})}
+ function launcherHeading(title,action=''){
+  return '<div class="win-start-heading"><h2>'+title+'</h2>'+action+'</div>';
+ }
+ function launcherToggle(label){
+  return '<button type="button" data-shell-action="all-apps">'+label+'</button>';
+ }
+ function appButtons(ids){return ids.map(id=>button(id)).join('')}
+ function browseLauncher(layout){
+  const shortcuts=[...new Set([...recent,'browser','music','games','appstore','chatroom','calculator','paint'])];
+  const all=appButtons(launcherList.map(a=>a[0]));
+  if(layout==='grid'){
+   return launcherHeading('Applications')+'<div class="win-start-grid win-launcher-apps">'+all+'</div>';
+  }
+  if(layout==='list'){
+   return launcherHeading('Applications')+'<div class="win-all-apps win-flat-launcher">'+all+'</div>';
+  }
+  if(layout==='tiles'){
+   const tiles=[...new Set([...pins,...launcherShortcuts])].slice(0,9);
+   return '<div class="win-launcher-columns"><section>'+launcherHeading('All apps')+
+    '<div class="win-all-apps win-flat-launcher">'+all+'</div></section><section>'+launcherHeading('Tiles')+
+    '<div class="win-start-grid win-launcher-tiles">'+appButtons(tiles)+'</div></section></div>';
+  }
+  if(allApps)return launcherHeading('All apps',launcherToggle('Back'))+'<div class="win-all-apps">'+all+'</div>';
+  if(layout==='classic'){
+   const workspace=['home','files','settings','notes'];
+   const primary=shortcuts.filter(id=>!workspace.includes(id)).slice(0,7);
+   return '<div class="win-launcher-columns"><section>'+launcherHeading('Apps',launcherToggle('All apps ›'))+
+    '<div class="win-all-apps win-flat-launcher">'+appButtons(primary)+'</div></section><section class="win-launcher-places">'+
+    launcherHeading('Workspace')+'<div class="win-all-apps win-flat-launcher">'+appButtons(workspace)+'</div></section></div>';
+  }
+  const preferred=root.dataset.desktopTheme==='windows11'?[...new Set([...pins,...launcherShortcuts])].slice(0,12):launcherShortcuts;
+  return launcherHeading('Pinned',launcherToggle('All apps ›'))+'<div class="win-start-grid">'+appButtons(preferred)+'</div>'+
+   '<div class="win-start-heading win-recent-heading"><h2>Recently opened</h2></div><div class="win-start-recent">'+recentMarkup()+'</div>';
+ }
+ function renderStartResults(){
+  const input=document.getElementById('winStartSearch'),results=document.getElementById('winStartResults');
+  if(!input||!results)return;
+  const query=input.value.trim().toLowerCase();
+  if(!query){results.innerHTML=browseLauncher(input.closest('#start').dataset.launcher);return}
+  const matches=apps.filter(a=>(a[1]+' '+a[2]).toLowerCase().includes(query));
+  results.innerHTML=launcherHeading('Search results','<span>'+matches.length+' apps</span>')+
+   '<div class="win-app-list">'+(matches.map(([id,title,description])=>
+    '<button type="button" data-shell-open="'+id+'">'+icon(id)+'<span><b>'+esc(title)+'</b><small>'+
+    esc(description)+'</small></span></button>').join('')||'<p class="win-empty-recent">No apps match your search.</p>')+'</div>';
+ }
+ function openStart(search=false){
+  if(root.classList.contains('browsing-mode')||root.classList.contains('mobile-mode'))return;
+  const panel=document.getElementById('start');
+  if(!search&&!panel.classList.contains('hidden')){closePanels();return}
+  closePanels('start');allApps=false;
+  panel.dataset.launcher=window.LoliteDesktopThemes?.getLauncher?.()||'standard';
+  panel.setAttribute('role','dialog');
+  panel.setAttribute('aria-label',panel.dataset.launcher==='grid'?'Application launcher':'Start menu');
+  const classicProfile=root.dataset.desktopTheme==='windowsxp';
+  const profile='<span class="win-user-avatar" aria-hidden="true">L</span><span><b>Lolite</b></span>';
+  panel.innerHTML=(classicProfile?'<header class="win-start-profile">'+profile+'</header>':'')+
+   '<div class="win-start-body"><label class="win-start-search"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg><input id="winStartSearch" type="search" placeholder="Search apps" aria-label="Search apps" autocomplete="off"></label><div id="winStartResults"></div></div>'+
+   '<footer class="win-start-footer">'+(classicProfile?'':profile)+'<button type="button" data-shell-action="layout">Change workspace</button><button type="button" data-shell-action="show-desktop" aria-label="Show desktop" title="Show desktop">⌄</button></footer>';
+  renderStartResults();reveal(panel);
+  const input=panel.querySelector('input');
+  input.addEventListener('input',renderStartResults);
+  input.addEventListener('keydown',event=>{
+   if(event.key!=='Enter')return;
+   const first=panel.querySelector('[data-shell-open]');
+   if(first){event.preventDefault();launch(first.dataset.shellOpen)}
+  });
+  input.focus({preventScroll:true});
+ }
  function syncTasks(){
   const holder=document.getElementById('winPinnedApps');
   if(!holder)return;
@@ -115,6 +195,39 @@
   const quick=['games','files','browser','settings','appstore','academy','chatroom','notes'].map(id=>button(id)).join('');
   return window.LoliteHome.markup({quick,recent:recent.some(id=>id!=='home')?recentMarkup():'',themes});
  }
+ function mountMenuBar(bar,tray){
+  const menu=document.createElement('header');
+  menu.id='loliteMenuBar';menu.hidden=true;
+  menu.setAttribute('aria-label','Desktop menu bar');
+  menu.innerHTML='<button type="button" class="win-menu-home" data-shell-open="home">'+icon('home')+
+   '<span>Lolite</span></button><span class="win-menu-current" data-menu-current></span>'+
+   '<nav aria-label="Workspace"><button type="button" id="loliteMenuApps" aria-controls="start" aria-expanded="false">Applications</button>'+
+   '<button type="button" data-shell-action="show-desktop">Desktop</button></nav>';
+  bar.before(menu);
+  menu.querySelector('#loliteMenuApps').onclick=()=>openStart();
+  const current=menu.querySelector('[data-menu-current]');
+  function updateTitle(){
+   current.textContent=state.windows[state.activeId]?.title||'';
+  }
+  function sync(){
+   // Dock presets provide their own position, including a user-selected top bar.
+   const show=root.dataset.desktopTheme==='macos'&&!root.matches('.browsing-mode, .mobile-mode, .ltc-applied');
+   if(show===!menu.hidden)return;
+   const focus=tray.contains(document.activeElement)?document.activeElement:null;
+   closePanels();
+   menu.hidden=!show;
+   if(show)menu.append(tray);
+   else bar.insertBefore(tray,document.getElementById('winShowDesktop'));
+   window.LoliteWindowManager?.resizeToViewport();
+   if(focus?.isConnected)focus.focus({preventScroll:true});
+   updateTitle();
+  }
+  for(const event of ['lolite:desktopthemechange','lolite:modechange','lolite:taskbarlayoutchange']){
+   window.addEventListener(event,sync);
+  }
+  window.addEventListener('lolite:windowchange',updateTitle);
+  return sync;
+ }
  function init(event){
   document.documentElement.dataset.desktopExperience='windows';const bar=document.getElementById('taskbar'),start=document.getElementById('startBtn'),search=document.getElementById('searchBtn'),tasks=document.getElementById('tasks'),tray=bar.querySelector('.tray');
   const center=document.createElement('div');center.className='win-taskbar-center';bar.insertBefore(center,bar.firstChild);center.append(start,search);
@@ -139,7 +252,7 @@
    const step=event.deltaMode===1?16:event.deltaMode===2?appRail.clientWidth:1;
    appRail.scrollLeft+=event.deltaY*step;
   },{passive:false});
-  start.innerHTML='<img class="win-start-brand" src="assets/lolite-cosmos-logo.svg" alt="" draggable="false"><span class="win-start-logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span>';start.setAttribute('aria-label','Start');start.setAttribute('aria-controls','start');start.setAttribute('aria-expanded','false');start.onclick=()=>openStart();search.innerHTML='<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg>';search.title='Search';search.setAttribute('aria-label','Search apps');search.onclick=()=>openStart(true);window.openSearch=()=>openStart(true);
+  start.innerHTML='<img class="win-start-brand" src="assets/lolite-cosmos-logo.svg" alt="" draggable="false"><span class="win-start-logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="win-start-label" aria-hidden="true">Start</span>';start.setAttribute('aria-label','Start');start.setAttribute('aria-controls','start');start.setAttribute('aria-expanded','false');start.onclick=()=>openStart();search.innerHTML='<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg><span class="win-search-label" aria-hidden="true">Search apps</span>';search.title='Search';search.setAttribute('aria-label','Search apps');search.onclick=()=>openStart(true);window.openSearch=()=>openStart(true);
   const brand=document.createElement('button');brand.type='button';brand.className='win-taskbar-brand';brand.innerHTML=icon('home')+'<span>Lolite OS<small>Your workspace</small></span>';brand.title='Home';brand.onclick=()=>launch('home');bar.insertBefore(brand,center);
   document.getElementById('loliteDesktopThemeButton')?.remove();const quick=document.createElement('button');quick.type='button';quick.id='winQuickButton';quick.className='task';quick.innerHTML=icon('sounds');quick.setAttribute('aria-label','Quick settings');quick.setAttribute('aria-expanded','false');quick.onclick=openQuick;tray.insertBefore(quick,tray.firstChild);
   const clock=document.getElementById('clock');clock.setAttribute('role','button');clock.tabIndex=0;clock.title='Calendar';clock.setAttribute('aria-label','Open calendar');clock.setAttribute('aria-expanded','false');clock.onclick=openCalendar;clock.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openCalendar()}};
@@ -147,15 +260,46 @@
   const icons=document.getElementById('icons');icons.addEventListener('click',e=>{const b=e.target.closest('.desktop-icon');if(!b||e.detail===0)return;icons.querySelectorAll('.selected').forEach(n=>n.classList.remove('selected'));b.classList.add('selected');if(matchMedia('(pointer:fine)').matches){e.stopImmediatePropagation();e.preventDefault()}else if(typeof b.ondblclick==='function'){e.stopImmediatePropagation();e.preventDefault();activateShortcut(b)}},true);
   icons.addEventListener('keydown',e=>{const b=e.target.closest('.desktop-icon');if(b&&(e.key==='Enter'||e.key===' ')){e.preventDefault();e.stopImmediatePropagation();activateShortcut(b)}},true);
   icons.addEventListener('dblclick',e=>{const b=e.target.closest('.desktop-icon');if(b){e.preventDefault();e.stopImmediatePropagation();activateShortcut(b)}},true);
-  document.addEventListener('pointerdown',e=>{if(!e.target.closest('#start,#startBtn,#searchBtn,.win-flyout,#winQuickButton,#clock'))closePanels();if(!e.target.closest('.desktop-icon'))icons.querySelectorAll('.selected').forEach(n=>n.classList.remove('selected'))});
+  const syncMenuBar=mountMenuBar(bar,tray);
+  document.addEventListener('pointerdown',e=>{if(!e.target.closest('#start,#startBtn,#searchBtn,.win-flyout,#winQuickButton,#clock,#loliteMenuApps'))closePanels();if(!e.target.closest('.desktop-icon'))icons.querySelectorAll('.selected').forEach(n=>n.classList.remove('selected'))});
   document.addEventListener('contextmenu',desktopMenu);document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanels();if(e.ctrlKey&&e.key==='Escape'){e.preventDefault();openStart()}});
+  window.addEventListener('lolite:desktopthemechange',()=>closePanels());
   // Several app scripts add controls during startup. Move the existing buttons
   // once those scripts have attached their actions and keyboard state.
-  const finishTray=()=>setTimeout(()=>groupTrayTools(tray),0);
+  const finishTray=()=>setTimeout(()=>{groupTrayTools(tray);syncMenuBar()},0);
   if(event?.type==='DOMContentLoaded'||document.readyState==='complete')finishTray();
   else document.addEventListener('DOMContentLoaded',finishTray,{once:true});
  }
- document.addEventListener('click',e=>{const b=e.target.closest('[data-shell-open],[data-shell-action],[data-task-app],[data-calendar-step]');if(!b)return;if(b.dataset.shellOpen){launch(b.dataset.shellOpen);return}if(b.dataset.taskApp){const id=b.dataset.taskApp;if(state.windows[id])window.LoliteWindowManager.toggleTask(id);else launch(id);return}if(b.dataset.calendarStep){calendarMonth=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+Number(b.dataset.calendarStep),1);renderCalendar();return}const action=b.dataset.shellAction;if(action==='all-apps'){allApps=!allApps;renderStartResults();return}if(action==='mute'){window.LoliteSounds?.setEnabled(!window.LoliteSounds.state().enabled);document.getElementById('winQuickSettings').classList.add('hidden');openQuick();return}if(action==='reduce'){window.toggleReduce(!window.LoliteMotion?.reduced());window.LoliteWallpapers?.sync();document.getElementById('winQuickSettings').classList.add('hidden');openQuick();return}if(action==='open-shortcut')activateShortcut(document.getElementById('winDesktopMenu')._shortcut);closePanels();if(action==='layout')window.LoliteDeviceMode?.showChooser();if(action==='show-desktop')window.LoliteWindowManager?.showDesktop();if(action==='refresh')window.renderIcons?.();if(action==='wallpaper')window.LoliteCrimson?.openSettings('wallpapers');if(action==='widgets')window.LoliteWidgets?.open?.();if(action==='hosts')window.LoliteHostStatus?.openPanel?.()});
+ document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-shell-open],[data-shell-action],[data-task-app],[data-calendar-step]');
+  if(!b)return;
+  if(b.dataset.shellOpen){launch(b.dataset.shellOpen);return}
+  if(b.dataset.taskApp){
+   const id=b.dataset.taskApp;
+   if(state.windows[id])window.LoliteWindowManager.toggleTask(id);else launch(id);
+   return;
+  }
+  if(b.dataset.calendarStep){
+   calendarMonth=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+Number(b.dataset.calendarStep),1);
+   renderCalendar();return;
+  }
+  const action=b.dataset.shellAction;
+  if(action==='all-apps'){
+   allApps=!allApps;renderStartResults();
+   document.querySelector('#start [data-shell-action="all-apps"]')?.focus({preventScroll:true});
+   return;
+  }
+  if(action==='mute'){window.LoliteSounds?.setEnabled(!window.LoliteSounds.state().enabled);document.getElementById('winQuickSettings').classList.add('hidden');openQuick();return}
+  if(action==='reduce'){window.toggleReduce(!window.LoliteMotion?.reduced());window.LoliteWallpapers?.sync();document.getElementById('winQuickSettings').classList.add('hidden');openQuick();return}
+  if(action==='open-shortcut')activateShortcut(document.getElementById('winDesktopMenu')._shortcut);
+  closePanels();
+  if(action==='layout')window.LoliteDeviceMode?.showChooser();
+  if(action==='show-desktop')window.LoliteWindowManager?.showDesktop();
+  if(action==='refresh')window.renderIcons?.();
+  if(action==='wallpaper')window.LoliteCrimson?.openSettings('wallpapers');
+  if(action==='widgets')window.LoliteWidgets?.open?.();
+  if(action==='hosts')window.LoliteHostStatus?.openPanel?.();
+ });
  document.addEventListener('input',e=>{if(e.target.matches('[data-shell-volume]')){window.LoliteSounds?.setVolume(e.target.value/100);e.target.nextElementSibling.textContent=e.target.value+'%'}});
  window.addEventListener('lolite:windowchange',e=>{if(e.detail.type==='open'&&app(e.detail.id)){recent=[e.detail.id,...recent.filter(id=>id!==e.detail.id)].slice(0,8);save('loliteRecentAppsV2',recent)}syncTasks()});window.addEventListener('lolite:modechange',()=>{closePanels();syncTasks()});
  window.LoliteDesktopShell={homeMarkup,launch,openStart,apps,pin,unpin,syncTasks,getPins:()=>[...pins]};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();

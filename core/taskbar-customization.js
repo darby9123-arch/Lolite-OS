@@ -51,6 +51,7 @@
    delete root.dataset.ltcClock;
    delete root.dataset.ltcSettings;
    delete root.dataset.ltcStyle;
+   window.dispatchEvent?.(new Event('lolite:taskbarlayoutchange'));
    return;
   }
   root.dataset.ltcPosition=prefs.position;
@@ -70,6 +71,7 @@
    '--ltc-blur':prefs.blur?'24px':'0px'
   };
   for(const [name,value] of Object.entries(variables))root.style.setProperty(name,value);
+  window.dispatchEvent?.(new Event('lolite:taskbarlayoutchange'));
  }
  function load(){
   try{

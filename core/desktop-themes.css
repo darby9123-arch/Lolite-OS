@@ -23,6 +23,7 @@
 #loliteDesktopThemePicker :is(button):focus-visible{outline:3px solid #b6dfff;outline-offset:3px}
 /* Previews are self-contained miniature desktops, not screenshots or external images. */
 .ldt-scene{display:block;position:relative;height:148px;overflow:hidden;border:1px solid #ffffff22;border-radius:11px;background:linear-gradient(140deg,#16459c,#2f82df 48%,#141e59)}
+.ldt-backdrop{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .ldt-scene::before{content:"";position:absolute;width:125%;height:110%;left:-50%;top:-50%;border-radius:50%;border:26px solid #75ccff4a;transform:rotate(-27deg)}
 .ldt-window{position:absolute;top:20px;left:18%;width:67%;height:100px;background:#e5f3ffdf;border:1px solid #cbdff4;border-radius:7px;box-shadow:0 12px 26px #0005}
 .ldt-window:before{content:"";position:absolute;left:0;right:0;top:0;height:20px;border-radius:inherit;background:#f9fcff}

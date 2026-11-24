@@ -132,8 +132,42 @@ test('Wallpaper Settings handles favourite clicks separately from applying cards
  assert.match(crimson,/api\.cards\(filter,wallQuery\)/);
  const html=read('index.html');
  assert.match(html,/core\/wallpaper-favourites\.css/);
- assert.match(html,/core\/wallpapers\.js\?v=20261113/);
+ assert.match(html,/core\/wallpapers\.js\?v=[^"\s]+/);
  assert.match(html,/core\/crimson\.js\?v=[^"\s]+/);
+});
+
+test('Theme wallpapers preserve the personal choice and can be turned off or overridden',()=>{
+ const {api,doc,win,storage}=harness();
+ const wallpaper={dataset:{},style:{},classList:{remove(){}}};
+ doc.getElementById=id=>id==='wallpaper'?wallpaper:null;
+ api.setTransitionMode('off');
+ api.apply('nature-one');
+ let backdrop={id:'theme-windowsxp',name:'XP backdrop',src:'assets/wallpapers/coastal-hills.webp'};
+ win.LoliteDesktopThemes={getBackdrop:()=>backdrop};
+ api.restore();
+ assert.equal(api.current().id,'theme-windowsxp');
+ assert.equal(storage.get('wallpaperId'),'nature-one');
+ assert.equal(doc.documentElement.dataset.wallpaper,'theme-windowsxp');
+
+ doc.documentElement.classList.contains=value=>value==='browsing-mode';
+ api.restore();
+ assert.equal(api.current().id,'nature-one');
+ doc.documentElement.classList.contains=()=>false;
+ backdrop={id:'theme-macos',name:'macOS backdrop',src:'assets/wallpapers/rose-coast.webp'};
+ api.restore();
+ assert.equal(api.current().id,'theme-macos');
+ api.setThemeBackdrop(false);
+ assert.equal(api.current().id,'nature-one');
+ api.setThemeBackdrop(true);
+ assert.equal(api.current().id,'theme-macos');
+
+ assert.equal(api.setCustom('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB'),true);
+ assert.equal(api.usesThemeBackdrop(),false);
+ assert.equal(api.current().id,'custom');
+ api.setThemeBackdrop(true);
+ assert.equal(api.current().id,'theme-macos');
+ api.setThemeBackdrop(false);
+ assert.equal(api.current().id,'custom');
 });
 
 const wallIds=html=>[...html.matchAll(/data-wall-id="([^"]+)"/g)].map(match=>match[1]);

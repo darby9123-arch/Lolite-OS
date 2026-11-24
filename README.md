@@ -36,6 +36,10 @@ A Lolite-branded browser desktop with the original Cosmos space interface, apps,
 
 ## Update Log
 
+### Desktop theme redesign — 2026-11-25
+- Desktop themes now include distinct app launchers, window controls, and matching wallpapers.
+- Switch styles in Home. Use the theme wallpaper switch to return to your own background.
+
 ### Workspace themes in Home — 2026-11-25
 - Preview desktop themes in Home and apply them in one click.
 - Choose Windows XP, macOS, Windows 11, Windows 10, or one of three original styles for your taskbar, menus, and window frames.

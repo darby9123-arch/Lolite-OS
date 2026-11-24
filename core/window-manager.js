@@ -30,7 +30,13 @@
  }
  function fit(rect,area){const width=clamp(rect.width,Math.min(320,area.width),area.width),height=clamp(rect.height,Math.min(220,area.height),area.height);return {left:clamp(rect.left,area.left,area.left+area.width-width),top:clamp(rect.top,area.top,area.top+area.height-height),width,height}}
  function snapRect(kind,area){if(area.width<648)return {...area};const gap=8,half=(area.width-gap)/2,h=(area.height-gap)/2;return {left:area.left+(kind.includes('right')?half+gap:0),top:area.top+(kind.startsWith('bottom')?h+gap:0),width:kind==='max'?area.width:half,height:kind.includes('-')?h:area.height}}
- function bounds(){const width=root.clientWidth||innerWidth,height=root.clientHeight||innerHeight,bar=$('taskbar')?.getBoundingClientRect();let top=8,bottom=height-8;if(bar&&bar.height&&bar.width){if(bar.top<height/2)top=bar.bottom+8;else bottom=bar.top-8}return {left:8,top,width:Math.max(1,width-16),height:Math.max(1,bottom-top)}}
+ function bounds(){
+  const width=root.clientWidth||innerWidth,height=root.clientHeight||innerHeight;
+  const bar=$('taskbar')?.getBoundingClientRect(),menu=$('loliteMenuBar')?.getBoundingClientRect();
+  let top=menu?.height?menu.bottom+8:8,bottom=height-8;
+  if(bar?.height&&bar.width){if(bar.top<height/2)top=Math.max(top,bar.bottom+8);else bottom=bar.top-8}
+  return {left:8,top,width:Math.max(1,width-16),height:Math.max(1,bottom-top)};
+ }
  const rectOf=el=>el.style.display==='none'?Object.fromEntries(['left','top','width','height'].map(k=>[k,parseFloat(el.style[k])||0])):({left:el.offsetLeft,top:el.offsetTop,width:el.offsetWidth,height:el.offsetHeight});
  function setRect(el,rect){for(const k of ['left','top','width','height'])el.style[k]=Math.round(rect[k])+'px'}
  function emit(type,id,extra={}){window.dispatchEvent(new CustomEvent('lolite:windowchange',{detail:{type,id,...extra}}))}
@@ -40,6 +46,18 @@
  const motion=(el,frames,options,done)=>window.LoliteMotion?.animate?window.LoliteMotion.animate(el,frames,options,done):done?.();
  function taskTransform(id,el){const task=document.querySelector('[data-task-app="'+CSS.escape(id)+'"]')||$('task-'+id)||$('startBtn'),from=el.getBoundingClientRect(),to=task?.getBoundingClientRect();return to?`translate(${to.left+to.width/2-from.left-from.width/2}px, ${to.top+to.height/2-from.top-from.height/2}px) scale(.12)`:'translateY(32px) scale(.92)'}
  const glyphs={min:'<path d="M3 8h10"/>',snap:'<rect x="2.5" y="3" width="11" height="10" rx=".5"/><path d="M8 3v10"/>',max:'<rect x="3.5" y="3.5" width="9" height="9" rx=".5"/>',close:'<path d="m3.5 3.5 9 9m0-9-9 9"/>'};
+ function arrangeTitlebar(el){
+  const header=el.querySelector('.titlebar'),controls=header?.querySelector('.controls');
+  if(!controls)return;
+  const onLeft=root.dataset.desktopTheme==='macos'&&!browser()&&!root.classList.contains('mobile-mode');
+  if(onLeft===(header.firstElementChild===controls))return;
+  const focused=controls.contains(document.activeElement)?document.activeElement:null;
+  const order=onLeft?['close','min','max','snap']:['min','snap','max','close'];
+  controls.append(...order.map(name=>controls.querySelector('.'+name)));
+  if(onLeft)header.prepend(controls);
+  else header.append(controls);
+  focused?.focus({preventScroll:true});
+ }
  function openApp(id,title,w,h){
   // The desktop is account-only: block programmatic app opens during boot,
   // sign-out or failed authentication, not just mouse access behind the dialog.
@@ -63,6 +81,7 @@
   el.querySelector('.titlebar strong').textContent=title||id;workspace.windows[id]={el,title:title||id,minimised:false,closing:false,normal,desktopIndex:workspace.desktopIndex};el.querySelector('.content').innerHTML=renderPageSafely(id);
   el.querySelector('.min').onclick=()=>window.minWin(id);el.querySelector('.max').onclick=()=>window.maxWin(id);el.querySelector('.close').onclick=()=>window.closeWin(id);el.querySelector('.snap').onclick=event=>{event.stopPropagation();showSnapMenu(id,event.currentTarget)};
   el.addEventListener('pointerdown',()=>focus(id),{capture:true});el.querySelector('.titlebar').ondblclick=event=>{if(!event.target.closest('button')&&!browser())window.maxWin(id)};
+  arrangeTitlebar(el);
   $('windows').appendChild(el);drag(el);syncControls(el);
   const task=document.createElement('button');task.type='button';task.id='task-'+id;task.className='taskwin';task.dataset.appId=id;task.title=title||id;task.setAttribute('aria-label',title||id);task.innerHTML=(window.LoliteIcons?.tile(id)||'')+'<span class="task-title"></span>';task.querySelector('.task-title').textContent=title||id;task.onclick=()=>toggleTask(id);$('tasks').appendChild(task);
   setActiveTask(id);emit('open',id);if(!browser())motion(el,[{opacity:0,transform:'translateY(14px) scale(.96)'},{opacity:1,transform:'none'}],{duration:220});return el;
@@ -119,7 +138,13 @@
  }else if(e.key==='ArrowDown')window.minWin(id);
  else snapWin(id,e.key==='ArrowLeft'?'left':e.key==='ArrowRight'?'right':'max');
 }if(e.altKey&&e.key==='Tab'){e.preventDefault();const list=Object.keys(workspace.windows).filter(id=>!workspace.windows[id].closing);if(list.length)window.restoreWin(list[(list.indexOf(workspace.activeId)+(e.shiftKey?list.length-1:1))%list.length])}});
- window.addEventListener('resize',resizeToViewport);window.addEventListener('orientationchange',resizeToViewport);document.addEventListener('fullscreenchange',resizeToViewport);document.addEventListener('webkitfullscreenchange',resizeToViewport);window.visualViewport?.addEventListener?.('resize',resizeToViewport);window.addEventListener('lolite:desktopthemechange',resizeToViewport);window.addEventListener('lolite:modechange',()=>{closeSnapMenu();resizeToViewport()});
+ window.addEventListener('resize',resizeToViewport);window.addEventListener('orientationchange',resizeToViewport);document.addEventListener('fullscreenchange',resizeToViewport);document.addEventListener('webkitfullscreenchange',resizeToViewport);window.visualViewport?.addEventListener?.('resize',resizeToViewport);
+ function refreshLayout(){
+  for(const record of Object.values(workspace.windows))arrangeTitlebar(record.el);
+  closeSnapMenu();resizeToViewport();
+ }
+ window.addEventListener('lolite:desktopthemechange',refreshLayout);
+ window.addEventListener('lolite:modechange',refreshLayout);
  Object.assign(window,{openApp,closeWin,minWin,restoreWin,maxWin,snapWin,drag,setActiveTask});
  window.LoliteWindowManager={focus,toggleTask,showDesktop,bounds,fit,resizeToViewport,showSnapMenu,
   savedLayouts:()=>({...savedLayouts}),forgetLayout,

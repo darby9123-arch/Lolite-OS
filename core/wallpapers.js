@@ -12,6 +12,15 @@
  const collection=[...uploadedPack.map(wall=>({...wall,embedded:false})),...catalog.catalog.map(wall=>({...wall,group:wall.category,embedded:true})),...motionBGS.map(wall=>({...wall}))];
  const defaultId=catalog.defaultId;
  const live=wall=>Boolean(wall?.video||wall?.src4k||wall?.motion);
+ const THEME_BACKDROP_KEY='loliteUseThemeWallpaper';
+ const usesThemeBackdrop=()=>read(THEME_BACKDROP_KEY)!=='false';
+ function themeBackdrop(){
+  if(!usesThemeBackdrop()||root.classList.contains('browsing-mode')||root.classList.contains('mobile-mode'))return null;
+  return window.LoliteDesktopThemes?.getBackdrop?.()||null;
+ }
+ function choosePersonalBackdrop(){
+  if(themeBackdrop())save(THEME_BACKDROP_KEY,'false');
+ }
  const CUSTOM_ID='custom';
  const customWall=()=>{
   const src=read('loliteCustomWallpaper');
@@ -480,12 +489,15 @@
  function apply(id,{persist=true}={}){
   const selected=find(id);if(!selected)return false;
   if(persist){
+   choosePersonalBackdrop();
    save('wallpaperId',selected.id);save('wallpaper',selected.id);
    save('loliteWallpaperCustomActive',selected.id===CUSTOM_ID?'true':'false');
   }
   show(selected);return true;
  }
  function restore(){
+  const themed=themeBackdrop();
+  if(themed){show(themed);return}
   const custom=read('loliteCustomWallpaper');
   if(custom&&read('loliteWallpaperCustomActive')==='true'){
    show({id:'custom',name:'Your wallpaper',src:custom});return;
@@ -496,6 +508,7 @@
  function setCustom(image){
   if(typeof image!=='string'||!/^data:image\/(?:png|jpeg|webp);base64,/.test(image))return false;
   if(!save('loliteCustomWallpaper',image)){window.toast?.('Image is too large to save.');return false}
+  choosePersonalBackdrop();
   save('loliteWallpaperCustomActive','true');
   show({id:'custom',name:'Your custom wallpaper',category:'Uploaded',src:image,poster:image});
   window.dispatchEvent(new CustomEvent('lolite:wallpapercollectionchange',
@@ -662,13 +675,18 @@
    else if(active.src!==replacement.src||active.video!==replacement.video||active.poster!==replacement.poster)show(replacement,{force:true});
   }
   const stored=read('wallpaperId');
-  if(stored.startsWith('admin-')&&find(stored))apply(stored,{persist:false});
+  if(!themeBackdrop()&&stored.startsWith('admin-')&&find(stored))apply(stored,{persist:false});
   window.dispatchEvent(new CustomEvent('lolite:wallpapercollectionchange',
    {detail:{admin:added.length,total:collection.length}}));
  }
  window.addEventListener('lolite:library-updated',event=>syncAdminWallpapers(event.detail?.items));
  window.LoliteWallpapers={
   collection,apply,restore,markup,cards,setCustom,discoverVideos,syncAdminWallpapers,getStatus:()=>status,
+  usesThemeBackdrop,setThemeBackdrop:value=>{
+   save(THEME_BACKDROP_KEY,value?'true':'false');
+   restore();
+   window.dispatchEvent(new Event('lolite:themebackdropchange'));
+  },
   isFavourite,toggleFavourite,favouriteCount,
   getSort:()=>sortOrder,setSort,reshuffle,
   getQuality:()=>quality,setQuality,retry:()=>{if(active)show(active,{force:true})},
@@ -706,7 +724,8 @@
  addEventListener('blur',()=>{pointer.inside=false});
  addEventListener('resize',resize,{passive:true});
  document.addEventListener('visibilitychange',sync);
- addEventListener('lolite:modechange',sync);
+ addEventListener('lolite:desktopthemechange',restore);
+ addEventListener('lolite:modechange',()=>{if(themeBackdrop()||active?.id.startsWith('theme-'))restore();else sync()});
  media.addEventListener?.('change',sync);
  new MutationObserver(sync).observe(root,{attributes:true,attributeFilter:['class']});
  const boot=()=>restore();

@@ -37,7 +37,19 @@
    '<button type="button" data-cr-theme-mode="browser" aria-pressed="'+isBrowser+'">Browser</button></div></div>'+
    '<div class="cr-theme-grid">'+cards(featured)+'</div>'+
    (more.length?'<details class="lh-theme-more"><summary>More desktop themes</summary><div class="cr-theme-grid">'+
-    cards(more)+'</div></details>':'')+'</section>';
+    cards(more)+'</div></details>':'')+
+   (!isBrowser&&window.LoliteWallpapers?.setThemeBackdrop?
+    '<label class="lh-theme-backdrop" '+(api.getBackdrop()?'':'hidden')+'><input type="checkbox" data-cr-theme-wallpaper '+
+    (window.LoliteWallpapers.usesThemeBackdrop()?'checked':'')+'> Use theme wallpaper</label>':'')+
+   '</section>';
+ }
+ function syncBackdropControl(){
+  const theme=window.LoliteDesktopThemes?.getBackdrop?.();
+  const selected=window.LoliteWallpapers?.usesThemeBackdrop?.();
+  document.querySelectorAll('[data-cr-theme-wallpaper]').forEach(control=>{
+   control.parentElement.hidden=!theme;
+   control.checked=!!selected;
+  });
  }
  function syncThemePanels(mode,id){
   const name=themeApi(mode)?.themes.find(theme=>theme.id===id)?.name;
@@ -49,8 +61,13 @@
    });
   }
  }
- window.addEventListener('lolite:desktopthemechange',event=>syncThemePanels('desktop',event.detail?.theme));
+ window.addEventListener('lolite:desktopthemechange',event=>{
+  syncThemePanels('desktop',event.detail?.theme);
+  syncBackdropControl();
+ });
  window.addEventListener('lolite:browserthemechange',event=>syncThemePanels('browser',event.detail?.theme));
+ window.addEventListener('lolite:wallpaperchange',syncBackdropControl);
+ window.addEventListener('lolite:themebackdropchange',syncBackdropControl);
  function homeMarkup(browser=false){return window.LoliteDesktopShell.homeMarkup(browser,themePanel(browser?'browser':'desktop'))}
 
  const row=(title,desc,control)=>`<div class="cr-setting-row"><div><strong>${title}</strong><p>${desc}</p></div>${control}</div>`;
@@ -130,6 +147,7 @@
  document.addEventListener('input',e=>{if(e.target.matches('[data-wall-search]')){wallQuery=e.target.value;const grid=e.target.closest('[data-cr-wall-library]').querySelector('.cr-wall-grid');grid.innerHTML=window.LoliteWallpapers.cards(filter,wallQuery)}if(e.target.matches('[data-cr-volume]')){window.LoliteSounds.setVolume(e.target.value/100);const label=document.querySelector('[data-cr-volume-label]');if(label)label.textContent=e.target.value+'%'}});
  document.addEventListener('change',e=>{
   const el=e.target;
+  if(el.matches('[data-cr-theme-wallpaper]'))window.LoliteWallpapers.setThemeBackdrop(el.checked);
   if(el.matches('[data-cr-sound-group]'))window.LoliteSounds.setGroup(el.dataset.crSoundGroup,el.checked);
   if(el.matches('[data-wall-sort]')){
    window.LoliteWallpapers.setSort(el.value);
