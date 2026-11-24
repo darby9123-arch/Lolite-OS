@@ -263,14 +263,148 @@
 .lolite-home .lh-shortcuts .win-start-recent {
   margin-top: 6px;
 }
-.lh-themes > summary {
-  padding: 12px;
+.lh-themes {
+  min-width: 0;
+  padding: 13px;
+}
+.lh-theme-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-bottom: 11px;
+}
+.lolite-home .lh-theme-header h2 {
+  font-size: 1.125rem !important;
+  font-weight: 680;
+  line-height: 1.3;
+}
+.lolite-home .lh-theme-current {
+  margin-top: 3px;
+  color: var(--lh-muted);
+  font-size: .8125rem;
+}
+.lh-theme-current strong {
   color: var(--lh-text);
-  font-size: .9375rem;
+  font-weight: 630;
+}
+.lolite-home .lh-themes .cr-theme-tabs {
+  width: auto;
+  padding: 3px !important;
+  background: #101b2c !important;
+  border-color: var(--lh-line) !important;
+}
+.lolite-home .lh-themes .cr-theme-tabs button {
+  min-height: 31px;
+  padding: 4px 10px !important;
+  color: var(--lh-muted) !important;
+  font-size: .8125rem !important;
+}
+.lolite-home .lh-themes .cr-theme-tabs button[aria-pressed="true"] {
+  color: var(--lh-text) !important;
+  background: #2b4060 !important;
+  border-color: #b6d0fe44 !important;
+}
+.lolite-home .lh-themes .cr-theme-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.lolite-home .lh-themes .cr-theme-choice {
+  padding: 6px !important;
+  border-color: var(--lh-line) !important;
+  background: #111d2f !important;
+  border-radius: 10px !important;
+}
+.lolite-home .lh-themes .cr-theme-choice:hover {
+  background: #253650 !important;
+  border-color: #93afe481 !important;
+}
+.lolite-home .lh-themes .cr-theme-choice[aria-pressed="true"] {
+  background: #263956 !important;
+  border-color: #a8c5f9 !important;
+  box-shadow: none !important;
+}
+.lolite-home .lh-themes .cr-theme-row {
+  flex: 1;
+  margin: 6px 0 0;
+  padding: 0 2px;
+  box-sizing: border-box;
+}
+.lolite-home .lh-themes .cr-theme-row strong {
+  padding: 2px 0;
+  color: var(--lh-text);
+  font-size: clamp(.6875rem, 1.9cqw, .875rem) !important;
+  overflow-wrap: anywhere;
+}
+.lolite-home .lh-themes .cr-theme-check {
+  width: 16px;
+  height: 16px;
+  background: #b8d0ff;
+  color: #12233b !important;
+}
+.lh-themes :is(.ldt-scene, .cr-theme-preview) {
+  width: 100%;
+  height: clamp(52px, 8.4cqw, 77px);
+  box-sizing: border-box;
+  border-radius: 5px;
+}
+.lh-themes .ldt-scene::before {
+  border-width: 14px;
+}
+.lh-themes .ldt-scene.cosmos {
+  background: #0c1633 url('../assets/wallpapers/cosmos-orbit.svg') center / cover;
+}
+.lh-themes .ldt-scene.crimson {
+  background: #3b1d2d url('../assets/wallpapers/crimson-fold.svg') center / cover;
+}
+.lh-themes .ldt-scene .ldt-window {
+  inset: 16% 18% 25%;
+  width: auto;
+  height: auto;
+}
+.lh-themes .ldt-scene .ldt-window::before {
+  height: 26%;
+}
+.lh-themes .ldt-scene .ldt-window::after {
+  inset: 44% 10% 14%;
+  background: repeating-linear-gradient(to bottom, #5499ce77 0 2px, transparent 2px 7px);
+}
+.lh-themes .ldt-scene .ldt-dock {
+  height: 20%;
+  gap: 4px;
+  padding-inline: 6px;
+}
+.lh-themes .ldt-scene .ldt-dock i {
+  width: auto;
+  height: 58%;
+  aspect-ratio: 1;
+}
+.lh-theme-more {
+  margin-top: 8px;
+  border-top: 1px solid var(--lh-line);
+}
+.lh-theme-more summary {
+  width: fit-content;
+  padding: 7px 4px 0;
+  color: var(--lh-accent);
+  font-size: .8125rem;
+  line-height: 1.5;
   cursor: pointer;
 }
-.lh-themes .cr-themes {
-  margin: 0 12px 12px;
+.lh-theme-more .cr-theme-grid {
+  margin-top: 8px;
+}
+@container lolite-home (max-width: 515px) {
+  .lolite-home .lh-themes .cr-theme-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .lolite-home .lh-themes .cr-theme-row strong {
+    font-size: .8125rem !important;
+  }
+  .lh-themes :is(.ldt-scene, .cr-theme-preview) {
+    height: clamp(52px, 17cqw, 70px);
+  }
 }
 @container lolite-home (max-width: 610px) {
   .lh-discover,

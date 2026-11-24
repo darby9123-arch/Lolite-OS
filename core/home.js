@@ -1,4 +1,4 @@
-/* Startup Home uses the existing release history, game player, wallpaper library and icon preferences. */
+/* Startup Home uses the release history, workspace themes, game player, wallpapers and icon preferences. */
 (() => {
  'use strict';
  const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({
@@ -116,15 +116,15 @@
   }
  }
 
- function markup({ quick, recent, themes }) {
+ function markup({ quick, recent, themes = '' }) {
   return '<div class="lolite-home"><section class="lh-update" aria-label="Newest update">' +
-   '<div class="lh-update-copy" data-lh-update>' + newestUpdate() + '</div></section><div class="lh-discover">' +
+   '<div class="lh-update-copy" data-lh-update>' + newestUpdate() + '</div></section>' +
+   themes + '<div class="lh-discover">' +
    discovery('game', 'Try out a game', 'Another game', gamePick()) +
    discovery('wallpaper', 'Try this wallpaper', 'Another wallpaper', wallpaperPick()) +
    '</div>' + iconEditor() +
    '<section class="lh-shortcuts"><h2>Quick access</h2><div class="lh-apps">' + quick + '</div></section>' +
-   (recent ? '<section class="lh-shortcuts"><h2>Recently opened</h2><div class="win-start-recent">' + recent + '</div></section>' : '') +
-   (themes ? '<details class="lh-themes"><summary>Workspace themes</summary>' + themes + '</details>' : '') + '</div>';
+   (recent ? '<section class="lh-shortcuts"><h2>Recently opened</h2><div class="win-start-recent">' + recent + '</div></section>' : '') + '</div>';
  }
 
  function changePick(home, kind) {

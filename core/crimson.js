@@ -4,32 +4,53 @@
  const apps=[['games','Game Store','Pick your next game'],['files','Files','Your files, organised'],['chatroom','Lolite Chat','Messages and calls'],['appstore','App Store','Find a useful tool'],['academy','Academy','Learn something new'],['lolite-quests','Quests','Activities and rewards'],['life-rp','Life RP','Build your own story'],['settings','Settings','Make it yours']];
  let tab='appearance',filter='All',wallQuery='';const oldPage=window.page;
  function launch(id){const name=apps.find(a=>a[0]===id)?.[1]||id;if(window.LoliteDeviceMode?.mode().mode==='browsing'){window.LoliteDeviceMode.openApp(id);return}window.openApp(id,name,id==='settings'?970:1060,710)}
- const themePalettes={
-  cosmos:['#07142d','#48caff','#e4f6ff'],crimson:['#222027','#c93b4e','#fbe5e8'],windows11:['#19283f','#3b91e9','#e1f3ff'],aero7:['#0d3455','#63a9df','#ecfbff'],
-  plasma:['#241c36','#9670e6','#efe6ff'],gnome:['#242830','#d1d6df','#f1f3f5'],deepin:['#253a52','#52b3c9','#e9ffff'],
+ const browserThemePalettes={
+  crimson:['#222027','#c93b4e','#fbe5e8'],
   firefox:['#29183a','#fd7a48','#fff4e7'],opera:['#210f19','#eb3656','#ffe2e9'],arc:['#29293f','#9d9def','#f5f4ff'],
   zen:['#1b2028','#7b8b9b','#edf4f7'],brave:['#292539','#ff794e','#fff1e8']
  };
- function themePanel(mode){
-  const isBrowser=mode==='browser',api=isBrowser?window.LoliteBrowserThemes:window.LoliteDesktopThemes;
-  const themes=api?.themes||[],active=api?.getTheme?.();
-  const cards=themes.map(theme=>{
-   const colors=themePalettes[theme.id]||themePalettes.crimson,chosen=theme.id===active;
-   const desc=theme.desc||theme.description||'';
-   return '<button type="button" class="cr-theme-choice" data-cr-theme-select="'+theme.id+'" data-cr-target="'+mode+'" aria-pressed="'+chosen+'" style="--cr-tbg:'+colors[0]+';--cr-taccent:'+colors[1]+';--cr-ttext:'+colors[2]+'">'+
-     '<span class="cr-theme-preview" aria-hidden="true"><i></i><em></em><b></b></span>'+
-     '<span class="cr-theme-row"><strong>'+theme.name+'</strong><span class="cr-theme-check" aria-hidden="true">'+(chosen?'✓':'')+'</span></span>'+
-     '<small>'+desc+'</small></button>';
-  }).join('');
-  return '<section class="cr-themes" data-cr-theme-panel data-cr-mode="'+mode+'">'+
-   '<div class="cr-section-head"><h2>Make it yours</h2><span>Choose a theme right here in Home</span></div>'+
-   '<div class="cr-theme-header"><div><strong>Workspace themes</strong><p>Change the look without changing your apps, files or games.</p></div>'+
-   '<div class="cr-theme-tabs" role="group" aria-label="Theme type">'+
-    '<button type="button" data-cr-theme-mode="desktop" aria-pressed="'+(!isBrowser)+'">Desktop</button>'+
-    '<button type="button" data-cr-theme-mode="browser" aria-pressed="'+isBrowser+'">Browser</button></div></div>'+
-   '<div class="cr-theme-grid">'+cards+'</div>'+
-   '<p class="cr-theme-note">'+(isBrowser?'Browser themes change Browsing Style.':'Desktop themes change Desktop Style.')+' Your choice is saved automatically.</p></section>';
+ const themeApi=mode=>mode==='browser'?window.LoliteBrowserThemes:window.LoliteDesktopThemes;
+ function browserThemePreview(id){
+  const [surface,accent,text]=browserThemePalettes[id]||browserThemePalettes.crimson;
+  return '<span class="cr-theme-preview" aria-hidden="true" style="--cr-tbg:'+surface+
+   ';--cr-taccent:'+accent+';--cr-ttext:'+text+'"><i></i><em></em><b></b></span>';
  }
+ function themeCard(theme,mode,active,preview){
+  return '<button type="button" class="cr-theme-choice" data-cr-theme-select="'+theme.id+
+   '" data-cr-target="'+mode+'" aria-pressed="'+(theme.id===active)+'">'+preview+
+   '<span class="cr-theme-row"><strong>'+theme.name+'</strong><span class="cr-theme-check" aria-hidden="true">✓</span></span></button>';
+ }
+ function themePanel(mode){
+  const isBrowser=mode==='browser',api=themeApi(mode);
+  if(!api)return '';
+  const {themes}=api,active=api.getTheme();
+  const cards=items=>items.map(theme=>themeCard(theme,mode,active,
+   isBrowser?browserThemePreview(theme.id):api.previewMarkup(theme.id))).join('');
+  const featured=isBrowser?themes:themes.filter(theme=>theme.featured);
+  const more=isBrowser?[]:themes.filter(theme=>!theme.featured);
+  return '<section class="lh-themes" aria-label="Workspace themes" data-cr-theme-panel data-cr-mode="'+mode+'">'+
+   '<div class="lh-theme-header"><div><h2>Workspace themes</h2>'+
+   '<p class="lh-theme-current" role="status">Selected · <strong data-cr-theme-current>'+
+   (themes.find(theme=>theme.id===active)?.name||'')+'</strong></p></div>'+
+   '<div class="cr-theme-tabs" role="group" aria-label="Theme type">'+
+   '<button type="button" data-cr-theme-mode="desktop" aria-pressed="'+(!isBrowser)+'">Desktop</button>'+
+   '<button type="button" data-cr-theme-mode="browser" aria-pressed="'+isBrowser+'">Browser</button></div></div>'+
+   '<div class="cr-theme-grid">'+cards(featured)+'</div>'+
+   (more.length?'<details class="lh-theme-more"><summary>More desktop themes</summary><div class="cr-theme-grid">'+
+    cards(more)+'</div></details>':'')+'</section>';
+ }
+ function syncThemePanels(mode,id){
+  const name=themeApi(mode)?.themes.find(theme=>theme.id===id)?.name;
+  if(!name)return;
+  for(const panel of document.querySelectorAll('[data-cr-theme-panel][data-cr-mode="'+mode+'"]')){
+   panel.querySelector('[data-cr-theme-current]').textContent=name;
+   panel.querySelectorAll('[data-cr-theme-select]').forEach(button=>{
+    button.setAttribute('aria-pressed',String(button.dataset.crThemeSelect===id));
+   });
+  }
+ }
+ window.addEventListener('lolite:desktopthemechange',event=>syncThemePanels('desktop',event.detail?.theme));
+ window.addEventListener('lolite:browserthemechange',event=>syncThemePanels('browser',event.detail?.theme));
  function homeMarkup(browser=false){return window.LoliteDesktopShell.homeMarkup(browser,themePanel(browser?'browser':'desktop'))}
 
  const row=(title,desc,control)=>`<div class="cr-setting-row"><div><strong>${title}</strong><p>${desc}</p></div>${control}</div>`;
@@ -64,15 +85,20 @@
  document.addEventListener('click',e=>{
   const b=e.target.closest('[data-cr-open],[data-cr-settings],[data-cr-tab],[data-wall-id],[data-wall-filter],[data-wall-favourite],[data-wall-favourite-current],[data-cr-action],[data-cr-sound],[data-cr-theme-mode],[data-cr-theme-select],[data-wall-retry],[data-wall-reshuffle],[data-cr-admin-open],[data-cr-website-library]');if(!b)return;
   if(b.dataset.crThemeMode){
-   const panel=b.closest('[data-cr-theme-panel]');
-   if(panel){panel.outerHTML=themePanel(b.dataset.crThemeMode);
-    document.querySelector('[data-cr-theme-panel][data-cr-mode="'+b.dataset.crThemeMode+'"] [data-cr-theme-mode="'+b.dataset.crThemeMode+'"]')?.focus({preventScroll:true})}
+   const panel=b.closest('[data-cr-theme-panel]'),mode=b.dataset.crThemeMode;
+   if(panel&&panel.dataset.crMode!==mode){
+    const markup=themePanel(mode);
+    if(!markup)return;
+    panel.insertAdjacentHTML('afterend',markup);
+    const replacement=panel.nextElementSibling;
+    panel.remove();
+    replacement.querySelector('[data-cr-theme-mode="'+mode+'"]').focus({preventScroll:true});
+   }
    return;
   }
   if(b.dataset.crThemeSelect){
-   const mode=b.dataset.crTarget,api=mode==='browser'?window.LoliteBrowserThemes:window.LoliteDesktopThemes;
+   const mode=b.dataset.crTarget,api=themeApi(mode);
    if(api?.setTheme(b.dataset.crThemeSelect)){
-    document.querySelectorAll('[data-cr-theme-panel]').forEach(panel=>{panel.outerHTML=themePanel(panel.dataset.crMode)});
     const selected=api.themes.find(t=>t.id===b.dataset.crThemeSelect);
     const visible=window.LoliteDeviceMode?.mode().mode===(mode==='browser'?'browsing':'desktop');
     window.toast?.((selected?.name||'Theme')+(visible?' applied.':' saved for '+(mode==='browser'?'Browsing':'Desktop')+' Style.'));

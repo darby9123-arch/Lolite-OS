@@ -35,6 +35,60 @@ test('Home updates use the newest dated release and retain the release detail ac
  assert.equal(update.querySelector('[data-lu-action="detail"]').dataset.luIndex, '0');
 });
 
+test('Home shows seven featured workspace themes below the update and saves each selection', async t => {
+ const taskbar = read('index.html').match(/<footer id="taskbar">[\s\S]+?<\/footer>/)[0];
+ const window = browser(t, '<div id="desktop"><div id="icons"></div><main id="windows"></main>' + taskbar + '</div>');
+ const { document, localStorage } = window;
+ window.page = () => '';
+ window.state = { windows: {}, activeId: null, desktopIndex: 0 };
+ window.LoliteWallpapers = { collection: [], current: () => null, restore() {} };
+ localStorage.setItem('loliteDesktopTheme', 'cosmos');
+ localStorage.setItem('loliteCustomWallpaper', 'existing-wallpaper');
+ for (const script of ['desktop-themes', 'browser-themes', 'interface', 'crimson', 'home'])
+  window.eval(read('core/' + script + '.js'));
+ await ready(window);
+
+ document.querySelector('#windows').innerHTML = window.page('home');
+ const home = document.querySelector('.lolite-home');
+ const panel = home.querySelector('[data-cr-theme-panel]');
+ assert.ok(panel.previousElementSibling.matches('.lh-update'));
+ assert.ok(panel.nextElementSibling.matches('.lh-discover'));
+ assert.equal(panel.querySelector('[data-cr-theme-current]').textContent, 'Lolite Cosmos');
+ const cards = [...panel.querySelectorAll(':scope > .cr-theme-grid button')];
+ assert.equal(cards.length, 7);
+ assert.deepEqual(cards.slice(0, 4).map(card => card.querySelector('strong').textContent),
+  ['Windows XP', 'macOS', 'Windows 11', 'Windows 10']);
+ assert.equal(new Set(cards.map(card => card.dataset.crThemeSelect)).size, 7);
+ assert.doesNotMatch(panel.textContent, /surprise me/i);
+
+ for (const card of cards) {
+  card.focus();
+  card.click();
+  const id = card.dataset.crThemeSelect;
+  assert.equal(card.querySelector('.ldt-scene').dataset.ldtPreview, id);
+  assert.equal(document.documentElement.dataset.desktopTheme, id);
+  assert.equal(localStorage.getItem('loliteDesktopTheme'), id);
+  assert.equal(panel.querySelector('button[data-cr-theme-select][aria-pressed="true"]'), card);
+  assert.equal(document.activeElement, card);
+ }
+ const pick = cards.at(-1).dataset.crThemeSelect;
+ window.LoliteDesktopThemes.setTheme('aero7', false);
+ assert.equal(panel.querySelector('[data-cr-theme-current]').textContent, 'Windows 7 Aero');
+ assert.ok(panel.querySelector('details [data-cr-theme-select="aero7"][aria-pressed="true"]'));
+ window.LoliteDesktopThemes.restore();
+ assert.equal(document.documentElement.dataset.desktopTheme, pick);
+ assert.equal(localStorage.getItem('loliteCustomWallpaper'), 'existing-wallpaper');
+
+ panel.querySelector('[data-cr-theme-mode="browser"]').click();
+ const browserPanel = home.querySelector('[data-cr-mode="browser"]');
+ assert.equal(document.activeElement, browserPanel.querySelector('[data-cr-theme-mode="browser"]'));
+ browserPanel.querySelector('[data-cr-theme-select="zen"]').click();
+ assert.equal(document.documentElement.dataset.browserTheme, 'zen');
+ assert.equal(localStorage.getItem('loliteDesktopTheme'), pick);
+ browserPanel.querySelector('[data-cr-theme-mode="desktop"]').click();
+ assert.equal(home.querySelector('[data-cr-theme-select][aria-pressed="true"]').dataset.crThemeSelect, pick);
+});
+
 test('Home rolls a different suggestion and forwards the visible game and wallpaper to their apps', t => {
  const window = browser(t);
  const { document } = window;

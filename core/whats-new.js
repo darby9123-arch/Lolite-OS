@@ -3,6 +3,7 @@
 'use strict';
 const URL='README.md',GH='https://github.com/darby9123-arch/Lolite-OS#update-log';
 const fallback=[
+ ['Workspace themes in Home — 2026-11-25','Preview desktop themes in Home and apply them in one click.'],
  ['Home app redesign — 2026-11-24','Play a random game, apply a wallpaper, and style your desktop icons from Home.'],
  ['All Lolite Apps Are Free — 2026-11-18','Removed the Lolite wallet, paid App Store categories, app unlock prices and Quests money rewards. Every app is free to install and open. Existing progress remains saved.'],
  ['Lolite Life RP City Update — Hands-on Jobs, Shops, Ranks, Businesses & Minigames — 2026-10-20','Playable job shifts, minigame activities, quests, businesses and customisation in the separate Life RP game.'],

@@ -1,0 +1,249 @@
+/* Featured desktop themes and their miniature previews. */
+:is(html[data-desktop-theme="windowsxp"], .ldt-scene[data-ldt-preview="windowsxp"]) {
+  --ws-accent: #8ce49f;
+  --ws-bar: #183f9b;
+  --ws-title: #2256b9;
+  --ws-frame: #7093de;
+  --ws-menu: #192e59;
+  --ws-ink: #f6f9ff;
+  --ws-sheet: #f1f2dc;
+  --ws-preview: radial-gradient(ellipse at 17% 118%, #497d2b 0 48%, transparent 49%),
+    radial-gradient(ellipse at 79% 130%, #9ac65b 0 49%, transparent 50%), linear-gradient(165deg, #4683dc, #8dcef2);
+  --ws-radius-adjustment: -7px;
+}
+:is(html[data-desktop-theme="macos"], .ldt-scene[data-ldt-preview="macos"]) {
+  --ws-accent: #664cbb;
+  --ws-bar: #e8e6f6;
+  --ws-title: #e6e7f1;
+  --ws-frame: #b9bdcf;
+  --ws-menu: #31334e;
+  --ws-ink: #242b49;
+  --ws-sheet: #f7f7ff;
+  --ws-preview: radial-gradient(ellipse at 82% 91%, #feb5a7, transparent 58%),
+    linear-gradient(155deg, #4e6693, #9482c1 54%, #e589ae);
+  --ws-radius-adjustment: 5px;
+}
+:is(html[data-desktop-theme="windows11"], .ldt-scene[data-ldt-preview="windows11"]) {
+  --ws-accent: #91c3ff;
+  --ws-bar: #1d2c47;
+  --ws-title: #243650;
+  --ws-frame: #688ab6;
+  --ws-menu: #22344f;
+  --ws-ink: #f0f7ff;
+  --ws-sheet: #e5f0fc;
+  --ws-preview: radial-gradient(ellipse at 40% 108%, #546df2, transparent 60%),
+    radial-gradient(ellipse at 76% -5%, #55bdff, transparent 60%), #203b93;
+  --ws-radius-adjustment: 0px;
+}
+:is(html[data-desktop-theme="windows10"], .ldt-scene[data-ldt-preview="windows10"]) {
+  --ws-accent: #6ac8fa;
+  --ws-bar: #1a212b;
+  --ws-title: #202b39;
+  --ws-frame: #647b90;
+  --ws-menu: #263242;
+  --ws-ink: #edf6ff;
+  --ws-sheet: #dce7f1;
+  --ws-preview: linear-gradient(145deg, #142b47, #154d74 55%, #2e82a2);
+  --ws-radius-adjustment: -10px;
+}
+:is(html[data-desktop-theme="paper-studio"], .ldt-scene[data-ldt-preview="paper-studio"]) {
+  --ws-accent: #84425f;
+  --ws-bar: #eee0cb;
+  --ws-title: #e9d7bc;
+  --ws-frame: #c8a47f;
+  --ws-menu: #4b333e;
+  --ws-ink: #39252e;
+  --ws-sheet: #f7e9d3;
+  --ws-preview: repeating-linear-gradient(90deg, transparent 0 14px, #663b4929 15px 16px),
+    linear-gradient(135deg, #a77356, #c59b78 60%, #896359);
+  --ws-radius-adjustment: -8px;
+}
+:is(html[data-desktop-theme="vaporwave"], .ldt-scene[data-ldt-preview="vaporwave"]) {
+  --ws-accent: #80f5ef;
+  --ws-bar: #32224e;
+  --ws-title: #512763;
+  --ws-frame: #bb81ce;
+  --ws-menu: #3b234d;
+  --ws-ink: #fff2ff;
+  --ws-sheet: #3e284e;
+  --ws-preview: repeating-linear-gradient(0deg, transparent 0 8px, #d18dfb39 9px 10px),
+    radial-gradient(ellipse at 76% 14%, #dd72b9, transparent 58%), #282154;
+  --ws-radius-adjustment: 3px;
+}
+:is(html[data-desktop-theme="amber-terminal"], .ldt-scene[data-ldt-preview="amber-terminal"]) {
+  --ws-accent: #ffbd6a;
+  --ws-bar: #251c16;
+  --ws-title: #2e2219;
+  --ws-frame: #a46a39;
+  --ws-menu: #302219;
+  --ws-ink: #ffddaf;
+  --ws-sheet: #30241b;
+  --ws-preview: repeating-linear-gradient(0deg, #0002 0 1px, transparent 1px 4px),
+    radial-gradient(ellipse at 55% 38%, #724828, #201711 72%);
+  --ws-radius-adjustment: -11px;
+}
+
+.ldt-scene:is([data-ldt-preview="windowsxp"], [data-ldt-preview="macos"], [data-ldt-preview="windows11"],
+  [data-ldt-preview="windows10"], [data-ldt-preview="paper-studio"], [data-ldt-preview="vaporwave"],
+  [data-ldt-preview="amber-terminal"]) {
+  background: var(--ws-preview);
+  &::before {
+    display: none;
+  }
+  & .ldt-window {
+    border-color: var(--ws-frame);
+    border-radius: clamp(1px, calc(8px + var(--ws-radius-adjustment)), 12px);
+    background: var(--ws-sheet);
+  }
+  & .ldt-window::before {
+    border-radius: 3px 3px 0 0;
+    background: var(--ws-title);
+  }
+  & .ldt-window::after {
+    background: repeating-linear-gradient(to bottom, var(--ws-frame) 0 2px, transparent 2px 7px);
+    opacity: .55;
+  }
+  & .ldt-dock {
+    background: var(--ws-bar);
+  }
+  & .ldt-dock i {
+    background: var(--ws-accent);
+  }
+  & .ldt-dock i:nth-child(even) {
+    background: var(--ws-frame);
+  }
+}
+.ldt-scene:is([data-ldt-preview="windowsxp"], [data-ldt-preview="windows10"], [data-ldt-preview="amber-terminal"]) .ldt-dock {
+  justify-content: flex-start;
+  padding-inline: 7px;
+}
+.ldt-scene[data-ldt-preview="windowsxp"] .ldt-dock i:first-child {
+  aspect-ratio: 2.2;
+  width: auto;
+  border-radius: 4px;
+}
+.ldt-scene:is([data-ldt-preview="macos"], [data-ldt-preview="vaporwave"]) .ldt-dock {
+  inset: auto 14% 6%;
+  border: 1px solid var(--ws-frame);
+  border-radius: 7px;
+}
+.ldt-scene[data-ldt-preview="macos"] .ldt-window::before {
+  background: radial-gradient(circle at 73% 50%, #987ea9 0 1.6px, transparent 2px),
+    radial-gradient(circle at 82% 50%, #b78b5f 0 1.6px, transparent 2px),
+    radial-gradient(circle at 91% 50%, #a66688 0 1.6px, transparent 2px), var(--ws-title);
+}
+
+/* Use the existing window manager and taskbar. Custom taskbar layout and Liquid Glass take priority. */
+html[data-desktop-experience="windows"]:not(.browsing-mode, .mobile-mode):is(
+  [data-desktop-theme="windowsxp"], [data-desktop-theme="macos"], [data-desktop-theme="windows11"],
+  [data-desktop-theme="windows10"], [data-desktop-theme="paper-studio"], [data-desktop-theme="vaporwave"],
+  [data-desktop-theme="amber-terminal"]) {
+  --win-accent: var(--ws-accent);
+  --dock-accent: var(--ws-accent);
+
+  & #desktop .window:not(.is-maximised) {
+    border-radius: clamp(0px, calc(var(--l5-window-radius, 12px) + var(--ws-radius-adjustment)), 28px) !important;
+  }
+  &:not(.glass.lolite-refractive) #desktop .window.is-active {
+    border-color: var(--ws-frame) !important;
+  }
+  &:not(.glass.lolite-refractive) #desktop .window > .titlebar {
+    background: color-mix(in srgb, var(--ws-title) var(--l5-panel-opacity, 95%), #191c26) !important;
+    border-bottom-color: color-mix(in srgb, var(--ws-frame) 56%, transparent) !important;
+    color: var(--ws-ink) !important;
+  }
+  &:not(.glass.lolite-refractive) #desktop .window > .titlebar :is(strong, .controls button) {
+    color: var(--ws-ink) !important;
+  }
+  &:not(.glass.lolite-refractive) #desktop .window > .titlebar .controls button:not(.close):hover {
+    background: color-mix(in srgb, var(--ws-ink) 15%, transparent) !important;
+  }
+  &:not(.glass.lolite-refractive) #desktop .window > .titlebar .controls .close:hover {
+    color: #fff !important;
+  }
+  &:not(.glass.lolite-refractive) :is(#start, #searchPanel, #winQuickSettings, #winCalendar, #start .win-start-body) {
+    background: var(--ws-menu) !important;
+    border-color: var(--ws-frame) !important;
+  }
+  &:not(.ltc-applied) #desktop #taskbar {
+    left: var(--ws-bar-left, 0) !important;
+    right: var(--ws-bar-right, 0) !important;
+    top: auto !important;
+    bottom: var(--ws-bar-bottom, 0) !important;
+    width: var(--ws-bar-width, auto) !important;
+    max-width: var(--ws-bar-max, none) !important;
+    transform: var(--ws-bar-transform, none) !important;
+    height: 56px !important;
+    padding-inline: 8px !important;
+    border-radius: var(--ws-bar-radius, 0) !important;
+  }
+  &:not(.ltc-applied, .glass.lolite-refractive) #desktop #taskbar {
+    --dock-text: var(--ws-ink);
+    --dock-hover: color-mix(in srgb, var(--dock-text) 13%, transparent);
+    background: color-mix(in srgb, var(--ws-bar) var(--l5-taskbar-opacity, 92%), transparent) !important;
+    border-color: var(--ws-frame) !important;
+  }
+  &:not(.ltc-applied, .glass.lolite-refractive) #desktop #taskbar :is(#searchBtn, .win-taskbar-brand, .win-taskbar-brand small) {
+    color: var(--dock-text) !important;
+  }
+  &:not(.ltc-applied) #desktop #taskbar .win-taskbar-center {
+    justify-content: var(--ws-align, center) !important;
+  }
+  &:not(.ltc-applied) :is(#start, #searchPanel, #winQuickSettings, #winCalendar, #loliteWidgetPicker, #lcNotifPanel, #loliteCreditsPanel) {
+    top: auto !important;
+    bottom: calc(66px + var(--ws-bar-bottom, 0px)) !important;
+  }
+  &:not(.ltc-applied) #start {
+    left: var(--ws-start-left, max(12px, calc(50% - 320px))) !important;
+    transform: none !important;
+  }
+}
+
+html[data-desktop-experience="windows"]:not(.browsing-mode, .mobile-mode):is(
+  [data-desktop-theme="windowsxp"], [data-desktop-theme="windows10"], [data-desktop-theme="amber-terminal"]) {
+  --ws-align: flex-start;
+  --ws-start-left: 12px;
+}
+html[data-desktop-experience="windows"]:not(.browsing-mode, .mobile-mode):is(
+  [data-desktop-theme="macos"], [data-desktop-theme="vaporwave"]) {
+  --ws-bar-left: 50%;
+  --ws-bar-right: auto;
+  --ws-bar-bottom: 12px;
+  --ws-bar-width: max-content;
+  --ws-bar-max: min(960px, calc(100% - 24px));
+  --ws-bar-transform: translateX(-50%);
+  --ws-bar-radius: 18px;
+}
+html[data-desktop-experience="windows"][data-desktop-theme="windowsxp"]:not(.browsing-mode, .mobile-mode) {
+  &:not(.ltc-applied, .glass.lolite-refractive) #desktop #taskbar {
+    background-image: linear-gradient(#90baff52, transparent 60%) !important;
+  }
+  &:not(.ltc-applied, .glass.lolite-refractive) #desktop #taskbar #startBtn {
+    background: #287244 !important;
+    border-color: #80c790 !important;
+    border-radius: 12px 8px 8px 12px !important;
+  }
+}
+html[data-desktop-experience="windows"][data-desktop-theme="macos"]:not(.browsing-mode, .mobile-mode, .glass.lolite-refractive) {
+  & #desktop .window > .titlebar .controls {
+    align-items: center;
+    gap: 3px;
+    padding-inline: 4px;
+  }
+  & #desktop .window > .titlebar .controls button {
+    width: 30px !important;
+    min-width: 30px !important;
+    height: 27px !important;
+    border-radius: 9px !important;
+    background: #cbd0e1 !important;
+  }
+  & #desktop .window > .titlebar .controls .close {
+    background: #e2c2d2 !important;
+  }
+  & #desktop .window > .titlebar .controls .close:hover {
+    background: #9f3656 !important;
+  }
+}
+html[data-desktop-experience="windows"][data-desktop-theme="amber-terminal"]:not(.browsing-mode, .mobile-mode) .window > .titlebar strong {
+  font-family: var(--lolite-mono, monospace) !important;
+}

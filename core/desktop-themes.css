@@ -22,32 +22,32 @@
 #loliteDesktopThemePicker .ldt-launch{border:0;background:linear-gradient(120deg,#2285f9,#52baff);color:#fff;font-weight:750;font-size:14px;padding:13px 23px;border-radius:12px;cursor:pointer}
 #loliteDesktopThemePicker :is(button):focus-visible{outline:3px solid #b6dfff;outline-offset:3px}
 /* Previews are self-contained miniature desktops, not screenshots or external images. */
-#loliteDesktopThemePicker .ldt-scene{position:relative;height:148px;overflow:hidden;border:1px solid #ffffff22;border-radius:11px;background:linear-gradient(140deg,#16459c,#2f82df 48%,#141e59)}
-#loliteDesktopThemePicker .ldt-scene::before{content:"";position:absolute;width:125%;height:110%;left:-50%;top:-50%;border-radius:50%;border:26px solid #75ccff4a;transform:rotate(-27deg)}
-#loliteDesktopThemePicker .ldt-window{position:absolute;top:20px;left:18%;width:67%;height:100px;background:#e5f3ffdf;border:1px solid #cbdff4;border-radius:7px;box-shadow:0 12px 26px #0005}
-#loliteDesktopThemePicker .ldt-window:before{content:"";position:absolute;left:0;right:0;top:0;height:20px;border-radius:inherit;background:#f9fcff}
-#loliteDesktopThemePicker .ldt-window:after{content:"";position:absolute;left:13px;right:13px;top:35px;bottom:12px;background:repeating-linear-gradient(to bottom,#5499ce77 0 5px,transparent 5px 15px)}
-#loliteDesktopThemePicker .ldt-dock{position:absolute;bottom:0;left:0;right:0;height:23px;background:#f1f8ffd9;display:flex;align-items:center;justify-content:center;gap:7px}
-#loliteDesktopThemePicker .ldt-dock i{width:13px;height:13px;border-radius:3px;background:#358fe2}
-#loliteDesktopThemePicker .ldt-dock i:nth-child(even){background:#647fc0}
-#loliteDesktopThemePicker .ldt-scene.aero{background:linear-gradient(145deg,#2b9cdd,#0c4d9a 55%,#0a5b7c)}
-#loliteDesktopThemePicker .ldt-scene.aero .ldt-window{background:#dff4ffba;border:3px solid #a6e0ff9c;box-shadow:0 0 14px #bcf3ffcc,0 12px 27px #0006}
-#loliteDesktopThemePicker .ldt-scene.aero .ldt-dock{justify-content:flex-start;background:#c0e8ff7a;backdrop-filter:blur(8px);border-top:1px solid #e8f8ff8a}
-#loliteDesktopThemePicker .ldt-scene.aero .ldt-dock i:first-child{border-radius:50%;background:conic-gradient(#2eb15f,#e6b520,#2a7ceb,#e84c5b,#2eb15f)}
-#loliteDesktopThemePicker .ldt-scene.plasma{background:linear-gradient(135deg,#1b1140,#3b317a 48%,#0790a6)}
-#loliteDesktopThemePicker .ldt-scene.plasma .ldt-window{background:#1d1d35d9;border:1px solid #7e87d7}
-#loliteDesktopThemePicker .ldt-scene.plasma .ldt-window:before{background:#29294c}
-#loliteDesktopThemePicker .ldt-scene.plasma .ldt-dock{left:13%;right:13%;bottom:9px;border:1px solid #c1bfff55;background:#20233cba;border-radius:12px}
-#loliteDesktopThemePicker .ldt-scene.plasma .ldt-dock i{background:#cfaeff}
-#loliteDesktopThemePicker .ldt-scene.gnome{background:linear-gradient(140deg,#21155f,#7e448e 55%,#ff9164)}
-#loliteDesktopThemePicker .ldt-scene.gnome .ldt-window{background:#27273b;border:1px solid #5f628a}
-#loliteDesktopThemePicker .ldt-scene.gnome .ldt-window:before{background:#35344c}
-#loliteDesktopThemePicker .ldt-scene.gnome .ldt-dock{top:0;bottom:auto;background:#181826;justify-content:flex-start;height:20px}
-#loliteDesktopThemePicker .ldt-scene.gnome .ldt-dock i{width:7px;height:7px;border-radius:50%;background:#eae5fa}
-#loliteDesktopThemePicker .ldt-scene.deepin{background:linear-gradient(140deg,#14354d,#116f7c 55%,#49c0be)}
-#loliteDesktopThemePicker .ldt-scene.deepin .ldt-window{background:#effbffed;border:1px solid #ffffffb2;border-radius:12px}
-#loliteDesktopThemePicker .ldt-scene.deepin .ldt-dock{left:20%;right:20%;bottom:8px;border-radius:13px;height:28px;background:#ffffffb3;backdrop-filter:blur(12px)}
-#loliteDesktopThemePicker .ldt-scene.deepin .ldt-dock i{height:17px;width:17px;border-radius:6px;background:#1a99ad}
+.ldt-scene{display:block;position:relative;height:148px;overflow:hidden;border:1px solid #ffffff22;border-radius:11px;background:linear-gradient(140deg,#16459c,#2f82df 48%,#141e59)}
+.ldt-scene::before{content:"";position:absolute;width:125%;height:110%;left:-50%;top:-50%;border-radius:50%;border:26px solid #75ccff4a;transform:rotate(-27deg)}
+.ldt-window{position:absolute;top:20px;left:18%;width:67%;height:100px;background:#e5f3ffdf;border:1px solid #cbdff4;border-radius:7px;box-shadow:0 12px 26px #0005}
+.ldt-window:before{content:"";position:absolute;left:0;right:0;top:0;height:20px;border-radius:inherit;background:#f9fcff}
+.ldt-window:after{content:"";position:absolute;left:13px;right:13px;top:35px;bottom:12px;background:repeating-linear-gradient(to bottom,#5499ce77 0 5px,transparent 5px 15px)}
+.ldt-dock{position:absolute;bottom:0;left:0;right:0;height:23px;background:#f1f8ffd9;display:flex;align-items:center;justify-content:center;gap:7px}
+.ldt-dock i{width:13px;height:13px;border-radius:3px;background:#358fe2}
+.ldt-dock i:nth-child(even){background:#647fc0}
+.ldt-scene.aero{background:linear-gradient(145deg,#2b9cdd,#0c4d9a 55%,#0a5b7c)}
+.ldt-scene.aero .ldt-window{background:#dff4ffba;border:3px solid #a6e0ff9c;box-shadow:0 0 14px #bcf3ffcc,0 12px 27px #0006}
+.ldt-scene.aero .ldt-dock{justify-content:flex-start;background:#c0e8ff7a;backdrop-filter:blur(8px);border-top:1px solid #e8f8ff8a}
+.ldt-scene.aero .ldt-dock i:first-child{border-radius:50%;background:conic-gradient(#2eb15f,#e6b520,#2a7ceb,#e84c5b,#2eb15f)}
+.ldt-scene.plasma{background:linear-gradient(135deg,#1b1140,#3b317a 48%,#0790a6)}
+.ldt-scene.plasma .ldt-window{background:#1d1d35d9;border:1px solid #7e87d7}
+.ldt-scene.plasma .ldt-window:before{background:#29294c}
+.ldt-scene.plasma .ldt-dock{left:13%;right:13%;bottom:9px;border:1px solid #c1bfff55;background:#20233cba;border-radius:12px}
+.ldt-scene.plasma .ldt-dock i{background:#cfaeff}
+.ldt-scene.gnome{background:linear-gradient(140deg,#21155f,#7e448e 55%,#ff9164)}
+.ldt-scene.gnome .ldt-window{background:#27273b;border:1px solid #5f628a}
+.ldt-scene.gnome .ldt-window:before{background:#35344c}
+.ldt-scene.gnome .ldt-dock{top:0;bottom:auto;background:#181826;justify-content:flex-start;height:20px}
+.ldt-scene.gnome .ldt-dock i{width:7px;height:7px;border-radius:50%;background:#eae5fa}
+.ldt-scene.deepin{background:linear-gradient(140deg,#14354d,#116f7c 55%,#49c0be)}
+.ldt-scene.deepin .ldt-window{background:#effbffed;border:1px solid #ffffffb2;border-radius:12px}
+.ldt-scene.deepin .ldt-dock{left:20%;right:20%;bottom:8px;border-radius:13px;height:28px;background:#ffffffb3;backdrop-filter:blur(12px)}
+.ldt-scene.deepin .ldt-dock i{height:17px;width:17px;border-radius:6px;background:#1a99ad}
 @media(max-width:850px){#loliteDesktopThemePicker .ldt-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){#loliteDesktopThemePicker{align-items:flex-start;padding:18px 12px}#loliteDesktopThemePicker .ldt-grid{grid-template-columns:1fr}#loliteDesktopThemePicker .ldt-scene{height:125px}#loliteDesktopThemePicker .ldt-desc{min-height:0}#loliteDesktopThemePicker .ldt-actions{align-items:stretch}#loliteDesktopThemePicker .ldt-launch{width:100%}}
 /* Theme change affordance in desktop taskbar */
