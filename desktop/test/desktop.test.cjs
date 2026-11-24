@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs/promises');const path=require('node:path');const os=require('node:os');const crypto=require('node:crypto');const {Readable}=require('node:stream');
 const {Store}=require('../src/storage.cjs');const {Updater,validateManifest,verifyInstaller}=require('../src/updater.cjs');
-const {safeRelative,safeName,grantedPath,trustedFrame,allowedDownloadURL}=require('../src/security.cjs');
+const {safeRelative,safeName,grantedPath,trustedFrame,allowedDownloadURL,browserPartition,configureBrowserGuest}=require('../src/security.cjs');
 const config=require('../src/config.cjs');
 const payload=Buffer.alloc(2048,42),hash=crypto.createHash('sha512').update(payload).digest('hex');
 const manifest={schema:1,version:'3.15.1',channel:'stable',platform:'win32-x64',file:config.installer,size:payload.length,sha512:hash};
@@ -19,6 +19,17 @@ test('IPC allows only the exact top-level application page',()=>{
   assert.equal(trustedFrame({sender,senderFrame:main},'app'),true);
   assert.equal(trustedFrame({sender,senderFrame:{url:main.url}},'app'),false);
   for(const url of ['https://evil.example/','lolite://app/html%20games/a.html','lolite://content/index.html','lolite://app/other.html'])assert.equal(trustedFrame({sender:{mainFrame:main},senderFrame:{url}},'app'),false);
+});
+test('Chromium guests use their own sandbox with no preload or native integration',()=>{
+  const preferences={preload:'/app/preload.cjs',additionalArguments:['--example'],nodeIntegration:true,webSecurity:false};
+  for(const src of ['lolite://app/index.html','file:///private','https://user:password@example.org/'])
+    assert.equal(configureBrowserGuest(preferences,{partition:browserPartition,src}),false);
+  assert.equal(configureBrowserGuest(preferences,{partition:'',src:'https://example.org/'}),false);
+  assert.equal(configureBrowserGuest(preferences,{partition:browserPartition,src:'https://example.org/'}),true);
+  assert.deepEqual(preferences,{
+    partition:browserPartition,nodeIntegration:false,nodeIntegrationInSubFrames:false,nodeIntegrationInWorker:false,
+    contextIsolation:true,sandbox:true,webSecurity:true,allowRunningInsecureContent:false,webviewTag:false
+  });
 });
 test('folder grants cannot escape through symbolic links',async t=>{
   const root=await temp(t);await fs.mkdir(path.join(root,'allowed'));await fs.writeFile(path.join(root,'secret'),'secret');await fs.writeFile(path.join(root,'allowed','ok.txt'),'ok');

@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const { JSDOM } = require('./chat/node_modules/jsdom');
 
-function setup(t, { signedIn = true, native = false } = {}) {
+function setup(t, { signedIn = true, native = false, partition } = {}) {
  const dom = new JSDOM('<div id="icons"></div><main id="windows"></main>', {
   url: 'https://lolite.example/Lolite-OS/',
   runScripts: 'outside-only'
@@ -15,7 +15,7 @@ function setup(t, { signedIn = true, native = false } = {}) {
  window.open = (...args) => tabs.push(args);
  window.LoliteAccounts = { isReady: () => signedIn };
  window.LoliteIcons = { tile: () => '' };
- if (native) window.loliteDesktop = {};
+ if (native) window.loliteDesktop = { browserPartition: partition };
  window.page = id => '<div>' + id + '</div>';
  window.openApp = id => {
   const existing = document.querySelector('[data-window-id="' + id + '"]');
@@ -71,7 +71,7 @@ test('Navigation stays in Lolite and external targets require clicking Open in t
  assert.equal(link.target, '_blank');
  assert.equal(link.rel, 'noopener noreferrer');
  assert.equal(link.getAttribute('aria-disabled'), 'false');
- assert.match(app.querySelector('[data-web-stage]').textContent, /Select Open in tab/);
+ assert.match(app.querySelector('[data-web-stage]').textContent, /This site needs Lolite Desktop/);
  assert.equal(app.querySelector('iframe'), null);
  submit(window, app, 'http://example.com');
  assert.equal(link.href, 'http://example.com/');
@@ -84,6 +84,34 @@ test('Navigation stays in Lolite and external targets require clicking Open in t
  assert.equal(tabs.length, 0);
  submit(window, app, 'example.com:8443/path');
  assert.equal(app.querySelector('iframe').src, 'https://example.com:8443/path');
+});
+
+test('Desktop search and website navigation use Chromium guests in all three apps', t => {
+ const partition = 'persist:lolite-web-browsing';
+ const { window, tabs } = setup(t, { native: true, partition });
+ for (const name of ['browser', 'scramjet', 'sandstone']) {
+  const app = window.openApp(name);
+  submit(window, app, 'Lolite wallpapers');
+  const guest = app.querySelector('webview');
+  assert.equal(guest.getAttribute('partition'), partition);
+  assert.equal(new URL(guest.getAttribute('src')).searchParams.get('q'), 'Lolite wallpapers');
+  assert.equal(app.querySelector('iframe'), null);
+  guest.canGoBack = () => true;
+  guest.canGoForward = () => false;
+  guest.goBack = () => { guest.wentBack = true; };
+  guest.loadURL = async url => { guest.lastLoad = url; };
+  guest.dispatchEvent(new window.Event('dom-ready'));
+  guest.dispatchEvent(Object.assign(new window.Event('did-navigate'), { url: 'https://example.org/redirected' }));
+  assert.equal(app.querySelector('[data-web-input]').value, 'https://example.org/redirected');
+  app.querySelector('[data-web-back]').click();
+  assert.equal(guest.wentBack, true);
+  submit(window, app, 'example.net');
+  assert.equal(guest.lastLoad, 'https://example.net/');
+  assert.equal(app.querySelector('webview'), guest);
+ }
+ assert.equal(tabs.length, 0);
+ window.dispatchEvent(new window.Event('lolite:account-restricted'));
+ assert.equal(window.document.querySelectorAll('webview').length, 0);
 });
 
 test('Signed-out and restricted workspaces cannot navigate or keep a page open', t => {

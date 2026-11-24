@@ -1,8 +1,8 @@
 # Lolite browser apps and hosting
 
-Ultraviolet, Scramjet, and Sandstone open regular websites directly by default after Lolite sign-in. The same controls work in Desktop Style and Browsing Style. Back and Forward track addresses entered through the app. Reload reloads the current address.
+Ultraviolet, Scramjet, and Sandstone open websites after Lolite sign-in. Installed Lolite Desktop loads pages and search results inside the app using an isolated Chromium guest. It keeps history for links followed in the page and denies new windows. The hosted site uses an iframe for sites that allow embedding. Its Back and Forward buttons track addresses entered through the app.
 
-**Go** keeps you in Lolite. Select **Open in tab** to open web searches, HTTP addresses from an HTTPS deployment, or sites that restrict embedding. Lolite leaves each site's framing policy in effect.
+**Go** keeps you in Lolite. On the hosted site, select **Open in tab** to open web searches, HTTP addresses from an HTTPS deployment, or sites that restrict embedding. Lolite leaves each site's framing policy in effect.
 
 [How sites control embedding](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/frame-ancestors)
 

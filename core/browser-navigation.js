@@ -1,4 +1,4 @@
-/* Direct web navigation shared by Lolite's three browser apps. */
+/* Web navigation shared by Lolite's three browser apps. */
 (() => {
  'use strict';
 
@@ -57,6 +57,10 @@
   const forward = root.querySelector('[data-web-forward]');
   const reload = root.querySelector('[data-web-reload]');
   const tab = root.querySelector('[data-web-tab]');
+  const partition = window.loliteDesktop?.browserPartition;
+  let guest = null;
+  let guestReady = false;
+  let desktopURL = null;
   const trail = [null];
   let position = 0;
   const current = () => trail[position] ?? null;
@@ -68,11 +72,11 @@
 
   function syncControls() {
    const ready = isAllowed();
-   back.disabled = !ready || position <= 0;
-   forward.disabled = !ready || position >= trail.length - 1;
-   reload.disabled = !ready || !current();
+   back.disabled = !ready || (partition ? !guestReady || !guest.canGoBack() : position <= 0);
+   forward.disabled = !ready || (partition ? !guestReady || !guest.canGoForward() : position >= trail.length - 1);
+   reload.disabled = !ready || !(partition ? desktopURL : current());
    let target = null;
-   try { if (ready) target = address(input.value) || current(); } catch {}
+   try { if (ready) target = address(input.value) || (partition ? desktopURL : current()); } catch {}
    if (target) tab.href = target.href;
    else tab.removeAttribute('href');
    tab.setAttribute('aria-disabled', String(!target));
@@ -90,6 +94,10 @@
   }
 
   function showHome() {
+   guest?.remove();
+   guest = null;
+   guestReady = false;
+   desktopURL = null;
    input.value = '';
    notice(root.dataset.webName, 'Enter an address or search above.');
    setStatus(isAllowed() ? 'Ready to browse' : 'Sign in to Lolite to browse.');
@@ -97,11 +105,60 @@
    root.dispatchEvent(new Event('lolite:browseraddress'));
   }
 
+  function showDesktop(target) {
+   desktopURL = target;
+   input.value = target.href;
+   setStatus('Loading ' + target.host + '…');
+   if (!guestReady) {
+    const view = doc.createElement('webview');
+    guest = view;
+    view.setAttribute('partition', partition);
+    view.setAttribute('src', target.href);
+    view.setAttribute('aria-label', root.dataset.webName + ' page');
+    view.addEventListener('dom-ready', () => {
+     if (guest !== view) return;
+     guestReady = true;
+     syncControls();
+    });
+    function navigated(event) {
+     if (guest !== view || event.isMainFrame === false || !isAllowed()) return;
+     try { desktopURL = address(event.url); } catch { return; }
+     if (!desktopURL) return;
+     input.value = desktopURL.href;
+     setStatus(desktopURL.host);
+     syncControls();
+     root.dispatchEvent(new Event('lolite:browseraddress'));
+    }
+    view.addEventListener('did-navigate', navigated);
+    view.addEventListener('did-navigate-in-page', navigated);
+    view.addEventListener('did-fail-load', event => {
+     if (guest === view && event.isMainFrame && event.errorCode !== -3)
+      setStatus('Couldn’t load the page. Select Reload to try again.', true);
+    });
+    view.addEventListener('render-process-gone', () => {
+     if (guest !== view) return;
+     guestReady = false;
+     notice('Page closed unexpectedly', 'Select Reload to open the page again.');
+     syncControls();
+    });
+    stage.replaceChildren(view);
+   } else {
+    const view = guest;
+    void view.loadURL(target.href).catch(error => {
+     if (guest === view && desktopURL === target && !String(error).includes('ERR_ABORTED'))
+      setStatus('Couldn’t load the page. Select Reload to try again.', true);
+    });
+   }
+   syncControls();
+   root.dispatchEvent(new Event('lolite:browseraddress'));
+   return true;
+  }
+
   function show(target) {
    if (!isAllowed()) return false;
    input.value = target.href;
    if (needsTab(target)) {
-    notice('Separate tab required', 'Lolite can’t display this address here. Select Open in tab to visit it.');
+    notice('This site needs Lolite Desktop', 'The web version can only display sites that allow embedding. You can also select Open in tab to visit this address.');
     setStatus(target.host);
    } else {
     const frame = doc.createElement('iframe');
@@ -130,6 +187,7 @@
    try {
     const target = address(value);
     if (!target) { setStatus('Enter a website or search term.'); return false; }
+    if (partition) return showDesktop(target);
     remember(target);
     return show(target);
    } catch (error) {
@@ -157,9 +215,19 @@
    go(input.value);
   });
   input.addEventListener('input', syncControls);
-  back.addEventListener('click', () => move(-1));
-  forward.addEventListener('click', () => move(1));
-  reload.addEventListener('click', () => { if (current()) show(current()); });
+  back.addEventListener('click', () => {
+   if (!partition) move(-1);
+   else if (guestReady && isAllowed()) guest.goBack();
+  });
+  forward.addEventListener('click', () => {
+   if (!partition) move(1);
+   else if (guestReady && isAllowed()) guest.goForward();
+  });
+  reload.addEventListener('click', () => {
+   if (!isAllowed()) return;
+   if (partition && desktopURL) showDesktop(desktopURL);
+   if (!partition && current()) show(current());
+  });
   root.querySelector('[data-web-home]').addEventListener('click', () => {
    remember(null);
    showHome();
@@ -169,7 +237,7 @@
    if (!isAllowed() || !tab.href) event.preventDefault();
   });
 
-  const controller = { go, reset, showHome, address: () => address(input.value) || current() };
+  const controller = { go, reset, showHome, address: () => address(input.value) || (partition ? desktopURL : current()) };
   controllers.set(root, controller);
   showHome();
   return controller;

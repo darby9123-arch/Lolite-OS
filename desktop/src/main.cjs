@@ -1,5 +1,6 @@
 'use strict';
-const {app,BrowserWindow,protocol,net,session,ipcMain,dialog,shell,Menu,screen}=require('electron');
+const {app,BrowserWindow,protocol,net,session,ipcMain,dialog,shell,Menu,screen,webContents}=require('electron');
+const {createServer}=require('node:http');
 const path=require('node:path');
 const fs=require('node:fs');
 const fsp=require('node:fs/promises');
@@ -7,7 +8,7 @@ const {pathToFileURL}=require('node:url');
 const {spawn}=require('node:child_process');
 const {Store}=require('./storage.cjs');
 const {Updater,verifyInstaller}=require('./updater.cjs');
-const {trustedFrame,safeRelative}=require('./security.cjs');
+const {trustedFrame,safeRelative,browserPartition,isWebAddress,configureBrowserGuest}=require('./security.cjs');
 const {fileAccess}=require('./files.cjs');
 const {createClient}=require('./network.cjs');
 const {readReadme}=require('./readme.cjs');
@@ -79,17 +80,37 @@ function secureSession(){
   });
   s.on('will-download',(_event,item)=>{item.setSaveDialogOptions({title:'Save from Lolite OS'});});
 }
+function secureBrowserSession(){
+  const browserSession=session.fromPartition(browserPartition);
+  browserSession.setPermissionCheckHandler(()=>false);
+  browserSession.setPermissionRequestHandler((_page,_permission,reply)=>reply(false));
+  browserSession.setDevicePermissionHandler(()=>false);
+  browserSession.webRequest.onBeforeRequest((details,reply)=>{
+    const allowed=isWebAddress(details.url) ||
+      (details.resourceType!=='mainFrame' && /^(about:blank$|data:|blob:|wss?:)/i.test(details.url));
+    reply({cancel:!allowed});
+  });
+  browserSession.on('will-download',event=>event.preventDefault());
+}
 function windowOptions(role){
   const saved=store.data.windows?.[role]||{},fallback=role==='launcher'?{width:1140,height:780}:{width:1360,height:860};
   const bounds={width:Math.max(800,Math.min(saved.width||fallback.width,4000)),height:Math.max(600,Math.min(saved.height||fallback.height,2400))};
   if(Number.isFinite(saved.x)&&Number.isFinite(saved.y)&&screen.getAllDisplays().some(d=>saved.x+100>d.workArea.x&&saved.x<d.workArea.x+d.workArea.width-100&&saved.y+80>d.workArea.y&&saved.y<d.workArea.y+d.workArea.height-80)){bounds.x=saved.x;bounds.y=saved.y;}
-  return {...bounds,minWidth:800,minHeight:600,show:false,title:role==='launcher'?'Lolite Launcher':'Lolite OS',backgroundColor:'#090e18',icon:path.join(base,'build/icon.png'),autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,nodeIntegrationInSubFrames:false,contextIsolation:true,sandbox:true,webSecurity:true,allowRunningInsecureContent:false,webviewTag:false,spellcheck:true}};
+  return {...bounds,minWidth:800,minHeight:600,show:false,title:role==='launcher'?'Lolite Launcher':'Lolite OS',backgroundColor:'#090e18',icon:path.join(base,'build/icon.png'),autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,nodeIntegrationInSubFrames:false,contextIsolation:true,sandbox:true,webSecurity:true,allowRunningInsecureContent:false,webviewTag:role==='os',spellcheck:true}};
 }
 function secureWindow(win,role){
   const host=role==='launcher'?'launcher':'app';
   win.webContents.setWindowOpenHandler(({url})=>{openExternal(url,win);return {action:'deny'};});
   win.webContents.on('will-navigate',(event,url)=>{if(url!==`lolite://${host}/index.html`){event.preventDefault();openExternal(url,win);}});
-  win.webContents.on('will-attach-webview',event=>event.preventDefault());
+  win.webContents.on('will-attach-webview',(event,preferences,params)=>{
+    if(role!=='os'||win.webContents.mainFrame.url!=='lolite://app/index.html'||!configureBrowserGuest(preferences,params))event.preventDefault();
+  });
+  win.webContents.on('did-attach-webview',(_event,guest)=>{
+    guest.setWindowOpenHandler(()=>({action:'deny'}));
+    guest.on('will-navigate',event=>{if(!isWebAddress(event.url))event.preventDefault();});
+    guest.on('will-redirect',event=>{if(event.isMainFrame&&!isWebAddress(event.url))event.preventDefault();});
+    guest.on('will-attach-webview',event=>event.preventDefault());
+  });
   win.webContents.on('before-input-event',(event,input)=>{if(input.key==='F11'&&input.type==='keyDown'&&!input.isAutoRepeat){event.preventDefault();win.setFullScreen(!win.isFullScreen());}if(input.key==='Escape'&&input.type==='keyDown'&&win.isFullScreen())win.setFullScreen(false);});
   if(role==='os')for(const name of ['enter-full-screen','leave-full-screen'])win.on(name,()=>win.webContents.send('desktop:fullscreen-state',win.isFullScreen()));
   win.on('close',()=>{store.data.windows ||= {};store.data.windows[role]={...win.getNormalBounds(),maximized:win.isMaximized()};store.save();});
@@ -131,7 +152,7 @@ function emit(){
 function handle(channel,host,fn){ipcMain.handle(channel,async(event,...args)=>{if(!trustedFrame(event,host))throw Error('This page is not authorized to use desktop commands.');return fn(...args);});}
 async function start(){
   app.setAppUserModelId('com.lolite.os');Menu.setApplicationMenu(null);
-  await installProtocol();secureSession();
+  await installProtocol();secureSession();secureBrowserSession();
   if(smoke&&!feedSmoke&&!networkSmoke)session.defaultSession.enableNetworkEmulation({offline:true});
   const updateSession=session.fromPartition('lolite-release-client',{cache:false});
   updateClient=createClient(options=>net.request({...options,session:updateSession}));
@@ -196,13 +217,55 @@ async function recover(reason){
 app.on('window-all-closed',()=>app.quit());
 app.on('before-quit',()=>{discordPresence.close();clearTimeout(healthTimer);updater?.pause();store.save();});
 function smokeResult(result){if(process.env.LOLITE_SMOKE_RESULT)fs.writeFileSync(process.env.LOLITE_SMOKE_RESULT,JSON.stringify({...result,version},null,2));}
+async function smokeEmbeddedBrowser(){
+  const server=createServer((request,response)=>{
+    response.writeHead(200,{'Content-Type':'text/html','X-Frame-Options':'DENY','Content-Security-Policy':"frame-ancestors 'none'"});
+    response.end(request.url==='/next'?'<title>Next page</title>':'<title>Embedded test</title><a href="/next">Next</a>');
+  });
+  await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve);});
+  try{
+    const url='http://127.0.0.1:'+server.address().port;
+    const guestId=await os.webContents.executeJavaScript(`new Promise((resolve,reject)=>{
+      const account=window.LoliteAccounts;
+      const locked=document.documentElement.classList.contains('lolite-account-locked');
+      window.LoliteAccounts={isReady:()=>true};
+      document.documentElement.classList.remove('lolite-account-locked');
+      const panel=document.createElement('div');
+      panel.dataset.webName='Browser smoke test';
+      panel.innerHTML='<input data-web-input>'+LoliteBrowserNavigation.controls()+LoliteBrowserNavigation.stage();
+      document.body.append(panel);
+      window.clearEmbeddedBrowserSmoke=()=>{
+        panel.remove();
+        window.LoliteAccounts=account;
+        document.documentElement.classList.toggle('lolite-account-locked',locked);
+      };
+      if(!LoliteBrowserNavigation.mount(panel)?.go(${JSON.stringify(url)})){reject(Error('Could not start browser smoke test'));return;}
+      const guest=panel.querySelector('webview');
+      const timer=setTimeout(()=>reject(Error('Browser page failed to load')),10000);
+      guest.addEventListener('did-finish-load',()=>{clearTimeout(timer);resolve(guest.getWebContentsId());},{once:true});
+    })`);
+    const guest=webContents.fromId(guestId);
+    if(!guest||guest.session!==session.fromPartition(browserPartition))throw Error('Browser was not isolated.');
+    const initial=await guest.executeJavaScript('[document.title,typeof require,typeof loliteDesktop]');
+    if(initial.join('|')!=='Embedded test|undefined|undefined')throw Error('Browser isolation or top-level loading failed.');
+    const next=new Promise(resolve=>guest.once('did-finish-load',resolve));
+    await guest.executeJavaScript('document.querySelector("a").click()',true);
+    await next;
+    if(guest.getTitle()!=='Next page'||!guest.navigationHistory.canGoBack())throw Error('Browser link navigation or history failed.');
+  }finally{
+    server.closeAllConnections();
+    server.close();
+    await os.webContents.executeJavaScript('window.clearEmbeddedBrowserSmoke?.(); delete window.clearEmbeddedBrowserSmoke');
+  }
+}
 async function smokeDesktop(){
+  await smokeEmbeddedBrowser();
   const result=await os.webContents.executeJavaScript(`(async()=>{const rows=await FileOS.all();await FileOS.put('Documents/desktop-smoke.txt',new Blob(['persistent desktop data']));const catalog=await fetch('game-catalog.json').then(r=>r.json());const pdf=await import('lolite://app/vendor/pdf.mjs');const nativeVersion=await loliteDesktop.version();const offline=await fetch('https://api.github.com/repos/darby9123-arch/Lolite-OS/releases',{cache:'no-store'}).then(()=>false,()=>true);openApp('files','File Explorer');return {bridge:!!window.loliteDesktop,node:typeof require,icons:document.querySelectorAll('#icons .desktop-icon').length,files:!!window.FileOS,previous:rows.some(r=>r.path==='Documents/desktop-smoke.txt'),offline,catalog:catalog.length,pdf:typeof pdf.getDocument,nativeVersion}})()`);
   if(!result.bridge||result.node!=='undefined'||!result.files||!result.offline||result.catalog<50||result.pdf!=='function'||result.nativeVersion!==version)throw Error('Desktop offline, isolation or storage check failed: '+JSON.stringify(result));
   await os.webContents.executeJavaScript(`new Promise(resolve=>{const f=document.createElement('iframe');f.sandbox='allow-scripts';f.srcdoc='<script>try{parent.loliteDesktop.version();parent.postMessage("unsafe","*")}catch(e){parent.postMessage("isolated","*")}<\/script>';window.addEventListener('message',e=>{if(e.source===f.contentWindow){f.remove();resolve(e.data)}},{once:true});document.body.append(f)})`).then(value=>{if(value!=='isolated')throw Error('Child frame isolation failed');});
   await os.webContents.executeJavaScript(`(async()=>{await document.fonts.ready;for(let i=0;i<40&&document.getElementById('lolite-splash')&&!document.getElementById('lolite-splash').classList.contains('is-done');i++)await new Promise(r=>setTimeout(r,250));document.getElementById('lmDesktop')?.click();await new Promise(r=>setTimeout(r,500));})()`);
   if(process.env.LOLITE_SMOKE_SCREENSHOT)await fsp.writeFile(process.env.LOLITE_SMOKE_SCREENSHOT,(await os.webContents.capturePage()).toPNG());
-  smokeResult({ok:true,...result});app.quit();
+  smokeResult({ok:true,embeddedBrowser:true,...result});app.quit();
 }
 async function smokeLauncher(){
   await launcher.webContents.executeJavaScript('document.fonts.ready.then(()=>true)');

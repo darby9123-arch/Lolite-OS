@@ -2,6 +2,29 @@
 const path = require('node:path');
 const fs = require('node:fs/promises');
 const config = require('./config.cjs');
+const browserPartition = 'persist:lolite-web-browsing';
+function isWebAddress(value) {
+  try {
+    const url = new URL(value);
+    return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password;
+  } catch { return false; }
+}
+function configureBrowserGuest(preferences, params) {
+  if (params.partition !== browserPartition || !isWebAddress(params.src)) return false;
+  for (const key of Object.keys(preferences)) delete preferences[key];
+  Object.assign(preferences, {
+    partition: browserPartition,
+    nodeIntegration: false,
+    nodeIntegrationInSubFrames: false,
+    nodeIntegrationInWorker: false,
+    contextIsolation: true,
+    sandbox: true,
+    webSecurity: true,
+    allowRunningInsecureContent: false,
+    webviewTag: false
+  });
+  return true;
+}
 function trustedFrame(event, host) {
   if (!event.senderFrame || event.senderFrame !== event.sender.mainFrame) return false;
   try { const u = new URL(event.senderFrame.url); return u.protocol === 'lolite:' && u.hostname === host && u.pathname === '/index.html'; }
@@ -37,4 +60,4 @@ function allowedDownloadURL(url) {
     (u.hostname === 'api.github.com' && u.pathname.startsWith(`/repos/${config.repository}/`)) ||
     ['release-assets.githubusercontent.com','objects.githubusercontent.com','github-releases.githubusercontent.com'].includes(u.hostname));
 }
-module.exports = {trustedFrame,safeRelative,grantedPath,safeName,officialAsset,allowedDownloadURL};
+module.exports = {trustedFrame,safeRelative,grantedPath,safeName,officialAsset,allowedDownloadURL,browserPartition,isWebAddress,configureBrowserGuest};
