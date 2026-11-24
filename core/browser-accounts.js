@@ -127,6 +127,7 @@
   sb?.auth.onAuthStateChange((event, session) => {
     if (event === "SIGNED_OUT") {
       void syncCurrentSession(null);
+      window.dispatchEvent(new Event("lolite:browser-signout"));
       // Close any existing browser frames when the shared Lolite Chat account signs out.
       document.querySelectorAll(".sj-app, .uv-app").forEach(app => {
         const content = app.closest(".content");

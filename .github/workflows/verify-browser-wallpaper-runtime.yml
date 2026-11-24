@@ -10,6 +10,13 @@ on:
       - 'core/app-store.js'
       - 'tests/sandstone-browser.test.cjs'
       - 'core/ultraviolet.js'
+      - 'core/scramjet-browser.js'
+      - 'core/browser-navigation.*'
+      - 'core/browser-accounts.js'
+      - 'core/device-mode.js'
+      - 'desktop/src/adapter.js'
+      - 'tests/browser-navigation.test.cjs'
+      - 'index.html'
       - 'core/vice-city*'
       - 'html games/Grand Theft Auto Vice City.html'
       - 'html games/collections/chicken-kings-vault/gamefiles/Grand Theft Auto Vice City.html'
@@ -30,5 +37,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - run: npm ci --prefix tests/chat --ignore-scripts --no-audit --no-fund
       - run: python3 scripts/build-vice-city.py --check
-      - run: node --test tests/vice-city-loader.test.cjs tests/uv-static.test.cjs tests/sandstone-browser.test.cjs tests/game-account-browser-bugfixes.test.cjs tests/crimson.test.cjs tests/local-live-wallpapers.test.cjs tests/wallpaper-favourites.test.cjs tests/motionbgs-embeds.test.cjs tests/performance-hotfix.test.cjs
+      - run: node --test tests/browser-navigation.test.cjs tests/vice-city-loader.test.cjs tests/uv-static.test.cjs tests/sandstone-browser.test.cjs tests/game-account-browser-bugfixes.test.cjs tests/crimson.test.cjs tests/local-live-wallpapers.test.cjs tests/wallpaper-favourites.test.cjs tests/motionbgs-embeds.test.cjs tests/performance-hotfix.test.cjs

@@ -1,6 +1,4 @@
-/* Sandstone original HTML integration for Lolite's resizable app windows.
- * The user's Sandstone bundle is retained verbatim. This does not change proxy routing.
- */
+/* Sandstone keeps its original renderer and gains a direct browsing mode. */
 (()=>{
  'use strict';
  const initialized=new WeakSet();
@@ -10,6 +8,8 @@
   'body{width:100%!important;min-width:0!important}',
   '#address_bar{flex:0 0 auto;min-height:34px!important;height:auto!important;align-items:stretch;gap:4px;padding:5px!important;background:#141d2a;color:#e8eef9}',
   '#address_bar input{min-width:0;max-width:100%;background:#0d1725;color:#f0f4ff;border:1px solid #52617a;border-radius:5px;padding:3px 8px}',
+  '#loliteSandstoneAddress{flex:1}',
+  '#address_bar [hidden],#frame_container[hidden],#options_div[hidden],#loliteSandstoneStatus [hidden]{display:none!important}',
   '#address_bar button{flex:0 0 auto;cursor:pointer;color:#f0f4ff;background:#273752;border:1px solid #566a88;border-radius:5px;padding:4px 10px}',
   '#address_bar button:hover{background:#3b5071}',
   '#favicon_container{flex:0 0 26px;min-width:26px;background:#263247;color:#e4edfb}',
@@ -22,9 +22,67 @@
   '#loliteSandstoneStatus[data-error="true"]{color:#ffd5bd;background:#3c2931}',
   '#loliteSandstoneStatus span{flex:1;min-width:0}',
   '#loliteSandstoneStatus button{padding:3px 8px;cursor:pointer;background:#334862;color:#fff;border:1px solid #6a7d9b;border-radius:5px}',
+  '.lolite-sandstone-direct{box-sizing:border-box;flex:1 1 auto;height:auto!important;padding:8px 10px 10px;background:#141d2a}',
   '@media(max-width:470px){#address_bar{gap:2px;padding:4px!important}#address_bar button{padding:4px 6px;font-size:11px}#loliteSandstoneStatus{flex-wrap:wrap;padding:5px 7px}}',
   '@media(prefers-reduced-motion:reduce){*{transition:none!important}}'
  ].join('');
+ function addDirectMode(doc, address, bar){
+  const browser=window.LoliteBrowserNavigation;
+  const originalStage=doc.getElementById('frame_container');
+  const originalInput=doc.getElementById('url_box');
+  const originalGo=doc.getElementById('navigate_button');
+  const options=doc.getElementById('options_button');
+  const overlay=doc.getElementById('options_div');
+  if(!browser||!originalStage||!originalInput||!originalGo||!options||!overlay)return;
+  const stylesheet=doc.createElement('link');
+  stylesheet.rel='stylesheet';
+  stylesheet.href=new URL('core/browser-navigation.css?v=browsers-20261124',document.baseURI).href;
+  doc.head.append(stylesheet);
+
+  const input=doc.createElement('input');
+  input.id='loliteSandstoneAddress';
+  input.type='text';
+  input.setAttribute('aria-label','Website address');
+  input.placeholder='Enter a website or search the web';
+  input.autocomplete='off';
+  input.spellcheck=false;
+  const go=doc.createElement('button');
+  go.type='button';
+  go.textContent='Go';
+  address.append(input,go);
+
+  const direct=doc.createElement('section');
+  direct.className='lolite-web-browser lolite-sandstone-direct';
+  direct.dataset.webName='Sandstone Browser';
+  direct.append(doc.createRange().createContextualFragment(browser.controls()+browser.stage()));
+  originalStage.before(direct);
+
+  const toggle=doc.createElement('button');
+  toggle.type='button';
+  bar.append(toggle);
+  const controller=browser.mount(direct,input);
+  const navigate=()=>controller.go(input.value);
+  input.addEventListener('keydown',event=>{
+   if(event.key==='Enter'&&!event.isComposing){event.preventDefault();navigate()}
+  });
+  go.addEventListener('click',navigate);
+
+  let original=false;
+  function show(next){
+   original=next;
+   originalStage.hidden=originalInput.hidden=originalGo.hidden=options.hidden=!original;
+   overlay.hidden=!original;
+   direct.hidden=input.hidden=go.hidden=original;
+   bar.querySelector('#loliteSandstoneStatusText').hidden=!original;
+   bar.querySelector('[data-sandstone-reload]').hidden=!original;
+   toggle.textContent=original?'Direct mode':'Original mode';
+   toggle.setAttribute('aria-pressed',String(original));
+  }
+  toggle.addEventListener('click',()=>{
+   if(browser.isAllowed())show(!original);
+  });
+  show(false);
+ }
  function mount(frame){
   if(initialized.has(frame))return;
   initialized.add(frame);
@@ -38,7 +96,7 @@
    frame.style.setProperty('margin','0','important');
    frame.style.setProperty('min-height','0','important');
   }
-  frame.addEventListener('load',()=>{
+  function initialise(){
    let doc,win;
    try{doc=frame.contentDocument;win=frame.contentWindow}catch{return}
    if(!doc?.body||!doc.head)return;
@@ -48,19 +106,21 @@
     doc.head.appendChild(style);
    }
    const address=doc.getElementById('address_bar');
-   if(!address)return;
+   if(!address||doc.getElementById('loliteSandstoneStatus'))return;
    let bar=doc.getElementById('loliteSandstoneStatus');
    if(!bar){
     bar=doc.createElement('div');bar.id='loliteSandstoneStatus';
     bar.setAttribute('role','status');bar.setAttribute('aria-live','polite');
     const message=doc.createElement('span');message.id='loliteSandstoneStatusText';
     const reload=doc.createElement('button');reload.type='button';reload.textContent='Reload Sandstone';
+    reload.dataset.sandstoneReload='1';
     reload.addEventListener('click',()=>{try{win.location.reload()}catch{}});
     bar.append(message,reload);
     address.insertAdjacentElement('afterend',bar);
    }
    const message=bar.querySelector('#loliteSandstoneStatusText');
    if(!message)return;
+   addDirectMode(doc,address,bar);
    const check=()=>{
     const ready=!!win.main_frame?.iframe&&!!doc.querySelector('#frame_container iframe');
     bar.dataset.error=String(!ready);
@@ -70,7 +130,9 @@
    };
    check();
    win.setTimeout?.(check,1500);
-  });
+  }
+  frame.addEventListener('load',initialise);
+  if(frame.contentDocument?.readyState==='complete')initialise();
  }
  function scan(){document.querySelectorAll('iframe[data-sandstone-original="true"]').forEach(mount)}
  function schedule(){if(queued)return;queued=true;Promise.resolve().then(()=>{queued=false;scan()})}
@@ -78,5 +140,12 @@
  else scan();
  const root=document.getElementById('windows')||document.body;
  if(root&&typeof MutationObserver!=='undefined')new MutationObserver(schedule).observe(root,{childList:true,subtree:true});
+ function clearFrames(){
+  document.querySelectorAll('iframe[data-sandstone-original="true"]').forEach(frame=>{frame.src='about:blank'});
+ }
+ window.addEventListener?.('lolite:account-restricted',clearFrames);
+ window.addEventListener?.('lolite:browser-signout',clearFrames);
+ // The installed desktop blocks subframes on the privileged Lolite app origin.
+ if(window.loliteDesktop)window.LoliteBrowserNavigation.register(['sandstone'],'Sandstone Browser');
  window.LoliteSandstoneCompat=Object.freeze({scan});
 })();

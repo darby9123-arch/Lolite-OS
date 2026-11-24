@@ -30,11 +30,15 @@ These four addresses point to the same Vercel project as `lolite-os.vercel.app`;
 
 **Browser hosting note:** GitHub Pages is a static preview and cannot run the proxy backend. Scramjet also needs a persistent WebSocket-capable Node host. See [Browser Hosting Requirements](docs/BROWSER-HOSTING.md); the repository now includes a `Dockerfile` and `render.yaml` for that host.
 
-The Vercel version includes Ultraviolet runtime files and the Bare HTTP endpoint, but its service worker currently fails in browser testing. Scramjet's proxy runtime is unavailable on Vercel. Both browser apps now offer a standard, non-proxy embedded browsing mode for sites that permit framing, with an Open in tab option.
+Ultraviolet, Scramjet, and Sandstone offer direct browsing on both web hosts. **Open in tab** opens sites that need a regular browser tab. The original relay modes depend on separately configured transport.
 
 A Lolite-branded browser desktop with the original Cosmos space interface, apps, games, files, 840 live video wallpapers, and a responsive desktop or browser workspace. Earlier desktop themes remain available.
 
 ## Update Log
+
+### Browser navigation fixes — 2026-11-24
+- Ultraviolet, Scramjet, and Sandstone now offer direct browsing with Back, Forward, Reload, and Open in tab.
+- Sandstone is available in Browsing Style, with its original renderer available from Original mode.
 
 ### Home app redesign — 2026-11-24
 - Play a random game, apply a wallpaper, and style your desktop icons from Home.

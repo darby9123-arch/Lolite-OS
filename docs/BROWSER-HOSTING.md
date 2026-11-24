@@ -1,52 +1,23 @@
-# Browser hosting and deployment
+# Lolite browser apps and hosting
 
-> **Current security status (2026-10-15):** The browser apps now share Lolite Chat accounts. The public Bare, Wisp and rewritten proxy transport endpoints are disabled; deploying the Node server does **not** enable a general-purpose proxy. The server provides `POST /api/browser/session` to verify a user's Supabase access token. Normal embedded browsing is available on sites that permit it.
+Ultraviolet, Scramjet, and Sandstone open regular websites directly by default after Lolite sign-in. The same controls work in Desktop Style and Browsing Style. Back and Forward track addresses entered through the app. Reload reloads the current address.
 
-## GitHub Pages limitation
+Searches open in a regular tab. Sites that restrict embedding can be visited with **Open in tab**. Lolite leaves each site's framing policy in effect.
 
-GitHub Pages cannot run Node.js, HTTP proxy endpoints, or WebSocket upgrades. The project site is also mounted below `/Lolite-OS/`, while the browser service workers intentionally use origin-root routes. GitHub Pages cannot host working Ultraviolet or Scramjet proxy services by itself.
+[How sites control embedding](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/frame-ancestors)
 
-## What was added
+## Browser modes
 
-- `server.mjs` serves Ultraviolet assets and its Bare HTTP proxy.
-- `server.mjs` serves Scramjet runtime/controller/Epoxy transport files from installed npm packages.
-- `/sw.js` routes Scramjet requests through its service worker.
-- `/wisp/` WebSocket upgrades are routed to Wisp for Scramjet's Epoxy transport.
-- `/healthz` provides a deployment health check.
-- `Dockerfile` lets you deploy the Node server on a host that supports persistent Node processes and WebSockets.
+- **Ultraviolet** offers its original UV-Static integration under **UV-Static connection**. It needs a compatible configured Bare relay. The isolated UV-Static host opens in a separate tab after a connection check. Relay errors are shown in Connection settings while the direct controls stay available.
+- **Scramjet** uses direct browsing on the hosted Lolite site. Its rewritten browsing mode depends on a separately configured Scramjet runtime and transport.
+- **Sandstone** opens its original HTML bundle on the hosted site. **Original mode** gives access to its original controls and renderer, which depend on a compatible authorised Wisp service for proxy pages. The installed Windows build uses the direct browser controls within the app.
 
-## Deploy the full browser host
+## Hosting
 
-Use a Docker-capable Node host that supports WebSocket upgrades (for example, a Render web service or Railway service). Connect the `darby9123-arch/Lolite-OS` repository and deploy from its root using the included Dockerfile. The app listens on the `PORT` environment variable.
+GitHub Pages can serve the browser apps and direct navigation as static files. On Vercel and Node, the account session route validates Lolite's existing Supabase identity, and `/healthz` reports the host's transport status. The published Lolite builds have disabled public proxy transports. Direct browsing makes requests from the visitor's browser.
 
-After deployment, check `https://YOUR-HOST/healthz` and verify these runtime files return HTTP 200:
+The repository's restricted Sandstone compatibility relay permits only Lolite's own GitHub Pages host. See [the relay service notes](../services/sandstone-wisp/README.md) for its current deployment status.
 
-- `/uv/uv.bundle.js`
-- `/uv/uv.handler.js`
-- `/uv/uv.sw.js`
-- `/scramjet/scramjet.js`
-- `/scramjet/scramjet.wasm`
-- `/controller/controller.api.js`
-- `/controller/controller.inject.js`
-- `/controller/controller.sw.js`
-- `/clients/epoxy/index.js`
+## Verification
 
-Then open the hosted Lolite desktop, launch each browser, and test an HTTPS website. A successful asset check alone does not prove the proxy works.
-
-## Existing Vercel deployment
-
-The existing Vercel site may still serve Ultraviolet HTTP endpoints, but Vercel Functions are not a suitable host for the persistent Wisp WebSocket service used by Scramjet. Keep Vercel for the current site/API if desired, but deploy the full browser-capable Node server separately and use that host for Scramjet. Do not expect GitHub Pages or the current Vercel function deployment to provide the full Scramjet transport.
-
-## Security note
-
-A public web proxy can be abused. Before advertising the Node host publicly, put appropriate access controls, usage limits, and monitoring in front of proxy routes. Wisp can relay network traffic and should not be exposed as an unrestricted general-purpose relay.
-
-## Original Sandstone Browser integration (November 18, 2026)
-
-The user-provided original Sandstone proxy HTML remains in `apps/sandstone-browser.html`, and the Lolite desktop launches **that original file**, not the separate experimental direct browser. The original Sandstone controls, options menu, sandboxed frame and engine are retained.
-
-`core/sandstone-original-compat.js` fixes the original app's layout inside Lolite's resizable desktop window, removes the generic app padding only for Sandstone, improves mobile/narrow-window layout, and displays clear renderer and transport limitations with a reload control. It does **not** modify the bundled proxy engine or add a proxy server.
-
-Sandstone needs a compatible authorised Wisp WebSocket transport to load remote websites. GitHub Pages cannot provide that transport, and the current Lolite Node server intentionally disables proxy transports. The original UI can load without making remote pages available. Do not treat a visible Sandstone UI or successful static deployment as proof that a remote website can load.
-
-Run `node --test tests/sandstone-browser.test.cjs` to verify the original launch path, window integration and regression guards. Remote website loading requires separate infrastructure/authorised connectivity and has **not** been verified on GitHub Pages.
+Run `node --test tests/browser-navigation.test.cjs tests/uv-static.test.cjs tests/sandstone-browser.test.cjs` after installing the test dependencies with `npm ci --prefix tests/chat`. For a browser smoke test, sign in, open each browser, and load a page that allows embedding. Also check that a page which forbids embedding opens in a normal tab. A visible renderer or a successful relay check alone does not verify proxy playback.

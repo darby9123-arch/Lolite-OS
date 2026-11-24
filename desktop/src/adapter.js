@@ -24,6 +24,8 @@
     const frameNotice=new MutationObserver(()=>{
       document.querySelectorAll('iframe:not([data-desktop-frame])').forEach(frame=>{
         frame.dataset.desktopFrame='true';
+        // Direct browser pages already have an opaque-origin sandbox.
+        if(frame.dataset.loliteBrowserFrame==='direct'&&frame.hasAttribute('sandbox'))return;
         frame.setAttribute('sandbox','allow-scripts allow-forms allow-pointer-lock allow-downloads allow-modals');
         const src=frame.getAttribute('src')||'';
         try{

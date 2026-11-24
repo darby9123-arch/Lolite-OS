@@ -9,6 +9,7 @@ test('Ultraviolet and Scramjet wrappers preserve other app dimensions, titles an
  const win={
   page:id=>'original:'+id,
   openApp(...args){calls.push(args);return {args};},
+  addEventListener(){},
   LoliteIcons:{tile:()=>'<span>icon</span>'}
  };
  const doc={
@@ -18,6 +19,7 @@ test('Ultraviolet and Scramjet wrappers preserve other app dimensions, titles an
   getElementById:()=>null
  };
  const sandbox={window:win,document:doc,MutationObserver:class{observe(){}},setTimeout(){},location:{href:'https://example.test/',search:''},URL,console};
+ vm.runInNewContext(read('core/browser-navigation.js'),sandbox);
  vm.runInNewContext(read('core/ultraviolet.js'),sandbox);
  vm.runInNewContext(read('core/scramjet-browser.js'),sandbox);
  const notes=win.openApp('notes','Notes');

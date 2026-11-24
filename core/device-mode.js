@@ -17,6 +17,7 @@
     {id:'cloud-gaming',name:'Cloud Gaming',group:'more',desc:'Stream games through supported services',glyph:'☁'},
     {id:'browser',name:'Ultraviolet Browser',group:'more',desc:'Browse the web',glyph:'◎'},
     {id:'scramjet',name:'Scramjet Browser',group:'more',desc:'Another browser option',glyph:'◌'},
+    {id:'sandstone',name:'Sandstone Browser',group:'more',desc:'Browse with Sandstone',glyph:'◇'},
     {id:'notes',name:'Quick Notes',group:'more',desc:'Jot down ideas',glyph:'≡',optional:true},
     {id:'calculator',name:'Calculator',group:'more',desc:'Work with numbers',glyph:'＋',optional:true},
     {id:'paint',name:'Lolite Paint',group:'more',desc:'Draw, colour and edit',glyph:'✎',optional:true},

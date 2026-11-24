@@ -58,9 +58,6 @@ test('Worker ignores account, game and unrelated-origin requests',()=>{
  for(const url of ['https://lolite.example/accounts','https://lolite.example/html%20games/test.html','https://other.example/browser/uv-static/service/foo','https://lolite.example/browser/uv-static/service/foo'])
   handlers.fetch({request:{url},respondWith(){}});
  assert.deepEqual(routed,['https://lolite.example/browser/uv-static/service/foo']);
- const frame=read('core/ultraviolet.js').match(/<iframe[^>]+>/)[0];
- assert.match(frame,/sandbox="allow-scripts/);assert.doesNotMatch(frame,/allow-same-origin/);
- assert.match(read('core/ultraviolet.js'),/origin===location.origin\|\|origin!==window.LoliteUVStatic.origin/);
 });
 
 async function launcher({parentDocument=false,path='/'}={}){
