@@ -713,7 +713,9 @@
  addEventListener('lolite:modechange',()=>{syncCoverage();sync()});
  for(const event of ['lolite:windowchange','lolite:desktopchange'])addEventListener(event,syncCoverage);
  media.addEventListener?.('change',sync);
- new MutationObserver(sync).observe(root,{attributes:true,attributeFilter:['class']});
+ const motionSignature=()=>['reduce','reduce-motion','lolite-lite-mode','browsing-mode'].map(name=>root.classList.contains(name)).join('|');
+ let lastMotionSignature=motionSignature();
+ new MutationObserver(()=>{const next=motionSignature();if(next!==lastMotionSignature){lastMotionSignature=next;sync()}}).observe(root,{attributes:true,attributeFilter:['class']});
  const boot=()=>restore();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
