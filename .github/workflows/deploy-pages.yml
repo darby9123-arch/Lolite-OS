@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -39,8 +40,28 @@ jobs:
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
         with:
+          name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
           path: .
+
+      # Newly uploaded artifacts can briefly be absent from the REST listing.
+      # Attempt-specific names also keep retries from matching older uploads.
+      - name: Wait for Pages artifact metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LOLITE_PAGES_ARTIFACT: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          for lookup_attempt in {1..12}; do
+            pages_artifact_count="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?name=$LOLITE_PAGES_ARTIFACT" --jq '.artifacts | length')"
+            if [ "$pages_artifact_count" = "1" ]; then
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "Pages artifact metadata did not become available."
+          exit 1
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
