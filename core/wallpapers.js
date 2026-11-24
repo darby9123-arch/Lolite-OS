@@ -54,7 +54,11 @@
  const media=matchMedia('(prefers-reduced-motion: reduce)');
  const paused=()=>read('loliteWallpaperPaused')==='true'||media.matches||
    root.classList.contains('reduce')||root.classList.contains('reduce-motion')||root.classList.contains('lolite-lite-mode');
- const visible=()=>!document.hidden&&!root.classList.contains('browsing-mode');
+ let covered=false;
+ const autoPause=()=>read('loliteFluidPauseCovered','true')==='true';
+ const visible=()=>!document.hidden&&!root.classList.contains('browsing-mode')&&!(autoPause()&&covered);
+ function syncCoverage(){const wm=window.LoliteWindowManager,id=wm?.activeWindowId?.(),record=id&&wm.getWindow(id);const next=Boolean(record&&!record.minimised&&!record.closing&&record.desktopIndex===wm.desktopIndex()&&record.el.dataset.snap==='max'&&!root.classList.contains('browsing-mode'));if(next===covered)return;covered=next;if(autoPause())sync()}
+ function setAutoPause(value){save('loliteFluidPauseCovered',String(!!value));syncCoverage();sync()}
  const validQuality=new Set(['max','balanced','lite']);
  // Default to HD/one decoder for new installations; keep explicitly saved Max settings.
  const initialQuality=read('loliteWallpaperQuality','balanced');
@@ -678,7 +682,7 @@
   interactionStrength:()=>intensity,
   setInteractionStrength:value=>{intensity=Math.max(.2,Math.min(1.4,Number(value)||.8));save('loliteWallpaperInteractionStrength',String(intensity))},
   pause:value=>{save('loliteWallpaperPaused',String(value));sync()},
-  isPaused:paused,current:()=>active,
+  isPaused:paused,isManuallyPaused:()=>read('loliteWallpaperPaused')==='true',getAutoPause:autoPause,setAutoPause,current:()=>active,
   debug:()=>({running:!!raf||!!((loopController?.getCurrent()||video)&&!(loopController?.getCurrent()||video).paused),frames,status,
    resolution:canvas?[canvas.width,canvas.height]:null,
    videoCount:loopController?loopController.getVideoCount():video?1:0,canvasCount:document.querySelectorAll('.lolite-live-canvas').length,
@@ -706,7 +710,8 @@
  addEventListener('blur',()=>{pointer.inside=false});
  addEventListener('resize',resize,{passive:true});
  document.addEventListener('visibilitychange',sync);
- addEventListener('lolite:modechange',sync);
+ addEventListener('lolite:modechange',()=>{syncCoverage();sync()});
+ for(const event of ['lolite:windowchange','lolite:desktopchange'])addEventListener(event,syncCoverage);
  media.addEventListener?.('change',sync);
  new MutationObserver(sync).observe(root,{attributes:true,attributeFilter:['class']});
  const boot=()=>restore();
