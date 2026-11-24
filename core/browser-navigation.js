@@ -2,7 +2,7 @@
 (() => {
  'use strict';
 
- const sandbox = 'allow-scripts allow-forms allow-downloads allow-popups';
+ const sandbox = 'allow-scripts allow-forms allow-downloads';
  const hostAddress = /^(?:localhost|\[[\da-f:.]+\]|(?:[\p{L}\p{N}-]+\.)+[\p{L}\p{N}-]+)(?::\d+)?(?:[/?#]|$)/iu;
  const controllers = new WeakMap();
  let signedOut = false;
@@ -97,13 +97,12 @@
    root.dispatchEvent(new Event('lolite:browseraddress'));
   }
 
-  function show(target, openTab = false) {
+  function show(target) {
    if (!isAllowed()) return false;
    input.value = target.href;
    if (needsTab(target)) {
-    notice('Open in a browser tab', 'This address works best in a separate tab. You can also use Open in tab above.');
-    setStatus('Open in tab · ' + target.host);
-    if (openTab) window.open(target.href, '_blank', 'noopener,noreferrer');
+    notice('Separate tab required', 'Lolite can’t display this address here. Select Open in tab to visit it.');
+    setStatus(target.host);
    } else {
     const frame = doc.createElement('iframe');
     frame.title = root.dataset.webName + ' page';
@@ -126,13 +125,13 @@
    position = trail.length - 1;
   }
 
-  function go(value, openTab = true) {
+  function go(value) {
    if (!isAllowed()) return false;
    try {
     const target = address(value);
     if (!target) { setStatus('Enter a website or search term.'); return false; }
     remember(target);
-    return show(target, openTab);
+    return show(target);
    } catch (error) {
     setStatus(error instanceof TypeError ? 'Enter a valid website address.' : error.message, true);
     return false;
@@ -188,7 +187,7 @@
     const controller = mount(root);
     setup?.(root, controller);
     const initial = query && new URLSearchParams(location.search).get(query);
-    if (initial) controller.go(initial, false);
+    if (initial) controller.go(initial);
    }
    return opened;
   };

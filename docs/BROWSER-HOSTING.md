@@ -2,7 +2,7 @@
 
 Ultraviolet, Scramjet, and Sandstone open regular websites directly by default after Lolite sign-in. The same controls work in Desktop Style and Browsing Style. Back and Forward track addresses entered through the app. Reload reloads the current address.
 
-Searches open in a regular tab. Sites that restrict embedding can be visited with **Open in tab**. Lolite leaves each site's framing policy in effect.
+**Go** keeps you in Lolite. Select **Open in tab** to open web searches, HTTP addresses from an HTTPS deployment, or sites that restrict embedding. Lolite leaves each site's framing policy in effect.
 
 [How sites control embedding](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/frame-ancestors)
 

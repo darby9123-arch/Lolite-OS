@@ -50,7 +50,7 @@ test('Ultraviolet, Scramjet and installed Sandstone open independent direct brow
   const frame = app.querySelector('iframe');
   assert.equal(frame.src, expected);
   assert.ok(frame.hasAttribute('sandbox'));
-  assert.doesNotMatch(frame.getAttribute('sandbox'), /allow-same-origin|allow-top-navigation/);
+  assert.doesNotMatch(frame.getAttribute('sandbox'), /allow-same-origin|allow-top-navigation|allow-popups/);
   assert.equal(frame.referrerPolicy, 'no-referrer');
   assert.equal(app.querySelector('[data-web-tab]').href, frame.src);
  }
@@ -62,20 +62,26 @@ test('Ultraviolet, Scramjet and installed Sandstone open independent direct brow
  assert.equal(scramjet.querySelector('iframe').src, 'https://example.com/docs');
 });
 
-test('Searches open in a regular tab and invalid schemes never reach a frame or tab', t => {
+test('Navigation stays in Lolite and external targets require clicking Open in tab', t => {
  const { window, tabs } = setup(t);
  const app = window.openApp('scramjet');
+ const link = app.querySelector('[data-web-tab]');
  submit(window, app, 'Lolite wallpapers');
- assert.equal(tabs.length, 1);
- assert.equal(new URL(tabs[0][0]).searchParams.get('q'), 'Lolite wallpapers');
- assert.equal(tabs[0][2], 'noopener,noreferrer');
+ assert.equal(new URL(link.href).searchParams.get('q'), 'Lolite wallpapers');
+ assert.equal(link.target, '_blank');
+ assert.equal(link.rel, 'noopener noreferrer');
+ assert.equal(link.getAttribute('aria-disabled'), 'false');
+ assert.match(app.querySelector('[data-web-stage]').textContent, /Select Open in tab/);
+ assert.equal(app.querySelector('iframe'), null);
+ submit(window, app, 'http://example.com');
+ assert.equal(link.href, 'http://example.com/');
  assert.equal(app.querySelector('iframe'), null);
  for (const value of ['javascript:alert(1)', 'file:///tmp/test', 'https://username:password@example.com']) {
   submit(window, app, value);
   assert.equal(app.querySelector('[data-web-status]').dataset.error, 'true');
   assert.equal(app.querySelector('iframe'), null);
  }
- assert.equal(tabs.length, 1);
+ assert.equal(tabs.length, 0);
  submit(window, app, 'example.com:8443/path');
  assert.equal(app.querySelector('iframe').src, 'https://example.com:8443/path');
 });
