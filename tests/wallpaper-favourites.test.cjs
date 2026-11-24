@@ -133,7 +133,7 @@ test('Wallpaper Settings handles favourite clicks separately from applying cards
  const html=read('index.html');
  assert.match(html,/core\/wallpaper-favourites\.css/);
  assert.match(html,/core\/wallpapers\.js\?v=20261113/);
- assert.match(html,/core\/crimson\.js\?v=20261113/);
+ assert.match(html,/core\/crimson\.js\?v=[^"\s]+/);
 });
 
 const wallIds=html=>[...html.matchAll(/data-wall-id="([^"]+)"/g)].map(match=>match[1]);

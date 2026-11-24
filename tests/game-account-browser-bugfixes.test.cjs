@@ -52,7 +52,7 @@ test('Unified account sign-out cannot remain stuck when auth cleanup fails',asyn
  const auth={onAuthStateChange(){},async signOut(){throw Error('offline')},async getUser(){return {data:{user:null}}},async getSession(){return {data:{session:null}}}};
  const client={auth};
  const window={LoliteAccountStorage:storage,supabase:{createClient:()=>client},LoliteActivity:{async stop(){}},addEventListener(){},dispatchEvent(){}};
- const sandbox={window,document,sessionStorage,localStorage:{getItem:()=>null},location:{reload(){reloads++}},MutationObserver:class{observe(){}},CustomEvent:class{constructor(){}},setTimeout(){},clearTimeout(){},console:{warn(){}}};
+ const sandbox={window,document,sessionStorage,localStorage:{getItem:()=>null},location:{reload(){reloads++}},MutationObserver:class{observe(){}},CustomEvent:class{constructor(){}},setTimeout(){},clearTimeout(){},setInterval(){},clearInterval(){},console:{warn(){}}};
  vm.runInNewContext(read('core/accounts.js'),sandbox);
  await flush();
  await window.LoliteAccounts.signOut();

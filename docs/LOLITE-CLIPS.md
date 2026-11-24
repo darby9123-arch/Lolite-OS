@@ -9,7 +9,19 @@ Lolite Clips is a built-in recording app in the desktop, modern Start menu, Cosm
 4. Press **Alt+Shift+C** again (or Stop & save clip) to stop. You can choose automatic limits of **15, 30, 60 or 90 seconds**, and change the shortcut to **Ctrl+Shift+Y**.
 5. A recording indicator is shown while capture is active. Saving a clip automatically stops screen sharing; you can also use **Stop sharing screen** to release the capture source.
 
-**Important browser limitations:** This records **from the time you start recording**; it does not retrieve the last 30 seconds retroactively (no background replay buffer). The keyboard shortcut works when Lolite or a same-origin game iframe has keyboard focus. Cross-origin game iframes can intercept it, so use the capture controls in those games. Screen/tab capture requires a supported browser and HTTPS. Game/tab audio is included only if the browser supports it and you choose to share audio. Capture will stop if you end browser screen sharing.
+**Regular recording** captures from the time you start it. To save footage from before a save shortcut, use **Instant Replay**, described below. Both modes require a supported browser and HTTPS. Audio is included only if the browser supports it and you choose to share audio. Keyboard shortcuts work while Lolite or a same-origin game iframe has focus; cross-origin games and other apps can intercept them, so use the capture controls in those cases.
+
+## Instant Replay (24 November 2026)
+
+1. Open **Lolite Clips → Instant Replay** and choose **30 or 60 seconds** and a video quality.
+2. Select **Enable instant replay** and choose the game tab, window or screen in the browser's capture chooser. Replay is off on every new page load and never starts merely because you change a setting.
+3. Keep playing. The progress display shows how much recent footage is ready, and a persistent **REPLAY** indicator stays visible even when Clips is closed or minimised.
+4. Press **Alt+Shift+R** or **Save last 30/60 seconds** to save a private clip in **My Clips**. **Ctrl+Alt+R** is an alternative shortcut. While the buffer is filling, saving keeps the footage available so far. Saving does not stop capture, so you can save several moments from the same session.
+5. Select **Turn off replay**, end screen sharing, or leave/reload Lolite to stop capture and clear the unsaved buffer. Saved clips remain in My Clips.
+
+Replay needs **WebM recording support**; regular recording retains its WebM/MP4 fallback. The replay buffer is held temporarily in memory, with a 48 MiB encoded-footage cap. It keeps a nearby video keyframe to make clips decodable, so a saved clip may be slightly longer than the selected duration. If the byte cap is reached, the available replay can be shorter. Video quality and replay length are locked while replay is running; turn it off to change them. Regular recording and replay cannot run together.
+
+No footage from before replay was enabled is available. There are no global operating-system keyboard hooks: shortcuts have the same Lolite/same-origin focus requirement as regular recording. Capture performance, audio availability and permission dialogs vary by browser and device. Saved replays use the same private local library, downloads and explicit community-sharing flow as other clips. If local storage fails, the saved replay is offered as a download.
 
 ## Clips 2.0 recording controls
 - **Pause / Resume:** While recording, select **Pause recording** to temporarily stop adding footage. Choose **Resume** to continue within the same file. The time limit counts actual recorded time, not paused time. **Stop & save** also works while paused.
@@ -30,12 +42,19 @@ Uploads are limited to **20 MB** per clip, stored in a private Supabase bucket n
 Members can delete their shared clips to unshare them. A local copy stays on the original device unless separately deleted. Video preview links are time-limited and require a member with access to request them.
 
 ## Technical notes
-- Client-side recorder: `core/clips.js` and `core/clips.css`. Uses user-initiated `getDisplayMedia()`, `MediaRecorder`, and IndexedDB.
+- Client-side recorder: `core/clips.js` and `core/clips.css`. Uses user-initiated `getDisplayMedia()`, `MediaRecorder`, and IndexedDB. `core/clip-replay.js` manages replay capture; `core/clip-replay-buffer.js` parses complete WebM blocks, retains a keyframe, and rewrites duration, timestamps and seek cues without re-encoding. Arbitrary MediaRecorder timeslices are not treated as playable files.
 - Cloud schema and access policies: `supabase/migrations/20261112070000_lolite_clips.sql`.
 - Supabase RLS: only clip owners/admins can read pending or rejected metadata; approved metadata is visible to authenticated Lolite users. Only admins can approve/reject uploads.
 - Storage policies: uploads are restricted to the signed-in user's folder; playback is limited to the clip owner, admin, or members watching approved clips. Files must be WebM/MP4.
-- No background/silent capture, service-role keys, or automatic uploads.
-- Regression suite: `tests/lolite-clips.test.cjs`. Browser-specific recording and audio support still require a manual browser test.
+- No silent or automatic capture, service-role keys, or automatic uploads. Replay continues only within an explicitly enabled, visibly indicated capture session.
+- Regression suites: `tests/lolite-clips.test.cjs` and `tests/clip-replay.test.cjs`. Cover repeated saves, bounded retention, keyframe trimming, split WebM elements, cancellation, source ending, shortcut isolation and real VP8/Opus decode/seek through FFmpeg when available.
+- Browser fixture: `tests/clips/browser-fixture.html` loads the production modules with a generated canvas and synthetic audio source instead of screen capture, plus isolated test storage. It checks saving and seeking without capturing a real screen or modifying account data.
+
+### Instant Replay browser verification
+
+Chrome verification with the generated canvas and synthetic audio saved an 8.33-second warmup clip, a 30.36-second rolling replay and a 60.46-second rolling replay. Each loaded with a finite duration and decoded after seeking near its end. Repeated saves reused the capture session; stopping and reloading left replay off. The 350-pixel layout kept its controls within the app window. Actual display-selection dialogs and device-specific capture/audio still depend on the browser.
+
+![Instant Replay controls using the production Clips interface](screenshots/lolite-instant-replay-20261124.jpg)
 
 ## Clips 3.0 UI and reliability fixes (13 November 2026)
 

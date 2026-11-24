@@ -21,6 +21,8 @@ on:
       - 'core/accounts.js'
       - 'core/chat-v2.js'
       - 'core/clips.js'
+      - 'core/clip-replay.js'
+      - 'core/clip-replay-buffer.js'
       - 'core/lolite-admin.js'
       - 'core/lolite-admin-accounts.js'
       - 'core/lolite-account-notices.js'
@@ -91,6 +93,8 @@ jobs:
           node --check core/music.js
           node --check core/feature-requests.js
           node --check core/clips.js
+          node --check core/clip-replay-buffer.js
+          node --check core/clip-replay.js
           node --check core/performance-mode.js
           node --check core/wallpapers.js
           node --check ui-preview/app.js

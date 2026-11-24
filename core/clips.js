@@ -5,6 +5,7 @@
 (()=>{'use strict';
  const BUCKET='lolite-clips',DB_NAME='lolite-clips-local-v1',MAX_UPLOAD=20*1024*1024;
  const LENGTHS=[15,30,60,90],KEYS=['Alt+Shift+C','Ctrl+Shift+Y'];
+ const REPLAY_LENGTHS=[30,60],REPLAY_KEYS=['Alt+Shift+R','Ctrl+Alt+R'];
  const QUALITIES=Object.freeze({compact:{label:'Compact · smaller files',bitrate:800000},
   balanced:{label:'Balanced · recommended',bitrate:1500000},
   high:{label:'High · sharper video',bitrate:3000000}});
@@ -12,6 +13,7 @@
   user:null,admin:false,loading:false,busy:false,error:'',message:'',
   stream:null,recorder:null,recording:false,paused:false,requesting:false,saving:false,
   started:0,elapsedMs:0,timer:null,tick:null,duration:30,hotkey:'Alt+Shift+C',quality:'balanced',
+  replay:null,replayPhase:'off',replayDuration:30,replayHotkey:'Alt+Shift+R',replaySaving:false,
   shareId:null,renameId:null,libraryQuery:'',librarySort:'newest',favoriteOnly:false};
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const safeUUID=x=>/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(String(x||''))?String(x):'';
@@ -37,7 +39,11 @@
  function settings(){
   try{const d=localStorage.getItem('loliteClipsDuration');if(LENGTHS.includes(Number(d)))S.duration=Number(d);
    const key=localStorage.getItem('loliteClipsHotkey');if(KEYS.includes(key))S.hotkey=key;
-   const quality=localStorage.getItem('loliteClipsQuality');if(QUALITIES[quality])S.quality=quality;}catch(_){}
+   const quality=localStorage.getItem('loliteClipsQuality');if(QUALITIES[quality])S.quality=quality;
+   const replayLength=Number(localStorage.getItem('loliteClipsReplayDuration'));
+   if(REPLAY_LENGTHS.includes(replayLength))S.replayDuration=replayLength;
+   const replayKey=localStorage.getItem('loliteClipsReplayHotkey');if(REPLAY_KEYS.includes(replayKey))S.replayHotkey=replayKey;
+  }catch(_){}
  }
  function storeSetting(key,value){try{localStorage.setItem(key,String(value))}catch(_){}}
  function db(){
@@ -89,6 +95,21 @@
   return Math.max(0,S.elapsedMs+(S.recording&&!S.paused?Date.now()-S.started:0));
  }
  function remainingSeconds(){return Math.max(0,Math.ceil((S.duration*1000-recordedMs())/1000))}
+ const replayState=()=>S.replay?.status()||{phase:'off',active:false,requesting:false,bufferedSeconds:0,bytes:0};
+ const replayBusy=()=>replayState().active||replayState().requesting;
+ function updateReplayProgress(){
+  const container=root(),replay=replayState(),seconds=Math.min(S.replayDuration,replay.bufferedSeconds);
+  const time=container?.querySelector('[data-lclip-replay-time]');
+  if(time)time.textContent=formatTime(Math.floor(seconds))+' / '+formatTime(S.replayDuration);
+  const bar=container?.querySelector('[data-lclip-replay-fill]');
+  if(bar)bar.style.width=Math.min(100,100*seconds/S.replayDuration)+'%';
+  const label=container?.querySelector('[data-lclip-replay-state]');
+  if(label)label.textContent=replay.active?(seconds>=S.replayDuration?'Ready to save':'Building your replay buffer'):'Replay is off';
+  const memory=container?.querySelector('[data-lclip-replay-memory]');
+  if(memory)memory.textContent=size(replay.bytes)+' in temporary memory';
+  const save=container?.querySelector('[data-lclip-action="save-replay"]');
+  if(save)save.disabled=!replay.active||replay.bufferedSeconds<0.25||S.replaySaving;
+ }
  function updateRecordingProgress(){
   const container=root();
   const time=container?.querySelector('[data-lclip-record-time]');
@@ -104,15 +125,18 @@
    button.setAttribute('aria-label','Open Lolite Clips capture controls');document.body.appendChild(button);
    button.addEventListener('click',()=>window.openApp?.('clips','Lolite Clips',1020,720));
   }
-  button.hidden=!S.stream&&!S.recording&&!S.saving;
-  button.className='lclip-capture-indicator'+(S.recording?(S.paused?' is-paused':' is-recording'):'');
+  const replay=replayState();
+  button.hidden=!S.stream&&!S.recording&&!S.saving&&!replay.active&&!replay.requesting;
+  button.className='lclip-capture-indicator'+(S.recording?(S.paused?' is-paused':' is-recording'):replay.active?' is-replay':'');
   button.textContent=S.recording?(S.paused?'Ⅱ PAUSED · ':'● REC · ')+remainingSeconds()+'s':
-   S.saving?'Saving clip…':'Screen capture on';
-  updateRecordingProgress();
+   S.saving||S.replaySaving?'Saving clip…':replay.active?'REPLAY · '+Math.floor(Math.min(S.replayDuration,replay.bufferedSeconds))+'s':
+   replay.requesting?'Choosing replay source…':'Screen capture on';
+  updateRecordingProgress();updateReplayProgress();
   button.title='Open Lolite Clips to stop recording or capture';
  }
  function activeStream(){return !!S.stream&&S.stream.getVideoTracks().some(track=>track.readyState==='live')}
  function stopCapture(){
+  S.replay?.stop();
   if(S.recorder&&S.recorder.state!=='inactive')S.recorder.stop();
   if(S.stream)for(const track of S.stream.getTracks())track.stop();
   S.stream=null;indicator();render();
@@ -147,6 +171,7 @@
  }
  async function beginClip(){
   if(S.recording||S.requesting||S.saving)return;
+  if(replayBusy()){notify('Turn off instant replay before starting a regular recording.');return}
   if(!media()){notify('Screen capture requires a supported HTTPS browser with MediaRecorder.',true);return}
   const type=mime();
   if(!type){notify('This browser cannot record WebM or MP4 video.',true);return}
@@ -200,6 +225,37 @@
    if(S.stream){for(const track of S.stream.getTracks())track.stop();S.stream=null}
    indicator();render();
   }finally{S.requesting=false;render()}
+ }
+ async function beginReplay(){
+  if(S.recording||S.requesting||S.saving||S.replaySaving||replayBusy())return;
+  if(!window.LoliteReplayRecorder){notify('Instant replay could not load. Refresh Lolite and try again.',true);return}
+  S.tab='replay';
+  S.replay=new window.LoliteReplayRecorder({seconds:S.replayDuration,bitrate:QUALITIES[S.quality].bitrate,
+   onUpdate:status=>{
+    if(status.phase!==S.replayPhase){S.replayPhase=status.phase;render()}else indicator();
+   },onError:message=>notify(message,true),onStop:message=>notify(message)});
+  if(await S.replay.start())notify('Instant replay is on. Press '+S.replayHotkey+' to save a moment.');
+  render();
+ }
+ async function saveReplay(){
+  if(S.replaySaving)return;
+  if(!replayState().active){notify('Enable Instant Replay in Lolite Clips before saving a moment.');return}
+  S.replaySaving=true;indicator();
+  try{
+   const moment=Date.now(),snapshot=await S.replay.save();
+   const clip={id:id(),title:'Replay · '+stamp(moment),createdAt:moment,
+    duration:Math.max(1,Math.round(snapshot.duration)),mimeType:'video/webm',bytes:snapshot.blob.size,
+    blob:snapshot.blob,favorite:false,source:'replay'};
+   try{
+    await saveLocal(clip);await refreshLocal();
+    const count=root()?.querySelector('[data-lclip-count]');if(count)count.textContent=S.local.length+' local clips';
+    notify('Saved '+formatTime(clip.duration)+' privately in My Clips.'+(replayState().active?' Replay is still on.':''));
+    if(S.tab==='library')updateLibraryGrid();
+   }catch(error){
+    download(clip);notify('Local storage was unavailable; your replay was downloaded instead.',true);
+   }
+  }catch(error){notify(error?.message||'Could not save the replay. Try again.',true)}
+  finally{S.replaySaving=false;indicator()}
  }
  const supportedMime=type=>type==='video/webm'||type==='video/mp4';
  const showCloud=()=>{if(S.tab==='community'||S.tab==='review')render()};
@@ -336,8 +392,9 @@
  function capturePanel(){
   return '<section class="lclip-hero"><div><div class="lclip-kicker">RECORD · SAVE · SHARE</div><h2>Clip your gameplay.</h2>'+
    '<p>Choose the game tab or screen in the browser permission window. Your recording stays on this device unless you choose to upload it.</p></div>'+
-   '<span class="lclip-live '+(S.recording?'on':'')+'">'+(S.recording?'● REC':activeStream()?'Capture active':'Not recording')+'</span></section>'+
-   '<div class="lclip-controls"><button class="lclip-primary" data-lclip-action="toggle" '+(S.saving||S.requesting?'disabled':'')+'>'+
+   '<span class="lclip-live '+(S.recording?'on':'')+'">'+(S.recording?'● REC':replayBusy()?'Replay active':activeStream()?'Capture active':'Not recording')+'</span></section>'+
+   (replayBusy()?'<p class="lclip-message">Instant replay is running. Turn it off in the Instant Replay tab to use regular recording.</p>':'')+
+   '<div class="lclip-controls"><button class="lclip-primary" data-lclip-action="toggle" '+(S.saving||S.requesting||replayBusy()?'disabled':'')+'>'+
     (S.recording?'■ Stop & save clip':'● Start recording')+'</button>'+
    (S.recording?'<button data-lclip-action="'+(S.paused?'resume':'pause')+'">'+
     (S.paused?'▶ Resume recording':'Ⅱ Pause recording')+'</button>':'')+
@@ -348,30 +405,53 @@
     '<div class="lclip-record-track"><div data-lclip-record-fill style="width:'+Math.min(100,100*recordedMs()/(S.duration*1000))+'%"></div></div></div>':'')+
    '<div class="lclip-settings"><label>Recording limit<select data-lclip-setting="duration" '+(S.recording?'disabled':'')+'>'+
     LENGTHS.map(n=>'<option value="'+n+'"'+(n===S.duration?' selected':'')+'>'+n+' seconds</option>').join('')+
-   '</select></label><label>Video quality<select data-lclip-setting="quality" '+(S.recording?'disabled':'')+'>'+
+   '</select></label><label>Video quality<select data-lclip-setting="quality" '+(S.recording||replayBusy()||S.replaySaving?'disabled':'')+'>'+
     Object.entries(QUALITIES).map(([name,info])=>'<option value="'+name+'"'+(name===S.quality?' selected':'')+'>'+info.label+'</option>').join('')+
    '</select></label><label>Keyboard shortcut<select data-lclip-setting="hotkey">'+KEYS.map(k=>'<option'+(k===S.hotkey?' selected':'')+'>'+k+'</option>').join('')+
    '</select></label></div>'+
    '<div class="lclip-help"><h3>How it works</h3><p>Press <kbd>'+esc(S.hotkey)+'</kbd> while Lolite has keyboard focus, or use the button above. Choose the game tab or window when your browser asks. Press the shortcut again to stop, or the clip will finish automatically at your limit.</p>'+
    '<p>Keep the chosen game tab visible and check what you are sharing. Game sound is captured only when the browser supports it and you allow audio. Cross-origin games may still block keyboard shortcuts while their iframe has focus; use the capture controls in that case.</p>'+
-   '<p>This records from when you start it; it does <strong>not</strong> retroactively capture gameplay before the shortcut was pressed.</p></div>';
+   '<p>This records from when you start it; it does <strong>not</strong> retroactively capture gameplay before the shortcut was pressed. To save recent moments while you play, open <button data-lclip-tab="replay">Instant Replay</button>.</p></div>';
+ }
+ function replayPanel(){
+  const replay=replayState();
+  return '<section class="lclip-hero lclip-replay-hero"><div><div class="lclip-kicker">YOUR LAST MOMENT, SAVED</div><h2>Instant Replay</h2>'+
+   '<p>Enable replay, choose your game tab or screen, and keep playing. Save the last '+S.replayDuration+' seconds with <kbd>'+esc(S.replayHotkey)+'</kbd>.</p></div>'+
+   '<span class="lclip-live'+(replay.active?' is-replay':'')+'">'+(replay.active?'Replay on':replay.requesting?'Choose a source':'Replay off')+'</span></section>'+
+   '<div class="lclip-controls"><button class="lclip-primary" data-lclip-action="'+(replay.active?'stop-replay':'start-replay')+'" '+
+    (S.recording||S.requesting||S.saving||replay.requesting?'disabled':'')+'>'+(replay.active?'Turn off replay':replay.requesting?'Choosing source…':'Enable instant replay')+'</button>'+
+   '<button class="lclip-save-replay" data-lclip-action="save-replay" '+(!replay.active||replay.bufferedSeconds<0.25||S.replaySaving?'disabled':'')+'>Save last '+S.replayDuration+' seconds</button>'+
+   '<button data-lclip-tab="library">View My Clips</button></div>'+
+   (S.recording?'<p class="lclip-message">Finish your current recording before enabling replay.</p>':'')+
+   '<div class="lclip-record-progress lclip-replay-progress"><div class="lclip-record-progress-top"><strong data-lclip-replay-time>'+formatTime(Math.floor(Math.min(S.replayDuration,replay.bufferedSeconds)))+' / '+formatTime(S.replayDuration)+'</strong>'+
+   '<span data-lclip-replay-state>'+(replay.active?'Building your replay buffer':'Replay is off')+'</span></div>'+
+   '<div class="lclip-record-track"><div data-lclip-replay-fill style="width:'+Math.min(100,100*replay.bufferedSeconds/S.replayDuration)+'%"></div></div>'+
+   '<p class="lclip-replay-memory" data-lclip-replay-memory>'+size(replay.bytes)+' in temporary memory</p></div>'+
+   '<div class="lclip-settings"><label>Replay length<select data-lclip-setting="replay-duration" '+(replayBusy()||S.replaySaving?'disabled':'')+'>'+REPLAY_LENGTHS.map(n=>
+    '<option value="'+n+'"'+(n===S.replayDuration?' selected':'')+'>'+n+' seconds</option>').join('')+'</select></label>'+
+   '<label>Video quality<select data-lclip-setting="quality" '+(S.recording||replayBusy()||S.replaySaving?'disabled':'')+'>'+Object.entries(QUALITIES).map(([name,info])=>
+    '<option value="'+name+'"'+(name===S.quality?' selected':'')+'>'+info.label+'</option>').join('')+'</select></label>'+
+   '<label>Save replay shortcut<select data-lclip-setting="replay-hotkey">'+REPLAY_KEYS.map(k=>'<option'+(k===S.replayHotkey?' selected':'')+'>'+k+'</option>').join('')+'</select></label></div>'+
+   '<div class="lclip-help"><h3>Ready before the moment happens.</h3><p>Replay starts only after you enable it and select a source. While the buffer fills, saving keeps the footage available so far. Saving a moment keeps replay running.</p>'+
+   '<p>The temporary buffer stays in memory. Only moments you save go into My Clips. Turn off replay to stop screen sharing and clear the buffer.</p>'+
+   '<p>Allow game audio in the capture chooser to include sound, where supported. The shortcut works while Lolite or a same-origin game has keyboard focus; use Save above if another game or app intercepts it.</p></div>';
  }
  function render(){
   const el=root();indicator();if(!el)return;
   pruneVideoURLs();
-  const tabs=[['record','Record'],['library','My Clips'],['community','Community']];
+  const tabs=[['record','Record'],['replay','Instant Replay'],['library','My Clips'],['community','Community']];
   if(S.admin)tabs.push(['review','Admin review']);
   const published=S.remote.filter(c=>c.status==='approved'),pending=S.remote.filter(c=>c.status==='pending');
   const mineUploads=S.remote.filter(c=>c.uploader_id===S.user?.id&&c.status!=='approved');
   const remoteItems=S.tab==='review'?(S.admin?S.remote:[]):
    S.tab==='community'?published:[];
   el.innerHTML='<div class="lclip-header"><div><small>LOLITE OS · GAMING</small><h1>Lolite Clips</h1><p>Record moments, save them privately and share the best ones.</p></div>'+
-   '<span class="lclip-count">'+S.local.length+' local clips</span></div>'+
+   '<span class="lclip-count" data-lclip-count>'+S.local.length+' local clips</span></div>'+
    '<nav class="lclip-nav">'+tabs.map(([tab,label])=>'<button data-lclip-tab="'+tab+'" class="'+(S.tab===tab?'active':'')+'">'+label+
     (tab==='review'&&S.admin&&pending.length?' ('+pending.length+')':'')+'</button>').join('')+
    '<button class="lclip-refresh" data-lclip-action="refresh">↻ Refresh</button></nav>'+
    '<main class="lclip-main"><div data-lclip-message role="status" aria-live="polite" class="lclip-message'+(S.error?' is-error':'')+'">'+esc(S.message)+'</div>'+
-   (S.tab==='record'?capturePanel():
+   (S.tab==='record'?capturePanel():S.tab==='replay'?replayPanel():
     S.tab==='library'?'<div class="lclip-section-heading"><h2>My Clips</h2><p>Saved only in this browser. Download any important clips as backup.</p></div>'+
      libraryToolbar()+
      '<div class="lclip-grid" data-lclip-library-grid>'+(visibleClips().length?visibleClips().map(localCard).join(''):
@@ -383,6 +463,7 @@
      '<div class="lclip-grid">'+(remoteItems.length?remoteItems.map(remoteCard).join(''):'<div class="lclip-empty">Nothing published here yet.</div>')+'</div>'+
      (S.tab==='community'&&mineUploads.length?'<section class="lclip-my-uploads"><h3>My submitted clips</h3><p>Only you and admins can see unapproved uploads.</p><div class="lclip-grid">'+mineUploads.map(remoteCard).join('')+'</div></section>':'')))+
    '</main>';
+  updateReplayProgress();
  }
  async function loadPreview(clipId){
   const clip=S.remote.find(item=>item.id===clipId);
@@ -493,6 +574,9 @@
   if(action==='toggle'){if(S.recording)stopClip();else void beginClip();return}
   if(action==='pause'){pauseClip();return}
   if(action==='resume'){resumeClip();return}
+  if(action==='start-replay'){void beginReplay();return}
+  if(action==='save-replay'){void saveReplay();return}
+  if(action==='stop-replay'){S.replay?.stop();notify('Instant replay is off. The temporary buffer was cleared.');return}
   if(action==='stop-capture'){stopCapture();return}
   if(action==='refresh'){void refreshLocal().then(()=>refreshCloud()).then(()=>render());return}
   if(action==='signin'){window.openApp?.('chatroom','Lolite Chat',1000,680);return}
@@ -538,17 +622,24 @@
   const field=event.target.closest?.('#loliteClipsRoot [data-lclip-setting]');if(!field)return;
   if(field.dataset.lclipSetting==='duration'&&LENGTHS.includes(Number(field.value))){
    S.duration=Number(field.value);storeSetting('loliteClipsDuration',S.duration);
-  }else if(field.dataset.lclipSetting==='quality'&&QUALITIES[field.value]&&!S.recording){
+  }else if(field.dataset.lclipSetting==='quality'&&QUALITIES[field.value]&&!S.recording&&!replayBusy()&&!S.replaySaving){
    S.quality=field.value;storeSetting('loliteClipsQuality',S.quality);
   }else if(field.dataset.lclipSetting==='hotkey'&&KEYS.includes(field.value)){
    S.hotkey=field.value;storeSetting('loliteClipsHotkey',S.hotkey);
+  }else if(field.dataset.lclipSetting==='replay-duration'&&REPLAY_LENGTHS.includes(Number(field.value))&&!replayBusy()&&!S.replaySaving){
+   S.replayDuration=Number(field.value);storeSetting('loliteClipsReplayDuration',S.replayDuration);
+  }else if(field.dataset.lclipSetting==='replay-hotkey'&&REPLAY_KEYS.includes(field.value)){
+   S.replayHotkey=field.value;storeSetting('loliteClipsReplayHotkey',S.replayHotkey);
   }
   render();
  });
  // Shortcuts only reach Lolite when the OS page has keyboard focus. They do
  // not bypass browser permission prompts or capture keystrokes from other apps.
  function handleClipHotkey(event){
-  if(event.repeat||event.target?.closest?.('input,textarea,select,[contenteditable="true"]'))return;
+  if(event.repeat||event.isComposing||event.metaKey||event.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])'))return;
+  const replayMatch=event.code==='KeyR'&&(S.replayHotkey==='Alt+Shift+R'?
+   event.altKey&&event.shiftKey&&!event.ctrlKey:event.ctrlKey&&event.altKey&&!event.shiftKey);
+  if(replayMatch){event.preventDefault();void saveReplay();return}
   const match=S.hotkey==='Alt+Shift+C'?event.altKey&&event.shiftKey&&!event.ctrlKey&&event.code==='KeyC':
    event.ctrlKey&&event.shiftKey&&!event.altKey&&event.code==='KeyY';
   if(!match)return;
@@ -556,6 +647,7 @@
   if(S.recording)stopClip();else void beginClip();
  }
  document.addEventListener('keydown',handleClipHotkey,true);
+ window.addEventListener?.('pagehide',stopCapture);
  // Same-origin game iframes have their own keyboard focus. Register the hotkey
  // inside those frames too; cross-origin frames remain inaccessible by design.
  function bindFrameShortcuts(){
@@ -595,6 +687,8 @@
  settings();
  client()?.auth.onAuthStateChange(()=>{setTimeout(()=>{if(root())void refreshCloud()},0)});
  window.LoliteClips=Object.freeze({open:()=>window.openApp?.('clips','Lolite Clips',1020,720),stop:stopClip,stopCapture,
+  saveReplay,
   status:()=>({recording:S.recording,paused:S.paused,elapsedSeconds:Math.floor(recordedMs()/1000),
-   captureActive:activeStream(),shortcut:S.hotkey,quality:S.quality})});
+   captureActive:activeStream()||replayState().active,shortcut:S.hotkey,quality:S.quality,
+   replay:{...replayState(),shortcut:S.replayHotkey,saving:S.replaySaving}})});
 })();

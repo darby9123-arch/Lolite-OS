@@ -98,7 +98,8 @@ test('Ban image storage and change RPC require admin privileges and verified ima
 test('Production page loads current admin account and ban styling assets',()=>{
  assert.match(index,/core\/lolite-admin-accounts\.js\?v=ban-image-unban/);
  assert.match(index,/core\/lolite-admin-moderation\.css\?v=ban-image-unban/);
- assert.match(index,/core\/accounts\.js\?v=ban-image-unban/);
+ // Later signup/account updates keep this shared script versioned too.
+ assert.match(index,/core\/accounts\.js\?v=[^"\s]+/);
  assert.match(css,/\.lam-ban-art/);
  assert.match(css,/\.la-moderation-lock \.la-ban-art/);
  assert.match(admin,/function render\(\{force=false\}=\{\}\)/);

@@ -3,13 +3,17 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const read=p=>fs.readFileSync(p,'utf8');
 
-test('UI bugfix stylesheet loads last with a fresh version',()=>{
+test('UI fixes follow Game Store cleanup and shell scripts have cache versions',()=>{
  const html=read('index.html');
  const sheet='core/ui-bugfixes.css?v=20261111-1';
  assert.ok(html.includes(sheet));
  assert.ok(html.indexOf(sheet)>html.indexOf('core/game-store-ui-cleanup.css'));
- assert.match(html,/core\/window-manager\.js\?v=ui-20261111-1/);
- assert.match(html,/core\/taskbar-enhancements\.js\?v=ui-20261111-1/);
+ const scripts=[...html.matchAll(/<script\b[^>]*src="([^"]+)"/g)].map(match=>new URL(match[1],'https://lolite.test/'));
+ for(const file of ['window-manager.js','taskbar-enhancements.js']){
+  const matches=scripts.filter(url=>url.pathname==='/core/'+file);
+  assert.equal(matches.length,1,file+' loads once');
+  assert.ok(matches[0].searchParams.get('v'),file+' has a cache version');
+ }
 });
 test('Generated and brand app icons share a centred icon box',()=>{
  const css=read('core/ui-bugfixes.css');

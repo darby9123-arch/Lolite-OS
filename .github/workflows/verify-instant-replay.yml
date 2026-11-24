@@ -1,0 +1,29 @@
+name: Verify instant replay
+on:
+  push:
+    paths: ['core/clip-replay*.js', 'core/clips.js', 'core/clips.css', 'tests/clip-replay.test.cjs', 'tests/lolite-clips.test.cjs', 'tests/clips/**', 'index.html', '.github/workflows/verify-instant-replay.yml']
+  pull_request:
+    paths: ['core/clip-replay*.js', 'core/clips.js', 'core/clips.css', 'tests/clip-replay.test.cjs', 'tests/lolite-clips.test.cjs', 'tests/clips/**', 'index.html', '.github/workflows/verify-instant-replay.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Install media decoder for playable-file checks
+        run: |
+          if ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+      - name: Check recording modules
+        run: |
+          node --check core/clip-replay-buffer.js
+          node --check core/clip-replay.js
+          node --check core/clips.js
+      - name: Verify rolling replays and existing Clips controls
+        run: node --test tests/clip-replay.test.cjs tests/lolite-clips.test.cjs

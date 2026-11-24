@@ -3,6 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
+const replayFixture=require('./clips/replay-harness.cjs');
 const read=file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8');
 const pause=()=>new Promise(resolve=>setImmediate(resolve));
 
@@ -11,7 +12,7 @@ function harness({captureSupported=true,withFrame=false}={}){
  const gameFrame={contentDocument:{addEventListener(name,fn){(frameListeners[name]??=[]).push(fn)}},addEventListener(){}};
  const root={innerHTML:'',querySelector:()=>null};
  const storage=new Map(),browser={page:()=>'<div>Existing app</div>',openApp(){},toast:message=>messages.push(message)};
- let captures=0,recorderCount=0,lastRecorder=null;
+ let captures=0,recorderCount=0,lastRecorder=null,nextId=1;
  const track={readyState:'live',addEventListener(){},stop(){this.readyState='ended'}};
  const stream={getTracks:()=>[track],getVideoTracks:()=>[track]};
  const document={
@@ -32,6 +33,10 @@ function harness({captureSupported=true,withFrame=false}={}){
   start(){this.state='recording'}
   pause(){if(this.state!=='recording')throw Error('Not recording');this.state='paused'}
   resume(){if(this.state!=='paused')throw Error('Not paused');this.state='recording'}
+  requestData(){
+   const first=this.replayAt===undefined;this.replayAt=first?0:this.replayAt+1000;
+   this.emit('dataavailable',{data:new Blob([replayFixture.join([...(first?[replayFixture.init()]:[]),replayFixture.cluster(this.replayAt)])],{type:'video/webm'})});
+  }
   stop(){this.state='inactive';this.emit('dataavailable',{data:new Blob(['test game clip'],{type:'video/webm'})});this.emit('stop',{})}
  }
  const indexedDB={
@@ -50,17 +55,19 @@ function harness({captureSupported=true,withFrame=false}={}){
  const objURLs=new Map(),url={createObjectURL(blob){const name='blob:clip-'+(objURLs.size+1);objURLs.set(name,blob);return name},revokeObjectURL(name){objURLs.delete(name)}};
  const localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)};
  let timeoutId=1;
- vm.runInNewContext(read('core/clips.js'),{
+ const scope={
   window:Object.assign(browser,{indexedDB}),document,
-  navigator:{mediaDevices:{getDisplayMedia:async()=>{captures++;return stream}}},
-  MediaRecorder:captureSupported?MockRecorder:undefined,Blob,URL:url,console,Date,Math,Promise,Set,Map,Number,
-  localStorage,indexedDB,crypto:{randomUUID:()=> 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'},
+  navigator:{mediaDevices:{getDisplayMedia:async()=>{captures++;track.readyState='live';return stream}}},
+  MediaRecorder:captureSupported?MockRecorder:undefined,Blob,TextEncoder,Uint8Array,DataView,URL:url,console,Date,Math,Promise,Set,Map,Number,
+  localStorage,indexedDB,crypto:{randomUUID:()=> 'aaaaaaaa-aaaa-4aaa-8aaa-'+String(nextId++).padStart(12,'0')},
   setTimeout:(fn,ms)=>{const id=timeoutId++;if(ms===0)queueMicrotask(fn);return id},
   setInterval:()=>1,clearTimeout(){},clearInterval(){},confirm:()=>true
- },{timeout:2000});
- function key({inInput=false,inFrame=false}={}){
+ };
+ vm.createContext(scope);
+ for(const file of ['core/clip-replay-buffer.js','core/clip-replay.js','core/clips.js'])vm.runInContext(read(file),scope,{timeout:2000});
+ function key({inInput=false,inFrame=false,code='KeyC',ctrlKey=false,altKey=true,shiftKey=true,metaKey=false,repeat=false}={}){
   let prevented=false;
-  const event={repeat:false,altKey:true,shiftKey:true,ctrlKey:false,code:'KeyC',
+  const event={repeat,altKey,shiftKey,ctrlKey,metaKey,code,
    target:{closest:()=>inInput?{}:null},preventDefault(){prevented=true}};
   for(const handler of (inFrame?frameListeners:listeners).keydown||[])handler(event);
   return prevented;
@@ -303,4 +310,40 @@ test('Community preview can be requested individually without exposing private c
  assert.match(code,/clip\.status==='approved'\|\|S\.admin\|\|clip\.uploader_id===S\.user\.id/);
  assert.match(code,/const showCloud=\(\)=>\{if\(S\.tab==='community'\|\|S\.tab==='review'\)render\(\)\}/);
  assert.match(code,/updateLibraryGrid\(\)/);
+});
+
+test('Replay shortcut saves private moments repeatedly while screen capture continues',async()=>{
+ const h=harness();h.browser.page('clips');await pause();
+ assert.equal(h.key({code:'KeyR'}),true);await pause();assert.equal(h.captures,0);
+ h.click('start-replay');await pause();
+ assert.equal(h.captures,1);assert.equal(h.browser.LoliteClips.status().replay.active,true);
+ assert.match(h.root.innerHTML,/Turn off replay/);
+ h.key({code:'KeyR'});await pause();await pause();await pause();
+ assert.equal(h.saved.size,1);assert.equal(h.browser.LoliteClips.status().captureActive,true);
+ assert.equal([...h.saved.values()][0].source,'replay');
+ h.key({code:'KeyR'});await pause();await pause();await pause();
+ assert.equal(h.saved.size,2);assert.equal(h.captures,1);
+ h.click('stop-replay');assert.equal(h.browser.LoliteClips.status().captureActive,false);
+ assert.equal(h.browser.LoliteClips.status().replay.bytes,0);assert.equal(h.saved.size,2);
+});
+test('Replay settings never enable capture; incompatible recording modes cannot overlap',async()=>{
+ const h=harness();h.browser.page('clips');await pause();
+ h.change('replay-duration','60');h.change('replay-hotkey','Ctrl+Alt+R');
+ assert.equal(h.captures,0);assert.equal(h.storage.get('loliteClipsReplayDuration'),'60');
+ h.key();await pause();h.click('start-replay');await pause();assert.equal(h.captures,1);
+ assert.equal(h.browser.LoliteClips.status().replay.active,false);
+ h.key();await pause();await pause();h.click('start-replay');await pause();
+ assert.equal(h.browser.LoliteClips.status().replay.seconds,60);
+ h.key();await pause();assert.equal(h.captures,2);assert.equal(h.browser.LoliteClips.status().recording,false);
+ h.change('replay-duration','30');assert.equal(h.storage.get('loliteClipsReplayDuration'),'60');
+ h.key({code:'KeyR',ctrlKey:true,shiftKey:false});await pause();await pause();await pause();
+ assert.equal(h.saved.size,2);h.click('stop-replay');
+});
+test('Replay shortcuts ignore text editing, repeats and other modifier combinations',async()=>{
+ const h=harness();h.browser.page('clips');await pause();h.click('start-replay');await pause();
+ for(const options of [{inInput:true},{repeat:true},{metaKey:true},{ctrlKey:true}])assert.equal(h.key({code:'KeyR',...options}),false);
+ await pause();assert.equal(h.saved.size,0);h.click('stop-replay');
+ const html=read('index.html');
+ assert.ok(html.indexOf('core/clip-replay-buffer.js')<html.indexOf('core/clip-replay.js'));
+ assert.ok(html.indexOf('core/clip-replay.js')<html.indexOf('core/clips.js'));
 });

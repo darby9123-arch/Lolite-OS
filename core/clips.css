@@ -35,6 +35,14 @@
 .lclip-hero p{color:#c2d0e4;font-size:12px;line-height:1.65;max-width:580px;margin:0}
 .lclip-live{flex-shrink:0;white-space:nowrap;border-radius:30px;padding:7px 11px;background:#293b52;border:1px solid #536c90;font-size:11px;color:#d4e1f5;font-weight:750}
 .lclip-live.on{background:#613244;border-color:#cb748f;color:#ffe5e9}
+.lclip-live.is-replay{background:#342e54;border-color:#9584cc;color:#eee6ff}
+.lclip-replay-hero{background:#242b43;border-color:#626486}
+.lclip-replay-hero kbd{font:inherit;font-weight:700;color:#f0eaff;white-space:nowrap}
+.lclip-shell button.lclip-save-replay{background:#b9a8ef;color:#1e1933;border-color:#d3c5ff;font-size:14px;font-weight:750;min-height:44px}
+.lclip-shell button.lclip-save-replay:hover:not(:disabled){background:#cabaf8;border-color:#e8deff}
+.lclip-replay-progress .lclip-record-track>div{background:#b9a8ef}
+.lclip-replay-memory{margin:9px 0 0;color:#aebdd1;font-size:12px;font-variant-numeric:tabular-nums}
+#loliteClipCaptureStatus.lclip-capture-indicator.is-replay{background:#302848;border-color:#b5a0e8;color:#f0eaff}
 .lclip-controls{display:flex;flex-wrap:wrap;gap:9px;margin:16px 0;align-items:center}
 .lclip-controls button{min-height:40px;padding:10px 15px}
 .lclip-controls button.lclip-primary{min-width:175px}
