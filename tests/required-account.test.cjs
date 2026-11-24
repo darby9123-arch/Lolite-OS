@@ -36,7 +36,7 @@ function desktopHarness({deviceId='guest',auto=false,guestHandoff=false}={}){
   dispatchEvent(){}};
  const ctx={window,document,localStorage:{getItem:()=>null},sessionStorage,
   location:{reload:()=>reloads++},MutationObserver:class{observe(){}},
-  CustomEvent:class{},setTimeout:fn=>{return 1},clearTimeout(){},console};
+  CustomEvent:class{},setTimeout:fn=>{return 1},clearTimeout(){},setInterval(){},clearInterval(){},console};
  vm.runInNewContext(read('core/accounts.js'),ctx,{timeout:2500});
  return {window,document,session,memory,client,rootClasses,
   get dialog(){return dialog},get reloads(){return reloads},screen,handlers,events};

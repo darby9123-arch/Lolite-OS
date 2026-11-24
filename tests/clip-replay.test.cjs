@@ -117,8 +117,13 @@ test('Real VP8 + Opus snapshots decode and seek after 30/60-second pruning', {sk
    const metadata=JSON.parse(probe.stdout);assert.ok(Math.abs(Number(metadata.format.duration)-snapshot.duration)<0.1);
    assert.deepEqual(metadata.streams.map(s=>s.codec_name),['vp8','opus']);
    for(const offset of [0,seconds-2]){
-    const decode=spawnSync('ffmpeg',['-hide_banner','-v','error','-ss',String(offset),'-i',output,'-t','1','-f','null','-'],{encoding:'utf8'});
-    assert.equal(decode.status,0,decode.stderr);assert.equal(decode.stderr,'');
+    // WebM already frames its packets. Bypass FFmpeg 8.0's optional Opus
+    // parser, which can log an error for an empty EOF flush; still decode both
+    // streams and fail on any actual decoding error (-xerror).
+    const decode=spawnSync('ffmpeg',['-hide_banner','-v','error','-xerror','-fflags','+noparse+nofillin',
+     '-ss',String(offset),'-i',output,'-t','1','-f','null','-'],{encoding:'utf8'});
+    assert.equal(decode.status,0,'Replay '+seconds+'s, seek '+offset+'s: '+decode.stderr);
+    assert.equal(decode.stderr,'');
    }
   }
  }finally{fs.rmSync(temp,{recursive:true,force:true})}
