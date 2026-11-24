@@ -191,11 +191,8 @@
   img.src=url;
  }
  function surfaces(){
-  const dock=document.querySelector('#taskbar .win-taskbar-center');
-  const cosmos=!!dock&&getComputedStyle(dock).display!=='none';
-  const names=cosmos?['#taskbar .win-taskbar-center','#taskbar .tray']:['#taskbar'];
-  names.push('#start','#searchPanel','#winQuickSettings','#winCalendar',
-   '.win-flyout:not(.hidden)','#windows .window.is-active:not(.hidden)>.titlebar');
+  const names=['#taskbar','#start','#searchPanel','#winQuickSettings','#winCalendar',
+   '.win-flyout:not(.hidden)','#windows .window.is-active:not(.hidden)>.titlebar'];
   return names.map(s=>document.querySelector(s)).filter(el=>{
    if(!el?.isConnected||el.hidden||el.closest?.('.hidden,[hidden]'))return false;
    const cs=getComputedStyle(el),r=el.getBoundingClientRect();

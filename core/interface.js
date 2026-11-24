@@ -12,7 +12,36 @@
  function recentMarkup(){const ids=recent.filter(id=>id!=='home').slice(0,4);return ids.length?ids.map(id=>{const a=app(id);return `<button type="button" data-shell-open="${id}">${icon(id)}<span><b>${esc(a[1])}</b><small>${esc(a[2])}</small></span></button>`}).join(''):'<p class="win-empty-recent">Apps you open will appear here.</p>'}
  function renderStartResults(){const input=document.getElementById('winStartSearch'),results=document.getElementById('winStartResults');if(!input||!results)return;const q=input.value.trim().toLowerCase();const matches=apps.filter(a=>!q||(a[1]+' '+a[2]).toLowerCase().includes(q));results.innerHTML=q?`<div class="win-start-heading"><h2>Search results</h2><span>${matches.length} apps</span></div><div class="win-app-list">${matches.map(a=>`<button type="button" data-shell-open="${a[0]}">${icon(a[0])}<span><b>${esc(a[1])}</b><small>${esc(a[2])}</small></span><i>Open ↗</i></button>`).join('')||'<p class="win-empty-recent">No apps match your search.</p>'}</div>`:allApps?`<div class="win-start-heading"><h2>All apps</h2><button type="button" data-shell-action="all-apps">← Pinned</button></div><div class="win-all-apps">${[...apps].sort((a,b)=>a[1].localeCompare(b[1])).map(a=>button(a[0])).join('')}</div>`:`<div class="win-start-heading"><h2>Pinned</h2><button type="button" data-shell-action="all-apps">All apps <span>›</span></button></div><div class="win-start-grid">${['games','music','files','browser','settings','appstore','academy','chatroom','life-rp','lolite-quests','notes','calculator','paint'].map(id=>button(id)).join('')}</div><div class="win-start-heading win-recent-heading"><h2>Recently opened</h2><span>On this device</span></div><div class="win-start-recent">${recentMarkup()}</div>`}
  function openStart(search=false){if(document.documentElement.classList.contains('browsing-mode'))return;const panel=document.getElementById('start');if(!search&&!panel.classList.contains('hidden')){closePanels();return}closePanels('start');allApps=false;panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Start menu');panel.innerHTML='<div class="win-start-body"><label class="win-start-search"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg><input id="winStartSearch" type="search" placeholder="Search apps and settings" aria-label="Search apps and settings" autocomplete="off"></label><div id="winStartResults"></div></div><footer class="win-start-footer"><span class="win-user-avatar">L</span><span><b>Lolite</b><small>Local workspace</small></span><button type="button" data-shell-action="layout" title="Change workspace">Change workspace</button><button type="button" data-shell-action="show-desktop" aria-label="Show desktop" title="Show desktop">⌄</button></footer>';renderStartResults();reveal(panel);const input=panel.querySelector('input');input.addEventListener('input',renderStartResults);input.addEventListener('keydown',e=>{if(e.key==='Enter'){const first=panel.querySelector('[data-shell-open]');if(first){e.preventDefault();launch(first.dataset.shellOpen)}}});input.focus({preventScroll:true})}
- function syncTasks(){const holder=document.getElementById('winPinnedApps');if(!holder)return;holder.innerHTML=pins.map(id=>{const a=app(id),w=state.windows[id],running=!!w&&!w.closing;return `<button type="button" data-task-app="${id}" class="win-pinned${running?' running':''}${state.activeId===id?' active':''}" title="${esc(a[1])}" aria-label="${esc(a[1])}" aria-pressed="${state.activeId===id}">${icon(id)}</button>`}).join('');document.querySelectorAll('#tasks .taskwin').forEach(task=>{task.hidden=pins.includes(task.dataset.appId)})}
+ function syncTasks(){
+  const holder=document.getElementById('winPinnedApps');
+  if(!holder)return;
+  const buttons=new Map([...holder.children].map(button=>[button.dataset.taskApp,button]));
+  for(const [id,button] of buttons){
+   if(!pins.includes(id))button.remove();
+  }
+  for(const id of pins){
+   let button=buttons.get(id);
+   if(!button){
+    button=document.createElement('button');
+    button.type='button';
+    button.className='win-pinned';
+    button.dataset.taskApp=id;
+    button.title=app(id)[1];
+    button.setAttribute('aria-label',button.title);
+    button.innerHTML=icon(id);
+    holder.append(button);
+   }
+   const record=state.windows[id];
+   const onDesk=record?.desktopIndex===state.desktopIndex;
+   button.classList.toggle('running',Boolean(record&&!record.closing&&onDesk));
+   button.classList.toggle('active',state.activeId===id);
+   button.setAttribute('aria-pressed',String(state.activeId===id));
+  }
+  for(const task of document.querySelectorAll('#tasks .taskwin')){
+   const id=task.dataset.appId;
+   task.hidden=pins.includes(id)||state.windows[id]?.desktopIndex!==state.desktopIndex;
+  }
+ }
  function pin(id){
   if(!app(id)||pins.includes(id))return false;
   pins=[...pins,id];save('loliteTaskbarPinsV2',pins);syncTasks();return true;
@@ -21,6 +50,61 @@
   if(!pins.includes(id))return false;
   pins=pins.filter(value=>value!==id);save('loliteTaskbarPinsV2',pins);syncTasks();return true;
  }
+ function groupTrayTools(tray){
+  const tools=[
+   ['lcNotifButton','Chat notifications'],
+   ['loliteWidgetButton','Desktop widgets'],
+   ['loliteLiteButton','Lite Mode'],
+   ['fullscreenBtn','Fullscreen'],
+   ['settingsBtn','Settings'],
+   ['loliteCreditsButton','Game credits']
+  ];
+  const details=document.createElement('details');
+  details.className='win-tray-tools';
+  const toggle=document.createElement('summary');
+  toggle.title='More taskbar controls';
+  toggle.setAttribute('aria-label',toggle.title);
+  const list=document.createElement('div');
+  list.className='win-tray-tools-list';
+  for(const [id,label] of tools){
+   const control=document.getElementById(id);
+   if(control?.parentElement!==tray)continue;
+   const glyph=document.createElement('span');
+   glyph.className='win-tray-tool-glyph';
+   glyph.setAttribute('aria-hidden','true');
+   glyph.append(...control.childNodes);
+   const title=document.createElement('span');
+   title.className='win-tray-tool-label';
+   title.setAttribute('aria-hidden','true');
+   title.textContent=label;
+   control.append(glyph,title);
+   list.append(control);
+  }
+  if(!list.childElementCount)return;
+  details.append(toggle,list);
+  tray.insertBefore(details,document.getElementById('clock'));
+  toggle.setAttribute('aria-controls','winTrayTools');
+  list.id='winTrayTools';
+  const close=()=>{details.open=false};
+  document.addEventListener('pointerdown',event=>{
+   if(details.open&&!details.contains(event.target))close();
+  });
+  details.addEventListener('focusout',event=>{
+   if(event.relatedTarget&&!details.contains(event.relatedTarget))close();
+  });
+  details.addEventListener('click',event=>{
+   if(!event.target.closest('.win-tray-tools-list button'))return;
+   if(details.contains(document.activeElement))toggle.focus({preventScroll:true});
+   close();
+  });
+  document.addEventListener('keydown',event=>{
+   if(event.key!=='Escape'||!details.open)return;
+   close();
+   toggle.focus({preventScroll:true});
+  });
+  window.addEventListener('lolite:modechange',close);
+  window.addEventListener('lolite:account-restricted',close);
+ }
  function panel(id,label){let el=document.getElementById(id);if(!el){el=document.createElement('section');el.id=id;el.className='win-flyout hidden';el.setAttribute('role','dialog');el.setAttribute('aria-label',label);document.body.appendChild(el)}return el}
  function openQuick(){const el=panel('winQuickSettings','Quick settings');if(!el.classList.contains('hidden')){closePanels();return}closePanels('winQuickSettings');const sounds=window.LoliteSounds?.state()||{enabled:false,volume:0},reduced=window.LoliteMotion?.reduced();el.innerHTML=`<header><h2>Quick settings</h2><button type="button" data-shell-open="settings" title="Open Settings">${icon('settings')}</button></header><div class="win-quick-tiles"><button type="button" data-shell-action="mute" aria-pressed="${sounds.enabled}">${icon('sounds')}<span>System sounds</span><small>${sounds.enabled?'On':'Muted'}</small></button><button type="button" data-shell-action="reduce" aria-pressed="${!!reduced}">${icon('autoclick')}<span>Reduce motion</span><small>${reduced?'On':'Off'}</small></button></div><label class="win-volume">${icon('sounds')}<input type="range" min="0" max="100" value="${Math.round(sounds.volume*100)}" aria-label="System sound volume" data-shell-volume><output>${Math.round(sounds.volume*100)}%</output></label><p>Volume for Lolite interface sounds.</p>`;reveal(el)}
  function openCalendar(){const el=panel('winCalendar','Calendar');if(!el.classList.contains('hidden')){closePanels();return}closePanels('winCalendar');calendarMonth=new Date();renderCalendar();reveal(el)}
@@ -28,7 +112,7 @@
  function desktopMenu(event){if(document.documentElement.classList.contains('browsing-mode')||event.target.closest('.window,#taskbar,.panel,.lw-card,.lw-picker'))return;const desktop=event.target.closest('#desktop');if(!desktop)return;event.preventDefault();closePanels('winDesktopMenu');const el=panel('winDesktopMenu','Desktop options'),shortcut=event.target.closest('.desktop-icon');el.innerHTML=(shortcut?'<button type="button" data-shell-action="open-shortcut">Open</button>':'')+'<button type="button" data-shell-action="show-desktop">Show desktop</button><button type="button" data-shell-action="refresh">Refresh desktop</button><button type="button" data-shell-action="hosts">Hosting status</button><hr><button type="button" data-shell-action="wallpaper">Change wallpaper</button><button type="button" data-shell-action="widgets">Desktop widgets</button><button type="button" data-shell-open="settings">Personalise</button>';el._shortcut=shortcut;el.style.left=Math.min(event.clientX,innerWidth-220)+'px';el.style.top=Math.min(event.clientY,innerHeight-290)+'px';reveal(el)}
  function activateShortcut(el){if(!el)return;if(typeof el.ondblclick==='function')el.ondblclick(new MouseEvent('dblclick'));else el.click()}
  function homeMarkup(browser=false,themes=''){return `<div class="win-home"><header><div><span class="win-kicker">YOUR WORKSPACE</span><h1>Home</h1><p>${new Date().toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'})}</p></div><button type="button" data-cr-settings="wallpapers">${icon('wallpaper')} Personalise</button></header><section class="win-home-banner"><div><h2>Welcome to Lolite.</h2><p>Your apps, files and games. Right where you need them.</p><button type="button" data-shell-open="files">Open Files <span>↗</span></button></div></section><div class="win-start-heading"><h2>Quick access</h2><span>Apps & tools</span></div><div class="win-home-apps">${['games','files','browser','settings','appstore','academy','chatroom','notes'].map(id=>{const a=app(id);return `<button type="button" data-shell-open="${id}">${icon(id)}<span><b>${esc(a[1])}</b><small>${esc(a[2])}</small></span></button>`}).join('')}</div><div class="win-start-heading"><h2>Recently opened</h2><span>Continue where you left off</span></div><div class="win-start-recent">${recentMarkup()}</div>${themes}<details class="win-home-updates"><summary>What's new in Lolite</summary><div data-lu-feed>${window.LoliteWhatsNew?.homeMarkup()||''}</div></details></div>`}
- function init(){
+ function init(event){
   document.documentElement.dataset.desktopExperience='windows';const bar=document.getElementById('taskbar'),start=document.getElementById('startBtn'),search=document.getElementById('searchBtn'),tasks=document.getElementById('tasks'),tray=bar.querySelector('.tray');
   const center=document.createElement('div');center.className='win-taskbar-center';bar.insertBefore(center,bar.firstChild);center.append(start,search);
   const desktopSwitch=document.createElement('button');
@@ -40,8 +124,19 @@
   desktopSwitch.onclick=()=>window.LoliteWindowManager?.switchDesktop?.(((window.LoliteWindowManager.desktopIndex()+1)%3));
   center.appendChild(desktopSwitch);
   window.addEventListener('lolite:desktopchange',()=>{showDesktopNumber();syncTasks()});
-  const pins=document.createElement('div');pins.id='winPinnedApps';center.append(pins,tasks);
-  start.innerHTML='<span class="win-start-logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span>';start.setAttribute('aria-label','Start');start.setAttribute('aria-controls','start');start.setAttribute('aria-expanded','false');start.onclick=()=>openStart();search.innerHTML='<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg>';search.title='Search';search.setAttribute('aria-label','Search apps');search.onclick=()=>openStart(true);window.openSearch=()=>openStart(true);
+  const appRail=document.createElement('div');
+  appRail.className='win-taskbar-apps';
+  const pinnedApps=document.createElement('div');
+  pinnedApps.id='winPinnedApps';
+  appRail.append(pinnedApps,tasks);
+  center.append(appRail);
+  appRail.addEventListener('wheel',event=>{
+   if(event.ctrlKey||event.deltaX||!event.deltaY||appRail.scrollWidth<=appRail.clientWidth)return;
+   event.preventDefault();
+   const step=event.deltaMode===1?16:event.deltaMode===2?appRail.clientWidth:1;
+   appRail.scrollLeft+=event.deltaY*step;
+  },{passive:false});
+  start.innerHTML='<img class="win-start-brand" src="assets/lolite-cosmos-logo.svg" alt="" draggable="false"><span class="win-start-logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span>';start.setAttribute('aria-label','Start');start.setAttribute('aria-controls','start');start.setAttribute('aria-expanded','false');start.onclick=()=>openStart();search.innerHTML='<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg>';search.title='Search';search.setAttribute('aria-label','Search apps');search.onclick=()=>openStart(true);window.openSearch=()=>openStart(true);
   const brand=document.createElement('button');brand.type='button';brand.className='win-taskbar-brand';brand.innerHTML=icon('home')+'<span>Lolite OS<small>Your workspace</small></span>';brand.title='Home';brand.onclick=()=>launch('home');bar.insertBefore(brand,center);
   document.getElementById('loliteDesktopThemeButton')?.remove();const quick=document.createElement('button');quick.type='button';quick.id='winQuickButton';quick.className='task';quick.innerHTML=icon('sounds');quick.setAttribute('aria-label','Quick settings');quick.setAttribute('aria-expanded','false');quick.onclick=openQuick;tray.insertBefore(quick,tray.firstChild);
   const clock=document.getElementById('clock');clock.setAttribute('role','button');clock.tabIndex=0;clock.title='Calendar';clock.setAttribute('aria-label','Open calendar');clock.setAttribute('aria-expanded','false');clock.onclick=openCalendar;clock.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openCalendar()}};
@@ -51,6 +146,11 @@
   icons.addEventListener('dblclick',e=>{const b=e.target.closest('.desktop-icon');if(b){e.preventDefault();e.stopImmediatePropagation();activateShortcut(b)}},true);
   document.addEventListener('pointerdown',e=>{if(!e.target.closest('#start,#startBtn,#searchBtn,.win-flyout,#winQuickButton,#clock'))closePanels();if(!e.target.closest('.desktop-icon'))icons.querySelectorAll('.selected').forEach(n=>n.classList.remove('selected'))});
   document.addEventListener('contextmenu',desktopMenu);document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanels();if(e.ctrlKey&&e.key==='Escape'){e.preventDefault();openStart()}});
+  // Several app scripts add controls during startup. Move the existing buttons
+  // once those scripts have attached their actions and keyboard state.
+  const finishTray=()=>setTimeout(()=>groupTrayTools(tray),0);
+  if(event?.type==='DOMContentLoaded'||document.readyState==='complete')finishTray();
+  else document.addEventListener('DOMContentLoaded',finishTray,{once:true});
  }
  document.addEventListener('click',e=>{const b=e.target.closest('[data-shell-open],[data-shell-action],[data-task-app],[data-calendar-step]');if(!b)return;if(b.dataset.shellOpen){launch(b.dataset.shellOpen);return}if(b.dataset.taskApp){const id=b.dataset.taskApp;if(state.windows[id])window.LoliteWindowManager.toggleTask(id);else launch(id);return}if(b.dataset.calendarStep){calendarMonth=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+Number(b.dataset.calendarStep),1);renderCalendar();return}const action=b.dataset.shellAction;if(action==='all-apps'){allApps=!allApps;renderStartResults();return}if(action==='mute'){window.LoliteSounds?.setEnabled(!window.LoliteSounds.state().enabled);document.getElementById('winQuickSettings').classList.add('hidden');openQuick();return}if(action==='reduce'){window.toggleReduce(!window.LoliteMotion?.reduced());window.LoliteWallpapers?.sync();document.getElementById('winQuickSettings').classList.add('hidden');openQuick();return}if(action==='open-shortcut')activateShortcut(document.getElementById('winDesktopMenu')._shortcut);closePanels();if(action==='layout')window.LoliteDeviceMode?.showChooser();if(action==='show-desktop')window.LoliteWindowManager?.showDesktop();if(action==='refresh')window.renderIcons?.();if(action==='wallpaper')window.LoliteCrimson?.openSettings('wallpapers');if(action==='widgets')window.LoliteWidgets?.open?.();if(action==='hosts')window.LoliteHostStatus?.openPanel?.()});
  document.addEventListener('input',e=>{if(e.target.matches('[data-shell-volume]')){window.LoliteSounds?.setVolume(e.target.value/100);e.target.nextElementSibling.textContent=e.target.value+'%'}});

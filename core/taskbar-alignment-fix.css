@@ -1,273 +1,555 @@
-/* Lolite OS 5.0 — taskbar alignment hotfix.
- * One dock, one vertical baseline, no detached Cosmos tray.
- * Loaded last: opt-in Taskbar Studio presets still control height, style and placement. */
-html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
-  position:fixed!important;
-  box-sizing:border-box!important;
-  left:50%!important;
-  right:auto!important;
-  top:auto!important;
-  bottom:12px!important;
-  transform:translateX(-50%)!important;
-  width:min(880px,calc(100vw - 28px))!important;
-  max-width:calc(100vw - 28px)!important;
-  height:64px!important;
-  min-height:0!important;
-  padding:0 13px!important;
-  gap:9px!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  overflow:visible!important;
-  border:1px solid rgba(154,183,220,.34)!important;
-  border-radius:17px!important;
-  background:rgb(13 24 43 / var(--l5-taskbar-alpha,.94))!important;
-  box-shadow:0 12px 34px #0208178c,inset 0 1px 0 #ffffff17!important;
-  backdrop-filter:blur(22px) saturate(1.16)!important;
-  -webkit-backdrop-filter:blur(22px) saturate(1.16)!important;
-  pointer-events:auto!important;
+/* Desktop dock layout. App buttons scroll together, while launch and tray controls stay put. */
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) {
+  --dock-button: 40px;
+  --dock-icon: 26px;
+  --dock-gap: 4px;
+  --dock-accent: var(--wall-accent, #a8bcfa);
+  --dock-text: #eef2fc;
+  --dock-hover: #cddcff1c;
+  --dock-active: color-mix(in srgb, var(--dock-accent) 19%, transparent);
 }
-/* Previously Cosmos had its own 66px-high dock positioned 15px above the
- * bottom of a 104px transparent shell. Once the outer shell was customised,
- * the child dock floated above the icons' intended baseline. */
-html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center{
-  position:relative!important;
-  top:auto!important;
-  right:auto!important;
-  bottom:auto!important;
-  left:auto!important;
-  transform:none!important;
-  box-sizing:border-box!important;
-  width:auto!important;
-  max-width:none!important;
-  height:100%!important;
-  min-height:0!important;
-  flex:1 1 auto!important;
-  min-width:0!important;
-  margin:0!important;
-  padding:0!important;
-  gap:4px!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-  backdrop-filter:none!important;
-  -webkit-backdrop-filter:none!important;
-  pointer-events:auto!important;
+html[data-desktop-experience="windows"][data-lolite-ui-density="compact"]:not(.ltc-applied) {
+  --dock-button: 36px;
+  --dock-icon: 23px;
+  --dock-gap: 2px;
 }
-html[data-lolite-design="cosmos"] #desktop #taskbar .win-taskbar-center::before{
-  content:none!important;
+html[data-desktop-experience="windows"][data-lolite-ui-density="comfortable"]:not(.ltc-applied) {
+  --dock-button: 44px;
+  --dock-gap: 5px;
 }
-/* The tray used to be fixed to the TOP-RIGHT CORNER of the screen, even when
- * the user chose a bottom or top taskbar. Keep the clock and controls inside
- * the actual bar, with normal flex positioning and readable spacing. */
-html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .tray{
-  position:relative!important;
-  top:auto!important;
-  right:auto!important;
-  bottom:auto!important;
-  left:auto!important;
-  transform:none!important;
-  box-sizing:border-box!important;
-  flex:0 0 auto!important;
-  height:100%!important;
-  min-height:0!important;
-  padding:0 2px 0 8px!important;
-  margin:0 0 0 auto!important;
-  gap:3px!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:flex-end!important;
-  border:0!important;
-  border-left:1px solid #ffffff1c!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-  backdrop-filter:none!important;
-  -webkit-backdrop-filter:none!important;
-  pointer-events:auto!important;
+html.ltc-applied[data-desktop-experience="windows"] {
+  --dock-button: var(--ltc-button-size, 40px);
+  --dock-icon: var(--ltc-icon-size, 26px);
 }
-html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #clock{
-  box-sizing:border-box!important;
-  height:42px!important;
-  min-height:0!important;
-  display:flex;
-  align-items:flex-end!important;
-  justify-content:center!important;
-  line-height:16px!important;
-  padding:4px 7px!important;
-  margin:0!important;
+html[data-desktop-experience="windows"][data-desktop-theme="gnome"]:not(.ltc-applied) {
+  --dock-button: 34px;
+  --dock-icon: 23px;
 }
-/* All dock controls share the same centre line, independent of hover state,
- * desktop theme, 5.0 density, or icon-size preferences. */
-html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar :is(.win-taskbar-center,#winPinnedApps,#tasks){
-  align-items:center!important;
-  box-sizing:border-box!important;
+html[data-desktop-experience="windows"][data-desktop-theme="deepin"]:not(.ltc-applied) {
+  --dock-text: #173c4d;
+  --dock-hover: #275e771f;
+  --dock-accent: #206783;
 }
-html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned){
-  box-sizing:border-box!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  align-self:center!important;
-  position:relative!important;
-  top:auto!important;
-  bottom:auto!important;
-  margin:0!important;
-  transform:none!important;
-  flex:0 0 auto!important;
-  width:44px!important;
-  min-width:44px!important;
-  height:44px!important;
-  min-height:44px!important;
-  max-height:44px!important;
-  padding:8px!important;
-  line-height:1!important;
-  border-radius:12px!important;
-  vertical-align:middle!important;
+
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar {
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: 12px !important;
+  transform: translateX(-50%) !important;
+  width: max-content !important;
+  max-width: min(960px, calc(100% - 24px)) !important;
+  height: 56px !important;
+  min-height: 0 !important;
+  padding: 0 8px !important;
+  border: 1px solid #a6b9e144 !important;
+  border-radius: 17px !important;
+  box-shadow: 0 8px 26px #03081770, inset 0 1px #ffffff0c !important;
+  pointer-events: auto !important;
 }
-html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned):hover{
-  transform:none!important;
-  translate:0!important;
-  background:#ffffff13!important;
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode):where(:not(.ltc-applied, .glass.lolite-refractive, .lolite-lite-mode)) #desktop #taskbar {
+  background: color-mix(in srgb, var(--wall-panel-solid, #151b2e) var(--l5-taskbar-opacity, 92%), transparent) !important;
+  backdrop-filter: blur(18px) saturate(1.1) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(1.1) !important;
 }
-html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar :is(.task,.taskwin,.win-pinned)>.lolite-icon{
-  box-sizing:border-box!important;
-  display:grid!important;
-  place-items:center!important;
-  flex:none!important;
-  margin:auto!important;
-  transform:none!important;
-  vertical-align:middle!important;
+html.lolite-lite-mode[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.ltc-applied):not(.browsing-mode):not(.mobile-mode) #desktop #taskbar {
+  background: var(--wall-panel-solid, #151b2e) !important;
 }
-html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center .lolite-icon{
-  width:27px!important;
-  height:27px!important;
-  max-width:100%!important;
-  max-height:100%!important;
+
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  overflow: visible !important;
 }
-html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #winPinnedApps,
-html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #tasks{
-  box-sizing:border-box!important;
-  align-self:center!important;
-  height:100%!important;
-  max-height:100%!important;
-  align-items:center!important;
-  overflow-y:hidden!important;
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center {
+  position: relative !important;
+  inset: auto !important;
+  transform: none !important;
+  box-sizing: border-box;
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: 0;
+  max-width: none !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: var(--dock-gap);
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  pointer-events: auto !important;
 }
-html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #winShowDesktop{
-  top:0!important;
-  bottom:0!important;
-  height:100%!important;
+html[data-lolite-design="cosmos"] #taskbar .win-taskbar-center::before {
+  content: none !important;
 }
-/* Taskbar Studio preferences win over the non-custom default. */
-html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
-  height:var(--ltc-height,56px)!important;
-  background:color-mix(in srgb,var(--ltc-color,#252225) var(--ltc-opacity,90%),transparent)!important;
-  backdrop-filter:blur(var(--ltc-blur,18px))!important;
-  -webkit-backdrop-filter:blur(var(--ltc-blur,18px))!important;
+html.ltc-applied[data-desktop-experience="windows"][data-ltc-align="left"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center {
+  justify-content: flex-start !important;
 }
-html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned){
-  width:var(--ltc-button-size,44px)!important;
-  min-width:var(--ltc-button-size,44px)!important;
-  height:var(--ltc-button-size,44px)!important;
-  min-height:var(--ltc-button-size,44px)!important;
-  max-height:var(--ltc-button-size,44px)!important;
-  padding:5px!important;
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-apps {
+  display: flex;
+  align-items: center;
+  flex: 0 1 auto;
+  gap: var(--dock-gap);
+  min-width: 0;
+  padding: 3px;
+  margin: 0 -3px;
+  overflow: auto hidden;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
 }
-html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center .lolite-icon{
-  width:var(--ltc-icon-size,27px)!important;
-  height:var(--ltc-icon-size,27px)!important;
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-apps::-webkit-scrollbar {
+  display: none;
 }
-html.ltc-applied[data-desktop-experience="windows"][data-ltc-align="left"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center{
-  justify-content:flex-start!important;
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-apps :is(#winPinnedApps, #tasks) {
+  display: flex;
+  align-items: center;
+  flex: none !important;
+  width: max-content;
+  max-width: none;
+  gap: var(--dock-gap);
+  overflow: visible !important;
 }
-html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-style="pill"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
-  width:min(740px,calc(100vw - 28px))!important;
-  border-radius:999px!important;
+#taskbar .win-taskbar-apps :is(#tasks, #winPinnedApps):not(:has(> button:not([hidden]))) {
+  display: none !important;
 }
-html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-style="aero"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
-  width:min(960px,calc(100vw - 28px))!important;
-  border-color:#cce8f792!important;
-  box-shadow:inset 0 1px #ffffff58,0 12px 35px #0007!important;
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center :is(.task, .taskwin, .win-pinned) {
+  position: relative;
+  inset: auto !important;
+  flex: none;
+  display: grid !important;
+  place-items: center;
+  box-sizing: border-box !important;
+  width: var(--dock-button) !important;
+  min-width: var(--dock-button) !important;
+  max-width: none !important;
+  height: var(--dock-button) !important;
+  min-height: 0 !important;
+  max-height: 100%;
+  padding: 0 !important;
+  margin: 0 !important;
+  transform: none !important;
+  translate: none !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transition: background-color 140ms ease, border-color 140ms ease !important;
 }
-html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-style="minimal"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
-  background:transparent!important;
-  border-color:transparent!important;
-  box-shadow:none!important;
-  backdrop-filter:none!important;
-  -webkit-backdrop-filter:none!important;
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #tasks .taskwin[hidden] {
+  display: none !important;
 }
-html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-style="classic"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
-  left:0!important;right:0!important;
-  transform:none!important;
-  width:100%!important;max-width:100%!important;
-  bottom:0!important;
-  border-radius:0!important;
-  padding-inline:14px!important;
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar :is(.win-pinned, .taskwin) > .lolite-icon {
+  display: grid !important;
+  place-items: center !important;
+  width: min(var(--dock-icon), calc(var(--dock-button) - 9px)) !important;
+  height: min(var(--dock-icon), calc(var(--dock-button) - 9px)) !important;
+  margin: auto !important;
+  padding: 0 !important;
+  transform: none !important;
 }
-html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-position="top"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
-  top:12px!important;bottom:auto!important;
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center :is(.task, .taskwin, .win-pinned):hover {
+  background: var(--dock-hover) !important;
 }
-html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-position="top"][data-ltc-style="classic"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
-  top:0!important;bottom:auto!important;
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center :is(.win-pinned, .taskwin).active,
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center .task[aria-expanded="true"] {
+  background: var(--dock-active) !important;
+  border-color: color-mix(in srgb, var(--dock-accent) 32%, transparent) !important;
 }
-html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-position="bottom"][data-ltc-style="classic"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
-  top:auto!important;bottom:0!important;
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar :is(.win-pinned.running, .taskwin)::after {
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 2px;
+  width: 6px;
+  background: #9aa9bf;
 }
-/* Panels follow the dock, rather than the old top-right tray. */
-html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) :is(#winCalendar,#winQuickSettings){
-  top:auto!important;
-  bottom:91px!important;
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar :is(.win-pinned, .taskwin).active::after {
+  width: 16px;
+  background: var(--dock-accent) !important;
 }
-html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-position="top"]:not(.browsing-mode):not(.mobile-mode) :is(#winCalendar,#winQuickSettings){
-  top:calc(var(--ltc-height,56px) + 25px)!important;
-  bottom:auto!important;
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .lolite-task-count {
+  right: 0;
+  top: 0;
 }
-html.ltc-applied[data-lolite-design="cosmos"][data-desktop-experience="windows"][data-ltc-position="bottom"]:not(.browsing-mode):not(.mobile-mode) :is(#winCalendar,#winQuickSettings){
-  top:auto!important;
-  bottom:calc(var(--ltc-height,56px) + 25px)!important;
+#startBtn .win-start-brand {
+  display: none;
 }
-@media(min-width:701px) and (max-width:810px){
-  html[data-lolite-design="cosmos"][data-desktop-experience="windows"] #desktop #taskbar .tray #clock{
-    display:flex!important;
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #startBtn {
+  border-color: #acc4f44a !important;
+  background: #294060 !important;
+}
+html[data-lolite-design="cosmos"] #taskbar #startBtn .win-start-brand {
+  display: block;
+  width: 30px !important;
+  height: 30px !important;
+  max-width: 100%;
+}
+html[data-lolite-design="cosmos"] #taskbar #startBtn .win-start-logo {
+  display: none;
+}
+html[data-desktop-theme="aero7"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #startBtn {
+  border-radius: 50% !important;
+  background: radial-gradient(circle at 25% 20%, #b7f8fe, #3198e3 55%, #11629c) !important;
+  box-shadow: 0 0 0 2px #ffffffa0, 0 0 14px #6ee7ffaa !important;
+}
+html[data-desktop-experience="windows"] #taskbar #searchBtn::before {
+  content: none;
+}
+#taskbar #searchBtn > svg {
+  width: 19px;
+  height: 19px;
+  stroke-width: 1.5;
+}
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #winDesktopSwitch {
+  font-size: 10px !important;
+  font-weight: 650;
+  color: var(--dock-text) !important;
+  white-space: nowrap;
+  border-color: #a6b9e129 !important;
+}
+
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .tray {
+  position: relative !important;
+  inset: auto !important;
+  transform: none !important;
+  box-sizing: border-box;
+  display: flex !important;
+  align-items: center !important;
+  flex: none;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 0 0 auto !important;
+  padding: 0 0 0 8px !important;
+  gap: 2px !important;
+  color: var(--dock-text);
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  pointer-events: auto !important;
+}
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .tray::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 25%;
+  height: 50%;
+  width: 1px;
+  background: #a6b9e141;
+}
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar :is(#winQuickButton, #l5NotificationsButton, .win-tray-tools > summary) {
+  position: relative;
+  display: grid !important;
+  place-items: center;
+  box-sizing: border-box;
+  width: 34px !important;
+  min-width: 34px !important;
+  height: 34px !important;
+  min-height: 0 !important;
+  max-height: 100%;
+  margin: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  color: var(--dock-text) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar :is(#winQuickButton, #l5NotificationsButton, #clock, .win-tray-tools > summary):hover,
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar :is(#winQuickButton[aria-expanded="true"], #clock[aria-expanded="true"], .win-tray-tools[open] > summary) {
+  background: var(--dock-hover) !important;
+}
+/* Compact tray symbols use currentColor and stay readable across desktop themes. */
+#taskbar #winQuickButton > .lolite-icon {
+  display: none !important;
+}
+#taskbar #winQuickButton::before,
+#taskbar #winQuickButton::after,
+#taskbar #l5NotificationsButton::before {
+  content: "";
+}
+#taskbar #winQuickButton::before {
+  width: 15px;
+  height: 12px;
+  border-block: 1.5px solid currentColor;
+  background: linear-gradient(currentColor,currentColor) center/100% 1.5px no-repeat;
+}
+#taskbar #winQuickButton::after {
+  position: absolute;
+  top: calc(50% - 8px);
+  left: calc(50% - 3px);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 6px 6px currentColor, 0 12px currentColor;
+}
+#taskbar #l5NotificationsButton {
+  font-size: 0 !important;
+}
+#taskbar #l5NotificationsButton::before {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid currentColor;
+  border-radius: 7px 7px 3px 3px;
+  box-shadow: 0 3px 0 -2px currentColor;
+}
+#taskbar #l5NotificationsButton[data-count]:not([data-count=""])::after {
+  right: 0;
+  top: 0;
+  background: var(--dock-accent);
+  color: #102039;
+}
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #clock {
+  box-sizing: border-box;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: end !important;
+  margin: 0;
+  padding: 4px 7px !important;
+  min-width: 70px !important;
+  height: 38px !important;
+  max-height: 100%;
+  border-radius: 8px;
+  color: var(--dock-text) !important;
+  font: 650 12px/1.3 var(--lolite-font, system-ui) !important;
+  font-variant-numeric: tabular-nums !important;
+  letter-spacing: .01em;
+  white-space: nowrap;
+}
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #clock small {
+  color: inherit;
+  opacity: .77;
+  font-size: 10px;
+  font-weight: 500;
+}
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #winShowDesktop {
+  position: relative !important;
+  inset: auto !important;
+  display: grid;
+  place-items: center;
+  width: 15px;
+  flex: 0 0 15px;
+  height: 32px !important;
+  border: 0 !important;
+  border-radius: 6px;
+  color: var(--dock-text);
+  padding: 0;
+}
+#taskbar #winShowDesktop::before {
+  content: "";
+  width: 6px;
+  height: 17px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  opacity: .6;
+}
+#taskbar .win-tray-tools {
+  flex: none;
+}
+#taskbar .win-tray-tools > summary {
+  list-style: none;
+}
+#taskbar .win-tray-tools > summary::-webkit-details-marker {
+  display: none;
+}
+#taskbar .win-tray-tools > summary::before {
+  content: "";
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: -5px 0 currentColor, 5px 0 currentColor;
+}
+#taskbar .win-tray-tools-list {
+  position: absolute;
+  z-index: 5;
+  right: 0;
+  bottom: calc(100% + 10px);
+  box-sizing: border-box;
+  width: min(210px, calc(100vw - 24px));
+  max-height: calc(100dvh - 108px);
+  overflow: auto;
+  padding: 5px;
+  border: 1px solid #869bc456;
+  border-radius: 13px;
+  background: #182238;
+  box-shadow: 0 10px 26px #0007;
+  color: #eef2fc;
+}
+html[data-ltc-position="top"] #taskbar .win-tray-tools-list,
+html[data-desktop-theme="gnome"]:not(.ltc-applied) #taskbar .win-tray-tools-list {
+  top: calc(100% + 10px);
+  bottom: auto;
+}
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-tray-tools-list > button {
+  display: grid !important;
+  grid-template-columns: 22px 1fr;
+  align-items: center;
+  justify-items: center;
+  column-gap: 9px;
+  position: relative;
+  box-sizing: border-box;
+  width: 100% !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 36px !important;
+  margin: 0;
+  padding: 6px 9px !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  color: #eef2fc !important;
+  background: transparent !important;
+  text-align: start;
+  box-shadow: none !important;
+}
+html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-tray-tools-list > button:is(:hover, [aria-pressed="true"]) {
+  background: var(--dock-hover) !important;
+}
+#taskbar .win-tray-tool-glyph {
+  display: grid;
+  place-items: center;
+  grid-area: 1 / 1;
+  font-size: 16px;
+  line-height: 1;
+}
+#taskbar .win-tray-tools-list :is(#settingsBtn, #fullscreenBtn)::before {
+  grid-area: 1 / 1;
+}
+#taskbar .win-tray-tools-list :is(#settingsBtn, #fullscreenBtn) .win-tray-tool-glyph {
+  display: none;
+}
+#taskbar .win-tray-tool-label {
+  grid-area: 1 / 2;
+  justify-self: start;
+  display: block !important;
+  font: 550 12px/1.4 var(--lolite-font, system-ui);
+  white-space: nowrap;
+}
+#taskbar .win-tray-tools-list #lcNotifCount {
+  top: 2px;
+  left: 18px;
+  right: auto;
+}
+#taskbar .win-tray-tools-list #lcNotifCount[hidden] {
+  display: none !important;
+}
+#taskbar .win-tray-tools > summary:focus-visible,
+#taskbar #clock:focus-visible {
+  outline: 2px solid var(--dock-accent);
+  outline-offset: -2px;
+}
+
+/* Taskbar Studio still sets the silhouette and edge; each floating style fits its content. */
+html.ltc-applied[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar {
+  height: var(--ltc-height, 56px) !important;
+}
+html.ltc-applied[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode):not([data-ltc-style="minimal"]):where(:not(.glass.lolite-refractive)) #desktop #taskbar {
+  -webkit-backdrop-filter: blur(var(--ltc-blur)) !important;
+  backdrop-filter: blur(var(--ltc-blur)) !important;
+}
+html.ltc-applied[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode):not([data-ltc-style="classic"]) #desktop #taskbar {
+  width: max-content !important;
+  max-width: min(960px, calc(100% - 24px)) !important;
+}
+html.ltc-applied[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode)[data-ltc-style="pill"] #desktop #taskbar {
+  border-radius: 999px !important;
+}
+html.ltc-applied[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode)[data-ltc-style="aero"] #desktop #taskbar {
+  border-color: #d1e6ff9c !important;
+}
+html.ltc-applied[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode)[data-ltc-style="minimal"] #desktop #taskbar {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html.ltc-applied[data-desktop-experience="windows"][data-ltc-position="top"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar {
+  top: 12px !important;
+  bottom: auto !important;
+}
+html.ltc-applied[data-desktop-experience="windows"][data-ltc-position="top"][data-ltc-style="classic"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar {
+  top: 0 !important;
+}
+html.ltc-applied[data-desktop-experience="windows"][data-ltc-position="bottom"][data-ltc-style="classic"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar {
+  bottom: 0 !important;
+}
+html.ltc-applied[data-desktop-experience="windows"][data-ltc-search="false"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #searchBtn,
+html.ltc-applied[data-desktop-experience="windows"][data-ltc-clock="false"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #clock,
+html.ltc-applied[data-desktop-experience="windows"][data-ltc-settings="false"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #settingsBtn {
+  display: none !important;
+}
+html.ltc-applied[data-desktop-experience="windows"][data-ltc-style="minimal"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar :is(.win-taskbar-center button, #winQuickButton, #l5NotificationsButton, .win-tray-tools > summary, #clock, #winShowDesktop) {
+  background: color-mix(in srgb, var(--ltc-color) 77%, transparent) !important;
+}
+html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.ltc-applied):not(.browsing-mode):not(.mobile-mode) :is(#start, #winCalendar, #winQuickSettings, #loliteWidgetPicker, #lcNotifPanel, #loliteCreditsPanel) {
+  top: auto !important;
+  bottom: 78px !important;
+}
+html.ltc-applied[data-desktop-experience="windows"][data-ltc-position="top"]:not(.browsing-mode):not(.mobile-mode) :is(#loliteWidgetPicker, #lcNotifPanel, #loliteCreditsPanel) {
+  top: calc(var(--ltc-height) + 25px) !important;
+  bottom: auto !important;
+}
+html.ltc-applied[data-desktop-experience="windows"][data-ltc-position="bottom"]:not(.browsing-mode):not(.mobile-mode) :is(#loliteWidgetPicker, #lcNotifPanel, #loliteCreditsPanel) {
+  top: auto !important;
+  bottom: calc(var(--ltc-height) + 25px) !important;
+}
+
+@media (max-width: 700px) {
+  html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) {
+    --dock-gap: 2px;
+  }
+  html[data-desktop-experience="windows"]:not([data-lolite-ui-density="compact"]):not([data-desktop-theme="gnome"]):not(.ltc-applied) {
+    --dock-button: 38px;
+  }
+  html.ltc-applied[data-desktop-experience="windows"] {
+    --dock-button: min(var(--ltc-button-size, 38px), 38px);
+  }
+  html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar {
+    gap: 4px !important;
+  }
+  html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .tray {
+    padding-left: 4px !important;
+    gap: 0 !important;
+  }
+  html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar :is(#winQuickButton, #l5NotificationsButton, .win-tray-tools > summary) {
+    width: 30px !important;
+    min-width: 30px !important;
+  }
+  html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #clock {
+    min-width: 58px !important;
+    padding-inline: 4px !important;
   }
 }
-@media(max-width:700px){
-  html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar{
-    width:calc(100vw - 16px)!important;
-    max-width:calc(100vw - 16px)!important;
-    gap:3px!important;
-    padding:0 7px!important;
-    border-radius:13px!important;
-  }
-  html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center{
-    justify-content:flex-start!important;
-    gap:2px!important;
-  }
-  html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center :is(.task,.taskwin,.win-pinned){
-    width:38px!important;min-width:38px!important;height:40px!important;min-height:40px!important;max-height:40px!important;
-    padding:6px!important;
-  }
-  html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .tray{
-    padding-left:4px!important;gap:1px!important;
+@media (max-width: 440px) {
+  html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #winDesktopSwitch {
+    display: none !important;
   }
 }
-@media(max-width:520px){
-  html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #searchBtn,
-  html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar #winDesktopSwitch{
-    display:none!important;
-  }
-  html[data-lolite-design="cosmos"][data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .tray #clock{
-    display:none!important;
+@media (prefers-reduced-motion: reduce) {
+  html[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center :is(.task, .taskwin, .win-pinned) {
+    transition: none !important;
   }
 }
-/* Respect accessibility: do not animate icons into a different vertical row. */
-@media(prefers-reduced-motion:reduce){
-  html[data-lolite-design="cosmos"] #desktop #taskbar :is(.task,.taskwin,.win-pinned){
-    transition:none!important;
-  }
+html:is(.reduce, .lolite-lite-mode)[data-desktop-experience="windows"]:not(.browsing-mode):not(.mobile-mode) #desktop #taskbar .win-taskbar-center :is(.task, .taskwin, .win-pinned) {
+  transition: none !important;
+}
+html.lolite-lite-mode[data-desktop-experience="windows"]:is(.ltc-applied, [data-desktop-theme]):not(.browsing-mode):not(.mobile-mode) #desktop #taskbar {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }

@@ -47,7 +47,8 @@
  button.setAttribute("aria-expanded","false");
  const toggle=open=>{
   panel.hidden=!open;button.setAttribute("aria-expanded",String(open));
-  if(open)panel.focus({preventScroll:true});else button.focus({preventScroll:true});
+  const returnTo=button.closest('details:not([open])')?.querySelector('summary')||button;
+  (open?panel:returnTo).focus({preventScroll:true});
  };
  button.addEventListener("click",()=>toggle(panel.hidden));
  panel.querySelector(".credits-close").addEventListener("click",()=>toggle(false));
