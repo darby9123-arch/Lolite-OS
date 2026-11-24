@@ -13,7 +13,7 @@
   const id=el.dataset.taskApp||el.dataset.appId;
   return /^(?:[a-z0-9_-]){1,80}$/i.test(id)?id:null;
  };
- function closePreview(){if(hideTimer){clearTimeout(hideTimer);hideTimer=null}if(pop){pop.remove();pop=null}activeId=null}
+ function closePreview(){if(hoverTimer){clearTimeout(hoverTimer);hoverTimer=null}if(hideTimer){clearTimeout(hideTimer);hideTimer=null}if(pop){window.LoliteMotion?.cancel(pop);pop.remove();pop=null}activeId=null}
  function closeMenu(){menu?.remove();menu=null}
  function locate(target,popup){
   const rect=target.getBoundingClientRect(),width=Math.min(popup.offsetWidth||250,Math.max(1,innerWidth-16)),height=Math.min(popup.offsetHeight||160,Math.max(1,innerHeight-16));
@@ -29,14 +29,14 @@
   }
  }
  function preview(target){
-  const id=getId(target);if(!id){closePreview();return}
+  const id=getId(target);if(!id||document.documentElement.classList.contains('lolite-account-locked')){closePreview();return}
   const w=record(id);if(!w){closePreview();return}
   closePreview();activeId=id;
   pop=document.createElement('section');
   pop.className='lolite-task-preview';
   pop.setAttribute('role','status');
   pop.setAttribute('aria-label','Window preview for '+label(id));
-  const dimensions=w.el?.getBoundingClientRect?.();
+  const dimensions=w.minimised?w.normal:w.el?.getBoundingClientRect?.();
   const footprint=dimensions?.width>0&&dimensions.height>0?Math.round(dimensions.width)+' × '+Math.round(dimensions.height):'Window';
   pop.innerHTML='<div class="lolite-task-preview-head">'+
     '<span class="lolite-task-preview-icon">'+(window.LoliteIcons?.tile?.(id)||'◫')+'</span>'+
@@ -46,9 +46,12 @@
     '<button type="button" data-preview-action="min">Minimise</button>'+
     '<button type="button" data-preview-action="close">Close</button></div>';
   pop.dataset.appId=id;document.body.appendChild(pop);locate(target,pop);
+  window.LoliteMotion?.animate(pop,[{opacity:0,translate:'0 6px',scale:.97},{opacity:1,translate:'0 0',scale:1}],{duration:160});
   pop.addEventListener('pointerenter',()=>{if(hideTimer){clearTimeout(hideTimer);hideTimer=null}});
   pop.addEventListener('pointerleave',closePreview);
  }
+ let badgeFrame=0;
+ function scheduleBadges(){if(!badgeFrame)badgeFrame=requestAnimationFrame(()=>{badgeFrame=0;renderBadges()})}
  function renderBadges(){
   document.querySelectorAll('#taskbar [data-task-app],#taskbar .taskwin').forEach(el=>{
    const id=getId(el),count=notifications.get(id)||0;
@@ -88,11 +91,13 @@
   const bar=document.getElementById('taskbar');if(!bar)return;
   bar.addEventListener('pointerover',e=>{
    if(e.pointerType==='touch'||menu)return;
-   const id=getId(e.target);if(!id||id===activeId)return;
+   const id=getId(e.target);if(!id||id===getId(e.relatedTarget)||id===activeId)return;
+   if(hideTimer){clearTimeout(hideTimer);hideTimer=null}
    if(hoverTimer)clearTimeout(hoverTimer);
-   hoverTimer=setTimeout(()=>{hoverTimer=null;const button=bar.querySelector('[data-task-app="'+id+'"],#task-'+id);if(button)preview(button)},320);
+   hoverTimer=setTimeout(()=>{hoverTimer=null;const button=bar.querySelector('[data-task-app="'+id+'"],#task-'+id);if(button&&!button.hidden&&button.getClientRects().length)preview(button)},320);
   });
   bar.addEventListener('pointerout',e=>{
+   if(getId(e.target)&&getId(e.target)===getId(e.relatedTarget))return;
    if(hoverTimer){clearTimeout(hoverTimer);hoverTimer=null}
    if(hideTimer)clearTimeout(hideTimer);
    hideTimer=setTimeout(()=>{hideTimer=null;closePreview()},220);
@@ -135,10 +140,10 @@
     const state=pop.querySelector('[data-preview-state]');if(state)state.textContent=status(e.detail.id);
     if(e.detail.type==='close')closePreview();
    }
-   renderBadges();
+   scheduleBadges();
   });
   window.addEventListener('lolite:notificationcount',e=>badge(e.detail?.appId,e.detail?.count));
-  window.addEventListener('lolite:modechange',()=>{closeMenu();closePreview()});
+  for(const event of ['lolite:modechange','lolite:desktopchange','lolite:account-restricted','resize','blur'])window.addEventListener(event,()=>{closeMenu();closePreview()});
  };
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
  window.LoliteTaskbar4=Object.freeze({badge,preview,closePreview,closeMenu});
