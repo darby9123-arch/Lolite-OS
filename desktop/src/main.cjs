@@ -228,8 +228,9 @@ async function smokeEmbeddedBrowser(){
     const guestId=await os.webContents.executeJavaScript(`new Promise((resolve,reject)=>{
       const account=window.LoliteAccounts;
       const locked=document.documentElement.classList.contains('lolite-account-locked');
-      window.LoliteAccounts={isReady:()=>true};
+      window.LoliteAccounts={...account,isReady:()=>true};
       document.documentElement.classList.remove('lolite-account-locked');
+      window.dispatchEvent(new CustomEvent('lolite:account-ready',{detail:{}}));
       const panel=document.createElement('div');
       panel.dataset.webName='Browser smoke test';
       panel.innerHTML='<input data-web-input>'+LoliteBrowserNavigation.controls()+LoliteBrowserNavigation.stage();
@@ -239,7 +240,12 @@ async function smokeEmbeddedBrowser(){
         window.LoliteAccounts=account;
         document.documentElement.classList.toggle('lolite-account-locked',locked);
       };
-      if(!LoliteBrowserNavigation.mount(panel)?.go(${JSON.stringify(url)})){reject(Error('Could not start browser smoke test'));return;}
+      const browser=LoliteBrowserNavigation;
+      if(!browser.isAllowed()){reject(Error('Browser smoke test did not unlock the account gate'));return;}
+      if(!browser.mount(panel)?.go(${JSON.stringify(url)})){
+        reject(Error('Could not start browser smoke test: '+panel.querySelector('[data-web-status]').textContent));
+        return;
+      }
       const guest=panel.querySelector('webview');
       const timer=setTimeout(()=>reject(Error('Browser page failed to load')),10000);
       guest.addEventListener('did-finish-load',()=>{clearTimeout(timer);resolve(guest.getWebContentsId());},{once:true});
