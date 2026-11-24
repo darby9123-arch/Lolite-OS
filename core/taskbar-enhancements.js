@@ -91,8 +91,9 @@
   const bar=document.getElementById('taskbar');if(!bar)return;
   bar.addEventListener('pointerover',e=>{
    if(e.pointerType==='touch'||menu)return;
-   const id=getId(e.target);if(!id||id===getId(e.relatedTarget)||id===activeId)return;
+   const id=getId(e.target);if(!id||id===getId(e.relatedTarget))return;
    if(hideTimer){clearTimeout(hideTimer);hideTimer=null}
+   if(id===activeId)return;
    if(hoverTimer)clearTimeout(hoverTimer);
    hoverTimer=setTimeout(()=>{hoverTimer=null;const button=bar.querySelector('[data-task-app="'+id+'"],#task-'+id);if(button&&!button.hidden&&button.getClientRects().length)preview(button)},320);
   });
