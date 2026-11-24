@@ -553,3 +553,26 @@ html.lolite-lite-mode[data-desktop-experience="windows"]:is(.ltc-applied, [data-
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
+
+/* Fluid Update: keep the expanded Control Centre within the available screen. */
+#winQuickSettings {
+  width: min(400px, calc(100vw - 24px));
+  max-height: calc(100dvh - 96px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+#winQuickSettings .win-quick-tiles { gap: 8px; }
+#winQuickSettings .win-quick-tiles button { min-height: 78px; padding: 8px; }
+#winQuickSettings .win-quick-tiles button small { text-align: center; }
+#winQuickSettings .win-volume { margin-top: 14px; }
+#winQuickSettings .win-volume select {
+  flex: 1; min-width: 0; padding: 7px 9px; font: inherit;
+  border: 1px solid #a6b9e144; border-radius: 8px;
+  color: inherit; background: var(--wall-panel-solid, #202638); color-scheme: dark;
+}
+#winQuickSettings .win-volume select option { color: #edf2ff; background: #202638; }
+@media (max-height: 620px) {
+  #winQuickSettings .win-quick-tiles button { min-height: 58px; }
+  #winQuickSettings .win-quick-tiles .lolite-icon { display: none; }
+}
