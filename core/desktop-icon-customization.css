@@ -39,6 +39,7 @@ html.lic-applied:not(.browsing-mode):not(.mobile-mode) #desktop #icons .desktop-
  min-width:var(--lic-size)!important;max-width:var(--lic-size)!important;
  min-height:var(--lic-size)!important;max-height:var(--lic-size)!important;
  border-radius:var(--lic-radius)!important;
+ overflow:hidden!important;
  opacity:var(--lic-opacity)!important;
  flex:0 0 auto!important;box-sizing:border-box!important;
  display:grid!important;place-items:center!important;margin-inline:auto!important;

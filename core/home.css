@@ -1,0 +1,307 @@
+/* Home shares the desktop's palette and responds to the window, even when docked. */
+.lolite-home {
+  container: lolite-home / inline-size;
+  --lh-text: #f0f4ff;
+  --lh-muted: #acbbd0;
+  --lh-line: #b3c9f027;
+  --lh-surface: #162033;
+  --lh-accent: #b8d0ff;
+  display: grid;
+  gap: 14px;
+  width: 100%;
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 8px 8px 24px;
+  box-sizing: border-box;
+  color: var(--lh-text);
+  font-family: var(--lolite-font, system-ui);
+}
+.lolite-home :is(h2, h3, p) {
+  margin: 0;
+}
+.lolite-home :is(.lh-card, .lh-update, .lh-themes) {
+  border: 1px solid var(--lh-line);
+  border-radius: 14px;
+  background-color: var(--lh-surface);
+}
+.lolite-home .lh-update {
+  padding: 16px 19px 17px;
+  background:
+    linear-gradient(90deg, #121c30 0%, #121c30f7 38%, #121c3073 80%),
+    #15213c url('../assets/wallpapers/cosmos-orbit.svg') 78% 52% / cover no-repeat;
+}
+.lh-update-copy {
+  max-width: 625px;
+}
+.lh-update-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 7px;
+  font-size: .875rem;
+}
+.lh-update-meta span {
+  font-weight: 650;
+  color: var(--lh-accent);
+}
+.lh-update-meta time {
+  color: var(--lh-muted);
+}
+.lolite-home .lh-update h2 {
+  font-size: clamp(1.375rem, 3.6cqw, 1.875rem) !important;
+  font-weight: 680;
+  line-height: 1.16;
+  letter-spacing: -.03em;
+}
+.lolite-home .lh-update p {
+  margin: 6px 0 13px;
+  color: #d4def0;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+.lolite-home .lh-button,
+.lolite-home .lh-options button,
+.lolite-home .lh-apps button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  box-sizing: border-box;
+  min-height: 35px;
+  border: 1px solid var(--lh-line);
+  border-radius: 8px;
+  padding: 5px 11px;
+  background: #22314a !important;
+  color: var(--lh-text) !important;
+  font: 580 .875rem/1.3 var(--lolite-font, system-ui);
+  text-align: center;
+  cursor: pointer;
+}
+.lolite-home .lh-button:hover,
+.lolite-home .lh-options button:hover,
+.lolite-home .lh-apps button:hover {
+  background: #304362 !important;
+}
+.lolite-home .lh-primary {
+  background: #b5cbfa !important;
+  border-color: #c2d6ff;
+  color: #131f35 !important;
+  font-weight: 680;
+  white-space: nowrap;
+}
+.lolite-home .lh-primary:hover {
+  background: #d2e1ff !important;
+}
+.lolite-home .lh-primary[aria-disabled="true"] {
+  background: #233751 !important;
+  border-color: var(--lh-line);
+  color: #d1e1ff !important;
+  cursor: default;
+}
+.lolite-home .lh-subtle {
+  min-height: 32px;
+  padding: 4px 8px;
+  border-color: transparent;
+  background: transparent !important;
+  color: var(--lh-accent) !important;
+}
+.lolite-home :is(button, summary, input):focus-visible {
+  outline: 2px solid #b8d0ff !important;
+  outline-offset: 2px;
+}
+.lh-discover {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.lh-card {
+  min-width: 0;
+  overflow: hidden;
+}
+.lh-discovery-heading,
+.lh-icon-heading,
+.lh-pick-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.lh-discovery-heading {
+  padding: 8px 13px;
+}
+.lolite-home :is(.lh-discovery-heading, .lh-icon-heading, .lh-shortcuts) h2 {
+  font-size: 1.0625rem !important;
+  font-weight: 660;
+  line-height: 1.25;
+}
+.lh-pick-image {
+  display: block;
+  width: 100%;
+  height: clamp(92px, 13cqw, 126px);
+  object-fit: cover;
+  background: #18283e;
+}
+.lh-pick[data-lh-pick="game"] .lh-pick-image:not([data-lh-image-fallback]) {
+  object-position: center 20%;
+}
+.lh-pick-details {
+  min-height: 65px;
+  box-sizing: border-box;
+  padding: 10px 13px;
+}
+.lh-pick-name {
+  min-width: 0;
+}
+.lolite-home .lh-pick-name h3 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1rem !important;
+  line-height: 1.3;
+}
+.lolite-home .lh-pick-name p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--lh-muted);
+  font-size: .8125rem;
+  margin-top: 3px;
+}
+.lolite-home .lh-empty {
+  min-height: 145px;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  color: var(--lh-muted);
+  text-align: center;
+}
+.lh-icon-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(170px, 1fr);
+}
+.lh-icon-controls {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 10px 13px 12px;
+}
+.lh-icon-heading {
+  margin-bottom: 1px;
+}
+.lh-option-row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  color: var(--lh-muted);
+  font-size: .875rem;
+}
+.lh-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.lolite-home .lh-options button {
+  min-height: 31px;
+  padding: 4px 9px;
+  background: #1b2940 !important;
+}
+.lolite-home .lh-options button[aria-pressed="true"] {
+  border-color: #a7c3fb77;
+  background: #2b4165 !important;
+  color: #dce8ff !important;
+}
+.lh-opacity > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lolite-home .lh-opacity input {
+  min-width: 45px;
+  width: min(100%, 205px);
+  accent-color: var(--lh-accent);
+}
+.lh-opacity output {
+  min-width: 4ch;
+  color: var(--lh-text);
+  font-variant-numeric: tabular-nums;
+}
+.lh-icon-preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  gap: 12px;
+  min-height: 105px;
+  padding: 14px;
+  border-left: 1px solid var(--lh-line);
+  background: #111c32 url('../assets/wallpapers/cosmos-orbit.svg') center / cover no-repeat;
+}
+.lolite-home .lh-icon-preview > .lolite-icon {
+  width: 48px !important;
+  height: 48px !important;
+  flex: none;
+  overflow: hidden;
+  border-radius: var(--lh-icon-radius, 15px) !important;
+  opacity: var(--lh-icon-opacity, 1);
+}
+.lh-shortcuts {
+  min-width: 0;
+}
+.lh-apps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.lolite-home .lh-apps button > .lolite-icon {
+  width: 23px !important;
+  height: 23px !important;
+  flex: none;
+}
+.lolite-home .lh-shortcuts .win-start-recent {
+  margin-top: 6px;
+}
+.lh-themes > summary {
+  padding: 12px;
+  color: var(--lh-text);
+  font-size: .9375rem;
+  cursor: pointer;
+}
+.lh-themes .cr-themes {
+  margin: 0 12px 12px;
+}
+@container lolite-home (max-width: 610px) {
+  .lh-discover,
+  .lh-icon-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lh-icon-preview {
+    grid-row: 1;
+    border-left: 0;
+    border-bottom: 1px solid var(--lh-line);
+  }
+  .lh-pick-image {
+    height: clamp(112px, 29cqw, 166px);
+  }
+}
+@container lolite-home (max-width: 345px) {
+  .lolite-home .lh-update {
+    padding: 13px;
+  }
+  .lh-icon-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .lh-icon-heading .lh-subtle {
+    margin-left: -8px;
+  }
+  .lh-option-row {
+    grid-template-columns: 54px minmax(0, 1fr);
+  }
+  .lh-pick-details {
+    flex-wrap: wrap;
+  }
+}

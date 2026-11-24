@@ -3,6 +3,7 @@
 'use strict';
 const URL='README.md',GH='https://github.com/darby9123-arch/Lolite-OS#update-log';
 const fallback=[
+ ['Home app redesign — 2026-11-24','Play a random game, apply a wallpaper, and style your desktop icons from Home.'],
  ['All Lolite Apps Are Free — 2026-11-18','Removed the Lolite wallet, paid App Store categories, app unlock prices and Quests money rewards. Every app is free to install and open. Existing progress remains saved.'],
  ['Lolite Life RP City Update — Hands-on Jobs, Shops, Ranks, Businesses & Minigames — 2026-10-20','Playable job shifts, minigame activities, quests, businesses and customisation in the separate Life RP game.'],
  ['Lolite Life RP Online Mode — Private Rooms & Cloud Saves — 2026-10-20','Private live multiplayer rooms, co-op community challenges and optional cloud saves using Lolite Chat accounts.'],
@@ -150,6 +151,10 @@ const loading=(async()=>{
 })();
 window.LoliteWhatsNew=Object.freeze({
  homeMarkup,welcomeMarkup,open,load:()=>loading,parseMarkdown,
+ getLatest:()=>{
+  const item=entries[0];
+  return item?{title:short(item),date:item.date,dateLabel:dateText(item),summary:item.bullets[0]}:null;
+ },
  getRecent:()=>recent().map(x=>({title:x.title,date:x.date,summary:x.bullets[0]})),
  getAll:()=>entries.map(x=>({title:x.title,date:x.date,bullets:x.bullets.slice()}))
 });

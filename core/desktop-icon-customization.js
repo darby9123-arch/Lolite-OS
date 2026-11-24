@@ -50,12 +50,20 @@
  function load(){
   try{const raw=localStorage.getItem(key());custom=!!raw;prefs=sanitize(raw?JSON.parse(raw):null)}
   catch(_){custom=false;prefs=defaults()}
-  apply();
+  apply();appearanceChanged();
+ }
+ function appearanceChanged(){
+  window.dispatchEvent?.(new Event('lolite:iconappearancechange'));
  }
  function save(){
   custom=true;
   try{localStorage.setItem(key(),JSON.stringify(prefs))}catch(err){console.warn('Could not save icon preferences',err)}
-  apply();
+  apply();appearanceChanged();
+ }
+ function setAppearance(changes){
+  const {shape,finish,opacity}=sanitize({...prefs,...changes});
+  Object.assign(prefs,{shape,finish,opacity});
+  save();preview();
  }
  function layout(){
   const width=prefs.size+26,height=prefs.size+(prefs.labels?42:14),gap=prefs.gap;
@@ -222,7 +230,7 @@
  }
  function reset(){
   try{localStorage.removeItem(key())}catch(_){}
-  custom=false;prefs=defaults();apply();renderSettings();
+  custom=false;prefs=defaults();apply();appearanceChanged();renderSettings();
  }
  document.addEventListener('input',event=>{
   const el=event.target.closest?.('#lolite-icon-settings [data-lic-field]');
@@ -272,7 +280,7 @@
   window.addEventListener('lolite:desktopthemechange',()=>{if(!custom){prefs=defaults();renderSettings()}else{apply();preview()}});
   window.addEventListener('lolite:wallpaperchange',()=>{const el=document.querySelector('#lolite-icon-settings .lic-wall');if(el)delete el.dataset.wallpaperReady;preview()});
   window.addEventListener('lolite:wallpapercolormode',()=>{apply();preview()});
-  window.LoliteIconCustomization={get:()=>({...prefs}),reset,apply,preview,markup};
+  window.LoliteIconCustomization={get:()=>({...prefs}),setAppearance,reset,apply,preview,markup};
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
  else init();

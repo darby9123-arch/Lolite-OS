@@ -8,7 +8,6 @@
  function latest(){const entry=window.LoliteWhatsNew?.getAll?.()[0];return entry?String(entry.date||'')+'|'+String(entry.title||''):''}
  function viewed(){try{localStorage.setItem(SEEN,latest())}catch{}}
  function open(){if(typeof window.LoliteWhatsNew?.open==='function'){window.LoliteWhatsNew.open();viewed()}}
- function expandHome(){document.querySelectorAll('details.win-home-updates').forEach(el=>{el.open=true})}
  function installApp(){
   const apps=window.LoliteDesktopShell?.apps;
   if(Array.isArray(apps)&&!apps.some(x=>x[0]==='updates'))
@@ -40,27 +39,29 @@
   window.page=function(id){const html=old.apply(this,arguments);return id==='settings'?html+settingsCard():html};
  }
  let checked=false;
+ const readyForUpdate=()=>enabled()&&window.LoliteDeviceMode?.mode?.()?.mode==='desktop'&&
+  (!window.LoliteAccounts||window.LoliteAccounts.isReady())&&localStorage.getItem('startHome')==='false';
  async function maybeAnnounce(){
-  if(checked||!enabled()||window.LoliteDeviceMode?.mode?.()?.mode!=='desktop')return;
+  if(checked||!readyForUpdate())return;
   checked=true;
   try{await window.LoliteWhatsNew?.load?.()}catch{}
-  if(!enabled()||window.LoliteDeviceMode?.mode?.()?.mode!=='desktop')return;
+  if(!readyForUpdate())return;
   const token=latest();if(!token)return;
   try{if(localStorage.getItem(SEEN)===token)return}catch{}
   open();
  }
  function init(){
   if(!window.LoliteWhatsNew)return;
-  installApp();installSettings();desktopShortcut();expandHome();startShortcut();
+  installApp();installSettings();desktopShortcut();startShortcut();
   const icons=document.getElementById('icons');
   if(icons)new MutationObserver(desktopShortcut).observe(icons,{childList:true});
   const start=document.getElementById('start');
   if(start)new MutationObserver(startShortcut).observe(start,{childList:true,subtree:true});
   window.addEventListener('lolite:windowchange',e=>{
    if(e.detail?.id==='updates'&&e.detail.type==='open')viewed();
-   if(e.detail?.id==='home')queueMicrotask(expandHome);
   });
   window.addEventListener('lolite:modechange',e=>{if(e.detail?.mode==='desktop'){desktopShortcut();maybeAnnounce()}});
+  window.addEventListener('lolite:account-ready',maybeAnnounce);
   window.addEventListener('lolite:desktopthemechange',desktopShortcut);
   document.addEventListener('click',e=>{if(e.target.closest('[data-wn-action="open"]')){e.preventDefault();open()}});
   document.addEventListener('change',e=>{

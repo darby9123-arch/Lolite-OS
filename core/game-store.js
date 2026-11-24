@@ -858,6 +858,16 @@
    ugsDiscoveredArt.get(file)||externalCovers.get(file)||window.loliteGameArt?.[file]?.src||
    (game?.ugsEntry?.filename?window.loliteGameArt?.[game.ugsEntry.filename]?.src:null)||null;
  };
+ function randomGame(previous){
+  const shipped=games.filter(game=>/^(?:games\/|html%20games\/)/.test(game.url)&&
+   !game.openExternally&&!unsuitableRemoteTitle(game.title)&&!broken(game));
+  const choices=shipped.filter(game=>game.file!==previous);
+  const pool=choices.length?choices:shipped;
+  const game=pool[Math.floor(Math.random()*pool.length)];
+  if(!game)return null;
+  const poster=posterForGame(game);
+  return {file:game.file,title:game.title,category:game.category,cover:coverFor(game.file)||poster,poster};
+ }
  // Local, title-specific artwork is always present; remote images only enhance it.
  const artCache=new Map();
  function retryUGSArt(el,file,badUrl,title){
@@ -1343,6 +1353,7 @@
   getFavorites:()=>[...favouriteIds],getRecent:()=>recentSessions.map(row=>({...row})),
   recordRecent:markRecent,getActivityMarkup:activityMarkup,
   getGame:file=>{const g=games.find(g=>g.file===file);return g?{file:g.file,title:g.title,category:g.category,kind:g.ugsEntry?.kind||null}:null},
+  randomGame,
   getLayout:()=>gameLayout,
   replaceFavorites:ids=>{favouriteIds.clear();ids.filter(id=>typeof id==='string').slice(0,250).forEach(id=>favouriteIds.add(id));storeSaved(FAV_KEY,[...favouriteIds]);refreshActivity();}
  });

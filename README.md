@@ -36,6 +36,10 @@ A Lolite-branded browser desktop with the original Cosmos space interface, apps,
 
 ## Update Log
 
+### Home app redesign — 2026-11-24
+- Play a random game, apply a wallpaper, and style your desktop icons from Home.
+- Home opens after sign-in and highlights the newest release. Turn off startup Home in Settings → Appearance.
+
 ### Lolite OS 6.0 — Real Liquid Glass desktop integration (2026-11-18)
 - Added **actual GPU wallpaper refraction to the real Lolite desktop** via a single shared WebGL1 canvas and displaced texture sampling. It covers the taskbar, Start/search panels, quick settings, calendar, and active window titlebar.
 - Open **Settings → Appearance → Liquid Glass 6.0** to enable it and adjust quality, refraction, edge thickness and reflections. Existing Glass preference remains respected; no forced default change.

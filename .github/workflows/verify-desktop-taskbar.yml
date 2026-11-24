@@ -2,6 +2,11 @@ name: Verify Desktop and taskbar customisation
 on:
   push:
     paths:
+      - 'core/home.*'
+      - 'core/device-mode.js'
+      - 'core/game-store.js'
+      - 'core/whats-new*.js'
+      - 'tests/home.test.cjs'
       - 'core/interface.js'
       - 'core/game-credits.js'
       - 'core/taskbar-customization.js'
@@ -16,6 +21,11 @@ on:
       - '.github/workflows/verify-desktop-taskbar.yml'
   pull_request:
     paths:
+      - 'core/home.*'
+      - 'core/device-mode.js'
+      - 'core/game-store.js'
+      - 'core/whats-new*.js'
+      - 'tests/home.test.cjs'
       - 'core/interface.js'
       - 'core/game-credits.js'
       - 'core/taskbar-customization.js'
@@ -41,8 +51,9 @@ jobs:
       - name: Verify scripts parse
         run: |
           node --check core/interface.js
+          node --check core/home.js
           node --check core/taskbar-customization.js
           node --check core/crimson.js
           node --check core/desktop-icon-customization.js
-      - name: Verify Desktop settings and taskbar controls
-        run: node --test tests/desktop-taskbar-customization.test.cjs tests/taskbar-alignment-fix.test.cjs
+      - name: Verify Home, Desktop settings and taskbar controls
+        run: node --test tests/home.test.cjs tests/desktop-taskbar-customization.test.cjs tests/taskbar-alignment-fix.test.cjs

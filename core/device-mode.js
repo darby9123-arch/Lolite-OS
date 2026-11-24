@@ -27,6 +27,7 @@
   const $=selector=>document.querySelector(selector);
   let mode='chooser',shell=null,originalAnchor=null,observer=null,activeId='home';
   let searchQuery='',moreExpanded=false,backStack=[],userSelected=false;
+  let startupHomeHandled=false;
   const appFor=id=>APPS.find(app=>app.id===id);
   const escapeHTML=value=>String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   function icon(app){
@@ -56,13 +57,18 @@
     $('#taskbar')?.classList.remove('hidden');
     for(const w of allWindows())w.classList.remove('lb-current');
   }
+  function openStartupHome(){
+    if(startupHomeHandled||mode!=='desktop'||!window.LoliteHome||(window.LoliteAccounts&&!window.LoliteAccounts.isReady()))return;
+    startupHomeHandled=true;
+    if(!allWindows().length&&localStorage.getItem('startHome')!=='false')window.openApp?.('home','Home');
+  }
   function startDesktop(){
     if(mode==='browsing')detachBrowser();
     mode='desktop';userSelected=true;
     startBase();
     document.documentElement.classList.remove('browsing-mode','mobile-mode','tablet-mode','phone-mode');
     try{localStorage.setItem('loliteUiStyle','desktop')}catch(_){}
-    if(!allWindows().length&&localStorage.getItem('startHome')==='true')window.openApp?.('home','Home');
+    openStartupHome();
     dispatch();
   }
   function chooser(){
@@ -336,6 +342,8 @@
       }
     };
     window.LoliteUIStyle=window.LoliteDeviceMode;
+    window.addEventListener('lolite:account-ready',openStartupHome);
+    document.addEventListener('DOMContentLoaded',openStartupHome,{once:true});
     function resumeWorkspace(){if(userSelected)return;let saved='desktop';try{saved=localStorage.getItem('loliteUiStyle')||'desktop'}catch(_){}if(saved==='browsing')startBrowsing();else startDesktop()}
     window.addEventListener('lolite:splashdone',resumeWorkspace,{once:true});
     if(!$('#lolite-splash'))setTimeout(resumeWorkspace,200);
